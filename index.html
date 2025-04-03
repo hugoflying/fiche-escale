@@ -88,7 +88,7 @@
   <h3>HORAIRES</h3>
   <div class="row">
     <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
+    <div class="field"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" style="width: 100%;" onclick="setNow('aibt')">Now</button></div>
     <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
     <div class="field"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
     <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
@@ -129,11 +129,37 @@
   <h3>ASSISTANCES</h3>
   <div class="row">
     <div class="field">
-      <label>Types d'assistance</label>
+      <label>Nombre d'assistances</label>
       <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Nombre d'assistances">
     </div>
   </div>
   <div class="row" id="assistancesContainer"></div>
+</section>
+
+<!-- SECTION 5 : PRESTATIONS -->
+<section>
+  <h3>PRESTATIONS</h3>
+  <div class="row">
+    <div class="field"><label><input type="checkbox" checked> GPU</label></div>
+    <div class="field"><label><input type="checkbox"> ASU</label></div>
+    <div class="field"><label><input type="checkbox" id="collecteOrdures"> Collecte d'ordures</label></div>
+    <div class="field"><label><input type="checkbox" id="eauPotable"> Eau potable</label></div>
+    <div class="field"><label><input type="checkbox" id="vidangeToilettes"> Vidange toilettes</label></div>
+    <div class="field"><label><input type="checkbox"> Échelle supplémentaire</label></div>
+    <div class="field"><label><input type="checkbox"> Dégivrage</label></div>
+    <div class="field"><label><input type="checkbox"> Toilet kit</label></div>
+    <div class="field"><label><input type="checkbox"> Flux par le RZA</label></div>
+    <div class="field"><label><input type="checkbox"> Ménage Assist'Air</label></div>
+    <div class="field">
+      <label>Ménage Atalian</label>
+      <select id="menageAtalian">
+        <option value="">--</option>
+        <option value="Full">Full</option>
+        <option value="Tidy">Tidy</option>
+      </select>
+    </div>
+    <div class="field"><label><input type="checkbox"> Push-Pull</label></div>
+  </div>
 </section>
 
 <!-- SECTION 6 : FAITS SAILLANTS -->
