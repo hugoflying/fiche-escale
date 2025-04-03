@@ -54,106 +54,7 @@
 <body>
   <h2>Fiche Escale Vol</h2>
 
-  <!-- SECTION 1 : INFORMATIONS -->
-  <section>
-    <h3>INFORMATIONS</h3>
-    <div class="row">
-      <div class="field">
-        <label>Date</label>
-        <input type="date" id="dateField">
-      </div>
-      <div class="field">
-        <label>Compagnie</label>
-        <select id="compagnie">
-          <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option><option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>N° de vol départ</label>
-        <input type="number">
-      </div>
-      <div class="field">
-        <label>Provenance</label>
-        <input type="text" maxlength="3">
-      </div>
-      <div class="field">
-        <label>Destination</label>
-        <input type="text" maxlength="3">
-      </div>
-      <div class="field">
-        <label>RZA</label>
-        <input type="text" maxlength="3">
-      </div>
-      <div class="field">
-        <label>Immatriculation</label>
-        <input type="text">
-      </div>
-      <div class="field">
-        <label>Type avion</label>
-        <select>
-          <option>B737-800 Y189</option>
-          <option>B737-8200 Y197</option>
-          <option>A320 Y180</option>
-          <option>A320 Y186</option>
-          <option>A20N Y186</option>
-          <option>A321 Y230</option>
-          <option>A21N Y239</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Parking</label>
-        <select>
-          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-          <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
-          <option>11</option><option>12</option>
-        </select>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECTION 2 : HORAIRES -->
-  <section>
-    <h3>HORAIRES</h3>
-    <div class="row">
-      <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-      <div class="field"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
-      <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
-      <div class="field"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
-      <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
-      <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
-      <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
-    </div>
-  </section>
-
-  <!-- SECTION 3 : TIMING ESCALE -->
-  <section>
-    <h3>TIMING ESCALE</h3>
-    <div class="row">
-      <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    </div>
-    <div class="row">
-      <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    </div>
-    <div class="row">
-      <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    </div>
-    <div class="row">
-      <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    </div>
-  </section>
-
-  <!-- SECTION 4 : CHARGEMENT -->
+  <!-- SECTION précédente CHARGEMENT mise à jour -->
   <section>
     <h3>CHARGEMENT</h3>
     <div class="row">
@@ -161,23 +62,49 @@
       <div class="field"><label>Adults F</label><input type="number" min="0"></div>
       <div class="field"><label>Childs</label><input type="number" min="0"></div>
       <div class="field"><label>Infants</label><input type="number" min="0"></div>
-      <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
-      <div class="field" id="extraSeatTypes"></div>
-      <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
-      <div class="field" id="gateBagTypes"></div>
       <div class="field"><label>TOB</label><input type="text"></div>
-      <div class="field"><label>SNY</label><input type="number" min="0"></div>
-      <div class="field"><label>Bags</label><input type="number" min="0" id="bags" onchange="calculatePoids()"></div>
-      <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
+    </div>
+    <div class="row">
       <div class="field"><label>OA/FWD</label><input type="number"></div>
       <div class="field"><label>OB/MID</label><input type="number"></div>
       <div class="field"><label>OC/AFT</label><input type="number"></div>
       <div class="field"><label>OD</label><input type="number"></div>
       <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Bags</label><input type="number" min="0" id="bags" onchange="calculatePoids()"></div>
+      <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
+      <div class="field"><label>Gate bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
+      <div class="field" id="gateBagTypes"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
+      <div class="field" id="extraSeatTypes"></div>
+    </div>
+    <div class="row">
       <div class="field"><label>Block fuel</label><input type="number"></div>
       <div class="field"><label>Taxi fuel</label><input type="number"></div>
       <div class="field"><label>Trip fuel</label><input type="number"></div>
     </div>
+  </section>
+
+  <!-- SECTION ASSISTANCES -->
+  <section>
+    <h3>ASSISTANCES</h3>
+    <div class="row">
+      <div class="field">
+        <label>Types d'assistance</label>
+        <select id="assistanceType" multiple onchange="renderAssistances()">
+          <option value="WCHR">WCHR</option>
+          <option value="WCHS">WCHS</option>
+          <option value="WCHC">WCHC</option>
+          <option value="DEAF">DEAF</option>
+          <option value="MUTE">MUTE</option>
+          <option value="DPNA">DPNA</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" id="assistancesContainer"></div>
   </section>
 
   <!-- SECTION 5 : FAITS SAILLANTS -->
@@ -235,6 +162,29 @@
         container.appendChild(label);
         container.appendChild(select);
       }
+    }
+
+    function renderAssistances() {
+      const container = document.getElementById('assistancesContainer');
+      const select = document.getElementById('assistanceType');
+      const values = Array.from(select.selectedOptions).map(o => o.value);
+      container.innerHTML = '';
+      values.forEach(type => {
+        const row = document.createElement('div');
+        row.className = 'field';
+        row.innerHTML = `
+          <label>${type} - Siège</label>
+          <input type="text" placeholder="Numéro de siège">
+          <label>${type} - Équipement</label>
+          <select>
+            <option value="">-- Équipement --</option>
+            <option value="WCMP">WCMP</option>
+            <option value="WCLB">WCLB</option>
+            <option value="WCBD">WCBD</option>
+          </select>
+        `;
+        container.appendChild(row);
+      });
     }
 
     window.addEventListener("load", () => {
