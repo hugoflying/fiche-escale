@@ -18,6 +18,7 @@
       color: #fff;
       padding: 10px;
       margin: 0 -20px 15px;
+      text-align: center;
     }
     .row {
       display: flex;
@@ -132,15 +133,20 @@
       <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    </div>
+    <div class="row">
       <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+      <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    </div>
+    <div class="row">
       <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Arrivée lift débarquement</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Départ lift débarquement</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Arrivée lift embarquement</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-      <div class="field"><label>Départ lift embarquement</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+      <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+      <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    </div>
+    <div class="row">
       <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
       <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
@@ -157,6 +163,8 @@
       <div class="field"><label>Infants</label><input type="number" min="0"></div>
       <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
       <div class="field" id="extraSeatTypes"></div>
+      <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
+      <div class="field" id="gateBagTypes"></div>
       <div class="field"><label>TOB</label><input type="text"></div>
       <div class="field"><label>SNY</label><input type="number" min="0"></div>
       <div class="field"><label>Bags</label><input type="number" min="0" id="bags" onchange="calculatePoids()"></div>
@@ -210,6 +218,20 @@
         label.textContent = `Extra seat ${i + 1} type`;
         const select = document.createElement('select');
         select.innerHTML = '<option value="M">M</option><option value="X">X</option>';
+        container.appendChild(label);
+        container.appendChild(select);
+      }
+    }
+
+    function renderGateBagTypes() {
+      const container = document.getElementById('gateBagTypes');
+      const count = parseInt(document.getElementById('gateBags').value || "0");
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const label = document.createElement('label');
+        label.textContent = `Gate Bag ${i + 1} type`;
+        const select = document.createElement('select');
+        select.innerHTML = '<option value="PRAM">PRAM</option><option value="BAG">BAG</option>';
         container.appendChild(label);
         container.appendChild(select);
       }
