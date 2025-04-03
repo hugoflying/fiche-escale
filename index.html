@@ -7,8 +7,9 @@
     body {
       font-family: sans-serif;
       padding: 10px;
-      max-width: 800px;
       margin: auto;
+      width: 100%;
+      max-width: 100%;
     }
     section {
       margin-bottom: 30px;
@@ -27,7 +28,7 @@
       margin-bottom: 10px;
     }
     .field {
-      flex: 1 1 150px;
+      flex: 1 1 120px;
       display: flex;
       flex-direction: column;
     }
@@ -44,6 +45,7 @@
     }
     textarea {
       height: 150px;
+      width: 100%;
     }
     .now-btn {
       margin-top: 4px;
@@ -64,7 +66,7 @@
       <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option>
       <option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
     </select></div>
-    <div class="field"><label>N° de vol départ</label><input type="number" inputmode="numeric" pattern="[0-9]*"></div>
+    <div class="field"><label>N° de vol départ</label><input type="number" inputmode="numeric" pattern="[0-9]*" inputmode="numeric" pattern="[0-9]*"></div>
     <div class="field"><label>Provenance</label><input type="text" maxlength="3"></div>
     <div class="field"><label>Destination</label><input type="text" maxlength="3"></div>
     <div class="field"><label>RZA</label><input type="text" maxlength="3"></div>
@@ -135,14 +137,7 @@
   <div class="row">
     <div class="field">
       <label>Types d'assistance</label>
-      <select id="assistanceType" multiple onchange="renderAssistances()">
-        <option value="WCHR">WCHR</option>
-        <option value="WCHS">WCHS</option>
-        <option value="WCHC">WCHC</option>
-        <option value="DEAF">DEAF</option>
-        <option value="MUTE">MUTE</option>
-        <option value="DPNA">DPNA</option>
-      </select>
+      <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Nombre d'assistances">
     </div>
   </div>
   <div class="row" id="assistancesContainer"></div>
@@ -182,6 +177,37 @@
 </section>
 
 <script>
+function setNow(id) {
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
+}
+
+function setNowToPrevious(btn) {
+  const input = btn.previousElementSibling;
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2, '0');
+  const mm = now.getMinutes().toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+
+function renderAssistances() {
+  const container = document.getElementById('assistancesContainer');
+  const count = parseInt(document.getElementById('assistanceCount').value || '0');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'field';
+    wrapper.innerHTML = `
+      <label>Assistance ${i + 1}</label>
+      <select><option>WCHR</option><option>WCHS</option><option>WCHC</option><option>DEAF</option><option>MUTE</option><option>DPNA</option></select>
+      <label>Équipement ${i + 1}</label>
+      <select><option>WCMP</option><option>WCLB</option><option>WCBD</option></select>
+    `;
+    container.appendChild(wrapper);
+  }
+}
 function renderExtraSeatTypes() {
   const container = document.getElementById('extraSeatTypes');
   const count = parseInt(document.getElementById('extraSeat').value || '0');
