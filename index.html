@@ -142,32 +142,7 @@
   <textarea></textarea>
 </section>
 
-<!-- Correction Ligne 4 TIMING : suppression de Arrivée INAD -->
-<section>
-  <h3>TIMING ESCALE</h3>
-  <div class="row">
-    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-</section>
+
 
 <script>
 function setNow(id) {
@@ -192,13 +167,29 @@ function renderAssistances() {
   for (let i = 0; i < count; i++) {
     const wrapper = document.createElement('div');
     wrapper.className = 'field';
+    const assistanceId = `assistance-type-${i}`;
+    const equipId = `equipment-${i}`;
+    const codeId = `code-autre-${i}`;
     wrapper.innerHTML = `
       <label>Assistance ${i + 1}</label>
-      <select><option>WCHR</option><option>WCHS</option><option>WCHC</option><option>DEAF</option><option>MUTE</option><option>DPNA</option></select>
+      <select id="${assistanceId}" onchange="toggleAutreCode('${assistanceId}', '${codeId}')">
+        <option>-</option>
+        <option>WCHR</option>
+        <option>WCHS</option>
+        <option>WCHC</option>
+        <option>DEAF</option>
+        <option>MUTE</option>
+        <option>DPNA</option>
+        <option>Autre</option>
+      </select>
       <label>Équipement ${i + 1}</label>
-      <select><option>-</option><option>WCMP</option><option>WCLB</option><option>WCBD</option></select>
+      <select id="${equipId}"><option>-</option><option>WCMP</option><option>WCLB</option><option>WCBD</option></select>
       <label>Siège ${i + 1}</label>
       <input type="text" placeholder="ex: 12A">
+      <div class="field" id="${codeId}" style="display:none;">
+        <label>Code Autre ${i + 1}</label>
+        <input type="text" placeholder="Entrer le code personnalisé">
+      </div>
     `;
     container.appendChild(wrapper);
   }
@@ -256,4 +247,13 @@ document.getElementById("sobt").addEventListener("change", () => {
   calculateTimeOffset("sobt", "hle", -40);
   calculateTimeOffset("sobt", "h15", -15);
 });
+function toggleAutreCode(selectId, codeDivId) {
+  const selected = document.getElementById(selectId).value;
+  const div = document.getElementById(codeDivId);
+  if (selected === "Autre") {
+    div.style.display = "block";
+  } else {
+    div.style.display = "none";
+  }
+}
 </script>
