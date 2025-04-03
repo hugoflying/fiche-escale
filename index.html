@@ -7,133 +7,184 @@
     body {
       font-family: sans-serif;
       padding: 20px;
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px;
+    h2.section-title {
+      background: black;
+      color: white;
+      padding: 10px;
       text-align: center;
+      margin-top: 40px;
     }
-    input[type="time"], input[type="text"], input[type="number"] {
-      width: 100px;
+    .form-group {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      align-items: center;
     }
-    .timestamp-btn {
-      margin-left: 5px;
+    .form-group label {
+      width: 200px;
+      margin-right: 10px;
     }
-    @media (max-width: 768px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      td {
-        margin-bottom: 10px;
-      }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      flex: 1;
+      padding: 5px;
+      font-size: 1em;
+    }
+    .form-group input[type="checkbox"] {
+      flex: none;
+      margin-left: 10px;
+    }
+    .form-section {
+      margin-bottom: 30px;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
     }
   </style>
 </head>
 <body>
-  <h2>Fiche Escale Vol</h2>
-  <table id="ficheEscale">
-    <thead>
-      <tr>
-        <th>Événement</th>
-        <th>Donnée</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Champs horaires -->
-      <tr><td>AIBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>SIBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>EOBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>CTOT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>AOBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>TOB</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>LID</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>1ER EMB</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>FERM. PORTE</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>DER. EMB.</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>DÉP. LIFT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>DÉP. PMR</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>DÉP. FUEL</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>ARR. LIFT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>ARR. FUEL</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <tr><td>DER. DÉB.</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
-      <!-- Champs numériques -->
-      <tr><td>Adultes M</td><td><input type="number" min="0"></td><td></td></tr>
-      <tr><td>Adultes F</td><td><input type="number" min="0"></td><td></td></tr>
-      <tr><td>Enfants</td><td><input type="number" min="0"></td><td></td></tr>
-      <tr><td>Bébés</td><td><input type="number" min="0"></td><td></td></tr>
-      <tr><td>BAGAGES</td><td><input type="number" min="0"></td><td></td></tr>
-      <tr><td>POIDS (KG)</td><td><input type="number" min="0"></td><td></td></tr>
-      <tr><td>EZFW</td><td><input type="number" min="0"></td><td></td></tr>
-      <!-- Champs texte -->
-      <tr><td>REG</td><td><input type="text"></td><td></td></tr>
-      <tr><td>FLIGHT NO.</td><td><input type="text"></td><td></td></tr>
-      <tr><td>FROM / TO</td><td><input type="text"></td><td></td></tr>
-      <tr><td>TYPE A/C</td><td><input type="text"></td><td></td></tr>
-      <tr><td>STAND</td><td><input type="text"></td><td></td></tr>
-      <tr><td>DATE</td><td><input type="text"></td><td></td></tr>
-    </tbody>
-  </table>
 
-  <button onclick="exportCSV()">Exporter en CSV</button>
+  <h2 class="section-title">INFORMATIONS</h2>
+  <div class="form-section">
+    <div class="form-group">
+      <label>Date :</label>
+      <input type="text" id="date" readonly>
+    </div>
+    <div class="form-group">
+      <label>Compagnie :</label>
+      <select>
+        <option>FR</option>
+        <option>RK</option>
+        <option>W4</option>
+        <option>W6</option>
+        <option>H4</option>
+        <option>H6</option>
+        <option>U5</option>
+        <option>V7</option>
+        <option>Autre</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>N° de vol départ :</label>
+      <input type="number">
+    </div>
+    <div class="form-group">
+      <label>Provenance :</label>
+      <input type="text" maxlength="3">
+    </div>
+    <div class="form-group">
+      <label>Destination :</label>
+      <input type="text" maxlength="3">
+    </div>
+    <div class="form-group">
+      <label>RZA :</label>
+      <input type="text" maxlength="3">
+    </div>
+    <div class="form-group">
+      <label>Immatriculation :</label>
+      <input type="text">
+    </div>
+    <div class="form-group">
+      <label>Parking :</label>
+      <select>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>6</option>
+        <option>7</option>
+        <option>8</option>
+        <option>9</option>
+        <option>10</option>
+        <option>11</option>
+        <option>12</option>
+      </select>
+    </div>
+  </div>
+
+  <h2 class="section-title">HORAIRES</h2>
+  <div class="form-section">
+    <div class="form-group"><label>SIBT :</label><input type="time"></div>
+    <div class="form-group"><label>AIBT :</label><input type="time" id="aibt1"><button onclick="insertNow('aibt1')">Now</button></div>
+    <div class="form-group"><label>SOBT :</label><input type="time" id="sobt"></div>
+    <div class="form-group"><label>AOBT :</label><input type="time" id="aobt"><button onclick="insertNow('aobt')">Now</button></div>
+    <div class="form-group"><label>EOBT :</label><input type="time"></div>
+    <div class="form-group"><label>DL93 :</label><input type="text" id="dl93" readonly></div>
+    <div class="form-group"><label>HLE :</label><input type="text" id="hle" readonly></div>
+    <div class="form-group"><label>H-15 :</label><input type="text" id="h15" readonly></div>
+  </div>
+
+  <h2 class="section-title">TIMING ESCALE</h2>
+  <div class="form-section" id="timing-escale">
+    <!-- Ces champs seront remplis dans la prochaine mise à jour -->
+  </div>
+
+  <h2 class="section-title">PRESTATIONS</h2>
+  <div class="form-section" id="prestations">
+    <!-- Ces champs seront remplis dans la prochaine mise à jour -->
+  </div>
+
+  <h2 class="section-title">FAITS SAILLANTS</h2>
+  <div class="form-section">
+    <textarea placeholder="Écrire ici les faits saillants..."></textarea>
+  </div>
 
   <script>
-    // Boutons "Now"
-    document.querySelectorAll('.timestamp-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const input = button.parentElement.previousElementSibling.querySelector('input');
-        const now = new Date();
-        const hh = now.getHours().toString().padStart(2, '0');
-        const mm = now.getMinutes().toString().padStart(2, '0');
-        input.value = `${hh}:${mm}`;
-        saveData();
-      });
+    function insertNow(id) {
+      const now = new Date();
+      const hh = now.getHours().toString().padStart(2, '0');
+      const mm = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById(id).value = `${hh}:${mm}`;
+      calculateDerivedTimes();
+    }
+
+    function calculateDerivedTimes() {
+      const sibtt = document.querySelector('input[type="time"]')?.value;
+      const aibt = document.getElementById("aibt1")?.value;
+      const sobt = document.getElementById("sobt")?.value;
+
+      if (sibtt && aibt) {
+        const diff = getTimeDiff(aibt, sibtt);
+        document.getElementById("dl93").value = diff;
+      }
+
+      if (sobt) {
+        document.getElementById("hle").value = addTime(sobt, -40);
+        document.getElementById("h15").value = addTime(sobt, -15);
+      }
+    }
+
+    function getTimeDiff(later, earlier) {
+      const [h1, m1] = later.split(":").map(Number);
+      const [h2, m2] = earlier.split(":").map(Number);
+      let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
+      if (diff < 0) diff += 24 * 60;
+      const hh = Math.floor(diff / 60).toString().padStart(2, '0');
+      const mm = (diff % 60).toString().padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+
+    function addTime(time, deltaMinutes) {
+      const [h, m] = time.split(":").map(Number);
+      let total = h * 60 + m + deltaMinutes;
+      if (total < 0) total += 24 * 60;
+      total %= 24 * 60;
+      const hh = Math.floor(total / 60).toString().padStart(2, '0');
+      const mm = (total % 60).toString().padStart(2, '0');
+      return `${hh}:${mm}`;
+    }
+
+    window.addEventListener('load', () => {
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      document.getElementById('date').value = dateStr;
     });
-
-    // Sauvegarde automatique dans le localStorage
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach((input, index) => {
-      input.addEventListener('input', () => {
-        saveData();
-      });
-    });
-
-    function saveData() {
-      const data = Array.from(inputs).map(input => input.value);
-      localStorage.setItem('ficheEscaleData', JSON.stringify(data));
-    }
-
-    function loadData() {
-      const saved = JSON.parse(localStorage.getItem('ficheEscaleData') || '[]');
-      saved.forEach((value, index) => {
-        if (inputs[index]) inputs[index].value = value;
-      });
-    }
-
-    window.addEventListener('load', loadData);
-
-    function exportCSV() {
-      const rows = Array.from(document.querySelectorAll('#ficheEscale tbody tr')).map(row => {
-        const label = row.cells[0].textContent;
-        const value = row.cells[1].querySelector('input')?.value || '';
-        return `${label},${value}`;
-      });
-      const csvContent = "data:text/csv;charset=utf-8," + ["Champ,Valeur", ...rows].join("\n");
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "fiche_escale_complet.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
   </script>
 </body>
 </html>
