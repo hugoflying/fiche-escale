@@ -64,7 +64,7 @@
       <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option>
       <option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
     </select></div>
-    <div class="field"><label>N° de vol départ</label><input type="number"></div>
+    <div class="field"><label>N° de vol départ</label><input type="number" inputmode="numeric" pattern="[0-9]*"></div>
     <div class="field"><label>Provenance</label><input type="text" maxlength="3"></div>
     <div class="field"><label>Destination</label><input type="text" maxlength="3"></div>
     <div class="field"><label>RZA</label><input type="text" maxlength="3"></div>
@@ -215,4 +215,24 @@ function renderGateBagTypes() {
     container.appendChild(wrapper);
   }
 }
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+
+  const [h, m] = base.value.split(":").map(Number);
+  const baseDate = new Date();
+  baseDate.setHours(h);
+  baseDate.setMinutes(m);
+  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
+
+  const hh = baseDate.getHours().toString().padStart(2, '0');
+  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  target.value = `${hh}:${mm}`;
+}
+
+document.getElementById("sobt").addEventListener("change", () => {
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
+});
 </script>
