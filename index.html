@@ -7,184 +7,173 @@
     body {
       font-family: sans-serif;
       padding: 20px;
-      max-width: 1100px;
+      max-width: 1200px;
       margin: auto;
     }
-    h2.section-title {
-      background: black;
-      color: white;
-      padding: 10px;
-      text-align: center;
-      margin-top: 40px;
+    section {
+      margin-bottom: 30px;
     }
-    .form-group {
+    h3 {
+      background: #000;
+      color: #fff;
+      padding: 10px;
+      margin: 0 -20px 15px;
+    }
+    .row {
       display: flex;
       flex-wrap: wrap;
+      gap: 15px;
       margin-bottom: 10px;
-      align-items: center;
     }
-    .form-group label {
-      width: 200px;
-      margin-right: 10px;
+    .field {
+      flex: 1 1 200px;
+      display: flex;
+      flex-direction: column;
     }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      flex: 1;
+    .field label {
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    .field input,
+    .field select,
+    .field textarea {
       padding: 5px;
       font-size: 1em;
     }
-    .form-group input[type="checkbox"] {
-      flex: none;
-      margin-left: 10px;
-    }
-    .form-section {
-      margin-bottom: 30px;
-    }
     textarea {
-      width: 100%;
-      height: 160px;
+      height: 150px;
     }
   </style>
 </head>
 <body>
+  <h2>Fiche Escale Vol</h2>
 
-  <h2 class="section-title">INFORMATIONS</h2>
-  <div class="form-section">
-    <div class="form-group">
-      <label>Date :</label>
-      <input type="text" id="date" readonly>
+  <!-- SECTION 1 : INFORMATIONS -->
+  <section>
+    <h3>INFORMATIONS</h3>
+    <div class="row">
+      <div class="field">
+        <label>Date</label>
+        <input type="date" id="dateField">
+      </div>
+      <div class="field">
+        <label>Compagnie</label>
+        <select id="compagnie">
+          <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option><option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>N° de vol départ</label>
+        <input type="number">
+      </div>
+      <div class="field">
+        <label>Provenance</label>
+        <input type="text" maxlength="3">
+      </div>
+      <div class="field">
+        <label>Destination</label>
+        <input type="text" maxlength="3">
+      </div>
+      <div class="field">
+        <label>RZA</label>
+        <input type="text" maxlength="3">
+      </div>
+      <div class="field">
+        <label>Immatriculation</label>
+        <input type="text">
+      </div>
+      <div class="field">
+        <label>Type avion</label>
+        <select>
+          <option>B737-800 Y189</option>
+          <option>B737-8200 Y197</option>
+          <option>A320 Y180</option>
+          <option>A320 Y186</option>
+          <option>A20N Y186</option>
+          <option>A321 Y230</option>
+          <option>A21N Y239</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Parking</label>
+        <select>
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          <option>11</option><option>12</option>
+        </select>
+      </div>
     </div>
-    <div class="form-group">
-      <label>Compagnie :</label>
-      <select>
-        <option>FR</option>
-        <option>RK</option>
-        <option>W4</option>
-        <option>W6</option>
-        <option>H4</option>
-        <option>H6</option>
-        <option>U5</option>
-        <option>V7</option>
-        <option>Autre</option>
-      </select>
+  </section>
+
+  <!-- SECTION 2 : HORAIRES -->
+  <section>
+    <h3>HORAIRES</h3>
+    <div class="row">
+      <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
+      <div class="field"><label>AIBT</label><input type="time" id="aibt"> <button onclick="setNow('aibt')">Now</button></div>
+      <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
+      <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
+      <div class="field"><label>DL93</label><input type="time" id="dl93" readonly></div>
+      <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
+      <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
     </div>
-    <div class="form-group">
-      <label>N° de vol départ :</label>
-      <input type="number">
+  </section>
+
+  <!-- SECTION 3 : TIMING ESCALE -->
+  <section>
+    <h3>TIMING ESCALE</h3>
+    <div class="row">
+      <div class="field"><label>Arrivée PNT avion</label><input type="time"></div>
+      <div class="field"><label>Arrivée PNC avion</label><input type="time"></div>
+      <div class="field"><label>Premier pax OUT</label><input type="time"></div>
+      <div class="field"><label>Dernier pax OUT</label><input type="time"></div>
+      <div class="field"><label>Durée débarquement</label><input type="text" readonly></div>
+      <div class="field"><label>Premier pax IN</label><input type="time"></div>
+      <div class="field"><label>Dernier pax IN</label><input type="time"></div>
+      <div class="field"><label>Fermeture porte avion</label><input type="time"></div>
+      <div class="field"><label>Cabin release</label><input type="text" readonly></div>
+      <div class="field"><label>Arrivée fuel</label><input type="time"></div>
+      <div class="field"><label>Départ fuel</label><input type="time"></div>
+      <div class="field"><label>Arrivée lift débarquement</label><input type="time"></div>
+      <div class="field"><label>Départ lift débarquement</label><input type="time"></div>
+      <div class="field"><label>Arrivée lift embarquement</label><input type="time"></div>
+      <div class="field"><label>Départ lift embarquement</label><input type="time"></div>
+      <div class="field"><label>Arrivée INAD</label><input type="time"></div>
+      <div class="field"><label>Arrivée NAYAK</label><input type="time"></div>
+      <div class="field"><label>Départ NAYAK</label><input type="time"></div>
     </div>
-    <div class="form-group">
-      <label>Provenance :</label>
-      <input type="text" maxlength="3">
+  </section>
+
+  <!-- SECTION 4 : CHARGEMENT -->
+  <section>
+    <h3>CHARGEMENT</h3>
+    <div class="row">
+      <div class="field"><label>Adults M</label><input type="number" min="0"></div>
+      <div class="field"><label>Adults F</label><input type="number" min="0"></div>
+      <div class="field"><label>Childs</label><input type="number" min="0"></div>
+      <div class="field"><label>Infants</label><input type="number" min="0"></div>
+      <div class="field"><label>Extra seat</label><input type="number" min="0"></div>
+      <div class="field"><label>Extra seat Type</label><select><option>M</option><option>X</option></select></div>
+      <div class="field"><label>TOB</label><input type="text" readonly></div>
+      <div class="field"><label>SNY</label><input type="number" min="0"></div>
+      <div class="field"><label>Bags</label><input type="number" min="0"></div>
+      <div class="field"><label>Poids</label><input type="number" readonly></div>
+      <div class="field"><label>OA/FWD</label><input type="number"></div>
+      <div class="field"><label>OB/MID</label><input type="number"></div>
+      <div class="field"><label>OC/AFT</label><input type="number"></div>
+      <div class="field"><label>OD</label><input type="number"></div>
+      <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
+      <div class="field"><label>THOB</label><input type="number" readonly></div>
+      <div class="field"><label>Block fuel</label><input type="number"></div>
+      <div class="field"><label>Taxi fuel</label><input type="number"></div>
+      <div class="field"><label>Trip fuel</label><input type="number"></div>
     </div>
-    <div class="form-group">
-      <label>Destination :</label>
-      <input type="text" maxlength="3">
-    </div>
-    <div class="form-group">
-      <label>RZA :</label>
-      <input type="text" maxlength="3">
-    </div>
-    <div class="form-group">
-      <label>Immatriculation :</label>
-      <input type="text">
-    </div>
-    <div class="form-group">
-      <label>Parking :</label>
-      <select>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-        <option>5</option>
-        <option>6</option>
-        <option>7</option>
-        <option>8</option>
-        <option>9</option>
-        <option>10</option>
-        <option>11</option>
-        <option>12</option>
-      </select>
-    </div>
-  </div>
+  </section>
 
-  <h2 class="section-title">HORAIRES</h2>
-  <div class="form-section">
-    <div class="form-group"><label>SIBT :</label><input type="time"></div>
-    <div class="form-group"><label>AIBT :</label><input type="time" id="aibt1"><button onclick="insertNow('aibt1')">Now</button></div>
-    <div class="form-group"><label>SOBT :</label><input type="time" id="sobt"></div>
-    <div class="form-group"><label>AOBT :</label><input type="time" id="aobt"><button onclick="insertNow('aobt')">Now</button></div>
-    <div class="form-group"><label>EOBT :</label><input type="time"></div>
-    <div class="form-group"><label>DL93 :</label><input type="text" id="dl93" readonly></div>
-    <div class="form-group"><label>HLE :</label><input type="text" id="hle" readonly></div>
-    <div class="form-group"><label>H-15 :</label><input type="text" id="h15" readonly></div>
-  </div>
-
-  <h2 class="section-title">TIMING ESCALE</h2>
-  <div class="form-section" id="timing-escale">
-    <!-- Ces champs seront remplis dans la prochaine mise à jour -->
-  </div>
-
-  <h2 class="section-title">PRESTATIONS</h2>
-  <div class="form-section" id="prestations">
-    <!-- Ces champs seront remplis dans la prochaine mise à jour -->
-  </div>
-
-  <h2 class="section-title">FAITS SAILLANTS</h2>
-  <div class="form-section">
-    <textarea placeholder="Écrire ici les faits saillants..."></textarea>
-  </div>
-
-  <script>
-    function insertNow(id) {
-      const now = new Date();
-      const hh = now.getHours().toString().padStart(2, '0');
-      const mm = now.getMinutes().toString().padStart(2, '0');
-      document.getElementById(id).value = `${hh}:${mm}`;
-      calculateDerivedTimes();
-    }
-
-    function calculateDerivedTimes() {
-      const sibtt = document.querySelector('input[type="time"]')?.value;
-      const aibt = document.getElementById("aibt1")?.value;
-      const sobt = document.getElementById("sobt")?.value;
-
-      if (sibtt && aibt) {
-        const diff = getTimeDiff(aibt, sibtt);
-        document.getElementById("dl93").value = diff;
-      }
-
-      if (sobt) {
-        document.getElementById("hle").value = addTime(sobt, -40);
-        document.getElementById("h15").value = addTime(sobt, -15);
-      }
-    }
-
-    function getTimeDiff(later, earlier) {
-      const [h1, m1] = later.split(":").map(Number);
-      const [h2, m2] = earlier.split(":").map(Number);
-      let diff = (h1 * 60 + m1) - (h2 * 60 + m2);
-      if (diff < 0) diff += 24 * 60;
-      const hh = Math.floor(diff / 60).toString().padStart(2, '0');
-      const mm = (diff % 60).toString().padStart(2, '0');
-      return `${hh}:${mm}`;
-    }
-
-    function addTime(time, deltaMinutes) {
-      const [h, m] = time.split(":").map(Number);
-      let total = h * 60 + m + deltaMinutes;
-      if (total < 0) total += 24 * 60;
-      total %= 24 * 60;
-      const hh = Math.floor(total / 60).toString().padStart(2, '0');
-      const mm = (total % 60).toString().padStart(2, '0');
-      return `${hh}:${mm}`;
-    }
-
-    window.addEventListener('load', () => {
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0];
-      document.getElementById('date').value = dateStr;
-    });
-  </script>
+  <!-- SECTION 5 : FAITS SAILLANTS -->
+  <section>
+    <h3>FAITS SAILLANTS</h3>
+    <textarea></textarea>
+  </section>
 </body>
 </html>
