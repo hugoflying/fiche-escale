@@ -55,6 +55,10 @@
   </style>
 </head>
 <body>
+  <div style="position: absolute; top: 10px; right: 20px; font-size: 0.9em;">
+    <label><input type="radio" name="timeMode" value="local" checked onchange="setTimeMode(this.value)"> Heure locale</label>
+    <label><input type="radio" name="timeMode" value="utc" onchange="setTimeMode(this.value)"> UTC</label>
+  </div>
   <h2>Fiche Escale Vol</h2>
 
 <!-- SECTION 1 : INFORMATIONS -->
@@ -173,17 +177,21 @@
 <script>
 function setNow(id) {
   const now = new Date();
-  const hh = now.getHours().toString().padStart(2, '0');
-  const mm = now.getMinutes().toString().padStart(2, '0');
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   document.getElementById(id).value = `${hh}:${mm}`;
+}:${mm}`;
 }
 
 function setNowToPrevious(btn) {
   const input = btn.previousElementSibling;
   const now = new Date();
-  const hh = now.getHours().toString().padStart(2, '0');
-  const mm = now.getMinutes().toString().padStart(2, '0');
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   input.value = `${hh}:${mm}`;
+}:${mm}`;
 }
 
 function renderAssistances() {
@@ -281,5 +289,8 @@ function toggleAutreCode(selectId, codeDivId) {
   } else {
     div.style.display = "none";
   }
+}
+function setTimeMode(mode) {
+  window.timeMode = mode;
 }
 </script>
