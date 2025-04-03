@@ -182,6 +182,7 @@ function setNow(id) {
   const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   document.getElementById(id).value = `${hh}:${mm}`;
 }:${mm}`;
+}:${mm}`;
 }
 
 function setNowToPrevious(btn) {
@@ -191,6 +192,7 @@ function setNowToPrevious(btn) {
   const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
   const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   input.value = `${hh}:${mm}`;
+}:${mm}`;
 }:${mm}`;
 }
 
