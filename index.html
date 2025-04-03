@@ -48,22 +48,22 @@
     </thead>
     <tbody>
       <!-- Champs horaires -->
-      <tr><td>AIBT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>SIBT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>EOBT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>CTOT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>AOBT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>TOB</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>LID</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>1ER EMB</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>FERM. PORTE</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>DER. EMB.</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>DÉP. LIFT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>DÉP. PMR</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>DÉP. FUEL</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>ARR. LIFT</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>ARR. FUEL</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
-      <tr><td>DER. DÉB.</td><td><input type="time" step="1"></td><td><button class="timestamp-btn">Maintenant</button></td></tr>
+      <tr><td>AIBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>SIBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>EOBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>CTOT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>AOBT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>TOB</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>LID</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>1ER EMB</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>FERM. PORTE</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>DER. EMB.</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>DÉP. LIFT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>DÉP. PMR</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>DÉP. FUEL</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>ARR. LIFT</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>ARR. FUEL</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
+      <tr><td>DER. DÉB.</td><td><input type="time"></td><td><button class="timestamp-btn">Now</button></td></tr>
       <!-- Champs numériques -->
       <tr><td>Adultes M</td><td><input type="number" min="0"></td><td></td></tr>
       <tr><td>Adultes F</td><td><input type="number" min="0"></td><td></td></tr>
@@ -85,12 +85,14 @@
   <button onclick="exportCSV()">Exporter en CSV</button>
 
   <script>
-    // Boutons \"Maintenant\"
+    // Boutons "Now"
     document.querySelectorAll('.timestamp-btn').forEach(button => {
       button.addEventListener('click', () => {
         const input = button.parentElement.previousElementSibling.querySelector('input');
         const now = new Date();
-        input.value = now.toTimeString().slice(0, 8);
+        const hh = now.getHours().toString().padStart(2, '0');
+        const mm = now.getMinutes().toString().padStart(2, '0');
+        input.value = `${hh}:${mm}`;
         saveData();
       });
     });
@@ -123,11 +125,11 @@
         const value = row.cells[1].querySelector('input')?.value || '';
         return `${label},${value}`;
       });
-      const csvContent = \"data:text/csv;charset=utf-8,\" + [\"Champ,Valeur\", ...rows].join(\"\\n\");
+      const csvContent = "data:text/csv;charset=utf-8," + ["Champ,Valeur", ...rows].join("\n");
       const encodedUri = encodeURI(csvContent);
-      const link = document.createElement(\"a\");
-      link.setAttribute(\"href\", encodedUri);
-      link.setAttribute(\"download\", \"fiche_escale_complet.csv\");
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "fiche_escale_complet.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
