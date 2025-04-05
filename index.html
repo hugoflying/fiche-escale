@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <title>Fiche Escale Interactive</title>
   <style>
+    @media print {
+      button,
+      [type="radio"],
+      label[for] {
+        display: none !important;
+      }
+      div[style*="position: absolute"] {
+        display: none !important;
+      }
+    }
     body {
       font-family: sans-serif;
       padding: 10px;
@@ -53,8 +63,10 @@
       font-size: 0.75em;
       width: 100%;
     }
-    input, textarea { text-transform: uppercase; }
-      @media (max-width: 850px) {
+    input, textarea {
+      text-transform: uppercase;
+    }
+    @media (max-width: 850px) {
       .row {
         flex-direction: column;
       }
@@ -86,7 +98,7 @@
         width: 100%;
       }
     }
-</style>
+  </style>
 </head>
 <body>
   <div style="position: absolute; top: 10px; right: 20px;">
@@ -95,9 +107,7 @@
   </div>
   <h2>Fiche Escale Vol</h2>
 
-
-
-<!-- SECTION 1 : INFORMATIONS -->
+  <!-- SECTION 1 : INFORMATIONS -->
 <section>
   <h3>INFORMATIONS</h3>
   <div class="row">
@@ -115,7 +125,6 @@
       <option>B737-800 Y189</option><option>B737-8200 Y197</option><option>A320 Y180</option>
       <option>A320 Y186</option><option>A20N Y186</option><option>A321 Y230</option><option>A21N Y239</option>
     </select></div>
-    <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
     <div class="field"><label>Parking</label><select>
       <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
       <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
@@ -129,11 +138,11 @@
   <h3>HORAIRES</h3>
   <div class="row">
     <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field"><label>AIBT</label><input type="time" id="">
-<button class="now-btn" onclick="setNow('')">Now</button></div>
+    <div class="field"><label>AIBT</label><input type="time" id="aibt">
+    <button class="now-btn" onclick="setNow('aibt')">Now</button></div>
     <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
     <div class="field"><label>AOBT</label><input type="time" id="aobt">
-<button class="now-btn" onclick="setNow('aobt')">Now</button></div>
+    <button class="now-btn" onclick="setNow('aobt')">Now</button></div>
     <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
     <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
     <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
@@ -144,8 +153,7 @@
 <section>
   <h3>TIMING ESCALE</h3>
   <div class="row">
-    <div class="field"><label>Arrivée PNT avion</label><input type="time">
-<button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
     <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
     <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
     <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
@@ -165,29 +173,21 @@
 <!-- SECTION 4 : CHARGEMENT -->
 <section>
   <h3>CHARGEMENT</h3>
-  <div class="row" style="display: flex; flex-wrap: nowrap; gap: 20px;">
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-      <div class="field"><label>Adults</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>Childs</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>Infants</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>TOB</label><input type="number" inputmode="numeric"></div>
-    </div>
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-      <div class="field"><label>OA/FWD</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>OB/MID</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>OC/AFT</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>OD</label><input type="number" inputmode="numeric"></div>
-    </div>
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-      <div class="field"><label>Bags</label><input type="number" id="bags" inputmode="numeric"></div>
-      <div class="field"><label>Poids</label><input type="number" id="poids" inputmode="numeric" readonly></div>
-      <div class="field"><label>Gate Bags</label><input type="number" inputmode="numeric"></div>
-    </div>
-    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-      <div class="field"><label>Block fuel</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>Taxi fuel</label><input type="number" inputmode="numeric"></div>
-      <div class="field"><label>Trip fuel</label><input type="number" inputmode="numeric"></div>
-    </div>
+  <div class="row">
+    <div class="field"><label>Adults</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>Childs</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>Infants</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>TOB</label><input type="text" inputmode="numeric"></div>
+    <div class="field"><label>OA/FWD</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>OB/MID</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>OC/AFT</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>OD</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>Bags</label><input type="number" inputmode="numeric" id="bags"></div>
+    <div class="field"><label>Poids</label><input type="number" inputmode="numeric" id="poids" readonly></div>
+    <div class="field"><label>Gate Bags</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>Block fuel</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>Taxi fuel</label><input type="number" inputmode="numeric"></div>
+    <div class="field"><label>Trip fuel</label><input type="number" inputmode="numeric"></div>
   </div>
 </section>
 
@@ -197,7 +197,7 @@
   <div class="row">
     <div class="field">
       <label>Nombre d'assistances</label>
-      <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Nombre d'assistances">
+      <input type="number" id="assistanceCount" min="0" inputmode="numeric" pattern="[0-9]*" onchange="renderAssistances()">
     </div>
     <div class="row" id="assistancesContainer"></div>
   </div>
@@ -234,12 +234,82 @@
   <h3>FAITS SAILLANTS</h3>
   <textarea></textarea>
 </section>
-
-<!-- EXPORT PDF -->
-<button onclick="printForm()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
+<button onclick="window.print()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
 <button onclick="clearForm()" style="margin-top: 20px; padding: 10px 20px; font-size: 1em;">Effacer</button>
-
 <script>
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+
+function setNow(id) {
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
+}
+
+function setNowToPrevious(btn) {
+  const input = btn.previousElementSibling;
+  if (!input || input.tagName.toLowerCase() !== 'input') return;
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":").map(Number);
+  const baseDate = new Date();
+  baseDate.setHours(h);
+  baseDate.setMinutes(m);
+  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
+  const hh = baseDate.getHours().toString().padStart(2, '0');
+  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  target.value = `${hh}:${mm}`;
+}
+
+document.getElementById("sobt").addEventListener("change", () => {
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
+});
+
+function renderAssistances() {
+  const container = document.getElementById('assistancesContainer');
+  const count = parseInt(document.getElementById('assistanceCount').value || '0');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'field';
+    wrapper.innerHTML = `
+      <label>Assistance ${i + 1}</label>
+      <select>
+        <option>-</option>
+        <option>WCHR</option>
+        <option>WCHS</option>
+        <option>WCHC</option>
+        <option>DEAF</option>
+        <option>MUTE</option>
+        <option>DPNA</option>
+        <option>Autre</option>
+      </select>
+      <label>Équipement ${i + 1}</label>
+      <select>
+        <option>-</option>
+        <option>WCMP</option>
+        <option>WCLB</option>
+        <option>WCBD</option>
+      </select>
+      <label>Siège ${i + 1}</label>
+      <input type="text" placeholder="ex: 12A">
+    `;
+    container.appendChild(wrapper);
+  }
+}
 function saveForm() {
   const fields = document.querySelectorAll('input, select, textarea');
   const data = {};
@@ -283,8 +353,6 @@ function clearForm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderChargement();
-  document.getElementById('compagnie').addEventListener('change', renderChargement);
   loadForm();
   const fields = document.querySelectorAll('input, select, textarea');
   fields.forEach(field => {
@@ -292,150 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
     field.addEventListener('change', saveForm);
   });
 });
-function printForm() {
-  window.print();
-}
 
-function setTimeMode(mode) {
-  window.timeMode = mode;
-}
-
-function setNow(id) {
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  document.getElementById(id).value = `${hh}:${mm}`;
-}
-
-function setNowToPrevious(btn) {
-  const input = btn.previousElementSibling;
-  if (!input || input.tagName.toLowerCase() !== 'input') return;
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  input.value = `${hh}:${mm}`;
-}
-function renderAssistances() {
-  const container = document.getElementById('assistancesContainer');
-  const count = parseInt(document.getElementById('assistanceCount').value || '0');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'field';
-    const idSelect = `assistance-type-${i}`;
-    const idCode = `custom-assistance-${i}`;
-    wrapper.innerHTML = `
-      <label>Assistance ${i + 1}</label>
-      <select id="${idSelect}" onchange="toggleCustomCode('${idSelect}', '${idCode}')">
-        <option>-</option>
-        <option>WCHR</option>
-        <option>WCHS</option>
-        <option>WCHC</option>
-        <option>DEAF</option>
-        <option>MUTE</option>
-        <option>DPNA</option>
-        <option>Autre</option>
-      </select>
-      <div id="${idCode}" style="display:none">
-        <label>Code personnalisé</label>
-        <input type="text" placeholder="Saisir le type">
-      </div>
-      <label>Équipement ${i + 1}</label>
-      <select>
-        <option>-</option>
-        <option>WCMP</option>
-        <option>WCLB</option>
-        <option>WCBD</option>
-      </select>
-      <label>Siège ${i + 1}</label>
-      <input type="text" placeholder="ex: 12A">
-    `;
-    container.appendChild(wrapper);
-  }
-}
-
-function toggleCustomCode(selectId, codeDivId) {
-  const selected = document.getElementById(selectId).value;
-  const customDiv = document.getElementById(codeDivId);
-  customDiv.style.display = selected === 'Autre' ? 'block' : 'none';
-}
-
-// Calcul automatique de HLE et H-15 à partir de SOBT
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":").map(Number);
-  const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
-  target.value = `${hh}:${mm}`;
-}
-
-document.getElementById("sobt").addEventListener("change", () => {
-  calculateTimeOffset("sobt", "hle", -40);
-  calculateTimeOffset("sobt", "h15", -15);
-});
-function renderChargement() {
-  const compagnie = document.getElementById('compagnie').value;
-  const container = document.getElementById('chargementContainer');
-  container.innerHTML = '';
-  const isSplit = ['W4','W6','H4','H6','U5'].includes(compagnie);
-
-  const fields = [];
-  if (isSplit) {
-    fields.push(`<div class="field"><label>Adults M</label><input type="number" min="0"></div>`);
-    fields.push(`<div class="field"><label>Adults F</label><input type="number" min="0"></div>`);
-  } else {
-    fields.push(`<div class="field"><label>Adults</label><input type="number" min="0"></div>`);
-  }
-  fields.push(`
-    <div class="field"><label>Childs</label><input type="number" min="0"></div>
-    <div class="field"><label>Infants</label><input type="number" min="0"></div>
-    <div class="field"><label>TOB</label><input type="text"></div>
-    <div class="field"><label>OA/FWD</label><input type="number"></div>
-    <div class="field"><label>OB/MID</label><input type="number"></div>
-    <div class="field"><label>OC/AFT</label><input type="number"></div>
-    <div class="field"><label>OD</label><input type="number"></div>
-    <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
-    <div class="field"><label>Bags</label><input type="number" min="0" id="bags"></div>
-    <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
-    <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
-    <div class="field" id="gateBagTypes"></div>
-    <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
-    <div class="field" id="extraSeatTypes"></div>
-    <div class="field"><label>Block fuel</label><input type="number"></div>
-    <div class="field"><label>Taxi fuel</label><input type="number"></div>
-    <div class="field"><label>Trip fuel</label><input type="number"></div>
-  `);
-  container.innerHTML = fields.join('
-');
-}
-
-    
-  }
-}
-
-
-document.getElementById('compagnie').addEventListener('change', updatePoids);
-document.getElementById('bags').addEventListener('input', updatePoids);
-
-function updatePoids() {
-  const compagnie = document.getElementById('compagnie').value;
-  const bags = parseInt(document.getElementById('bags').value || '0');
-  const poids = document.getElementById('poids');
-  if (compagnie === 'FR' || compagnie === 'RK') {
-    poids.value = bags * 13;
-  } else {
-    poids.value = '';
-  }
-}
-
-</script>
 </body>
 </html>
