@@ -4,16 +4,6 @@
   <meta charset="UTF-8">
   <title>Fiche Escale Interactive</title>
   <style>
-    @media print {
-      button,
-      [type="radio"],
-      label[for] {
-        display: none !important;
-      }
-      div[style*="position: absolute"] {
-        display: none !important;
-      }
-    }
     body {
       font-family: sans-serif;
       padding: 10px;
@@ -52,7 +42,6 @@
     .field textarea {
       padding: 4px;
       font-size: 0.9em;
-      text-transform: uppercase;
     }
     textarea {
       height: 150px;
@@ -64,154 +53,102 @@
       font-size: 0.75em;
       width: 100%;
     }
-    input[readonly] {
-      background-color: #eee;
-      color: #555;
-      font-style: italic;
-      border: 1px dashed #aaa;
-    }
+    input, textarea { text-transform: uppercase; }
     @media (max-width: 850px) {
       .row {
         flex-direction: column;
       }
       .field {
         flex: 1 1 100%;
-      }
-    }
-    .input-now {
-      display: flex;
-      gap: 5px;
-    }
-    .input-now input {
-      flex: 1;
-    }
-    .input-now button {
-      width: 100px;
-    }
-    @media (max-width: 850px) {
-      .row {
-        flex-direction: column;
-      }
-      .field {
-        flex: 1 1 100%;
-      }
-      .input-now {
-        flex-direction: column;
-      }
-      .input-now button {
-        width: 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div style="position: absolute; top: 10px; right: 20px;">
-    <label><input type="radio" name="timeMode" value="local" checked onchange="setTimeMode(this.value)"> Heure locale</label>
-    <label><input type="radio" name="timeMode" value="utc" onchange="setTimeMode(this.value)"> UTC</label>
-  </div>
   <h2>Fiche Escale Vol</h2>
 
-  <!-- CONTAINER PRINCIPAL -->
-  <div id="formulaire-sections">
-    <!-- SECTION 1 : INFORMATIONS -->
-    <section>
-      <h3>INFORMATIONS</h3>
-      <div class="row">
-        <div class="field"><label>Date</label><input type="date" id="dateField"></div>
-        <div class="field"><label>Compagnie</label><input type="text"></div>
-        <div class="field"><label>Vol</label><input type="text"></div>
-        <div class="field"><label>Provenance</label><input type="text"></div>
-        <div class="field"><label>Destination</label><input type="text"></div>
-      </div>
-    </section>
-
-    <!-- SECTION 2 : HORAIRES -->
-    <section>
-      <h3>HORAIRES</h3>
-      <div class="row">
-        <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-        <div class="field"><label>AIBT</label><input type="time" id="aibt"></div>
-        <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
-        <div class="field"><label>AOBT</label><input type="time" id="aobt"></div>
-        <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
-        <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
-        <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
-      </div>
-    </section>
-
-    <!-- SECTION 3 : FAITS SAILLANTS -->
-    <section>
-      <h3>FAITS SAILLANTS</h3>
-      <textarea placeholder="Commentaires, remarques, incidents..." style="width: 100%;"></textarea>
-    </section>
+<!-- SECTION 1 : INFORMATIONS -->
+<section>
+  <h3>INFORMATIONS</h3>
+  <div class="row">
+    <div class="field"><label>Date</label><input type="date" id="dateField"></div>
+    <div class="field"><label>Compagnie</label><select id="compagnie">
+      <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option>
+      <option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
+    </select></div>
+    <div class="field"><label>N° de vol départ</label><input type="number" inputmode="numeric" pattern="[0-9]*"></div>
+    <div class="field"><label>Provenance</label><input type="text" maxlength="3"></div>
+    <div class="field"><label>Destination</label><input type="text" maxlength="3"></div>
+    <div class="field"><label>RZA</label><input type="text" maxlength="3"></div>
+    <div class="field"><label>Immatriculation</label><input type="text"></div>
+    <div class="field"><label>Type avion</label><select>
+      <option>B737-800 Y189</option><option>B737-8200 Y197</option><option>A320 Y180</option>
+      <option>A320 Y186</option><option>A20N Y186</option><option>A321 Y230</option><option>A21N Y239</option>
+    </select></div>
+    <div class="field"><label>Parking</label><select>
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+      <option>11</option><option>12</option>
+    </select></div>
   </div>
+</section>
 
-  <!-- BOUTONS ACTION -->
-  <button onclick="printForm()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
-  <button onclick="clearForm()" style="margin-top: 20px; padding: 10px 20px; font-size: 1em;">Effacer</button>
+<!-- SECTION 2 : HORAIRES -->
+<section>
+  <h3>HORAIRES</h3>
+  <div class="row">
+    <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
+    <div class="field"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
+    <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
+    <div class="field"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
+    <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
+    <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
+    <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
+  </div>
+</section>
 
-<script>
-function setTimeMode(mode) {
-  window.timeMode = mode;
-}
+<!-- SECTION 3 : TIMING ESCALE -->
+<section>
+  <h3>TIMING ESCALE</h3>
+  <div class="row">
+    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+  </div>
+</section>
 
-function setNow(id) {
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  document.getElementById(id).value = `${hh}:${mm}`;
-}
-
-function setNowToPrevious(btn) {
-  const input = btn.previousElementSibling;
-  if (!input || input.tagName.toLowerCase() !== 'input') return;
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  input.value = `${hh}:${mm}`;
-}
-
-function clearForm() {
-  localStorage.removeItem('ficheEscaleData');
-  const fields = document.querySelectorAll('input, select, textarea');
-  fields.forEach(field => {
-    if (field.type === 'checkbox') {
-      field.checked = false;
-    } else {
-      field.value = '';
-    }
-  });
-}
-
-function printForm() {
-  window.print();
-}
-
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":" ).map(Number);
-  const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
-  target.value = `${hh}:${mm}`;
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  const sobt = document.getElementById("sobt");
-  if (sobt) {
-    sobt.addEventListener("change", () => {
-      calculateTimeOffset("sobt", "hle", -40);
-      calculateTimeOffset("sobt", "h15", -15);
-    });
-  }
-});
-</script>
+<!-- SECTION 4 : CHARGEMENT -->
+<section>
+  <h3>CHARGEMENT</h3>
+  <div class="row">
+    <div class="field"><label>Adults</label><input type="number" min="0"></div>
+    <div class="field"><label>Childs</label><input type="number" min="0"></div>
+    <div class="field"><label>Infants</label><input type="number" min="0"></div>
+    <div class="field"><label>TOB</label><input type="text"></div>
+    <div class="field"><label>OA/FWD</label><input type="number"></div>
+    <div class="field"><label>OB/MID</label><input type="number"></div>
+    <div class="field"><label>OC/AFT</label><input type="number"></div>
+    <div class="field"><label>OD</label><input type="number"></div>
+    <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
+    <div class="field"><label>Bags</label><input type="number" min="0" id="bags"></div>
+    <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
+    <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0"></div>
+    <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0"></div>
+    <div class="field"><label>Block fuel</label><input type="number"></div>
+    <div class="field"><label>Taxi fuel</label><input type="number"></div>
+    <div class="field"><label>Trip fuel</label><input type="number"></div>
+  </div>
+</section>
 </body>
 </html>
