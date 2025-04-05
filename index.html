@@ -280,18 +280,27 @@ function renderAssistances() {
   for (let i = 0; i < count; i++) {
     const wrapper = document.createElement('div');
     wrapper.className = 'field';
+    const idSelect = `assistance-type-${i}`;
+    const idCode = `custom-assistance-${i}`;
     wrapper.innerHTML = `
       <label>Assistance ${i + 1}</label>
-      <select>
+      <select id="${idSelect}" onchange="toggleCustomCode('${idSelect}', '${idCode}')">
+        <option>-</option>
         <option>WCHR</option>
         <option>WCHS</option>
         <option>WCHC</option>
         <option>DEAF</option>
         <option>MUTE</option>
         <option>DPNA</option>
+        <option>Autre</option>
       </select>
+      <div id="${idCode}" style="display:none">
+        <label>Code personnalisé</label>
+        <input type="text" placeholder="Saisir le type">
+      </div>
       <label>Équipement ${i + 1}</label>
       <select>
+        <option>-</option>
         <option>WCMP</option>
         <option>WCLB</option>
         <option>WCBD</option>
@@ -301,8 +310,34 @@ function renderAssistances() {
     `;
     container.appendChild(wrapper);
   }
+  }
 }
 
+function toggleCustomCode(selectId, codeDivId) {
+  const selected = document.getElementById(selectId).value;
+  const customDiv = document.getElementById(codeDivId);
+  customDiv.style.display = selected === 'Autre' ? 'block' : 'none';
+}
+
+// Calcul automatique de HLE et H-15 à partir de SOBT
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":").map(Number);
+  const baseDate = new Date();
+  baseDate.setHours(h);
+  baseDate.setMinutes(m);
+  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
+  const hh = baseDate.getHours().toString().padStart(2, '0');
+  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  target.value = `${hh}:${mm}`;
+}
+
+document.getElementById("sobt").addEventListener("change", () => {
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
+});
 </script>
 </body>
 </html>
