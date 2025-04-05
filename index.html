@@ -95,6 +95,19 @@
   </div>
   <h2>Fiche Escale Vol</h2>
 
+<!-- MENU VOL AUTO -->
+<section>
+  <h3>SÉLECTION D'UN VOL</h3>
+  <div class="row">
+    <div class="field">
+      <label>Vols au départ de BVA</label>
+      <select id="flightSelector" onchange="fillFromFlight()">
+        <option value="">Chargement...</option>
+      </select>
+    </div>
+  </div>
+</section>
+
 <!-- SECTION 1 : INFORMATIONS -->
 <section>
   <h3>INFORMATIONS</h3>
@@ -412,8 +425,55 @@ function renderChargement() {
     <div class="field"><label>Taxi fuel</label><input type="number"></div>
     <div class="field"><label>Trip fuel</label><input type="number"></div>
   `);
-  container.innerHTML = fields.join('\n');
+  container.innerHTML = fields.join('
+');
 }
+// === API AERODATABOX ===
+const API_KEY = '9f51653a67f5nm1847a0eb614b04b7d19b1c9a1r5bb8c8cb824c8';
+const API_HOST = 'aerodatabox.p.rapidapi.com';
+
+async function fetchFlights() {
+  const selector = document.getElementById('flightSelector');
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/icao/LFQB/${today}T00:00/${today}T23:59?direction=Departure&withLeg=true&withCancelled=false&withCodeshared=false&withCargo=false&withPrivate=false', {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': API_KEY,
+        'X-RapidAPI-Host': API_HOST
+      }
+    });
+    const data = await response.json();
+    const flights = data.departures || [];
+
+    selector.innerHTML = '<option value="">Choisir un vol</option>';
+    flights.forEach((flight, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = `${flight.flight.number} → ${flight.arrival.airport.iata} (${flight.aircraft.model?.code || '-'})`;
+      option.dataset.details = JSON.stringify(flight);
+      selector.appendChild(option);
+    });
+  } catch (e) {
+    console.error('Erreur chargement des vols', e);
+    selector.innerHTML = '<option value="">Erreur de chargement</option>';
+  }
+}
+
+function fillFromFlight() {
+  const selector = document.getElementById('flightSelector');
+  const selected = selector.options[selector.selectedIndex];
+  if (!selected.dataset.details) return;
+
+  const flight = JSON.parse(selected.dataset.details);
+  document.querySelector('input[type=number]').value = flight.flight.number || '';
+  document.querySelector('input[maxlength="3"]').value = flight.arrival.airport.iata || '';
+  document.querySelector('input[type=text]').value = flight.aircraft.registration || '';
+  document.getElementById('sibt').value = flight.departure.scheduledTimeLocal?.substring(11, 16) || '';
+  document.getElementById('sobt').value = flight.departure.estimatedTimeLocal?.substring(11, 16) || '';
+}
+
+document.addEventListener('DOMContentLoaded', fetchFlights);
 </script>
 </body>
 </html>
