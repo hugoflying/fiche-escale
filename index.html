@@ -449,10 +449,8 @@ async function fetchFlights() {
       }
     });
     const data = await response.json();
-    const flights = data.departures || [];
-
-    selector.innerHTML = '<option value="">Choisir un vol</option>';
-    // Trier les vols par heure estimée de départ
+    let flights = data.departures || [];
+    flights = flights.filter(f => f.departure && (f.departure.scheduledTimeUtc || f.departure.estimatedTimeUtc));
     flights.sort((a, b) => {
       const timeA = new Date(a.departure.scheduledTimeUtc || a.departure.estimatedTimeUtc);
       const timeB = new Date(b.departure.scheduledTimeUtc || b.departure.estimatedTimeUtc);
