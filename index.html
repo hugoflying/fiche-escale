@@ -51,10 +51,16 @@
       margin-top: 4px;
       padding: 3px 5px;
       font-size: 0.75em;
+      width: 100%;
     }
+    input, textarea { text-transform: uppercase; }
   </style>
 </head>
 <body>
+  <div style="position: absolute; top: 10px; right: 20px;">
+    <label><input type="radio" name="timeMode" value="local" checked onchange="setTimeMode(this.value)"> Heure locale</label>
+    <label><input type="radio" name="timeMode" value="utc" onchange="setTimeMode(this.value)"> UTC</label>
+  </div>
   <h2>Fiche Escale Vol</h2>
 
 <!-- SECTION 1 : INFORMATIONS -->
@@ -66,7 +72,7 @@
       <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option>
       <option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
     </select></div>
-    <div class="field"><label>N° de vol départ</label><input type="number" inputmode="numeric" pattern="[0-9]*" inputmode="numeric" pattern="[0-9]*"></div>
+    <div class="field"><label>N° de vol départ</label><input type="number" inputmode="numeric" pattern="[0-9]*"></div>
     <div class="field"><label>Provenance</label><input type="text" maxlength="3"></div>
     <div class="field"><label>Destination</label><input type="text" maxlength="3"></div>
     <div class="field"><label>RZA</label><input type="text" maxlength="3"></div>
@@ -97,6 +103,27 @@
   </div>
 </section>
 
+<!-- SECTION 3 : TIMING ESCALE -->
+<section>
+  <h3>TIMING ESCALE</h3>
+  <div class="row">
+    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+  </div>
+</section>
+
 <!-- SECTION 4 : CHARGEMENT -->
 <section>
   <h3>CHARGEMENT</h3>
@@ -106,25 +133,17 @@
     <div class="field"><label>Childs</label><input type="number" min="0"></div>
     <div class="field"><label>Infants</label><input type="number" min="0"></div>
     <div class="field"><label>TOB</label><input type="text"></div>
-  </div>
-  <div class="row">
     <div class="field"><label>OA/FWD</label><input type="number"></div>
     <div class="field"><label>OB/MID</label><input type="number"></div>
     <div class="field"><label>OC/AFT</label><input type="number"></div>
     <div class="field"><label>OD</label><input type="number"></div>
     <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
-  </div>
-  <div class="row">
     <div class="field"><label>Bags</label><input type="number" min="0" id="bags"></div>
     <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
     <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
     <div class="field" id="gateBagTypes"></div>
-  </div>
-  <div class="row">
     <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
     <div class="field" id="extraSeatTypes"></div>
-  </div>
-  <div class="row">
     <div class="field"><label>Block fuel</label><input type="number"></div>
     <div class="field"><label>Taxi fuel</label><input type="number"></div>
     <div class="field"><label>Trip fuel</label><input type="number"></div>
@@ -136,62 +155,124 @@
   <h3>ASSISTANCES</h3>
   <div class="row">
     <div class="field">
-      <label>Types d'assistance</label>
+      <label>Nombre d'assistances</label>
       <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Nombre d'assistances">
     </div>
+    <div class="row" id="assistancesContainer"></div>
   </div>
-  <div class="row" id="assistancesContainer"></div>
 </section>
 
-<!-- SECTION 6 : FAITS SAILLANTS -->
+<!-- SECTION 6 : PRESTATIONS -->
+<section>
+  <h3>PRESTATIONS</h3>
+  <div class="row">
+    <div class="field"><label><input type="checkbox" checked> GPU</label></div>
+    <div class="field"><label><input type="checkbox"> ASU</label></div>
+    <div class="field"><label><input type="checkbox"> Collecte d'ordures</label></div>
+    <div class="field"><label><input type="checkbox"> Eau potable</label></div>
+    <div class="field"><label><input type="checkbox"> Vidange toilettes</label></div>
+    <div class="field"><label><input type="checkbox"> Échelle supplémentaire</label></div>
+    <div class="field"><label><input type="checkbox"> Dégivrage</label></div>
+    <div class="field"><label><input type="checkbox"> Toilet kit</label></div>
+    <div class="field"><label><input type="checkbox"> Flux par le RZA</label></div>
+    <div class="field"><label><input type="checkbox"> Ménage Assist'Air</label></div>
+    <div class="field">
+      <label>Ménage Atalian</label>
+      <select>
+        <option value="">--</option>
+        <option value="Full">Full</option>
+        <option value="Tidy">Tidy</option>
+      </select>
+    </div>
+    <div class="field"><label><input type="checkbox"> Push-Pull</label></div>
+  </div>
+</section>
+
+<!-- SECTION 7 : FAITS SAILLANTS -->
 <section>
   <h3>FAITS SAILLANTS</h3>
   <textarea></textarea>
 </section>
 
-<!-- Correction Ligne 4 TIMING : suppression de Arrivée INAD -->
-<section>
-  <h3>TIMING ESCALE</h3>
-  <div class="row">
-    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-  <div class="row">
-    <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-    <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
-  </div>
-</section>
+<!-- EXPORT PDF -->
+<button onclick="printForm()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
+<button onclick="clearForm()" style="margin-top: 20px; padding: 10px 20px; font-size: 1em;">Effacer</button>
 
 <script>
+function saveForm() {
+  const fields = document.querySelectorAll('input, select, textarea');
+  const data = {};
+  fields.forEach(field => {
+    if (field.id) {
+      if (field.type === 'checkbox') {
+        data[field.id] = field.checked;
+      } else {
+        data[field.id] = field.value;
+      }
+    }
+  });
+  localStorage.setItem('ficheEscaleData', JSON.stringify(data));
+}
+
+function loadForm() {
+  const data = JSON.parse(localStorage.getItem('ficheEscaleData'));
+  if (!data) return;
+  const fields = document.querySelectorAll('input, select, textarea');
+  fields.forEach(field => {
+    if (field.id && data[field.id] !== undefined) {
+      if (field.type === 'checkbox') {
+        field.checked = data[field.id];
+      } else {
+        field.value = data[field.id];
+      }
+    }
+  });
+}
+
+function clearForm() {
+  localStorage.removeItem('ficheEscaleData');
+  const fields = document.querySelectorAll('input, select, textarea');
+  fields.forEach(field => {
+    if (field.type === 'checkbox') {
+      field.checked = false;
+    } else {
+      field.value = '';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadForm();
+  const fields = document.querySelectorAll('input, select, textarea');
+  fields.forEach(field => {
+    field.addEventListener('input', saveForm);
+    field.addEventListener('change', saveForm);
+  });
+});
+function printForm() {
+  window.print();
+}
+
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+
 function setNow(id) {
   const now = new Date();
-  const hh = now.getHours().toString().padStart(2, '0');
-  const mm = now.getMinutes().toString().padStart(2, '0');
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   document.getElementById(id).value = `${hh}:${mm}`;
 }
 
 function setNowToPrevious(btn) {
   const input = btn.previousElementSibling;
   const now = new Date();
-  const hh = now.getHours().toString().padStart(2, '0');
-  const mm = now.getMinutes().toString().padStart(2, '0');
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   input.value = `${hh}:${mm}`;
 }
-
 function renderAssistances() {
   const container = document.getElementById('assistancesContainer');
   const count = parseInt(document.getElementById('assistanceCount').value || '0');
@@ -201,64 +282,27 @@ function renderAssistances() {
     wrapper.className = 'field';
     wrapper.innerHTML = `
       <label>Assistance ${i + 1}</label>
-      <select><option>WCHR</option><option>WCHS</option><option>WCHC</option><option>DEAF</option><option>MUTE</option><option>DPNA</option></select>
+      <select>
+        <option>WCHR</option>
+        <option>WCHS</option>
+        <option>WCHC</option>
+        <option>DEAF</option>
+        <option>MUTE</option>
+        <option>DPNA</option>
+      </select>
       <label>Équipement ${i + 1}</label>
-      <select><option>WCMP</option><option>WCLB</option><option>WCBD</option></select>
+      <select>
+        <option>WCMP</option>
+        <option>WCLB</option>
+        <option>WCBD</option>
+      </select>
+      <label>Siège ${i + 1}</label>
+      <input type="text" placeholder="ex: 12A">
     `;
     container.appendChild(wrapper);
   }
 }
-function renderExtraSeatTypes() {
-  const container = document.getElementById('extraSeatTypes');
-  const count = parseInt(document.getElementById('extraSeat').value || '0');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'field';
-    const label = document.createElement('label');
-    label.textContent = `Extra seat ${i + 1} type`;
-    const select = document.createElement('select');
-    select.innerHTML = '<option value="M">M</option><option value="X">X</option>';
-    wrapper.appendChild(label);
-    wrapper.appendChild(select);
-    container.appendChild(wrapper);
-  }
-}
 
-function renderGateBagTypes() {
-  const container = document.getElementById('gateBagTypes');
-  const count = parseInt(document.getElementById('gateBags').value || '0');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'field';
-    const label = document.createElement('label');
-    label.textContent = `Gate Bag ${i + 1} type`;
-    const select = document.createElement('select');
-    select.innerHTML = '<option value="PRAM">PRAM</option><option value="BAG">BAG</option>';
-    wrapper.appendChild(label);
-    wrapper.appendChild(select);
-    container.appendChild(wrapper);
-  }
-}
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-
-  const [h, m] = base.value.split(":").map(Number);
-  const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
-  target.value = `${hh}:${mm}`;
-}
-
-document.getElementById("sobt").addEventListener("change", () => {
-  calculateTimeOffset("sobt", "hle", -40);
-  calculateTimeOffset("sobt", "h15", -15);
-});
 </script>
+</body>
+</html>
