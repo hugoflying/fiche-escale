@@ -88,23 +88,92 @@
   <h2>Fiche Escale Vol</h2>
 
   <!-- SECTION 1 : INFORMATIONS -->
-  <!-- ... (conserve ici tout le reste de tes sections déjà présentes comme INFORMATONS, HORAIRES, TIMING, ASSISTANCES, etc.) ... -->
+  <!-- ... déjà présent ... -->
 
-  <!-- SECTION 4 : CHARGEMENT -->
+  <!-- SECTION 2 : HORAIRES -->
   <section>
-    <h3>CHARGEMENT</h3>
-    <div class="row" id="chargementContainer"></div>
+    <h3>HORAIRES</h3>
+    <div class="row">
+      <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
+      <div class="field"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
+      <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
+      <div class="field"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
+      <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
+      <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
+      <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
+    </div>
   </section>
 
-  <!-- ... (continue avec ASSISTANCES, PRESTATIONS, FAITS SAILLANTS, EXPORT, etc.) ... -->
+  <!-- SECTION 4 : CHARGEMENT -->
+  <!-- ... déjà présent ... -->
+
+  <!-- SECTION 5 : ASSISTANCES -->
+  <section>
+    <h3>ASSISTANCES</h3>
+    <div class="row">
+      <div class="field">
+        <label>Nombre d'assistances</label>
+        <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" placeholder="Nombre d'assistances">
+      </div>
+      <div class="row" id="assistancesContainer"></div>
+    </div>
+  </section>
 
   <script>
+    // Fonctions JS manquantes remises ici : setTimeMode, setNow, renderAssistances, etc.
+    function setTimeMode(mode) {
+      window.timeMode = mode;
+    }
+
+    function setNow(id) {
+      const now = new Date();
+      const mode = window.timeMode || 'local';
+      const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+      const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+      const input = document.getElementById(id);
+      if (input) input.value = `${hh}:${mm}`;
+    }
+
+    function renderAssistances() {
+      const container = document.getElementById('assistancesContainer');
+      const count = parseInt(document.getElementById('assistanceCount')?.value || '0');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'field';
+        wrapper.innerHTML = `
+          <label>Assistance ${i + 1}</label>
+          <select>
+            <option>-</option>
+            <option>WCHR</option>
+            <option>WCHS</option>
+            <option>WCHC</option>
+            <option>DEAF</option>
+            <option>MUTE</option>
+            <option>DPNA</option>
+            <option>Autre</option>
+          </select>
+          <label>Siège ${i + 1}</label>
+          <input type="text" placeholder="ex: 12A">
+        `;
+        container.appendChild(wrapper);
+      }
+    }
+
+    function calculatePoids() {
+      const bags = parseInt(document.getElementById('bags')?.value || 0);
+      const gateBags = parseInt(document.getElementById('gateBags')?.value || 0);
+      const extraSeat = parseInt(document.getElementById('extraSeat')?.value || 0);
+      const poids = (bags * 15) + (gateBags * 10) + (extraSeat * 0);
+      document.getElementById('poids').value = poids;
+    }
+
     function renderChargement() {
-      const compagnie = document.getElementById('compagnie').value;
+      const compagnie = document.getElementById('compagnie')?.value;
       const container = document.getElementById('chargementContainer');
+      if (!compagnie || !container) return;
       container.innerHTML = '';
       const isSplit = ['W4','W6','H4','H6','U5'].includes(compagnie);
-
       const fields = [];
       if (isSplit) {
         fields.push(`<div class="field"><label>Adults M</label><input type="number" min="0"></div>`);
@@ -123,10 +192,8 @@
         <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
         <div class="field"><label>Bags</label><input type="number" min="0" id="bags" onchange="calculatePoids()"></div>
         <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
-        <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes(); calculatePoids();"></div>
-        <div class="field" id="gateBagTypes"></div>
-        <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes(); calculatePoids();"></div>
-        <div class="field" id="extraSeatTypes"></div>
+        <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="calculatePoids()"></div>
+        <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="calculatePoids()"></div>
         <div class="field"><label>Block fuel</label><input type="number"></div>
         <div class="field"><label>Taxi fuel</label><input type="number"></div>
         <div class="field"><label>Trip fuel</label><input type="number"></div>
@@ -134,14 +201,15 @@
       container.innerHTML = fields.join('\n');
     }
 
-    function calculatePoids() {
-      const bags = parseInt(document.getElementById('bags')?.value || 0);
-      const gateBags = parseInt(document.getElementById('gateBags')?.value || 0);
-      const extraSeat = parseInt(document.getElementById('extraSeat')?.value || 0);
-
-      const poids = (bags * 15) + (gateBags * 10) + (extraSeat * 0); // Adapter les coefficients si besoin
-      document.getElementById('poids').value = poids;
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const compagnieSelect = document.getElementById('compagnie');
+      if (compagnieSelect) {
+        renderChargement();
+        compagnieSelect.addEventListener('change', renderChargement);
+      } else {
+        console.error("Le select #compagnie est introuvable.");
+      }
+    });
   </script>
 </body>
 </html>
