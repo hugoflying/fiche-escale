@@ -340,6 +340,26 @@ function loadForm() {
   });
 }
 
+function renderExtraSeatTypes() {
+  const count = parseInt(document.querySelector('input[id="extraSeat"]')?.value || '0');
+  const container = document.getElementById('extraSeatTypes');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'field';
+    wrapper.innerHTML = `
+      <label>Extra seat ${i + 1} - Type</label>
+      <select>
+        <option value="M">M</option>
+        <option value="X">X</option>
+      </select>
+      <label>Extra seat ${i + 1} - Siège</label>
+      <input type="text" placeholder="ex: 12A">
+    `;
+    container.appendChild(wrapper);
+  }
+}
+
 function clearForm() {
   localStorage.removeItem('ficheEscaleData');
   const fields = document.querySelectorAll('input, select, textarea');
