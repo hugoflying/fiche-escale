@@ -62,6 +62,30 @@
         flex: 1 1 100%;
       }
     }
+    .input-now {
+      display: flex;
+      gap: 5px;
+    }
+    .input-now input {
+      flex: 1;
+    }
+    .input-now button {
+      width: 100px;
+    }
+    @media (max-width: 850px) {
+      .row {
+        flex-direction: column;
+      }
+      .field {
+        flex: 1 1 100%;
+      }
+      .input-now {
+        flex-direction: column;
+      }
+      .input-now button {
+        width: 100%;
+      }
+    }
 </style>
 </head>
 <body>
@@ -102,9 +126,9 @@
   <h3>HORAIRES</h3>
   <div class="row">
     <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
+    <div class="field"><label>AIBT</label><div class="input-now"><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div></div>
     <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
-    <div class="field"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
+    <div class="field"><label>AOBT</label><div class="input-now"><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div></div>
     <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
     <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
     <div class="field"><label>H-15</label><input type="time" id="h15" readonly></div>
@@ -115,7 +139,7 @@
 <section>
   <h3>TIMING ESCALE</h3>
   <div class="row">
-    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée PNT avion</label><div class="input-now"><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div></div>
     <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
     <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
     <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
