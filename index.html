@@ -458,7 +458,7 @@ async function fetchFlights() {
       const timeB = new Date(b.departure.scheduledTimeUtc || b.departure.estimatedTimeUtc);
       return timeA - timeB;
     });
-    $1flights.forEach((flight, index) => {
+    flights.forEach((flight, index) => {
       const option = document.createElement('option');
       option.value = index;
       option.textContent = `${flight.flight.number} → ${flight.arrival.airport.iata} (${flight.aircraft.model?.code || '-'})`;
