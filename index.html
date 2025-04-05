@@ -450,6 +450,7 @@ async function fetchFlights() {
     });
     const data = await response.json();
     console.log('API response:', data);
+    selector.innerHTML = '<option value="">Choisir un vol</option>';
     let flights = data.departures || [];
     flights = flights.filter(f => f.departure && (f.departure.scheduledTimeUtc || f.departure.estimatedTimeUtc));
     flights.sort((a, b) => {
