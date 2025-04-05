@@ -458,18 +458,29 @@ async function fetchFlights() {
       const timeB = new Date(b.departure.scheduledTimeUtc || b.departure.estimatedTimeUtc);
       return timeA - timeB;
     });
+    if (!flights.length) {
+      const option = document.createElement('option');
+      option.value = '';
+      option.textContent = 'Aucun vol disponible';
+      selector.appendChild(option);
+      return;
+    }
+
     flights.forEach((flight, index) => {
       const option = document.createElement('option');
       option.value = index;
-      const time = (flight.departure.scheduledTimeLocal || flight.departure.estimatedTimeLocal || '').substring(11, 16);
+      const time = (flight.departure?.scheduledTimeLocal || flight.departure?.estimatedTimeLocal || '').substring(11, 16);
       const company = flight.airline?.icao || '---';
       const reg = flight.aircraft?.registration || 'N/A';
-      option.textContent = `${time} | ${flight.flight.number} (${company}) → ${flight.arrival.airport.iata} [${reg}]`;
+      const dest = flight.arrival?.airport?.iata || '---';
+      const number = flight.flight?.number || '???';
+      option.textContent = `${time} | ${number} (${company}) → ${dest} [${reg}]`;
       option.dataset.details = JSON.stringify(flight);
       selector.appendChild(option);
     });
   } catch (e) {
     console.error('Erreur chargement des vols', e);
+    alert('Échec du chargement des vols depuis l\'API. Vérifie ta clé API ou ta connexion.');
     selector.innerHTML = '<option value="">Erreur de chargement</option>';
   }
 }
