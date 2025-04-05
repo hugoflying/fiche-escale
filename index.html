@@ -441,7 +441,7 @@ async function fetchFlights() {
     const dd = String(now.getDate()).padStart(2, '0');
     const today = `${yyyy}-${mm}-${dd}`;
 
-    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/iata/BVA?offsetMinutes=-120&durationMinutes=720&withLeg=true&direction=Departure&withCancelled=true&withCodeshared=true&withCargo=true&withPrivate=true&withLocation=false`, {
+    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/iata/BVA?offsetMinutes=0&durationMinutes=1440&withLeg=true&direction=Departure&withCancelled=false&withCodeshared=true&withCargo=false&withPrivate=false&withLocation=false`, {
       method: 'GET',
       headers: {
         'X-RapidAPI-Key': API_KEY,
