@@ -435,8 +435,13 @@ const API_HOST = 'aerodatabox.p.rapidapi.com';
 async function fetchFlights() {
   const selector = document.getElementById('flightSelector');
   try {
-    const today = new Date().toISOString().split('T')[0];
-    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/icao/LFOB/${today}T00:00/${today}T23:59?direction=Departure&withLeg=true&withCancelled=false&withCodeshared=false&withCargo=false&withPrivate=false`, {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const today = `${yyyy}-${mm}-${dd}`;
+
+    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/icao/LFOB/${today}T00:00/${today}T23:59.p.rapidapi.com/flights/airports/icao/LFOB/${today}T00:00/${today}T23:59?direction=Departure&withLeg=true&withCancelled=false&withCodeshared=false&withCargo=false&withPrivate=false`, {
       method: 'GET',
       headers: {
         'X-RapidAPI-Key': API_KEY,
