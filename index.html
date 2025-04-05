@@ -449,6 +449,7 @@ async function fetchFlights() {
       }
     });
     const data = await response.json();
+    console.log('API response:', data);
     let flights = data.departures || [];
     flights = flights.filter(f => f.departure && (f.departure.scheduledTimeUtc || f.departure.estimatedTimeUtc));
     flights.sort((a, b) => {
