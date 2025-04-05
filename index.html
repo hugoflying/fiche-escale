@@ -95,6 +95,8 @@
   </div>
   <h2>Fiche Escale Vol</h2>
 
+
+
 <!-- SECTION 1 : INFORMATIONS -->
 <section>
   <h3>INFORMATIONS</h3>
@@ -113,6 +115,7 @@
       <option>B737-800 Y189</option><option>B737-8200 Y197</option><option>A320 Y180</option>
       <option>A320 Y186</option><option>A20N Y186</option><option>A321 Y230</option><option>A21N Y239</option>
     </select></div>
+    <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
     <div class="field"><label>Parking</label><select>
       <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
       <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
@@ -162,31 +165,29 @@
 <!-- SECTION 4 : CHARGEMENT -->
 <section>
   <h3>CHARGEMENT</h3>
-  <div class="row" id="chargementContainer"></div>
-</section>
-
-<section>
-  <h3>CHARGEMENT</h3>
-  <div class="row">
-    <div class="field"><label>Adults M</label><input type="number" min="0"></div>
-    <div class="field"><label>Adults F</label><input type="number" min="0"></div>
-    <div class="field"><label>Childs</label><input type="number" min="0"></div>
-    <div class="field"><label>Infants</label><input type="number" min="0"></div>
-    <div class="field"><label>TOB</label><input type="text"></div>
-    <div class="field"><label>OA/FWD</label><input type="number"></div>
-    <div class="field"><label>OB/MID</label><input type="number"></div>
-    <div class="field"><label>OC/AFT</label><input type="number"></div>
-    <div class="field"><label>OD</label><input type="number"></div>
-    <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
-    <div class="field"><label>Bags</label><input type="number" min="0" id="bags"></div>
-    <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
-    <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
-    <div class="field" id="gateBagTypes"></div>
-    <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
-    <div class="field" id="extraSeatTypes"></div>
-    <div class="field"><label>Block fuel</label><input type="number"></div>
-    <div class="field"><label>Taxi fuel</label><input type="number"></div>
-    <div class="field"><label>Trip fuel</label><input type="number"></div>
+  <div class="row" style="display: flex; flex-wrap: nowrap; gap: 20px;">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+      <div class="field"><label>Adults</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>Childs</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>Infants</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>TOB</label><input type="number" inputmode="numeric"></div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+      <div class="field"><label>OA/FWD</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>OB/MID</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>OC/AFT</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>OD</label><input type="number" inputmode="numeric"></div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+      <div class="field"><label>Bags</label><input type="number" id="bags" inputmode="numeric"></div>
+      <div class="field"><label>Poids</label><input type="number" id="poids" inputmode="numeric" readonly></div>
+      <div class="field"><label>Gate Bags</label><input type="number" inputmode="numeric"></div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+      <div class="field"><label>Block fuel</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>Taxi fuel</label><input type="number" inputmode="numeric"></div>
+      <div class="field"><label>Trip fuel</label><input type="number" inputmode="numeric"></div>
+    </div>
   </div>
 </section>
 
@@ -412,8 +413,29 @@ function renderChargement() {
     <div class="field"><label>Taxi fuel</label><input type="number"></div>
     <div class="field"><label>Trip fuel</label><input type="number"></div>
   `);
-  container.innerHTML = fields.join('\n');
+  container.innerHTML = fields.join('
+');
 }
+
+    
+  }
+}
+
+
+document.getElementById('compagnie').addEventListener('change', updatePoids);
+document.getElementById('bags').addEventListener('input', updatePoids);
+
+function updatePoids() {
+  const compagnie = document.getElementById('compagnie').value;
+  const bags = parseInt(document.getElementById('bags').value || '0');
+  const poids = document.getElementById('poids');
+  if (compagnie === 'FR' || compagnie === 'RK') {
+    poids.value = bags * 13;
+  } else {
+    poids.value = '';
+  }
+}
+
 </script>
 </body>
 </html>
