@@ -54,7 +54,15 @@
       width: 100%;
     }
     input, textarea { text-transform: uppercase; }
-  </style>
+      @media (max-width: 850px) {
+      .row {
+        flex-direction: column;
+      }
+      .field {
+        flex: 1 1 100%;
+      }
+    }
+</style>
 </head>
 <body>
   <div style="position: absolute; top: 10px; right: 20px;">
