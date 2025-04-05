@@ -429,7 +429,7 @@ function renderChargement() {
 ');
 }
 // === API AERODATABOX ===
-const API_KEY = '9f51653a67f5nm1847a0eb614b04b7d19b1c9a1r5bb8c8cb824c8';
+const API_KEY = '951653a61fmsh18474e0b1f49047p1919dajsn5bb6cdb824c8';
 const API_HOST = 'aerodatabox.p.rapidapi.com';
 
 async function fetchFlights() {
@@ -441,7 +441,7 @@ async function fetchFlights() {
     const dd = String(now.getDate()).padStart(2, '0');
     const today = `${yyyy}-${mm}-${dd}`;
 
-    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/iata/BVA?offsetMinutes=0&durationMinutes=1440&withLeg=true&direction=Departure&withCancelled=false&withCodeshared=true&withCargo=false&withPrivate=false&withLocation=false`, {
+    const response = await fetch(`https://aerodatabox.p.rapidapi.com/flights/airports/iata/BVA?offsetMinutes=-120&durationMinutes=720&withLeg=true&direction=Both&withCancelled=true&withCodeshared=true&withCargo=true&withPrivate=true&withLocation=false`, {
       method: 'GET',
       headers: {
         'X-RapidAPI-Key': API_KEY,
@@ -460,7 +460,10 @@ async function fetchFlights() {
     flights.forEach((flight, index) => {
       const option = document.createElement('option');
       option.value = index;
-      option.textContent = `${flight.flight.number} → ${flight.arrival.airport.iata} (${flight.aircraft.model?.code || '-'})`;
+      const time = (flight.departure.scheduledTimeLocal || flight.departure.estimatedTimeLocal || '').substring(11, 16);
+      const company = flight.airline?.icao || '---';
+      const reg = flight.aircraft?.registration || 'N/A';
+      option.textContent = `${time} | ${flight.flight.number} (${company}) → ${flight.arrival.airport.iata} [${reg}]`;
       option.dataset.details = JSON.stringify(flight);
       selector.appendChild(option);
     });
