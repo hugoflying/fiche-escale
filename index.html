@@ -162,6 +162,11 @@
 <!-- SECTION 4 : CHARGEMENT -->
 <section>
   <h3>CHARGEMENT</h3>
+  <div class="row" id="chargementContainer"></div>
+</section>
+
+<section>
+  <h3>CHARGEMENT</h3>
   <div class="row">
     <div class="field"><label>Adults M</label><input type="number" min="0"></div>
     <div class="field"><label>Adults F</label><input type="number" min="0"></div>
@@ -277,6 +282,8 @@ function clearForm() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  renderChargement();
+  document.getElementById('compagnie').addEventListener('change', renderChargement);
   loadForm();
   const fields = document.querySelectorAll('input, select, textarea');
   fields.forEach(field => {
@@ -373,6 +380,40 @@ document.getElementById("sobt").addEventListener("change", () => {
   calculateTimeOffset("sobt", "hle", -40);
   calculateTimeOffset("sobt", "h15", -15);
 });
+function renderChargement() {
+  const compagnie = document.getElementById('compagnie').value;
+  const container = document.getElementById('chargementContainer');
+  container.innerHTML = '';
+  const isSplit = ['W4','W6','H4','H6','U5'].includes(compagnie);
+
+  const fields = [];
+  if (isSplit) {
+    fields.push(`<div class="field"><label>Adults M</label><input type="number" min="0"></div>`);
+    fields.push(`<div class="field"><label>Adults F</label><input type="number" min="0"></div>`);
+  } else {
+    fields.push(`<div class="field"><label>Adults</label><input type="number" min="0"></div>`);
+  }
+  fields.push(`
+    <div class="field"><label>Childs</label><input type="number" min="0"></div>
+    <div class="field"><label>Infants</label><input type="number" min="0"></div>
+    <div class="field"><label>TOB</label><input type="text"></div>
+    <div class="field"><label>OA/FWD</label><input type="number"></div>
+    <div class="field"><label>OB/MID</label><input type="number"></div>
+    <div class="field"><label>OC/AFT</label><input type="number"></div>
+    <div class="field"><label>OD</label><input type="number"></div>
+    <div class="field"><label>Crew configuration</label><select><option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option><option>3/4</option><option>3/5</option><option>3/6</option><option>4/4</option><option>4/5</option><option>4/6</option></select></div>
+    <div class="field"><label>Bags</label><input type="number" min="0" id="bags"></div>
+    <div class="field"><label>Poids</label><input type="number" id="poids" readonly></div>
+    <div class="field"><label>Gate Bags</label><input type="number" id="gateBags" min="0" onchange="renderGateBagTypes()"></div>
+    <div class="field" id="gateBagTypes"></div>
+    <div class="field"><label>Extra seat</label><input type="number" id="extraSeat" min="0" onchange="renderExtraSeatTypes()"></div>
+    <div class="field" id="extraSeatTypes"></div>
+    <div class="field"><label>Block fuel</label><input type="number"></div>
+    <div class="field"><label>Taxi fuel</label><input type="number"></div>
+    <div class="field"><label>Trip fuel</label><input type="number"></div>
+  `);
+  container.innerHTML = fields.join('\n');
+}
 </script>
 </body>
 </html>
