@@ -95,12 +95,21 @@
   </style>
 </head>
 <body>
+<div id="tabContainer" style="margin-bottom: 20px;">
+  <button onclick="addTab()">+ Ajouter une fiche</button>
+  <div id="tabs" style="display: flex; gap: 5px; margin-top: 10px;"></div>
+</div>
+<div id="ficheContainer"></div>
   <div style="position: absolute; top: 10px; right: 20px;">
     <label><input type="radio" name="timeMode" value="local" checked onchange="setTimeMode(this.value)"> Heure locale</label>
     <label><input type="radio" name="timeMode" value="utc" onchange="setTimeMode(this.value)"> UTC</label>
   </div>
 
-<h2>Fiche Escale Vol</h2>
+
+
+<template id="ficheTemplate">
+  <div class="fiche-wrapper">
+    <h2>Fiche Escale Vol</h2>
   
 <section>
   <h3>INFORMATIONS</h3>
@@ -273,98 +282,115 @@
 </div>
 
 <script>
-function setTimeMode(mode) {
-  window.timeMode = mode;
+let ficheCounter = 0;
+function addTab(data = null) {
+  const ficheId = 'fiche-' + ficheCounter++;
+  const tabs = document.getElementById('tabs');
+  const container = document.getElementById('ficheContainer');
+
+  const btn = document.createElement('div');
+  btn.style.display = 'flex';
+  btn.style.alignItems = 'center';
+  btn.style.gap = '5px';
+
+  const tabButton = document.createElement('button');
+  tabButton.textContent = ficheId;
+  tabButton.onclick = () => showFiche(ficheId);
+  btn.appendChild(tabButton);
+
+  const closeBtn = document.createElement('span');
+  closeBtn.textContent = '✖';
+  closeBtn.style.color = 'red';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.onclick = () => removeFiche(ficheId, btn);
+  btn.appendChild(closeBtn);
+
+  tabs.appendChild(btn);
+
+  const template = document.getElementById('ficheTemplate');
+  const clone = template.content.cloneNode(true);
+  const wrapper = document.createElement('div');
+  wrapper.id = ficheId;
+  wrapper.style.display = 'none';
+  wrapper.classList.add('fiche-wrapper');
+  wrapper.appendChild(clone);
+  container.appendChild(wrapper);
+  showFiche(ficheId);
+
+  if (data) {
+    const inputs = wrapper.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+      if (data[input.name]) input.value = data[input.name];
+    });
+  }
+
+  const inputs = wrapper.querySelectorAll('input, select, textarea');
+  inputs.forEach(input => {
+    input.addEventListener('input', saveAllFiches);
+    input.addEventListener('change', saveAllFiches);
+  });
+  btn.appendChild(tabButton);
+
+  const closeBtn = document.createElement('span');
+  closeBtn.textContent = '✖';
+  closeBtn.style.color = 'red';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.onclick = () => removeFiche(ficheId, btn);
+  btn.appendChild(closeBtn);
+
+  tabs.appendChild(btn);
+
+  const template = document.getElementById('ficheTemplate');
+  const clone = template.content.cloneNode(true);
+  const wrapper = document.createElement('div');
+  wrapper.id = ficheId;
+  wrapper.style.display = 'none';
+  wrapper.appendChild(clone);
+  container.appendChild(wrapper);
+  showFiche(ficheId);
 }
-function setNow(id) {
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  document.getElementById(id).value = `${hh}:${mm}`;
+
+function showFiche(id) {
+  const fiches = document.querySelectorAll('#ficheContainer > div');
+  fiches.forEach(f => f.style.display = 'none');
+  const fiche = document.getElementById(id);
+  if (fiche) fiche.style.display = 'block';
 }
-function setNowToPrevious(btn) {
-  const input = btn.previousElementSibling;
-  if (!input || input.tagName.toLowerCase() !== 'input') return;
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  input.value = `${hh}:${mm}`;
+
+function removeFiche(id, tabElement) {
+  const fiche = document.getElementById(id);
+  if (fiche) fiche.remove();
+  if (tabElement) tabElement.remove();
+  const fiches = document.querySelectorAll('#ficheContainer > div');
+  if (fiches.length > 0) showFiche(fiches[0].id);
 }
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":").map(Number);
-  const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
-  target.value = `${hh}:${mm}`;
+
+function saveAllFiches() {
+  const wrappers = document.querySelectorAll('.fiche-wrapper');
+  const fiches = [];
+  wrappers.forEach(wrapper => {
+    const inputs = wrapper.querySelectorAll('input, select, textarea');
+    const data = {};
+    inputs.forEach(input => {
+      if (input.name) data[input.name] = input.value;
+    });
+    fiches.push(data);
+  });
+  localStorage.setItem('fiches', JSON.stringify(fiches));
+}
+
+function restoreFiche(data) {
+  addTab(data);
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  const sobtField = document.getElementById('sobt');
-  if (sobtField) {
-    sobtField.addEventListener('change', () => {
-      calculateTimeOffset('sobt', 'hle', -40);
-      calculateTimeOffset('sobt', 'h15', -15);
-    });
+  const saved = JSON.parse(localStorage.getItem('fiches')) || [];
+  if (saved.length > 0) {
+    saved.forEach(data => restoreFiche(data));
+  } else {
+    addTab();
   }
 });
-function renderAssistances() {
-  const container = document.getElementById('assistancesContainer');
-  const count = parseInt(document.getElementById('assistanceCount').value || '0');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto;';
-    row.innerHTML = `
-      <div class="field" style="min-width: 120px;">
-        <label>Type ${i + 1}</label>
-        <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
-          <option>-</option>
-          <option>WCHR</option>
-          <option>WCHS</option>
-          <option>WCHC</option>
-          <option>DEAF</option>
-          <option>MUTE</option>
-          <option>DPNA</option>
-          <option>Autre</option>
-        </select>
-      </div>
-      <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
-        <label>Type personnalisé</label>
-        <input type="text" placeholder="Saisir le type">
-      </div>
-      <div class="field" style="min-width: 120px;">
-        <label>Équipement ${i + 1}</label>
-        <select>
-          <option>-</option>
-          <option>WCMP</option>
-          <option>WCLB</option>
-          <option>WCBD</option>
-        </select>
-      </div>
-      <div class="field" style="min-width: 120px;">
-        <label>Siège ${i + 1}</label>
-        <input type="text" placeholder="ex: 12A">
-      </div>
-    `;
-    container.appendChild(row);
-  }
-}
-
-function toggleCustomCode(i) {
-  const select = document.getElementById(`assistance-type-${i}`);
-  const customDiv = document.getElementById(`custom-assistance-${i}`);
-  customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
-}
 </script>
-
 
 
