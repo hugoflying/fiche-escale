@@ -96,7 +96,104 @@
 
 <h2>Fiche Escale Vol</h2>
 
-<!-- Toutes les sections HTML existantes ici (conservées telles quelles) -->
+<!-- Sections INFORMATIONS et HORAIRES conservées -->
+<section>
+  <h3>TIMING ESCALE</h3>
+  <div class="row">
+    <div class="field"><label>Arrivée PNT avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée PNC avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Premier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Dernier pax OUT</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Premier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Dernier pax IN</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée INAD</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Fermeture porte avion</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ fuel</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ lift</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Arrivée NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+    <div class="field"><label>Départ NAYAK</label><input type="time"><button class="now-btn" onclick="setNowToPrevious(this)">Now</button></div>
+  </div>
+</section>
+
+<section>
+  <h3>CHARGEMENT</h3>
+  <div class="row">
+    <div class="field"><label>Adults M</label><input type="number" min="0"></div>
+    <div class="field"><label>Adults F</label><input type="number" min="0"></div>
+    <div class="field"><label>Childs</label><input type="number" min="0"></div>
+    <div class="field"><label>Infants</label><input type="number" min="0"></div>
+    <div class="field"><label>TOB</label><input type="text"></div>
+    <div class="field"><label>OA/FWD</label><input type="number"></div>
+    <div class="field"><label>OB/MID</label><input type="number"></div>
+    <div class="field"><label>OC/AFT</label><input type="number"></div>
+    <div class="field"><label>OD</label><input type="number"></div>
+    <div class="field"><label>Crew configuration</label>
+      <select>
+        <option>2/0</option><option>2/4</option><option>2/5</option><option>2/6</option>
+        <option>3/4</option><option>3/5</option><option>3/6</option>
+        <option>4/4</option><option>4/5</option><option>4/6</option>
+      </select>
+    </div>
+    <div class="field"><label>Bags</label><input type="number" min="0"></div>
+    <div class="field"><label>Poids</label><input type="number" readonly></div>
+    <div class="field"><label>Gate Bags</label><input type="number" min="0"></div>
+    <div class="field"><label>Extra seat</label><input type="number" min="0"></div>
+    <div class="field"><label>Block fuel</label><input type="number"></div>
+    <div class="field"><label>Taxi fuel</label><input type="number"></div>
+    <div class="field"><label>Trip fuel</label><input type="number"></div>
+  </div>
+</section>
+
+<section>
+  <h3>ASSISTANCES</h3>
+  <div class="row">
+    <div class="field"><label>Nombre d'assistances</label><input type="number" min="0"></div>
+    <div class="field"><label>Type</label>
+      <select>
+        <option>-</option><option>WCHR</option><option>WCHS</option><option>WCHC</option>
+        <option>DEAF</option><option>MUTE</option><option>DPNA</option><option>Autre</option>
+      </select>
+    </div>
+    <div class="field"><label>Équipement</label>
+      <select>
+        <option>-</option><option>WCMP</option><option>WCLB</option><option>WCBD</option>
+      </select>
+    </div>
+    <div class="field"><label>Siège</label><input type="text" placeholder="ex: 12A"></div>
+  </div>
+</section>
+
+<section>
+  <h3>PRESTATIONS</h3>
+  <div class="row">
+    <div class="field"><label><input type="checkbox"> GPU</label></div>
+    <div class="field"><label><input type="checkbox"> ASU</label></div>
+    <div class="field"><label><input type="checkbox"> Collecte d'ordures</label></div>
+    <div class="field"><label><input type="checkbox"> Eau potable</label></div>
+    <div class="field"><label><input type="checkbox"> Vidange toilettes</label></div>
+    <div class="field"><label><input type="checkbox"> Échelle supplémentaire</label></div>
+    <div class="field"><label><input type="checkbox"> Dégivrage</label></div>
+    <div class="field"><label><input type="checkbox"> Toilet kit</label></div>
+    <div class="field"><label><input type="checkbox"> Flux par le RZA</label></div>
+    <div class="field"><label><input type="checkbox"> Ménage Assist'Air</label></div>
+    <div class="field">
+      <label>Ménage Atalian</label>
+      <select>
+        <option value="">--</option>
+        <option value="Full">Full</option>
+        <option value="Tidy">Tidy</option>
+      </select>
+    </div>
+    <div class="field"><label><input type="checkbox"> Push-Pull</label></div>
+  </div>
+</section>
+
+<section>
+  <h3>FAITS SAILLANTS</h3>
+  <textarea></textarea>
+</section>
 
 <!-- BOUTONS -->
 <div class="row">
@@ -105,12 +202,30 @@
 </div>
 
 <script>
-// Fonction de calcul HLE (-40 min) et H-15 (-15 min) à partir de SOBT
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+function setNow(id) {
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
+}
+function setNowToPrevious(btn) {
+  const input = btn.previousElementSibling;
+  if (!input || input.tagName.toLowerCase() !== 'input') return;
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
 function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const base = document.getElementById(baseId);
   const target = document.getElementById(targetId);
   if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":".map(Number));
+  const [h, m] = base.value.split(":").map(Number);
   const baseDate = new Date();
   baseDate.setHours(h);
   baseDate.setMinutes(m);
@@ -119,8 +234,6 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const mm = baseDate.getMinutes().toString().padStart(2, '0');
   target.value = `${hh}:${mm}`;
 }
-
-// Ajoute l'écouteur pour le champ SOBT s'il existe dans la page
 window.addEventListener('DOMContentLoaded', () => {
   const sobtField = document.getElementById('sobt');
   if (sobtField) {
@@ -131,6 +244,5 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-
 </body>
 </html>
