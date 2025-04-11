@@ -60,15 +60,17 @@
     }
     @media (max-width: 850px) {
   .field {
-    flex: 1 1 calc(50% - 10px);
+    flex: 1 1 calc(33.33% - 10px);
   }
   .row {
     flex-direction: row;
   }
 }
-      .row {
-        flex-direction: column;
-      }
+  .row {
+    flex-direction: row;
+  }
+}
+      
     }
     .input-now {
       display: flex;
@@ -80,10 +82,11 @@
     .input-now button {
       width: 100px;
     }
-    @media (max-width: 600px) {
+    $1
   .field {
     flex: 1 1 100%;
   }
+
   .row {
     flex-direction: column;
   }
@@ -105,6 +108,8 @@
     <label><input type="radio" name="timeMode" value="local" checked onchange="setTimeMode(this.value)"> Heure locale</label>
     <label><input type="radio" name="timeMode" value="utc" onchange="setTimeMode(this.value)"> UTC</label>
   </div>
+
+<h2>Fiche Escale Vol</h2>
 
 <h2>Fiche Escale Vol</h2>
   
