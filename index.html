@@ -29,7 +29,7 @@
       margin-bottom: 10px;
     }
     .field {
-      flex: 1 1 calc(33.333% - 10px);
+      flex: 1 1 calc(25% - 10px);
       min-width: 120px;
       display: flex;
       flex-direction: column;
@@ -59,9 +59,13 @@
       text-transform: uppercase;
     }
     @media (max-width: 850px) {
-      .field {
-        flex: 1 1 100%;
-      }
+  .field {
+    flex: 1 1 calc(50% - 10px);
+  }
+  .row {
+    flex-direction: row;
+  }
+}
       .row {
         flex-direction: column;
       }
@@ -77,9 +81,19 @@
       width: 100px;
     }
     @media (max-width: 600px) {
-      .input-now {
-        flex-direction: column;
-      }
+  .field {
+    flex: 1 1 100%;
+  }
+  .row {
+    flex-direction: column;
+  }
+  .input-now {
+    flex-direction: column;
+  }
+  .input-now button {
+    width: 100%;
+  }
+}
       .input-now button {
         width: 100%;
       }
