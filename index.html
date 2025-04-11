@@ -314,14 +314,18 @@ window.addEventListener('DOMContentLoaded', () => {
   let drawing = false;
 
   function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
     if (e.touches) {
-      const rect = canvas.getBoundingClientRect();
       return {
         x: e.touches[0].clientX - rect.left,
         y: e.touches[0].clientY - rect.top
       };
     } else {
-      return { x: e.offsetX, y: e.offsetY };
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
     }
   }
 
