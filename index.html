@@ -210,21 +210,28 @@
 
 <section>
   <h3>ASSISTANCES</h3>
-  <div class="row">
-    <div class="field"><label>Nombre d'assistances</label><input type="number" min="0"></div>
-    <div class="field"><label>Type</label>
+  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
+    <div class="field" style="min-width: 120px;"><label>Quantité</label><input type="number" min="0"></div>
+    <div class="field" style="min-width: 120px;"><label>Type</label>
       <select>
         <option>-</option><option>WCHR</option><option>WCHS</option><option>WCHC</option>
         <option>DEAF</option><option>MUTE</option><option>DPNA</option><option>Autre</option>
       </select>
     </div>
-    <div class="field"><label>Équipement</label>
+    <div class="field" style="min-width: 120px;"><label>Équipement</label>
       <select>
         <option>-</option><option>WCMP</option><option>WCLB</option><option>WCBD</option>
       </select>
     </div>
-    <div class="field"><label>Siège</label><input type="text" placeholder="ex: 12A"></div>
+    <div class="field" style="min-width: 120px;"><label>Siège</label><input type="text" placeholder="ex: 12A"></div>
   </div>
+  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
+    <div class="field" style="min-width: 120px;">
+      <label>Quantité</label>
+      <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Quantité">
+    </div>
+  </div>
+  <div id="assistancesContainer"></div>
 </section>
 
 <section>
@@ -323,6 +330,55 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+function renderAssistances() {
+  const container = document.getElementById('assistancesContainer');
+  const count = parseInt(document.getElementById('assistanceCount').value || '0');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto;';
+    row.innerHTML = `
+      <div class="field" style="min-width: 120px;">
+        <label>Type ${i + 1}</label>
+        <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
+          <option>-</option>
+          <option>WCHR</option>
+          <option>WCHS</option>
+          <option>WCHC</option>
+          <option>DEAF</option>
+          <option>MUTE</option>
+          <option>DPNA</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
+        <label>Type personnalisé</label>
+        <input type="text" placeholder="Saisir le type">
+      </div>
+      <div class="field" style="min-width: 120px;">
+        <label>Équipement ${i + 1}</label>
+        <select>
+          <option>-</option>
+          <option>WCMP</option>
+          <option>WCLB</option>
+          <option>WCBD</option>
+        </select>
+      </div>
+      <div class="field" style="min-width: 120px;">
+        <label>Siège ${i + 1}</label>
+        <input type="text" placeholder="ex: 12A">
+      </div>
+    `;
+    container.appendChild(row);
+  }
+}
+
+function toggleCustomCode(i) {
+  const select = document.getElementById(`assistance-type-${i}`);
+  const customDiv = document.getElementById(`custom-assistance-${i}`);
+  customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
+}
 </script>
 
 
