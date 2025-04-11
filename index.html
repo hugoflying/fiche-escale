@@ -266,6 +266,23 @@
   <button onclick="document.querySelectorAll('input, select, textarea').forEach(f => f.type === 'checkbox' ? f.checked = false : f.value = '')" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Effacer</button>
 </div>
 
+<section>
+  <h3>FUEL</h3>
+  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
+    <div class="field" style="min-width: 120px;"><label>Block fuel</label><input type="number"></div>
+    <div class="field" style="min-width: 120px;"><label>Trip fuel</label><input type="number"></div>
+    <div class="field" style="min-width: 120px;"><label>Taxi fuel</label><input type="number"></div>
+  </div>
+</section>
+
+<section>
+  <h3>FAITS SAILLANTS</h3>
+  <div style="margin-bottom: 10px;">
+    <button onclick="clearCanvas()" style="padding: 5px 10px; font-size: 1em;">Effacer le dessin</button>
+  </div>
+  <canvas id="canvasFaits" width="800" height="200" style="border:1px solid #ccc; touch-action: none; width: 100%; max-width: 100%;"></canvas>
+</section>
+
 <script>
 function setTimeMode(mode) {
   window.timeMode = mode;
@@ -364,4 +381,5 @@ window.addEventListener('DOMContentLoaded', () => {
   canvas.addEventListener('touchcancel', stopDraw);
 });
 </script>
+
 
