@@ -254,7 +254,10 @@
 
 <section>
   <h3>FAITS SAILLANTS</h3>
-  <textarea></textarea>
+  <div style="margin-bottom: 10px;">
+    <button onclick="clearCanvas()" style="padding: 5px 10px; font-size: 1em;">Effacer le dessin</button>
+  </div>
+  <canvas id="canvasFaits" width="800" height="200" style="border:1px solid #ccc; touch-action: none; width: 100%; max-width: 100%;"></canvas>
 </section>
 
 <!-- BOUTONS -->
@@ -296,6 +299,7 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const mm = baseDate.getMinutes().toString().padStart(2, '0');
   target.value = `${hh}:${mm}`;
 }
+
 window.addEventListener('DOMContentLoaded', () => {
   const sobtField = document.getElementById('sobt');
   if (sobtField) {
@@ -304,7 +308,54 @@ window.addEventListener('DOMContentLoaded', () => {
       calculateTimeOffset('sobt', 'h15', -15);
     });
   }
-});
+
+  const canvas = document.getElementById('canvasFaits');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+
+  function getPos(e) {
+    if (e.touches) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+      };
+    } else {
+      return { x: e.offsetX, y: e.offsetY };
+    }
+  }
+
+  function startDraw(e) {
+    drawing = true;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    e.preventDefault();
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    e.preventDefault();
+  }
+
+  function stopDraw() {
+    drawing = false;
+  }
+
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('mouseout', stopDraw);
+
+  canvas.addEventListener('touchstart', startDraw);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchend', stopDraw);
 </script>
-</body>
-</html>
+
