@@ -282,6 +282,132 @@
 </div>
 
 <script>
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+function setNow(id) {
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
+}
+function setNowToPrevious(btn) {
+  const input = btn.previousElementSibling;
+  if (!input || input.tagName.toLowerCase() !== 'input') return;
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":").map(Number);
+  const baseDate = new Date();
+  baseDate.setHours(h);
+  baseDate.setMinutes(m);
+  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
+  const hh = baseDate.getHours().toString().padStart(2, '0');
+  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  target.value = `${hh}:${mm}`;
+}
+
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+function setNow(id) {
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
+}
+function setNowToPrevious(btn) {
+  const input = btn.previousElementSibling;
+  if (!input || input.tagName.toLowerCase() !== 'input') return;
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":").map(Number);
+  const baseDate = new Date();
+  baseDate.setHours(h);
+  baseDate.setMinutes(m);
+  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
+  const hh = baseDate.getHours().toString().padStart(2, '0');
+  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  target.value = `${hh}:${mm}`;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const sobtField = document.getElementById('sobt');
+  if (sobtField) {
+    sobtField.addEventListener('change', () => {
+      calculateTimeOffset('sobt', 'hle', -40);
+      calculateTimeOffset('sobt', 'h15', -15);
+    });
+  }
+});
+function renderAssistances() {
+  const container = document.getElementById('assistancesContainer');
+  const count = parseInt(document.getElementById('assistanceCount').value || '0');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto;';
+    row.innerHTML = `
+      <div class="field" style="min-width: 120px;">
+        <label>Type ${i + 1}</label>
+        <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
+          <option>-</option>
+          <option>WCHR</option>
+          <option>WCHS</option>
+          <option>WCHC</option>
+          <option>DEAF</option>
+          <option>MUTE</option>
+          <option>DPNA</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
+        <label>Type personnalisé</label>
+        <input type="text" placeholder="Saisir le type">
+      </div>
+      <div class="field" style="min-width: 120px;">
+        <label>Équipement ${i + 1}</label>
+        <select>
+          <option>-</option>
+          <option>WCMP</option>
+          <option>WCLB</option>
+          <option>WCBD</option>
+        </select>
+      </div>
+      <div class="field" style="min-width: 120px;">
+        <label>Siège ${i + 1}</label>
+        <input type="text" placeholder="ex: 12A">
+      </div>
+    `;
+    container.appendChild(row);
+  }
+}
+
+function toggleCustomCode(i) {
+  const select = document.getElementById(`assistance-type-${i}`);
+  const customDiv = document.getElementById(`custom-assistance-${i}`);
+  customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
+}
+
+// --- Onglets et sauvegarde ---
 let ficheCounter = 0;
 function addTab(data = null) {
   const ficheId = 'fiche-' + ficheCounter++;
@@ -392,5 +518,6 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
 
 
