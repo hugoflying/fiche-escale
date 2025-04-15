@@ -119,16 +119,30 @@
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
 
-function isToday(dateStr) {
-  const date = new Date(dateStr);
-  const now = new Date();
-  return date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+function isSameLocalDay(dateStr) {
+  const local = new Date();
+  const d = new Date(dateStr);
+  return d.getDate() === local.getDate() &&
+         d.getMonth() === local.getMonth() &&
+         d.getFullYear() === local.getFullYear();
 }
 
-function isBetweenHours(dateStr, startHour, endHour) {
+function isBetweenHoursLocal(dateStr, startHour, endHour) {
   const date = new Date(dateStr);
-  const hour = date.getHours();
-  return hour >= startHour && hour <= endHour;
+  const localHour = date.getHours();
+  return localHour >= startHour && localHour <= endHour;
+}
+
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
 }
 
 async function loadFlights() {
@@ -145,44 +159,47 @@ async function loadFlights() {
     const arrivals = await arrRes.json();
 
     if (!Array.isArray(departures) || !Array.isArray(arrivals)) {
-      selector.innerHTML = '<option value="">Aucune donnée reçue</option>';
+      selector.innerHTML = '<option value="">Erreur de données API</option>';
       return;
     }
 
     const flights = [];
 
-    departures.forEach(dep => {
-      const sobt = dep.departure?.scheduledTime;
-      if (!sobt || !isToday(sobt) || !isBetweenHours(sobt, 4, 23)) return;
+    for (const dep of departures) {
+      const sobt = dep?.departure?.scheduledTime;
+      if (!sobt || !isSameLocalDay(sobt) || !isBetweenHoursLocal(sobt, 4, 23)) continue;
 
-      const reg = dep.aircraft?.regNumber;
-      const airline = dep.airline?.iataCode || '?';
-      const flightNum = dep.flight?.number || '?';
-      const to = dep.arrival?.iataCode || '???';
+      const reg = dep?.aircraft?.regNumber;
+      const airline = dep?.airline?.iataCode || "?";
+      const flightNum = dep?.flight?.number || "?";
+      const to = dep?.arrival?.iataCode || "???";
 
-      let from = 'N/A';
+      let from = "N/A", sibtTime = "";
       if (reg) {
-        const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
-        if (matchingArrival && matchingArrival.departure?.iataCode) {
-          from = matchingArrival.departure.iataCode;
+        const match = arrivals.find(arr =>
+          arr?.aircraft?.regNumber === reg &&
+          isSameLocalDay(arr?.arrival?.scheduledTime)
+        );
+        if (match) {
+          from = match?.departure?.iataCode || "N/A";
+          sibtTime = match?.arrival?.scheduledTime || "";
         }
       }
 
-      if (to === '???') return;
-
       flights.push({
         label: `${airline}${flightNum} ${from} → ${to}`,
-        sobt,
-        value: JSON.stringify({ arrival: null, departure: dep })
+        sobt: new Date(sobt),
+        sibt: sibtTime,
+        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to })
       });
-    });
+    }
 
     if (flights.length === 0) {
       selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
       return;
     }
 
-    flights.sort((a, b) => new Date(a.sobt) - new Date(b.sobt));
+    flights.sort((a, b) => a.sobt - b.sobt);
 
     selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
     flights.forEach(flight => {
@@ -192,15 +209,17 @@ async function loadFlights() {
       selector.appendChild(opt);
     });
   } catch (err) {
-    selector.innerHTML = '<option value="">Erreur de chargement</option>';
-    console.error("Erreur API:", err);
+    selector.innerHTML = '<option value="">Erreur lors du chargement</option>';
+    console.error("Erreur API :", err);
   }
 }
 
 function populateFlightInfo() {
   const selected = document.getElementById("flightSelector").value;
   if (!selected) return;
-  const { arrival, departure } = JSON.parse(selected);
+
+  const parsed = JSON.parse(selected);
+  const { arrival, departure, from, to } = parsed;
 
   const compagnie = document.getElementById("compagnie");
   const provenance = document.getElementById("provenance");
@@ -211,30 +230,12 @@ function populateFlightInfo() {
   const numVol = document.querySelector("input[placeholder='N° de vol départ']") || document.querySelector("input[type='number']");
 
   if (compagnie) compagnie.value = departure.airline?.iataCode || "";
-  if (provenance) provenance.value = arrival?.departure?.iataCode || "N/A";
-  if (destination) destination.value = departure.arrival?.iataCode || "";
-  if (sibt) sibt.value = arrival ? formatTime(arrival?.arrival?.scheduledTime) : "";
+  if (provenance) provenance.value = from || "";
+  if (destination) destination.value = to || "";
+  if (sibt) sibt.value = formatTime(arrival);
   if (sobt) sobt.value = formatTime(departure?.departure?.scheduledTime);
   if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
   if (numVol) numVol.value = departure.flight?.number || "";
-
-  if (sibt && sobt && sibt.value && sobt.value && sibt.value > sobt.value) {
-    const temp = sibt.value;
-    sibt.value = sobt.value;
-    sobt.value = temp;
-  }
-}
-
-function formatTime(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substr(11, 5);
-}
-
-function formatDate(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substring(0, 10);
 }
 
 function setTimeMode(mode) {
@@ -245,7 +246,6 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
-
 
 
   
