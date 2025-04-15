@@ -121,34 +121,52 @@
         const res = await fetch(timetableUrl);
         const data = await res.json();
 
-        for (const flight of data) {
-          const regNum = flight.aircraft && flight.aircraft.regNumber;
-          if (!regNum) continue;
+        const enrichedFlights = await Promise.all(
+          data.map(async flight => {
+            const regNum = flight.aircraft && flight.aircraft.regNumber;
+            if (!regNum) return null;
 
-          const flightFrom = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}&regNum=${regNum}`);
-          const previousFlights = await flightFrom.json();
-          const lastArrival = previousFlights.find(f => f.arrival && f.arrival.iataCode === IATA_CODE);
+            const resPrevious = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}&regNum=${regNum}`);
+            const previousData = await resPrevious.json();
+            const lastArrival = previousData.find(f => f.arrival && f.arrival.iataCode === IATA_CODE);
 
-          if (!lastArrival || !flight.departure || !flight.departure.iataCode || !flight.arrival || !flight.arrival.iataCode) continue;
+            const sibTime = lastArrival?.departure?.scheduledTime;
+            const sobTime = flight?.departure?.scheduledTime;
 
-          const sibTime = new Date(lastArrival.departure.scheduledTime);
-          const sobTime = new Date(flight.departure.scheduledTime);
+            return {
+              flight,
+              sibTime,
+              provenance: lastArrival?.departure?.iataCode || "???",
+              destination: flight?.arrival?.iataCode || "???",
+              sobTime
+            };
+          })
+        );
 
-          if (sibTime && sobTime && sibTime > sobTime) continue;
+        const validFlights = enrichedFlights.filter(f => f !== null);
 
+        validFlights.sort((a, b) => new Date(a.sobTime) - new Date(b.sobTime));
+
+        rotationSelect.innerHTML = "";
+        validFlights.forEach(({ flight, provenance, destination }) => {
           const option = document.createElement("option");
           option.value = JSON.stringify(flight);
-          option.textContent = `${flight.airline.iataCode}${flight.flight.number} ${lastArrival.departure.iataCode} -> ${flight.arrival.iataCode}`;
+          option.textContent = `${flight.airline.iataCode}${flight.flight.number} ${provenance} -> ${destination}`;
           rotationSelect.appendChild(option);
-        }
+        });
 
-        if (rotationSelect.options.length <= 1) {
+        if (rotationSelect.options.length === 0) {
           rotationSelect.innerHTML = `<option>Aucun vol disponible</option>`;
         } else {
-          rotationSelect.options[0].textContent = "-- Sélectionner un vol --";
+          const defaultOption = document.createElement("option");
+          defaultOption.textContent = "-- Sélectionner un vol --";
+          defaultOption.disabled = true;
+          defaultOption.selected = true;
+          rotationSelect.insertBefore(defaultOption, rotationSelect.firstChild);
         }
+
       } catch (err) {
-        console.error("Erreur API :", err);
+        console.error("Erreur API:", err);
         rotationSelect.innerHTML = `<option>Erreur de chargement</option>`;
       }
     }
