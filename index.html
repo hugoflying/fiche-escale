@@ -163,6 +163,11 @@ async function loadFlights() {
       });
     });
 
+    if (flights.length === 0) {
+      selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
+      return;
+    }
+
     flights.sort((a, b) => new Date(a.sobt) - new Date(b.sobt));
 
     selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
@@ -172,10 +177,6 @@ async function loadFlights() {
       opt.textContent = flight.label;
       selector.appendChild(opt);
     });
-
-    if (flights.length === 0) {
-      selector.innerHTML += '<option value="">Aucun vol trouvé</option>';
-    }
   } catch (err) {
     selector.innerHTML = '<option value="">Erreur de chargement</option>';
     console.error("Erreur API:", err);
@@ -230,6 +231,7 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
+
 
   
 <section>
