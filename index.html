@@ -137,35 +137,45 @@ async function loadFlights() {
       return;
     }
 
-    const options = [];
+    const flights = [];
 
     departures.forEach(dep => {
       const reg = dep.aircraft?.regNumber;
       if (!reg) return;
 
       const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
+      if (!matchingArrival) return;
 
-      const from = matchingArrival?.departure?.iataCode || '???';
+      const from = matchingArrival.departure?.iataCode || '???';
       const to = dep.arrival?.iataCode || '???';
-      if (from === AIRPORT_IATA || to === AIRPORT_IATA || from === '???' || to === '???') return;
+
+      if (from === '???' || to === '???') return;
 
       const airline = dep.airline?.iataCode || '?';
       const flightNum = dep.flight?.number || '?';
-      const label = `${airline}${flightNum} ${from} → ${to}`;
 
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify({ arrival: matchingArrival, departure: dep });
-      opt.textContent = label;
-      options.push(opt);
+      const sobt = dep.departure?.scheduledTime || '';
+
+      flights.push({
+        label: `${airline}${flightNum} ${from} → ${to}`,
+        sobt,
+        value: JSON.stringify({ arrival: matchingArrival, departure: dep })
+      });
     });
 
-    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    if (options.length === 0) {
-      selector.innerHTML += '<option value="">Aucun vol trouvé</option>';
-    } else {
-      options.forEach(opt => selector.appendChild(opt));
-    }
+    flights.sort((a, b) => new Date(a.sobt) - new Date(b.sobt));
 
+    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+    flights.forEach(flight => {
+      const opt = document.createElement("option");
+      opt.value = flight.value;
+      opt.textContent = flight.label;
+      selector.appendChild(opt);
+    });
+
+    if (flights.length === 0) {
+      selector.innerHTML += '<option value="">Aucun vol trouvé</option>';
+    }
   } catch (err) {
     selector.innerHTML = '<option value="">Erreur de chargement</option>';
     console.error("Erreur API:", err);
@@ -193,7 +203,6 @@ function populateFlightInfo() {
   if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
   if (numVol) numVol.value = departure.flight?.number || "";
 
-  // Corriger SIBT > SOBT si inversé
   if (sibt && sobt && sibt.value && sobt.value && sibt.value > sobt.value) {
     const temp = sibt.value;
     sibt.value = sobt.value;
