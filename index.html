@@ -124,18 +124,17 @@ async function loadFlights() {
   selector.innerHTML = '<option value="">-- Chargement... --</option>';
 
   try {
-    const res = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`);
-    const text = await res.text();
-    let departures = JSON.parse(text);
-
-    const res2 = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`);
-    const arrivals = await res2.json();
+    const depRes = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`);
+    const departures = await depRes.json();
+    const arrRes = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`);
+    const arrivals = await arrRes.json();
 
     const paired = departures.map(dep => {
       const reg = dep.aircraft?.regNumber;
+      if (!reg) return null;
       const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
-      return { arrival: matchingArrival, departure: dep };
-    }).filter(p => p.departure);
+      return matchingArrival ? { arrival: matchingArrival, departure: dep } : null;
+    }).filter(p => p);
 
     selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
     paired.forEach(({arrival, departure}) => {
@@ -171,9 +170,9 @@ function populateFlightInfo() {
   if (compagnie) compagnie.value = departure.airline?.iataCode || "";
   if (provenance) provenance.value = arrival?.departure?.iataCode || "";
   if (destination) destination.value = departure.arrival?.iataCode || "";
-  if (sobt) sobt.value = formatTime(departure.departure?.scheduledTime);
   if (sibt) sibt.value = formatTime(arrival?.arrival?.scheduledTime);
-  if (dateField) dateField.value = formatDate(departure.departure?.scheduledTime);
+  if (sobt) sobt.value = formatTime(departure?.departure?.scheduledTime);
+  if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
   if (numVol) numVol.value = departure.flight?.number || "";
 }
 
@@ -197,6 +196,7 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
+
   
 <section>
   <h3>INFORMATIONS</h3>
