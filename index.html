@@ -124,10 +124,18 @@ async function loadFlights() {
   selector.innerHTML = '<option value="">-- Chargement... --</option>';
 
   try {
-    const depRes = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`);
+    const [depRes, arrRes] = await Promise.all([
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
+    ]);
+
     const departures = await depRes.json();
-    const arrRes = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`);
     const arrivals = await arrRes.json();
+
+    if (!Array.isArray(departures) || !Array.isArray(arrivals)) {
+      selector.innerHTML = '<option value="">Aucune donnée reçue</option>';
+      return;
+    }
 
     const options = [];
 
@@ -136,10 +144,13 @@ async function loadFlights() {
       if (!reg) return;
 
       const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
-      const airline = dep.airline?.iataCode || '?';
-      const flightNum = dep.flight?.number || '?';
+
       const from = matchingArrival?.departure?.iataCode || '???';
       const to = dep.arrival?.iataCode || '???';
+      if (from === AIRPORT_IATA || to === AIRPORT_IATA || from === '???' || to === '???') return;
+
+      const airline = dep.airline?.iataCode || '?';
+      const flightNum = dep.flight?.number || '?';
       const label = `${airline}${flightNum} ${from} → ${to}`;
 
       const opt = document.createElement("option");
@@ -149,7 +160,11 @@ async function loadFlights() {
     });
 
     selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    options.forEach(opt => selector.appendChild(opt));
+    if (options.length === 0) {
+      selector.innerHTML += '<option value="">Aucun vol trouvé</option>';
+    } else {
+      options.forEach(opt => selector.appendChild(opt));
+    }
 
   } catch (err) {
     selector.innerHTML = '<option value="">Erreur de chargement</option>';
@@ -177,6 +192,13 @@ function populateFlightInfo() {
   if (sobt) sobt.value = formatTime(departure?.departure?.scheduledTime);
   if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
   if (numVol) numVol.value = departure.flight?.number || "";
+
+  // Corriger SIBT > SOBT si inversé
+  if (sibt && sobt && sibt.value && sobt.value && sibt.value > sobt.value) {
+    const temp = sibt.value;
+    sibt.value = sobt.value;
+    sobt.value = temp;
+  }
 }
 
 function formatTime(isoTime) {
