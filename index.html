@@ -141,25 +141,26 @@ async function loadFlights() {
 
     departures.forEach(dep => {
       const reg = dep.aircraft?.regNumber;
-      if (!reg) return;
-
-      const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
-      if (!matchingArrival) return;
-
-      const from = matchingArrival.departure?.iataCode || '???';
-      const to = dep.arrival?.iataCode || '???';
-
-      if (from === '???' || to === '???') return;
-
       const airline = dep.airline?.iataCode || '?';
       const flightNum = dep.flight?.number || '?';
-
       const sobt = dep.departure?.scheduledTime || '';
+      const to = dep.arrival?.iataCode || '???';
+
+      let from = 'N/A';
+
+      if (reg) {
+        const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
+        if (matchingArrival && matchingArrival.departure?.iataCode) {
+          from = matchingArrival.departure.iataCode;
+        }
+      }
+
+      if (to === '???') return;
 
       flights.push({
         label: `${airline}${flightNum} ${from} → ${to}`,
         sobt,
-        value: JSON.stringify({ arrival: matchingArrival, departure: dep })
+        value: JSON.stringify({ arrival: null, departure: dep })
       });
     });
 
@@ -197,9 +198,9 @@ function populateFlightInfo() {
   const numVol = document.querySelector("input[placeholder='N° de vol départ']") || document.querySelector("input[type='number']");
 
   if (compagnie) compagnie.value = departure.airline?.iataCode || "";
-  if (provenance) provenance.value = arrival?.departure?.iataCode || "";
+  if (provenance) provenance.value = arrival?.departure?.iataCode || "N/A";
   if (destination) destination.value = departure.arrival?.iataCode || "";
-  if (sibt) sibt.value = formatTime(arrival?.arrival?.scheduledTime);
+  if (sibt) sibt.value = arrival ? formatTime(arrival?.arrival?.scheduledTime) : "";
   if (sobt) sobt.value = formatTime(departure?.departure?.scheduledTime);
   if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
   if (numVol) numVol.value = departure.flight?.number || "";
