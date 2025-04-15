@@ -127,12 +127,6 @@ function isSameLocalDay(dateStr) {
          d.getFullYear() === local.getFullYear();
 }
 
-function isBetweenHoursLocal(dateStr, startHour, endHour) {
-  const date = new Date(dateStr);
-  const localHour = date.getHours();
-  return localHour >= startHour && localHour <= endHour;
-}
-
 function formatTime(isoTime) {
   if (!isoTime) return "";
   const date = new Date(isoTime);
@@ -167,7 +161,7 @@ async function loadFlights() {
 
     for (const dep of departures) {
       const sobt = dep?.departure?.scheduledTime;
-      if (!sobt || !isSameLocalDay(sobt) || !isBetweenHoursLocal(sobt, 4, 23)) continue;
+      if (!sobt || !isSameLocalDay(sobt)) continue;
 
       const reg = dep?.aircraft?.regNumber;
       const airline = dep?.airline?.iataCode || "?";
