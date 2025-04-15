@@ -129,25 +129,25 @@ async function loadFlights() {
     const arrRes = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`);
     const arrivals = await arrRes.json();
 
-    const paired = departures.map(dep => {
-      const reg = dep.aircraft?.regNumber;
-      if (!reg) return null;
-      const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
-      return matchingArrival ? { arrival: matchingArrival, departure: dep } : null;
-    }).filter(p => p);
+    const options = [];
 
-    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    paired.forEach(({arrival, departure}) => {
-      const depFlightNum = `${departure.airline?.iataCode || '?'}${departure.flight?.number || '?'}`;
+    departures.forEach(dep => {
+      const reg = dep.aircraft?.regNumber;
+      const arrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
+      const depFlightNum = `${dep.airline?.iataCode || '?'}${dep.flight?.number || '?'}`;
       const from = arrival?.departure?.iataCode || '?';
-      const to = departure.arrival?.iataCode || '?';
+      const to = dep.arrival?.iataCode || '?';
       const label = `${depFlightNum} ${from} → ${to}`;
 
       const opt = document.createElement("option");
-      opt.value = JSON.stringify({ arrival, departure });
+      opt.value = JSON.stringify({ arrival, departure: dep });
       opt.textContent = label;
-      selector.appendChild(opt);
+      options.push(opt);
     });
+
+    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+    options.forEach(opt => selector.appendChild(opt));
+
   } catch (err) {
     selector.innerHTML = '<option value="">Erreur de chargement</option>';
     console.error("Erreur API:", err);
