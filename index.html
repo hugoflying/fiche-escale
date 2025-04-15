@@ -133,14 +133,17 @@ async function loadFlights() {
 
     departures.forEach(dep => {
       const reg = dep.aircraft?.regNumber;
-      const arrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
-      const depFlightNum = `${dep.airline?.iataCode || '?'}${dep.flight?.number || '?'}`;
-      const from = arrival?.departure?.iataCode || '?';
-      const to = dep.arrival?.iataCode || '?';
-      const label = `${depFlightNum} ${from} → ${to}`;
+      if (!reg) return;
+
+      const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
+      const airline = dep.airline?.iataCode || '?';
+      const flightNum = dep.flight?.number || '?';
+      const from = matchingArrival?.departure?.iataCode || '???';
+      const to = dep.arrival?.iataCode || '???';
+      const label = `${airline}${flightNum} ${from} → ${to}`;
 
       const opt = document.createElement("option");
-      opt.value = JSON.stringify({ arrival, departure: dep });
+      opt.value = JSON.stringify({ arrival: matchingArrival, departure: dep });
       opt.textContent = label;
       options.push(opt);
     });
