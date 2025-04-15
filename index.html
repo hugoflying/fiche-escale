@@ -6,14 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-  font-family: sans-serif;
-  padding: 10px;
-  margin: auto;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
+      font-family: sans-serif;
+      padding: 10px;
+      margin: auto;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
     section {
       margin-bottom: 30px;
     }
@@ -101,6 +101,72 @@
   </div>
 
 <h2>Fiche Escale Vol</h2>
+
+<!-- MENU DE SÉLECTION DES ROTATIONS DU JOUR -->
+<section>
+  <h3>ROTATIONS DISPONIBLES</h3>
+  <div class="row">
+    <div class="field">
+      <label>Choisir un vol</label>
+      <select id="flightSelector" onchange="populateFlightInfo()">
+        <option value="">-- Chargement en cours... --</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<script>
+const API_KEY = "86b00c-05cc00";
+const AIRPORT_IATA = "BVA";
+
+async function loadFlights() {
+  const selector = document.getElementById("flightSelector");
+  selector.innerHTML = '<option value="">-- Chargement... --</option>';
+
+  try {
+    const res = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`);
+    const data = await res.json();
+
+    if (Array.isArray(data)) {
+      selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+      data.forEach(flight => {
+        const opt = document.createElement("option");
+        opt.value = JSON.stringify(flight);
+        opt.textContent = `${flight.airline?.iataCode || '?'}${flight.flight?.number || '?'} → ${flight.arrival?.iataCode || '?'}`;
+        selector.appendChild(opt);
+      });
+    } else {
+      selector.innerHTML = '<option value="">Aucun vol disponible</option>';
+    }
+  } catch (err) {
+    selector.innerHTML = '<option value="">Erreur de chargement</option>';
+    console.error("Erreur API:", err);
+  }
+}
+
+function populateFlightInfo() {
+  const selected = document.getElementById("flightSelector").value;
+  if (!selected) return;
+  const flight = JSON.parse(selected);
+
+  document.getElementById("compagnie").value = flight.airline?.iataCode || "";
+  document.querySelector("input[placeholder='Provenance']")?.value = flight.departure?.iataCode || "";
+  document.querySelector("input[placeholder='Destination']")?.value = flight.arrival?.iataCode || "";
+  document.getElementById("sobt")?.value = formatTime(flight.departure?.scheduledTime);
+  document.getElementById("sibt")?.value = formatTime(flight.arrival?.scheduledTime);
+}
+
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substr(11, 5);
+}
+
+window.addEventListener("DOMContentLoaded", loadFlights);
+</script>
+</body>
+</html>
+
   
 <section>
   <h3>INFORMATIONS</h3>
