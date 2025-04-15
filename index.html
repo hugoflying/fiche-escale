@@ -144,7 +144,13 @@ async function loadFlights() {
     data.forEach(flight => {
       const opt = document.createElement("option");
       opt.value = JSON.stringify(flight);
-      opt.textContent = `${flight.airline?.iataCode || '?'}${flight.flight?.number || '?'} → ${flight.arrival?.iataCode || '?'}`;
+
+      const flightNum = `${flight.airline?.iataCode || '?'}${flight.flight?.number || '?'}`;
+      const destination = flight.arrival?.iataCode || '?';
+      const origin = flight.departure?.iataCode || '?';
+      const sibFlight = `${flightNum} ${origin} → ${destination}`;
+
+      opt.textContent = sibFlight;
       selector.appendChild(opt);
     });
   } catch (err) {
@@ -163,18 +169,28 @@ function populateFlightInfo() {
   const destination = document.getElementById("destination");
   const sobt = document.getElementById("sobt");
   const sibt = document.getElementById("sibt");
+  const dateField = document.getElementById("dateField");
+  const numVol = document.querySelector("input[placeholder='N° de vol départ']") || document.querySelector("input[type='number']");
 
   if (compagnie) compagnie.value = flight.airline?.iataCode || "";
   if (provenance) provenance.value = flight.departure?.iataCode || "";
   if (destination) destination.value = flight.arrival?.iataCode || "";
   if (sobt) sobt.value = formatTime(flight.departure?.scheduledTime);
   if (sibt) sibt.value = formatTime(flight.arrival?.scheduledTime);
+  if (dateField) dateField.value = formatDate(flight.departure?.scheduledTime);
+  if (numVol) numVol.value = flight.flight?.number || "";
 }
 
 function formatTime(isoTime) {
   if (!isoTime) return "";
   const date = new Date(isoTime);
   return date.toISOString().substr(11, 5);
+}
+
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
 }
 
 function setTimeMode(mode) {
