@@ -126,31 +126,27 @@ async function loadFlights() {
   try {
     const res = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`);
     const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      console.error("Réponse invalide:", text);
-      selector.innerHTML = '<option value="">Réponse invalide</option>';
-      return;
-    }
+    let departures = JSON.parse(text);
 
-    if (!Array.isArray(data) || data.length === 0) {
-      selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
-      return;
-    }
+    const res2 = await fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`);
+    const arrivals = await res2.json();
+
+    const paired = departures.map(dep => {
+      const reg = dep.aircraft?.regNumber;
+      const matchingArrival = arrivals.find(arr => arr.aircraft?.regNumber === reg);
+      return { arrival: matchingArrival, departure: dep };
+    }).filter(p => p.departure);
 
     selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    data.forEach(flight => {
+    paired.forEach(({arrival, departure}) => {
+      const depFlightNum = `${departure.airline?.iataCode || '?'}${departure.flight?.number || '?'}`;
+      const from = arrival?.departure?.iataCode || '?';
+      const to = departure.arrival?.iataCode || '?';
+      const label = `${depFlightNum} ${from} → ${to}`;
+
       const opt = document.createElement("option");
-      opt.value = JSON.stringify(flight);
-
-      const flightNum = `${flight.airline?.iataCode || '?'}${flight.flight?.number || '?'}`;
-      const destination = flight.arrival?.iataCode || '?';
-      const origin = flight.departure?.iataCode || '?';
-      const sibFlight = `${flightNum} ${origin} → ${destination}`;
-
-      opt.textContent = sibFlight;
+      opt.value = JSON.stringify({ arrival, departure });
+      opt.textContent = label;
       selector.appendChild(opt);
     });
   } catch (err) {
@@ -162,7 +158,7 @@ async function loadFlights() {
 function populateFlightInfo() {
   const selected = document.getElementById("flightSelector").value;
   if (!selected) return;
-  const flight = JSON.parse(selected);
+  const { arrival, departure } = JSON.parse(selected);
 
   const compagnie = document.getElementById("compagnie");
   const provenance = document.getElementById("provenance");
@@ -172,13 +168,13 @@ function populateFlightInfo() {
   const dateField = document.getElementById("dateField");
   const numVol = document.querySelector("input[placeholder='N° de vol départ']") || document.querySelector("input[type='number']");
 
-  if (compagnie) compagnie.value = flight.airline?.iataCode || "";
-  if (provenance) provenance.value = flight.departure?.iataCode || "";
-  if (destination) destination.value = flight.arrival?.iataCode || "";
-  if (sobt) sobt.value = formatTime(flight.departure?.scheduledTime);
-  if (sibt) sibt.value = formatTime(flight.arrival?.scheduledTime);
-  if (dateField) dateField.value = formatDate(flight.departure?.scheduledTime);
-  if (numVol) numVol.value = flight.flight?.number || "";
+  if (compagnie) compagnie.value = departure.airline?.iataCode || "";
+  if (provenance) provenance.value = arrival?.departure?.iataCode || "";
+  if (destination) destination.value = departure.arrival?.iataCode || "";
+  if (sobt) sobt.value = formatTime(departure.departure?.scheduledTime);
+  if (sibt) sibt.value = formatTime(arrival?.arrival?.scheduledTime);
+  if (dateField) dateField.value = formatDate(departure.departure?.scheduledTime);
+  if (numVol) numVol.value = departure.flight?.number || "";
 }
 
 function formatTime(isoTime) {
@@ -201,7 +197,6 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
-
   
 <section>
   <h3>INFORMATIONS</h3>
