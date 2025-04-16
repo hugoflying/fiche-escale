@@ -243,7 +243,6 @@ async function loadFlights() {
 function populateFlightInfo() {
   const selected = document.getElementById("flightSelector").value;
   if (!selected) return;
-
   const parsed = JSON.parse(selected);
   const { arrival, departure, from, to, reg } = parsed;
 
@@ -253,6 +252,8 @@ function populateFlightInfo() {
   document.getElementById("immatriculation").value = reg || "";
   document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
   document.getElementById("numVol").value = departure.flight?.number || "";
+  document.getElementById("sobt").value = formatTime(departure?.departure?.scheduledTime);
+  document.getElementById("sibt").value = formatTime(arrival);
 }
 
 function setTimeMode(mode) {
