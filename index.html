@@ -115,31 +115,21 @@
   </div>
 </section>
 
-<!-- SECTION INFORMATIONS -->
-<section>
-  <h3>INFORMATIONS</h3>
-  <div class="row">
-    <div class="field"><label>Date</label><input type="date" id="dateField"></div>
-    <div class="field"><label>Compagnie</label><select id="compagnie">
-      <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option><option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
-    </select></div>
-    <div class="field"><label>N° de vol départ</label><input type="number" id="numVol"></div>
-    <div class="field"><label>Provenance</label><input type="text" id="provenance"></div>
-    <div class="field"><label>Destination</label><input type="text" id="destination"></div>
-    <div class="field"><label>RZA</label><input type="text" id="rza"></div>
-    <div class="field"><label>Immatriculation</label><input type="text" id="immatriculation"></div>
-    <div class="field"><label>Type avion</label><select id="typeAvion">
-      <option>B737-800 Y189</option><option>B737-8200 Y197</option><option>A320 Y180</option><option>A320 Y186</option><option>A20N Y186</option><option>A321 Y230</option><option>A21N Y239</option>
-    </select></div>
-    <div class="field"><label>Parking</label><select id="parking">
-      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
-    </select></div>
-  </div>
-</section>
-
 <script>
-function setTimeMode(mode) {
-  window.timeMode = mode;
+const API_KEY = "86b00c-05cc00";
+const AIRPORT_IATA = "BVA";
+let immatMap = {}; // en mémoire
+
+function isSameLocalDay(dateStr) {
+  const local = new Date();
+  const d = new Date(dateStr);
+  return d.getDate() === local.getDate() && d.getMonth() === local.getMonth() && d.getFullYear() === local.getFullYear();
+}
+
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substr(11, 5);
 }
 
 function formatDate(isoTime) {
@@ -148,57 +138,26 @@ function formatDate(isoTime) {
   return date.toISOString().substring(0, 10);
 }
 
-async function getImmatriculationFromAPI(flight) {
-  if (!flight?.flight) return "";
-  let param = "";
-  if (flight.flight.icaoNumber) {
-    param = `flightIcao=${flight.flight.icaoNumber}`;
-  } else if (flight.airline?.iataCode && flight.flight.number) {
-    param = `flightIata=${flight.airline.iataCode}${flight.flight.number}`;
-  } else {
-    return "";
-  }
+async function fetchFlightImmatriculations() {
   try {
-    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=86b00c-05cc00&${param}`);
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
     const data = await res.json();
-    return data?.[0]?.aircraft?.regNumber || "";
+    data.forEach(f => {
+      const key = `${f.airline?.iataCode || ''}${f.flight?.number || ''}`;
+      if (key && f.aircraft?.regNumber) {
+        immatMap[key] = f.aircraft.regNumber;
+      }
+    });
   } catch (e) {
-    console.error("Erreur API immatriculation :", e);
-    return "";
+    console.warn("Erreur fetch immatriculations", e);
   }
-}
-
-async function populateFlightInfo() {
-  const selected = document.getElementById("flightSelector").value;
-  if (!selected) return;
-
-  const parsed = JSON.parse(selected);
-  const { arrival, departure, from, to } = parsed;
-  let reg = parsed.reg || "";
-
-  if (!reg) {
-    reg = await getImmatriculationFromAPI(departure);
-  }
-
-  document.getElementById("compagnie").value = departure.airline?.iataCode || "";
-  document.getElementById("provenance").value = from || "";
-  document.getElementById("destination").value = to || "";
-  document.getElementById("immatriculation").value = reg || "";
-  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
-  document.getElementById("numVol").value = departure.flight?.number || "";
-}
-
-function isSameLocalDay(dateStr) {
-  const local = new Date();
-  const d = new Date(dateStr);
-  return d.getDate() === local.getDate() && d.getMonth() === local.getMonth() && d.getFullYear() === local.getFullYear();
 }
 
 async function loadFlights() {
-  const API_KEY = "86b00c-05cc00";
-  const AIRPORT_IATA = "BVA";
   const selector = document.getElementById("flightSelector");
   selector.innerHTML = '<option value="">-- Chargement... --</option>';
+
+  await fetchFlightImmatriculations();
 
   try {
     const [depRes, arrRes] = await Promise.all([
@@ -215,10 +174,11 @@ async function loadFlights() {
       const sobt = dep?.departure?.scheduledTime;
       if (!sobt || !isSameLocalDay(sobt)) continue;
 
-      const reg = dep?.aircraft?.regNumber || "";
       const airline = dep?.airline?.iataCode || "?";
       const flightNum = dep?.flight?.number || "?";
       const to = dep?.arrival?.iataCode || "???";
+      const key = `${airline}${flightNum}`;
+      const reg = immatMap[key] || "";
 
       let from = "BVA", sibtTime = "";
 
@@ -259,10 +219,30 @@ async function loadFlights() {
   }
 }
 
+function populateFlightInfo() {
+  const selected = document.getElementById("flightSelector").value;
+  if (!selected) return;
+
+  const parsed = JSON.parse(selected);
+  const { arrival, departure, from, to, reg } = parsed;
+
+  document.getElementById("compagnie").value = departure.airline?.iataCode || "";
+  document.getElementById("provenance").value = from || "";
+  document.getElementById("destination").value = to || "";
+  document.getElementById("immatriculation").value = reg || "";
+  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
+  document.getElementById("numVol").value = departure.flight?.number || "";
+}
+
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+
 window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
+
 
 
 
