@@ -198,7 +198,8 @@ async function loadFlights() {
       const flightNum = dep?.flight?.number || "?";
       const to = dep?.arrival?.iataCode || "???";
       const key = `${airline}${flightNum}`;
-      const reg = immatMap[key] || "";
+      const regDirect = dep?.aircraft?.regNumber;
+      const reg = regDirect || immatMap[key] || "";
 
       let from = "BVA", sibtTime = "";
 
@@ -262,6 +263,7 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
+
 
 
 
