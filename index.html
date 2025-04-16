@@ -149,9 +149,17 @@ function formatDate(isoTime) {
 }
 
 async function getImmatriculationFromAPI(flight) {
-  if (!flight?.flight?.icaoNumber) return "";
+  if (!flight?.flight) return "";
+  let param = "";
+  if (flight.flight.icaoNumber) {
+    param = `flightIcao=${flight.flight.icaoNumber}`;
+  } else if (flight.airline?.iataCode && flight.flight.number) {
+    param = `flightIata=${flight.airline.iataCode}${flight.flight.number}`;
+  } else {
+    return "";
+  }
   try {
-    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=86b00c-05cc00&flightIcao=${flight.flight.icaoNumber}`);
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=86b00c-05cc00&${param}`);
     const data = await res.json();
     return data?.[0]?.aircraft?.regNumber || "";
   } catch (e) {
@@ -168,7 +176,7 @@ async function populateFlightInfo() {
   const { arrival, departure, from, to } = parsed;
   let reg = parsed.reg || "";
 
-  if (!reg && departure?.flight?.icaoNumber) {
+  if (!reg) {
     reg = await getImmatriculationFromAPI(departure);
   }
 
@@ -255,6 +263,7 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
+
 
 
 
