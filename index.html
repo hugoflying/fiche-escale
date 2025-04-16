@@ -155,6 +155,8 @@ function populateFlightInfo() {
   const parsed = JSON.parse(selected);
   const { arrival, departure, from, to, reg } = parsed;
 
+  console.log("IMMATRICULATION DU VOL :", reg); // Ajout pour debug
+
   document.getElementById("compagnie").value = departure.airline?.iataCode || "";
   document.getElementById("provenance").value = from || "";
   document.getElementById("destination").value = to || "";
@@ -238,7 +240,6 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
-
 
 
 <section>
