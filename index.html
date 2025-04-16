@@ -210,7 +210,8 @@ function populateFlightInfo() {
   if (!selected) return;
 
   const parsed = JSON.parse(selected);
-  const { arrival, departure, from, to, reg } = parsed;
+  const { arrival, departure, from, to } = parsed;
+  const reg = departure?.aircraft?.regNumber || "";
 
   document.getElementById("compagnie").value = departure.airline?.iataCode || "";
   document.getElementById("provenance").value = from || "";
@@ -273,7 +274,7 @@ async function loadFlights() {
         sobt: new Date(sobt),
         sibt: sibtTime,
         reg,
-        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to, reg })
+        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to })
       });
     }
 
@@ -299,6 +300,7 @@ async function loadFlights() {
 </script>
 </body>
 </html>
+
 
 
   
