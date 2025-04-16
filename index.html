@@ -115,10 +115,32 @@
   </div>
 </section>
 
+<!-- SECTION INFORMATIONS -->
+<section>
+  <h3>INFORMATIONS</h3>
+  <div class="row">
+    <div class="field"><label>Date</label><input type="date" id="dateField"></div>
+    <div class="field"><label>Compagnie</label><select id="compagnie">
+      <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option><option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
+    </select></div>
+    <div class="field"><label>N° de vol départ</label><input type="number" id="numVol"></div>
+    <div class="field"><label>Provenance</label><input type="text" id="provenance"></div>
+    <div class="field"><label>Destination</label><input type="text" id="destination"></div>
+    <div class="field"><label>RZA</label><input type="text" id="rza"></div>
+    <div class="field"><label>Immatriculation</label><input type="text" id="immatriculation"></div>
+    <div class="field"><label>Type avion</label><select id="typeAvion">
+      <option>B737-800 Y189</option><option>B737-8200 Y197</option><option>A320 Y180</option><option>A320 Y186</option><option>A20N Y186</option><option>A321 Y230</option><option>A21N Y239</option>
+    </select></div>
+    <div class="field"><label>Parking</label><select id="parking">
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
+    </select></div>
+  </div>
+</section>
+
 <script>
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
-let immatMap = {}; // en mémoire
+let immatMap = {};
 
 function isSameLocalDay(dateStr) {
   const local = new Date();
@@ -156,7 +178,6 @@ async function fetchFlightImmatriculations() {
 async function loadFlights() {
   const selector = document.getElementById("flightSelector");
   selector.innerHTML = '<option value="">-- Chargement... --</option>';
-
   await fetchFlightImmatriculations();
 
   try {
@@ -167,7 +188,6 @@ async function loadFlights() {
 
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
-
     const flights = [];
 
     for (const dep of departures) {
@@ -242,8 +262,6 @@ window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
-
-
 
 
 
