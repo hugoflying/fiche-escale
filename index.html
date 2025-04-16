@@ -143,144 +143,7 @@
   </div>
 </section>
 
-<!-- SECTION HORAIRES -->
-<section>
-  <h3>HORAIRES</h3>
-  <div class="row">
-    <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field"><label>AIBT</label><input type="time" id="aibt"></div>
-    <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
-    <div class="field"><label>AOBT</label><input type="time" id="aobt"></div>
-    <div class="field input-now"><button onclick="setNow('aibt')">Now</button></div>
-    <div class="field input-now"><button onclick="setNow('aobt')">Now</button></div>
-    <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
-    <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
-    <div class="field"><label>H-15</label><input type="time" id="hmoins15" readonly></div>
-  </div>
-</section>
-
-<script>
-function setTimeMode(mode) {
-  window.timeMode = mode;
-  const sobt = document.getElementById('sobt').dataset.utc;
-  const sibt = document.getElementById('sibt').dataset.utc;
-  if (sobt) document.getElementById('sobt').value = formatTime(sobt);
-  if (sibt) document.getElementById('sibt').value = formatTime(sibt);
-  calculateTimeOffset('sobt', 'hle', -40);
-  calculateTimeOffset('sobt', 'hmoins15', -15);
-}
-function setNow(id) {
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  document.getElementById(id).value = `${hh}:${mm}`;
-}
-function setNowToPrevious(btn) {
-  const input = btn.previousElementSibling;
-  if (!input || input.tagName.toLowerCase() !== 'input') return;
-  const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  input.value = `${hh}:${mm}`;
-}
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":").map(Number);
-  const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
-  target.value = `${hh}:${mm}`;
-}
-window.addEventListener('DOMContentLoaded', () => {
-  const sobtField = document.getElementById('sobt');
-  if (sobtField) {
-    sobtField.addEventListener('change', () => {
-      calculateTimeOffset('sobt', 'hle', -40);
-      calculateTimeOffset('sobt', 'hmoins15', -15);
-    });
-  }
-  loadFlightSelectors();
-});
-async function loadFlightSelectors() {
-  const API_KEY = "86b00c-05cc00";
-  const IATA = "BVA";
-  const [depRes, arrRes] = await Promise.all([
-    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${IATA}&type=departure`),
-    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${IATA}&type=arrival`)
-  ]);
-  const departures = await depRes.json();
-  const arrivals = await arrRes.json();
-  const depSelect = document.getElementById("departureSelector");
-  const arrSelect = document.getElementById("arrivalSelector");
-  depSelect.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-  arrSelect.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-  departures.forEach(dep => {
-    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
-    const option = document.createElement("option");
-    option.value = JSON.stringify({ departure: dep });
-    option.textContent = label;
-    depSelect.appendChild(option);
-  });
-  arrivals.forEach(arr => {
-    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
-    const option = document.createElement("option");
-    option.value = JSON.stringify({ arrival: arr });
-    option.textContent = label;
-    arrSelect.appendChild(option);
-  });
-}
-function formatTime(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  const hh = window.timeMode === 'utc' ? date.getUTCHours() : date.getHours();
-  const mm = window.timeMode === 'utc' ? date.getUTCMinutes() : date.getMinutes();
-  return `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
-}
-function formatDate(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substring(0, 10);
-}
-function populateArrivalInfo() {
-  const selected = document.getElementById("arrivalSelector").value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  const time = parsed.arrival?.arrival?.scheduledTime;
-  if (time) {
-    document.getElementById("sibt").dataset.utc = time;
-    document.getElementById("sibt").value = formatTime(time);
-  }
-  document.getElementById("provenance").value = parsed.arrival?.departure?.iataCode || "";
-}
-function populateDepartureInfo() {
-  const selected = document.getElementById("departureSelector").value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  const time = parsed.departure?.departure?.scheduledTime;
-  if (time) {
-    document.getElementById("sobt").dataset.utc = time;
-    document.getElementById("sobt").value = formatTime(time);
-  }
-  document.getElementById("compagnie").value = parsed.departure?.airline?.iataCode || "";
-  document.getElementById("destination").value = parsed.departure?.arrival?.iataCode || "";
-  document.getElementById("immatriculation").value = parsed.departure?.aircraft?.regNumber || "";
-  document.getElementById("numVol").value = parsed.departure?.flight?.number || "";
-  document.getElementById("dateField").value = formatDate(time);
-  calculateTimeOffset('sobt', 'hle', -40);
-  calculateTimeOffset('sobt', 'hmoins15', -15);
-}
-</script>
-</body>
-</html>
-
-
+<!-- SECTION HORAIRES (conservée uniquement une fois) -->
 <section>
   <h3>HORAIRES</h3>
   <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
@@ -292,9 +155,12 @@ function populateDepartureInfo() {
   <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
     <div class="field" style="min-width: 120px;"><label>EOBT</label><input type="time" id="eobt"></div>
     <div class="field" style="min-width: 120px;"><label>HLE</label><input type="time" id="hle" readonly></div>
-    <div class="field" style="min-width: 120px;"><label>H-15</label><input type="time" id="h15" readonly></div>
+    <div class="field" style="min-width: 120px;"><label>H-15</label><input type="time" id="hmoins15" readonly></div>
   </div>
 </section>
+</body>
+</html>
+
 
 <section>
   <h3>TIMING ESCALE</h3>
