@@ -246,6 +246,20 @@ async function loadFlights() {
   }
 }
 
+<script>
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substr(11, 5);
+}
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
+}
 function populateArrivalInfo() {
   const selected = document.getElementById("arrivalSelector").value;
   if (!selected) return;
@@ -253,7 +267,6 @@ function populateArrivalInfo() {
   document.getElementById("sibt").value = formatTime(parsed.arrival?.arrival?.scheduledTime);
   document.getElementById("provenance").value = parsed.arrival?.departure?.iataCode || "";
 }
-
 function populateDepartureInfo() {
   const selected = document.getElementById("departureSelector").value;
   if (!selected) return;
@@ -265,11 +278,6 @@ function populateDepartureInfo() {
   document.getElementById("numVol").value = parsed.departure.flight?.number || "";
   document.getElementById("dateField").value = formatDate(parsed.departure?.departure?.scheduledTime);
 }
-
-function setTimeMode(mode) {
-  window.timeMode = mode;
-}
-
 window.addEventListener("DOMContentLoaded", async () => {
   const API_KEY = "86b00c-05cc00";
   const AIRPORT_IATA = "BVA";
@@ -287,7 +295,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   arrSelector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
 
   departures.forEach(dep => {
-    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} vers ${dep.arrival?.iataCode || "???"}`;
+    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
     const opt = document.createElement("option");
     opt.value = JSON.stringify({ departure: dep });
     opt.textContent = label;
@@ -295,7 +303,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   arrivals.forEach(arr => {
-    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} depuis ${arr.departure?.iataCode || "???"}`;
+    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
     const opt = document.createElement("option");
     opt.value = JSON.stringify({ arrival: arr });
     opt.textContent = label;
