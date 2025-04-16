@@ -143,108 +143,21 @@
   </div>
 </section>
 
-<script>
-const API_KEY = "86b00c-05cc00";
-const AIRPORT_IATA = "BVA";
-let immatMap = {};
-
-function isSameLocalDay(dateStr) {
-  const local = new Date();
-  const d = new Date(dateStr);
-  return d.getDate() === local.getDate() && d.getMonth() === local.getMonth() && d.getFullYear() === local.getFullYear();
-}
-
-function formatTime(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substr(11, 5);
-}
-
-function formatDate(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substring(0, 10);
-}
-
-async function fetchFlightImmatriculations() {
-  try {
-    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
-    const data = await res.json();
-    data.forEach(f => {
-      const key = `${f.airline?.iataCode || ''}${f.flight?.number || ''}`;
-      if (key && f.aircraft?.regNumber) {
-        immatMap[key] = f.aircraft.regNumber;
-      }
-    });
-  } catch (e) {
-    console.warn("Erreur fetch immatriculations", e);
-  }
-}
-
-async function loadFlights() {
-  const selector = document.getElementById("flightSelector");
-  selector.innerHTML = '<option value="">-- Chargement... --</option>';
-  await fetchFlightImmatriculations();
-
-  try {
-    const [depRes, arrRes] = await Promise.all([
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
-    ]);
-
-    const departures = await depRes.json();
-    const arrivals = await arrRes.json();
-    const flights = [];
-
-    for (const dep of departures) {
-      const sobt = dep?.departure?.scheduledTime;
-      if (!sobt || !isSameLocalDay(sobt)) continue;
-
-      const airline = dep?.airline?.iataCode || "?";
-      const flightNum = dep?.flight?.number || "?";
-      const to = dep?.arrival?.iataCode || "???";
-      const key = `${airline}${flightNum}`;
-      const regDirect = dep?.aircraft?.regNumber;
-      const reg = regDirect || immatMap[key] || "";
-
-      let from = "BVA", sibtTime = "";
-
-      if (reg) {
-        const match = arrivals.find(arr => arr?.aircraft?.regNumber === reg && isSameLocalDay(arr?.arrival?.scheduledTime));
-        if (match) {
-          from = match?.departure?.iataCode || "BVA";
-          sibtTime = match?.arrival?.scheduledTime || "";
-        }
-      }
-
-      flights.push({
-        label: `${airline}${flightNum} ${from} → ${to}`,
-        sobt: new Date(sobt),
-        sibt: sibtTime,
-        reg,
-        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to, reg })
-      });
-    }
-
-    if (flights.length === 0) {
-      selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
-      return;
-    }
-
-    flights.sort((a, b) => a.sobt - b.sobt);
-
-    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    flights.forEach(flight => {
-      const opt = document.createElement("option");
-      opt.value = flight.value;
-      opt.textContent = flight.label;
-      selector.appendChild(opt);
-    });
-  } catch (err) {
-    selector.innerHTML = '<option value="">Erreur lors du chargement</option>';
-    console.error("Erreur API :", err);
-  }
-}
+<!-- SECTION HORAIRES -->
+<section>
+  <h3>HORAIRES</h3>
+  <div class="row">
+    <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
+    <div class="field"><label>AIBT</label><input type="time" id="aibt"></div>
+    <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
+    <div class="field"><label>AOBT</label><input type="time" id="aobt"></div>
+    <div class="field input-now"><button onclick="setNow('aibt')">Now</button></div>
+    <div class="field input-now"><button onclick="setNow('aobt')">Now</button></div>
+    <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
+    <div class="field"><label>HLE</label><input type="time" id="hle" readonly></div>
+    <div class="field"><label>H-15</label><input type="time" id="hmoins15" readonly></div>
+  </div>
+</section>
 
 <script>
 function setTimeMode(mode) {
@@ -270,7 +183,7 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const base = document.getElementById(baseId);
   const target = document.getElementById(targetId);
   if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":"").map(Number);
+  const [h, m] = base.value.split(":").map(Number);
   const baseDate = new Date();
   baseDate.setHours(h);
   baseDate.setMinutes(m);
@@ -317,6 +230,18 @@ async function loadFlightSelectors() {
     arrSelect.appendChild(option);
   });
 }
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  const hh = window.timeMode === 'utc' ? date.getUTCHours() : date.getHours();
+  const mm = window.timeMode === 'utc' ? date.getUTCMinutes() : date.getMinutes();
+  return `${hh.toString().padStart(2, '0')}:${mm.toString().padStart(2, '0')}`;
+}
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
+}
 function populateArrivalInfo() {
   const selected = document.getElementById("arrivalSelector").value;
   if (!selected) return;
@@ -342,22 +267,6 @@ function populateDepartureInfo() {
 </script>
 </body>
 </html>
-
-
-<section>
-  <h3>HORAIRES</h3>
-  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-    <div class="field" style="min-width: 120px;"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field" style="min-width: 120px;"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
-    <div class="field" style="min-width: 120px;"><label>SOBT</label><input type="time" id="sobt"></div>
-    <div class="field" style="min-width: 120px;"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
-  </div>
-  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-    <div class="field" style="min-width: 120px;"><label>EOBT</label><input type="time" id="eobt"></div>
-    <div class="field" style="min-width: 120px;"><label>HLE</label><input type="time" id="hle" readonly></div>
-    <div class="field" style="min-width: 120px;"><label>H-15</label><input type="time" id="h15" readonly></div>
-  </div>
-</section>
 
 <section>
   <h3>TIMING ESCALE</h3>
