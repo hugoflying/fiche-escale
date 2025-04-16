@@ -112,6 +112,10 @@
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
+    <div class="field">
+      <label>Immatriculation</label>
+      <input type="text" id="immatriculation" readonly>
+    </div>
   </div>
 </section>
 
@@ -152,33 +156,13 @@ async function loadFlights() {
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
 
-    // 🔍 LOG pour déboguer les regNumber (immatriculations)
-    console.log("DÉPARTS :");
-    console.log(departures.map(dep => ({
-      flight: dep?.flight?.number,
-      regNumber: dep?.aircraft?.regNumber,
-      aircraft: dep?.aircraft
-    })));
-
-    console.log("ARRIVÉES :");
-    console.log(arrivals.map(arr => ({
-      flight: arr?.flight?.number,
-      regNumber: arr?.aircraft?.regNumber,
-      aircraft: arr?.aircraft
-    })));
-
-    if (!Array.isArray(departures) || !Array.isArray(arrivals)) {
-      selector.innerHTML = '<option value="">Erreur de données API</option>';
-      return;
-    }
-
     const flights = [];
 
     for (const dep of departures) {
       const sobt = dep?.departure?.scheduledTime;
       if (!sobt || !isSameLocalDay(sobt)) continue;
 
-      const reg = dep?.aircraft?.regNumber;
+      const reg = dep?.aircraft?.regNumber || "";
       const airline = dep?.airline?.iataCode || "?";
       const flightNum = dep?.flight?.number || "?";
       const to = dep?.arrival?.iataCode || "???";
@@ -257,9 +241,8 @@ function setTimeMode(mode) {
 
 window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
-
-
-
+</body>
+</html>
 
   
 <section>
