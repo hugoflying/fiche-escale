@@ -150,7 +150,11 @@ function setTimeMode(mode) {
 function formatTime(isoTime) {
   if (!isoTime) return "";
   const date = new Date(isoTime);
-  return date.toISOString().substr(11, 5);
+  if (window.timeMode === 'utc') {
+    return date.toISOString().substr(11, 5);
+  } else {
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
 }
 function formatDate(isoTime) {
   if (!isoTime) return "";
@@ -169,13 +173,25 @@ function populateDepartureInfo() {
   const selected = document.getElementById("departureSelector").value;
   if (!selected) return;
   const parsed = JSON.parse(selected);
-  const sobtValue = formatTime(parsed.departure?.departure?.scheduledTime);
+  const sobtRaw = parsed.departure?.departure?.scheduledTime;
+  const sobtValue = formatTime(sobtRaw);
   document.getElementById("sobt").value = sobtValue;
   document.getElementById("compagnie").value = parsed.departure.airline?.iataCode || "";
   document.getElementById("destination").value = parsed.departure?.arrival?.iataCode || "";
   document.getElementById("immatriculation").value = parsed.departure?.aircraft?.regNumber || "";
   document.getElementById("numVol").value = parsed.departure.flight?.number || "";
-  document.getElementById("dateField").value = formatDate(parsed.departure?.departure?.scheduledTime);
+  document.getElementById("dateField").value = formatDate(sobtRaw);
+
+  // Calcul automatique de HLE (SOBT + 30 min) et H-15 (SOBT - 15 min)
+  const hleInput = document.getElementById("hle");
+  const h15Input = document.getElementById("hmoins15");
+  if (hleInput && h15Input && sobtRaw) {
+    const sobtDate = new Date(sobtRaw);
+    const hleDate = new Date(sobtDate.getTime() + 30 * 60000);
+    const h15Date = new Date(sobtDate.getTime() - 15 * 60000);
+    hleInput.value = formatTime(hleDate);
+    h15Input.value = formatTime(h15Date);
+  }
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
@@ -213,9 +229,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
-
-
-
 
 <section>
   <h3>HORAIRES</h3>
