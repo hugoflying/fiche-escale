@@ -170,14 +170,16 @@ function populateArrivalInfo() {
   const selected = document.getElementById("arrivalSelector").value;
   if (!selected) return;
   const parsed = JSON.parse(selected);
-  document.getElementById("sibt").value = formatTime(parsed.arrival?.arrival?.scheduledTime);
+  const sibtValue = formatTime(parsed.arrival?.arrival?.scheduledTime);
+  document.getElementById("sibt").value = sibtValue;
   document.getElementById("provenance").value = parsed.arrival?.departure?.iataCode || "";
 }
 function populateDepartureInfo() {
   const selected = document.getElementById("departureSelector").value;
   if (!selected) return;
   const parsed = JSON.parse(selected);
-  document.getElementById("sobt").value = formatTime(parsed.departure?.departure?.scheduledTime);
+  const sobtValue = formatTime(parsed.departure?.departure?.scheduledTime);
+  document.getElementById("sobt").value = sobtValue;
   document.getElementById("compagnie").value = parsed.departure.airline?.iataCode || "";
   document.getElementById("destination").value = parsed.departure?.arrival?.iataCode || "";
   document.getElementById("immatriculation").value = parsed.departure?.aircraft?.regNumber || "";
@@ -220,6 +222,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 </script>
 </body>
 </html>
+
 
 
 
