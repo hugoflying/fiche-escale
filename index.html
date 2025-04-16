@@ -112,10 +112,6 @@
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
-    <div class="field">
-      <label>Immatriculation</label>
-      <input type="text" id="immatriculation" readonly>
-    </div>
   </div>
 </section>
 
@@ -134,7 +130,7 @@ function isSameLocalDay(dateStr) {
 function formatTime(isoTime) {
   if (!isoTime) return "";
   const date = new Date(isoTime);
-  return date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return date.toISOString().substr(11, 5);
 }
 
 function formatDate(isoTime) {
