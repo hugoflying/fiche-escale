@@ -143,24 +143,173 @@
   </div>
 </section>
 
-<!-- SECTION HORAIRES -->
-<section>
-  <h3>HORAIRES</h3>
-  <div class="row">
-    <div class="field"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field"><label>AIBT</label><input type="time" id="aibt"></div>
-    <div class="field"><label>SOBT</label><input type="time" id="sobt"></div>
-    <div class="field"><label>AOBT</label><input type="time" id="aobt"></div>
-    <div class="field input-now"><button onclick="setNow('aibt')">Now</button></div>
-    <div class="field input-now"><button onclick="setNow('aobt')">Now</button></div>
-    <div class="field"><label>EOBT</label><input type="time" id="eobt"></div>
-    <div class="field"><label>HLE</label><input type="time" id="hle"></div>
-    <div class="field"><label>H-15</label><input type="time" id="hmoins15"></div>
-  </div>
-</section>
+<script>
+const API_KEY = "86b00c-05cc00";
+const AIRPORT_IATA = "BVA";
+let immatMap = {};
+
+function isSameLocalDay(dateStr) {
+  const local = new Date();
+  const d = new Date(dateStr);
+  return d.getDate() === local.getDate() && d.getMonth() === local.getMonth() && d.getFullYear() === local.getFullYear();
+}
+
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substr(11, 5);
+}
+
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
+}
+
+async function fetchFlightImmatriculations() {
+  try {
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
+    const data = await res.json();
+    data.forEach(f => {
+      const key = `${f.airline?.iataCode || ''}${f.flight?.number || ''}`;
+      if (key && f.aircraft?.regNumber) {
+        immatMap[key] = f.aircraft.regNumber;
+      }
+    });
+  } catch (e) {
+    console.warn("Erreur fetch immatriculations", e);
+  }
+}
+
+async function loadFlights() {
+  const selector = document.getElementById("flightSelector");
+  selector.innerHTML = '<option value="">-- Chargement... --</option>';
+  await fetchFlightImmatriculations();
+
+  try {
+    const [depRes, arrRes] = await Promise.all([
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
+    ]);
+
+    const departures = await depRes.json();
+    const arrivals = await arrRes.json();
+    const flights = [];
+
+    for (const dep of departures) {
+      const sobt = dep?.departure?.scheduledTime;
+      if (!sobt || !isSameLocalDay(sobt)) continue;
+
+      const airline = dep?.airline?.iataCode || "?";
+      const flightNum = dep?.flight?.number || "?";
+      const to = dep?.arrival?.iataCode || "???";
+      const key = `${airline}${flightNum}`;
+      const regDirect = dep?.aircraft?.regNumber;
+      const reg = regDirect || immatMap[key] || "";
+
+      let from = "BVA", sibtTime = "";
+
+      if (reg) {
+        const match = arrivals.find(arr => arr?.aircraft?.regNumber === reg && isSameLocalDay(arr?.arrival?.scheduledTime));
+        if (match) {
+          from = match?.departure?.iataCode || "BVA";
+          sibtTime = match?.arrival?.scheduledTime || "";
+        }
+      }
+
+      flights.push({
+        label: `${airline}${flightNum} ${from} → ${to}`,
+        sobt: new Date(sobt),
+        sibt: sibtTime,
+        reg,
+        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to, reg })
+      });
+    }
+
+    if (flights.length === 0) {
+      selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
+      return;
+    }
+
+    flights.sort((a, b) => a.sobt - b.sobt);
+
+    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+    flights.forEach(flight => {
+      const opt = document.createElement("option");
+      opt.value = flight.value;
+      opt.textContent = flight.label;
+      selector.appendChild(opt);
+    });
+  } catch (err) {
+    selector.innerHTML = '<option value="">Erreur lors du chargement</option>';
+    console.error("Erreur API :", err);
+  }
+}
 
 <script>
-// JavaScript intact (non modifié ici pour ne pas l'altérer)
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+function formatTime(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substr(11, 5);
+}
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
+}
+function populateArrivalInfo() {
+  const selected = document.getElementById("arrivalSelector").value;
+  if (!selected) return;
+  const parsed = JSON.parse(selected);
+  document.getElementById("sibt").value = formatTime(parsed.arrival?.arrival?.scheduledTime);
+  document.getElementById("provenance").value = parsed.arrival?.departure?.iataCode || "";
+}
+function populateDepartureInfo() {
+  const selected = document.getElementById("departureSelector").value;
+  if (!selected) return;
+  const parsed = JSON.parse(selected);
+  document.getElementById("sobt").value = formatTime(parsed.departure?.departure?.scheduledTime);
+  document.getElementById("compagnie").value = parsed.departure.airline?.iataCode || "";
+  document.getElementById("destination").value = parsed.departure?.arrival?.iataCode || "";
+  document.getElementById("immatriculation").value = parsed.departure?.aircraft?.regNumber || "";
+  document.getElementById("numVol").value = parsed.departure.flight?.number || "";
+  document.getElementById("dateField").value = formatDate(parsed.departure?.departure?.scheduledTime);
+}
+window.addEventListener("DOMContentLoaded", async () => {
+  const API_KEY = "86b00c-05cc00";
+  const AIRPORT_IATA = "BVA";
+  const [depRes, arrRes] = await Promise.all([
+    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
+    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
+  ]);
+  const departures = await depRes.json();
+  const arrivals = await arrRes.json();
+
+  const depSelector = document.getElementById("departureSelector");
+  const arrSelector = document.getElementById("arrivalSelector");
+
+  depSelector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+  arrSelector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+
+  departures.forEach(dep => {
+    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
+    const opt = document.createElement("option");
+    opt.value = JSON.stringify({ departure: dep });
+    opt.textContent = label;
+    depSelector.appendChild(opt);
+  });
+
+  arrivals.forEach(arr => {
+    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
+    const opt = document.createElement("option");
+    opt.value = JSON.stringify({ arrival: arr });
+    opt.textContent = label;
+    arrSelector.appendChild(opt);
+  });
+});
 </script>
 </body>
 </html>
