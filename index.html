@@ -148,14 +148,29 @@ function formatDate(isoTime) {
   return date.toISOString().substring(0, 10);
 }
 
-function populateFlightInfo() {
+async function getImmatriculationFromAPI(flight) {
+  if (!flight?.flight?.icaoNumber) return "";
+  try {
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=86b00c-05cc00&flightIcao=${flight.flight.icaoNumber}`);
+    const data = await res.json();
+    return data?.[0]?.aircraft?.regNumber || "";
+  } catch (e) {
+    console.error("Erreur API immatriculation :", e);
+    return "";
+  }
+}
+
+async function populateFlightInfo() {
   const selected = document.getElementById("flightSelector").value;
   if (!selected) return;
 
   const parsed = JSON.parse(selected);
-  const { arrival, departure, from, to, reg } = parsed;
+  const { arrival, departure, from, to } = parsed;
+  let reg = parsed.reg || "";
 
-  console.log("Immatriculation :", reg);
+  if (!reg && departure?.flight?.icaoNumber) {
+    reg = await getImmatriculationFromAPI(departure);
+  }
 
   document.getElementById("compagnie").value = departure.airline?.iataCode || "";
   document.getElementById("provenance").value = from || "";
