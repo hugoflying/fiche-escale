@@ -212,30 +212,90 @@ function populateFlightInfo() {
   const parsed = JSON.parse(selected);
   const { arrival, departure, from, to, reg } = parsed;
 
-  const compagnie = document.getElementById("compagnie");
-  const provenance = document.getElementById("provenance");
-  const destination = document.getElementById("destination");
-  const sobt = document.getElementById("sobt");
-  const sibt = document.getElementById("sibt");
-  const dateField = document.getElementById("dateField");
-  const immat = document.getElementById("immatriculation");
-  const numVol = document.querySelector("input[placeholder='N° de vol départ']") || document.querySelector("input[type='number']");
-
-  if (compagnie) compagnie.value = departure.airline?.iataCode || "";
-  if (provenance) provenance.value = from || "";
-  if (destination) destination.value = to || "";
-  if (sibt) sibt.value = formatTime(arrival);
-  if (sobt) sobt.value = formatTime(departure?.departure?.scheduledTime);
-  if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
-  if (immat) immat.value = reg || "";
-  if (numVol) numVol.value = departure.flight?.number || "";
+  document.getElementById("compagnie").value = departure.airline?.iataCode || "";
+  document.getElementById("provenance").value = from || "";
+  document.getElementById("destination").value = to || "";
+  document.getElementById("immatriculation").value = reg || "";
+  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
+  document.getElementById("numVol").value = departure.flight?.number || "";
 }
 
-function setTimeMode(mode) {
-  window.timeMode = mode;
+function formatDate(isoTime) {
+  if (!isoTime) return "";
+  const date = new Date(isoTime);
+  return date.toISOString().substring(0, 10);
 }
 
-window.addEventListener("DOMContentLoaded", loadFlights);
+window.addEventListener("DOMContentLoaded", () => {
+  loadFlights();
+});
+
+async function loadFlights() {
+  const API_KEY = "86b00c-05cc00";
+  const AIRPORT_IATA = "BVA";
+  const selector = document.getElementById("flightSelector");
+  selector.innerHTML = '<option value="">-- Chargement... --</option>';
+
+  try {
+    const [depRes, arrRes] = await Promise.all([
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
+    ]);
+
+    const departures = await depRes.json();
+    const arrivals = await arrRes.json();
+
+    const flights = [];
+
+    for (const dep of departures) {
+      const sobt = dep?.departure?.scheduledTime;
+      if (!sobt) continue;
+
+      const reg = dep?.aircraft?.regNumber || "";
+      const airline = dep?.airline?.iataCode || "?";
+      const flightNum = dep?.flight?.number || "?";
+      const to = dep?.arrival?.iataCode || "???";
+
+      let from = "BVA", sibtTime = "";
+
+      if (reg) {
+        const match = arrivals.find(arr =>
+          arr?.aircraft?.regNumber === reg
+        );
+        if (match) {
+          from = match?.departure?.iataCode || "BVA";
+          sibtTime = match?.arrival?.scheduledTime || "";
+        }
+      }
+
+      flights.push({
+        label: `${airline}${flightNum} ${from} → ${to}`,
+        sobt: new Date(sobt),
+        sibt: sibtTime,
+        reg,
+        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to, reg })
+      });
+    }
+
+    if (flights.length === 0) {
+      selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
+      return;
+    }
+
+    flights.sort((a, b) => a.sobt - b.sobt);
+
+    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+    flights.forEach(flight => {
+      const opt = document.createElement("option");
+      opt.value = flight.value;
+      opt.textContent = flight.label;
+      selector.appendChild(opt);
+    });
+  } catch (err) {
+    selector.innerHTML = '<option value="">Erreur lors du chargement</option>';
+    console.error("Erreur API :", err);
+  }
+}
 </script>
 </body>
 </html>
