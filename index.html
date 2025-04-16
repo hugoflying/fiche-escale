@@ -152,6 +152,21 @@ async function loadFlights() {
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
 
+    // 🔍 LOG pour déboguer les regNumber (immatriculations)
+    console.log("DÉPARTS :");
+    console.log(departures.map(dep => ({
+      flight: dep?.flight?.number,
+      regNumber: dep?.aircraft?.regNumber,
+      aircraft: dep?.aircraft
+    })));
+
+    console.log("ARRIVÉES :");
+    console.log(arrivals.map(arr => ({
+      flight: arr?.flight?.number,
+      regNumber: arr?.aircraft?.regNumber,
+      aircraft: arr?.aircraft
+    })));
+
     if (!Array.isArray(departures) || !Array.isArray(arrivals)) {
       selector.innerHTML = '<option value="">Erreur de données API</option>';
       return;
@@ -163,12 +178,13 @@ async function loadFlights() {
       const sobt = dep?.departure?.scheduledTime;
       if (!sobt || !isSameLocalDay(sobt)) continue;
 
-      const reg = dep?.aircraft?.regNumber || "";
+      const reg = dep?.aircraft?.regNumber;
       const airline = dep?.airline?.iataCode || "?";
       const flightNum = dep?.flight?.number || "?";
       const to = dep?.arrival?.iataCode || "???";
 
       let from = "BVA", sibtTime = "";
+
       if (reg) {
         const match = arrivals.find(arr =>
           arr?.aircraft?.regNumber === reg &&
@@ -222,16 +238,16 @@ function populateFlightInfo() {
   const sobt = document.getElementById("sobt");
   const sibt = document.getElementById("sibt");
   const dateField = document.getElementById("dateField");
-  const immatriculation = document.getElementById("immatriculation");
+  const immat = document.getElementById("immatriculation");
   const numVol = document.querySelector("input[placeholder='N° de vol départ']") || document.querySelector("input[type='number']");
 
   if (compagnie) compagnie.value = departure.airline?.iataCode || "";
   if (provenance) provenance.value = from || "";
   if (destination) destination.value = to || "";
-  if (immatriculation) immatriculation.value = reg || "";
   if (sibt) sibt.value = formatTime(arrival);
   if (sobt) sobt.value = formatTime(departure?.departure?.scheduledTime);
   if (dateField) dateField.value = formatDate(departure?.departure?.scheduledTime);
+  if (immat) immat.value = reg || "";
   if (numVol) numVol.value = departure.flight?.number || "";
 }
 
@@ -241,8 +257,7 @@ function setTimeMode(mode) {
 
 window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
-</body>
-</html>
+
 
 
 
