@@ -178,7 +178,6 @@ async function fetchFlightImmatriculations() {
 async function loadFlights() {
   const selector = document.getElementById("flightSelector");
   selector.innerHTML = '<option value="">-- Chargement... --</option>';
-  await fetchFlightImmatriculations();
 
   try {
     const [depRes, arrRes] = await Promise.all([
@@ -197,15 +196,19 @@ async function loadFlights() {
       const airline = dep?.airline?.iataCode || "?";
       const flightNum = dep?.flight?.number || "?";
       const to = dep?.arrival?.iataCode || "???";
-      const key = `${airline}${flightNum}`;
-      const regDirect = dep?.aircraft?.regNumber;
-      const reg = regDirect || immatMap[key] || "";
+      const regDirect = dep?.aircraft?.regNumber || "";
 
-      let from = "BVA", sibtTime = "";
+      let from = "BVA", sibtTime = "", reg = regDirect;
 
-      if (reg) {
-        const match = arrivals.find(arr => arr?.aircraft?.regNumber === reg && isSameLocalDay(arr?.arrival?.scheduledTime));
-        if (match) {
+      // Si pas d'immat, on essaie de trouver un vol d'arrivée correspondant avec même numéro de vol
+      if (!reg) {
+        const match = arrivals.find(arr =>
+          arr?.flight?.number === flightNum &&
+          arr?.airline?.iataCode === airline &&
+          isSameLocalDay(arr?.arrival?.scheduledTime)
+        );
+        if (match && match?.aircraft?.regNumber) {
+          reg = match.aircraft.regNumber;
           from = match?.departure?.iataCode || "BVA";
           sibtTime = match?.arrival?.scheduledTime || "";
         }
