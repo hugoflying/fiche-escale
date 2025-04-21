@@ -162,33 +162,21 @@ function formatDate(isoTime) {
   return date.toISOString().substring(0, 10);
 }
 
-async function fetchFlightImmatriculations() {
-  try {
-    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
-    const data = await res.json();
-    data.forEach(f => {
-      const key = `${f.airline?.iataCode || ''}${f.flight?.number || ''}`;
-      if (key && f.aircraft?.regNumber) {
-        immatMap[key] = f.aircraft.regNumber;
-      }
-    });
-  } catch (e) {
-    console.warn("Erreur fetch immatriculations", e);
-  }
-}
-
 async function loadFlights() {
   const selector = document.getElementById("flightSelector");
   selector.innerHTML = '<option value="">-- Chargement... --</option>';
 
   try {
-    const [depRes, arrRes] = await Promise.all([
+    const [depRes, arrRes, flightsRes] = await Promise.all([
       fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`),
+      fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`)
     ]);
 
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
+    const flightsLive = await flightsRes.json();
+
     const flights = [];
 
     for (const dep of departures) {
@@ -198,21 +186,33 @@ async function loadFlights() {
       const airline = dep?.airline?.iataCode || "?";
       const flightNum = dep?.flight?.number || "?";
       const to = dep?.arrival?.iataCode || "???";
-      const regDirect = dep?.aircraft?.regNumber || "";
 
-      let from = "BVA", sibtTime = "", reg = regDirect;
+      let from = "BVA", sibtTime = "";
+      let reg = dep?.aircraft?.regNumber || "";
 
-      // Si pas d'immat, on essaie de trouver un vol d'arrivée correspondant avec même numéro de vol
+      // Étape 1 : tenter de récupérer immat via arrivée (comme avant)
       if (!reg) {
         const match = arrivals.find(arr =>
           arr?.flight?.number === flightNum &&
           arr?.airline?.iataCode === airline &&
           isSameLocalDay(arr?.arrival?.scheduledTime)
         );
-        if (match && match?.aircraft?.regNumber) {
+        if (match?.aircraft?.regNumber) {
           reg = match.aircraft.regNumber;
           from = match?.departure?.iataCode || "BVA";
           sibtTime = match?.arrival?.scheduledTime || "";
+        }
+      }
+
+      // Étape 2 : tenter de récupérer immat via /flights si toujours vide
+      if (!reg) {
+        const liveMatch = flightsLive.find(f =>
+          f?.flight?.number === flightNum &&
+          f?.airline?.iataCode === airline &&
+          f?.aircraft?.regNumber
+        );
+        if (liveMatch) {
+          reg = liveMatch.aircraft.regNumber;
         }
       }
 
