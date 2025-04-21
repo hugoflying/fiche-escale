@@ -107,14 +107,8 @@
   <h3>ROTATIONS DISPONIBLES</h3>
   <div class="row">
     <div class="field">
-      <label>Choisir un vol à l'arrivée</label>
-      <select id="arrivalSelector" onchange="populateArrivalInfo()">
-        <option value="">-- Chargement en cours... --</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Choisir un vol au départ</label>
-      <select id="departureSelector" onchange="populateDepartureInfo()">
+      <label>Choisir un vol</label>
+      <select id="flightSelector" onchange="populateFlightInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
@@ -249,70 +243,27 @@ async function loadFlights() {
   }
 }
 
-<script>
+function populateFlightInfo() {
+  const selected = document.getElementById("flightSelector").value;
+  if (!selected) return;
+  const parsed = JSON.parse(selected);
+  const { arrival, departure, from, to, reg } = parsed;
+
+  document.getElementById("compagnie").value = departure.airline?.iataCode || "";
+  document.getElementById("provenance").value = from || "";
+  document.getElementById("destination").value = to || "";
+  document.getElementById("immatriculation").value = reg || "";
+  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
+  document.getElementById("numVol").value = departure.flight?.number || "";
+  document.getElementById("sobt").value = formatTime(departure?.departure?.scheduledTime);
+  document.getElementById("sibt").value = formatTime(arrival);
+}
+
 function setTimeMode(mode) {
   window.timeMode = mode;
 }
-function formatTime(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substr(11, 5);
-}
-function formatDate(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substring(0, 10);
-}
-function populateArrivalInfo() {
-  const selected = document.getElementById("arrivalSelector").value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  document.getElementById("sibt").value = formatTime(parsed.arrival?.arrival?.scheduledTime);
-  document.getElementById("provenance").value = parsed.arrival?.departure?.iataCode || "";
-}
-function populateDepartureInfo() {
-  const selected = document.getElementById("departureSelector").value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  document.getElementById("sobt").value = formatTime(parsed.departure?.departure?.scheduledTime);
-  document.getElementById("compagnie").value = parsed.departure.airline?.iataCode || "";
-  document.getElementById("destination").value = parsed.departure?.arrival?.iataCode || "";
-  document.getElementById("immatriculation").value = parsed.departure?.aircraft?.regNumber || "";
-  document.getElementById("numVol").value = parsed.departure.flight?.number || "";
-  document.getElementById("dateField").value = formatDate(parsed.departure?.departure?.scheduledTime);
-}
-window.addEventListener("DOMContentLoaded", async () => {
-  const API_KEY = "86b00c-05cc00";
-  const AIRPORT_IATA = "BVA";
-  const [depRes, arrRes] = await Promise.all([
-    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
-    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
-  ]);
-  const departures = await depRes.json();
-  const arrivals = await arrRes.json();
 
-  const depSelector = document.getElementById("departureSelector");
-  const arrSelector = document.getElementById("arrivalSelector");
-
-  depSelector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-  arrSelector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-
-  departures.forEach(dep => {
-    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
-    const opt = document.createElement("option");
-    opt.value = JSON.stringify({ departure: dep });
-    opt.textContent = label;
-    depSelector.appendChild(opt);
-  });
-
-  arrivals.forEach(arr => {
-    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
-    const opt = document.createElement("option");
-    opt.value = JSON.stringify({ arrival: arr });
-    opt.textContent = label;
-    arrSelector.appendChild(opt);
-  });
-});
+window.addEventListener("DOMContentLoaded", loadFlights);
 </script>
 </body>
 </html>
