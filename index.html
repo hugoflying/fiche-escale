@@ -107,8 +107,8 @@
   <h3>ROTATIONS DISPONIBLES</h3>
   <div class="row">
     <div class="field">
-      <label>Choisir un vol</label>
-      <select id="flightSelector" onchange="populateFlightInfo()">
+      <label>Choisir une rotation</label>
+      <select id="rotationSelector" onchange="populateRotationInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
@@ -277,7 +277,7 @@ window.addEventListener("DOMContentLoaded", loadFlights);
   <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
     <div class="field" style="min-width: 120px;"><label>EOBT</label><input type="time" id="eobt"></div>
     <div class="field" style="min-width: 120px;"><label>HLE</label><input type="time" id="hle" readonly></div>
-    <div class="field" style="min-width: 120px;"><label>H-15</label><input type="time" id="h15" readonly></div>
+    <div class="field" style="min-width: 120px;"><label>H-15</label><input type="time" id="hmoins15" readonly></div>
   </div>
 </section>
 
@@ -424,26 +424,23 @@ function setNowToPrevious(btn) {
   input.value = `${hh}:${mm}`;
 }
 function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":").map(Number);
-  const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
-  target.value = `${hh}:${mm}`;
+  const baseInput = document.getElementById(baseId);
+  const [h, m] = baseInput.value.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h);
+  d.setMinutes(m + offsetMinutes);
+  const hh = d.getHours().toString().padStart(2, '0');
+  const mm = d.getMinutes().toString().padStart(2, '0');
+  document.getElementById(targetId).value = `${hh}:${mm}`;
 }
-
+  
 window.addEventListener('DOMContentLoaded', () => {
-  const sobtField = document.getElementById('sobt');
-  if (sobtField) {
-    sobtField.addEventListener('change', () => {
-      calculateTimeOffset('sobt', 'hle', -40);
-      calculateTimeOffset('sobt', 'h15', -15);
-    });
+ const sobtField = document.getElementById("sobt");
+if (sobtField) {
+  sobtField.addEventListener("input", () => {
+    calculateTimeOffset("sobt", "hle", -40);
+    calculateTimeOffset("sobt", "hmoins15", -15);
+  });
   }
 });
 function renderAssistances() {
