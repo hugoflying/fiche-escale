@@ -108,13 +108,13 @@
   <div class="row">
     <div class="field">
       <label>Choisir un vol à l'arrivée</label>
-      <select id="arrivalSelector" onchange="populateFlightInfo()">
+      <select id="arrivalSelector" onchange="populateArrivalInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
     <div class="field">
       <label>Choisir un vol au départ</label>
-      <select id="departureSelector" onchange="populateFlightInfo()">
+      <select id="departureSelector" onchange="populateDepartureInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
@@ -168,10 +168,33 @@ function formatDate(iso) {
   return new Date(iso).toISOString().split("T")[0];
 }
 
+function setTimeMode(mode) {
+  const useUTC = mode === 'utc';
+  if (window.lastArrival) {
+    document.getElementById("sibt").value = formatTime(window.lastArrival.arrival?.scheduledTime, useUTC);
+  }
+  if (window.lastDeparture) {
+    document.getElementById("sobt").value = formatTime(window.lastDeparture.departure?.scheduledTime, useUTC);
+    calculateTimeOffset("sobt", "hle", -40);
+    calculateTimeOffset("sobt", "h15", -15);
+  }
+}
+
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":").map(Number);
+  const ref = new Date();
+  ref.setHours(h);
+  ref.setMinutes(m);
+  ref.setMinutes(ref.getMinutes() + offsetMinutes);
+  target.value = `${String(ref.getHours()).padStart(2, '0')}:${String(ref.getMinutes()).padStart(2, '0')}`;
+}
+
 async function loadRotations() {
   const arrivalSelector = document.getElementById("arrivalSelector");
   const departureSelector = document.getElementById("departureSelector");
-
   arrivalSelector.innerHTML = `<option value="">-- Chargement... --</option>`;
   departureSelector.innerHTML = `<option value="">-- Chargement... --</option>`;
 
@@ -188,7 +211,7 @@ async function loadRotations() {
       if (!dep?.departure?.scheduledTime || !isSameLocalDay(dep.departure.scheduledTime)) return;
       const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
       const opt = document.createElement("option");
-      opt.value = JSON.stringify({ departure: dep });
+      opt.value = JSON.stringify(dep);
       opt.textContent = label;
       departureSelector.appendChild(opt);
     });
@@ -197,7 +220,7 @@ async function loadRotations() {
       if (!arr?.arrival?.scheduledTime || !isSameLocalDay(arr.arrival.scheduledTime)) return;
       const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
       const opt = document.createElement("option");
-      opt.value = JSON.stringify({ arrival: arr });
+      opt.value = JSON.stringify(arr);
       opt.textContent = label;
       arrivalSelector.appendChild(opt);
     });
@@ -206,6 +229,36 @@ async function loadRotations() {
     arrivalSelector.innerHTML = `<option value="">Erreur</option>`;
     departureSelector.innerHTML = `<option value="">Erreur</option>`;
   }
+}
+
+function populateArrivalInfo() {
+  const mode = document.querySelector("input[name='timeMode']:checked")?.value || "local";
+  const useUTC = mode === "utc";
+  const selector = document.getElementById("arrivalSelector");
+  const selected = selector.value;
+  if (!selected) return;
+  const parsed = JSON.parse(selected);
+  window.lastArrival = parsed;
+  document.getElementById("sibt").value = formatTime(parsed.arrival?.scheduledTime, useUTC);
+  document.getElementById("provenance").value = parsed.departure?.iataCode || "";
+}
+
+function populateDepartureInfo() {
+  const mode = document.querySelector("input[name='timeMode']:checked")?.value || "local";
+  const useUTC = mode === "utc";
+  const selector = document.getElementById("departureSelector");
+  const selected = selector.value;
+  if (!selected) return;
+  const parsed = JSON.parse(selected);
+  window.lastDeparture = parsed;
+  document.getElementById("sobt").value = formatTime(parsed.departure?.scheduledTime, useUTC);
+  document.getElementById("compagnie").value = parsed.airline?.iataCode || "";
+  document.getElementById("destination").value = parsed.arrival?.iataCode || "";
+  document.getElementById("immatriculation").value = parsed.aircraft?.regNumber || "";
+  document.getElementById("numVol").value = parsed.flight?.number || "";
+  document.getElementById("dateField").value = formatDate(parsed.departure?.scheduledTime);
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
 }
 
 window.addEventListener("DOMContentLoaded", loadRotations);
