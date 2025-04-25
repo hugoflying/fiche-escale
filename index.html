@@ -231,12 +231,9 @@ function populateArrivalInfo() {
   const depSel = document.getElementById("departureSelector");
   let matched = false;
   for (const dep of allDepartures) {
-    let code = dep.airline?.iataCode || "";
-    if (code === "LW" || code === "RR") code = "FR";
     const num = parseInt(dep.flight?.number);
     const depTime = new Date(dep.departure?.scheduledTime);
     if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-      dep.airline.iataCode = code;
       depSel.value = JSON.stringify(dep);
       populateDepartureInfo();
       matched = true;
@@ -250,8 +247,9 @@ function populateDepartureInfo() {
   const selected = document.getElementById("departureSelector").value;
   if (!selected) return;
   const flight = JSON.parse(selected);
+  window.lastDeparture = flight;
   document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime, isUTC());
-  document.getElementById("compagnie").value = flight.airline?.iataCode === "LW" || flight.airline?.iataCode === "RR" ? "FR" : flight.airline?.iataCode;
+  document.getElementById("compagnie").value = flight.airline?.iataCode || "";
   document.getElementById("destination").value = flight.arrival?.iataCode || "";
   document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
   document.getElementById("numVol").value = flight.flight?.number || "";
