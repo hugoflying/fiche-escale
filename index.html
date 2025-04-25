@@ -37,8 +37,8 @@
       margin-bottom: 10px;
     }
     .field {
-      flex: 1 1 calc(50% - 10px);
-      min-width: 160px;
+      flex: 1 1 calc(33.33% - 10px);
+      min-width: 100px;
       display: flex;
       flex-direction: column;
     }
@@ -78,11 +78,7 @@
     }
     @media (max-width: 600px) {
       .field {
-        flex: 1 1 calc(50% - 10px);
-      }
-      .time-controls button {
-        font-size: 0.9em;
-        padding: 12px;
+        flex: 1 1 100%;
       }
     }
     .blink-red {
@@ -100,8 +96,8 @@
       100% { background-color: #ff0000; color: white; }
     }
   </style>
- </head>
- <body>
+</head>
+<body>
     <div style="position: absolute; top: 10px; right: 20px;">
       <label><input type="radio" name="timeMode" value="local" onchange="setTimeMode('local')"> Heure locale</label>
       <label><input type="radio" name="timeMode" value="utc" checked onchange="setTimeMode('utc')"> UTC</label>
