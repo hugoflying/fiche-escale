@@ -1,29 +1,107 @@
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <title>Fiche Escale Interactive</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: sans-serif; padding: 10px; margin: auto; width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; }
-    section { margin-bottom: 30px; }
-    h3 { background: #000; color: #fff; padding: 10px; margin: 0 -10px 15px; text-align: center; }
-    .row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-    .row-grey { background-color: #f2f2f2; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-    .field { flex: 1 1 calc(50% - 10px); min-width: 160px; display: flex; flex-direction: column; }
-    .field label { font-weight: bold; margin-bottom: 3px; font-size: 0.9em; text-align: center; }
-    .field input, .field select, .field textarea { padding: 6px; font-size: 1em; }
-    textarea { height: 150px; width: 100%; }
-    input, textarea { text-transform: uppercase; }
-    .time-controls { display: flex; gap: 5px; margin-top: 5px; }
-    .time-controls button { flex: 1; padding: 10px; font-size: 1em; }
-    @media (max-width: 850px) { .field { flex: 1 1 calc(50% - 10px); } }
-    @media (max-width: 600px) { .field { flex: 1 1 calc(50% - 10px); } .time-controls button { font-size: 0.9em; padding: 12px; } }
-    .blink-red { animation: blinkRed 1s infinite; background-color: #ff0000 !important; color: white; }
-    .solid-red { background-color: #cc0000 !important; color: white; }
-    @keyframes blinkRed { 0% { background-color: #ff0000; color: white; } 50% { background-color: white; color: red; } 100% { background-color: #ff0000; color: white; } }
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+      margin: auto;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+    section {
+      margin-bottom: 30px;
+    }
+    h3 {
+      background: #000;
+      color: #fff;
+      padding: 10px;
+      margin: 0 -10px 15px;
+      text-align: center;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .row-grey {
+      background-color: #f2f2f2;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .field {
+      flex: 1 1 calc(50% - 10px);
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+    }
+    .field label {
+      font-weight: bold;
+      margin-bottom: 3px;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      padding: 6px;
+      font-size: 1em;
+    }
+    textarea {
+      height: 150px;
+      width: 100%;
+    }
+    input, textarea {
+      text-transform: uppercase;
+    }
+    .time-controls {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .time-controls button {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
+    }
+    @media (max-width: 850px) {
+      .field {
+        flex: 1 1 calc(50% - 10px);
+      }
+    }
+    @media (max-width: 600px) {
+      .field {
+        flex: 1 1 calc(50% - 10px);
+      }
+      .time-controls button {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+    }
+    .blink-red {
+      animation: blinkRed 1s infinite;
+      background-color: #ff0000 !important;
+      color: white;
+    }
+    .solid-red {
+      background-color: #cc0000 !important;
+      color: white;
+    }
+    @keyframes blinkRed {
+      0% { background-color: #ff0000; color: white; }
+      50% { background-color: white; color: red; }
+      100% { background-color: #ff0000; color: white; }
+    }
   </style>
-</head>
-<body>
+ </head>
+ <body>
     <div style="position: absolute; top: 10px; right: 20px;">
       <label><input type="radio" name="timeMode" value="local" onchange="setTimeMode('local')"> Heure locale</label>
       <label><input type="radio" name="timeMode" value="utc" checked onchange="setTimeMode('utc')"> UTC</label>
@@ -32,21 +110,40 @@
   <h2>Fiche Escale Vol</h2>
  
   <!-- MENU DE SÉLECTION DES ROTATIONS DU JOUR -->
+  <section>
+    <h3>ROTATIONS DISPONIBLES</h3>
+    <div class="row">
+      <div class="field">
+        <label>Choisir un vol à l'arrivée</label>
+        <select id="arrivalSelector" onchange="populateArrivalInfo()">
+          <option value="">-- Chargement en cours... --</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Choisir un vol au départ</label>
+        <select id="departureSelector" onchange="populateDepartureInfo()">
+          <option value="">-- Chargement en cours... --</option>
+        </select>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- SECTION INFORMATIONS -->
 <section>
-  <h3>ROTATIONS DISPONIBLES</h3>
+  <h3>INFORMATIONS</h3>
   <div class="row">
-    <div class="field">
-      <label>Choisir un vol à l'arrivée</label>
-      <select id="arrivalSelector" onchange="populateArrivalInfo()">
-        <option value="">-- Sélectionner un vol --</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Choisir un vol au départ</label>
-      <select id="departureSelector" onchange="populateDepartureInfo()">
-        <option value="">-- Sélectionner un vol --</option>
-      </select>
-    </div>
+    <div class="field"><label>Date</label><input type="date" id="dateField"></div>
+    <div class="field"><label>Compagnie</label><select id="compagnie">
+      <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option><option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
+    </select></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>N° de vol arrivée</label><input type="number" id="numVolArrivee" readonly></div>
+    <div class="field"><label>N° de vol départ</label><input type="number" id="numVol"></div>
+  </div>
+  <div class="row">
+    <div class="field"><label>Provenance</label><input type="text" id="provenance"></div>
+    <div class="field"><label>Destination</label><input type="text" id="destination"></div>
   </div>
   <div class="row">
     <div class="field"><label>Immatriculation</label><input type="text" id="immatriculation"></div>
@@ -69,6 +166,7 @@
   </div>
 </section>
  
+ <section>
   <section>
    <h3>HORAIRES</h3>
  
@@ -116,7 +214,8 @@
    </div>
  </section>
  
-  <section>
+ 
+ <section>
    <h3>TIMING ESCALE</h3>
  
    <div class="row row-grey">
@@ -271,17 +370,6 @@
       <div class="field"><label><input type="checkbox"> Push-Pull</label></div>
     </div>
   </section>
-
-<section>
-  <h3>ASSISTANCES</h3>
-  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-    <div class="field" style="min-width: 120px;">
-      <label>Quantité</label>
-      <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Quantité">
-    </div>
-  </div>
-  <div id="assistancesContainer"></div>
-</section>
  
   <section>
     <h3>FAITS SAILLANTS</h3>
@@ -382,38 +470,29 @@
    });
  }
  
-function populateArrivalInfo() {
-  const selected = document.getElementById("arrivalSelector").value;
-  if (!selected) return;
-  const flight = JSON.parse(selected);
-  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-  document.getElementById("provenance").value = flight.departure?.iataCode || "";
-  document.getElementById("numVolArrivee").value = flight.flight?.number || "";
-  window.lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-  window.lastArrivalFlightNumber = parseInt(flight.flight?.number);
-
-  const depSel = document.getElementById("departureSelector");
-  let matched = false;
-  for (let i = 0; i < depSel.options.length; i++) {
-    const opt = depSel.options[i];
-    if (!opt.value) continue;
-    const depFlight = JSON.parse(opt.value);
-    const num = parseInt(depFlight.flight?.number);
-    const depTime = new Date(depFlight.departure?.scheduledTime);
-    if (
-      (num === window.lastArrivalFlightNumber + 1 || num === window.lastArrivalFlightNumber - 1)
-      && depTime > window.lastArrivalTime
-    ) {
-      depSel.selectedIndex = i;
-      populateDepartureInfo();
-      matched = true;
-      break;
-    }
-  }
-  if (!matched) {
-    depSel.selectedIndex = 0;
-  }
-}
+ function populateArrivalInfo() {
+   const selected = document.getElementById("arrivalSelector").value;
+   if (!selected) return;
+   const flight = JSON.parse(selected);
+   document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
+   document.getElementById("provenance").value = flight.departure?.iataCode || "";
+   lastArrivalTime = new Date(flight.arrival?.scheduledTime);
+   lastArrivalFlightNumber = parseInt(flight.flight?.number);
+ 
+   const depSel = document.getElementById("departureSelector");
+   let matched = false;
+   for (const dep of allDepartures) {
+     const num = parseInt(dep.flight?.number);
+     const depTime = new Date(dep.departure?.scheduledTime);
+     if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
+       depSel.value = JSON.stringify(dep);
+       populateDepartureInfo();
+       matched = true;
+       break;
+     }
+   }
+   if (!matched) depSel.selectedIndex = 0;
+ }
  
  function populateDepartureInfo() {
    const selected = document.getElementById("departureSelector").value;
@@ -437,6 +516,31 @@ function populateArrivalInfo() {
    calculateTimeOffset("sobt", "h15", -15);
  }
 
+function populateArrivalInfo() {
+  const selected = document.getElementById("arrivalSelector").value;
+  if (!selected) return;
+  const flight = JSON.parse(selected);
+  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
+  document.getElementById("provenance").value = flight.departure?.iataCode || "";
+  document.getElementById("numVolArrivee").value = flight.flight?.number || "";
+  lastArrivalTime = new Date(flight.arrival?.scheduledTime);
+  lastArrivalFlightNumber = parseInt(flight.flight?.number);
+
+  const depSel = document.getElementById("departureSelector");
+  let matched = false;
+  for (const dep of allDepartures) {
+    const num = parseInt(dep.flight?.number);
+    const depTime = new Date(dep.departure?.scheduledTime);
+    if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
+      depSel.value = JSON.stringify(dep);
+      populateDepartureInfo();
+      matched = true;
+      break;
+    }
+  }
+  if (!matched) depSel.selectedIndex = 0;
+}
+ 
  function formatTime(iso, useUTC = false) {
    if (!iso) return "";
    const d = new Date(iso);
@@ -494,57 +598,7 @@ function populateArrivalInfo() {
    const mm = baseDate.getUTCMinutes().toString().padStart(2, '0');
    target.value = `${hh}:${mm}`;
  }
-
-   function renderAssistances() {
-  const container = document.getElementById('assistancesContainer');
-  const count = parseInt(document.getElementById('assistanceCount').value || '0');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto; background-color: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 8px;';
-    row.innerHTML = `
-      <div class="field" style="min-width: 120px;">
-        <label>Type ${i + 1}</label>
-        <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
-          <option>-</option>
-          <option>WCHR</option>
-          <option>WCHS</option>
-          <option>WCHC</option>
-          <option>DEAF</option>
-          <option>MUTE</option>
-          <option>DPNA</option>
-          <option>Autre</option>
-        </select>
-      </div>
-      <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
-        <label>Type personnalisé</label>
-        <input type="text" placeholder="Saisir le type">
-      </div>
-      <div class="field" style="min-width: 120px;">
-        <label>Équipement ${i + 1}</label>
-        <select>
-          <option>-</option>
-          <option>WCMP</option>
-          <option>WCLB</option>
-          <option>WCBD</option>
-        </select>
-      </div>
-      <div class="field" style="min-width: 120px;">
-        <label>Siège ${i + 1}</label>
-        <input type="text" placeholder="ex: 12A">
-      </div>
-    `;
-    container.appendChild(row);
-  }
-}
-
-function toggleCustomCode(i) {
-  const select = document.getElementById(`assistance-type-${i}`);
-  const customDiv = document.getElementById(`custom-assistance-${i}`);
-  customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
-}
-  
+ 
  function checkH15Status() {
       const h15 = document.getElementById("h15");
       if (!h15 || !h15.value) return;
