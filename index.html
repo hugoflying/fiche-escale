@@ -516,31 +516,6 @@ function populateArrivalInfo() {
    calculateTimeOffset("sobt", "h15", -15);
  }
 
-function populateArrivalInfo() {
-  const selected = document.getElementById("arrivalSelector").value;
-  if (!selected) return;
-  const flight = JSON.parse(selected);
-  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-  document.getElementById("provenance").value = flight.departure?.iataCode || "";
-  document.getElementById("numVolArrivee").value = flight.flight?.number || "";
-  lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-  lastArrivalFlightNumber = parseInt(flight.flight?.number);
-
-  const depSel = document.getElementById("departureSelector");
-  let matched = false;
-  for (const dep of allDepartures) {
-    const num = parseInt(dep.flight?.number);
-    const depTime = new Date(dep.departure?.scheduledTime);
-    if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-      depSel.value = JSON.stringify(dep);
-      populateDepartureInfo();
-      matched = true;
-      break;
-    }
-  }
-  if (!matched) depSel.selectedIndex = 0;
-}
- 
  function formatTime(iso, useUTC = false) {
    if (!iso) return "";
    const d = new Date(iso);
