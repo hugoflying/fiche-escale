@@ -463,11 +463,12 @@
 function populateArrivalInfo() {
   const selected = document.getElementById("arrivalSelector").value;
   if (!selected) return;
+  
   const flight = JSON.parse(selected);
   document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
   document.getElementById("provenance").value = flight.departure?.iataCode || "";
   document.getElementById("numVolArrivee").value = flight.flight?.number || "";
-
+  
   window.lastArrivalTime = new Date(flight.arrival?.scheduledTime);
   window.lastArrivalFlightNumber = parseInt(flight.flight?.number);
 
@@ -475,23 +476,21 @@ function populateArrivalInfo() {
   let matched = false;
 
   for (let i = 0; i < depSel.options.length; i++) {
-    const option = depSel.options[i];
-    if (!option.value) continue;
-
-    const depFlight = JSON.parse(option.value);
-    const depNum = parseInt(depFlight.flight?.number);
+    const opt = depSel.options[i];
+    if (!opt.value) continue;
+    const depFlight = JSON.parse(opt.value);
+    const num = parseInt(depFlight.flight?.number);
     const depTime = new Date(depFlight.departure?.scheduledTime);
-
-    if ((depNum === window.lastArrivalFlightNumber + 1 || depNum === window.lastArrivalFlightNumber - 1) && depTime > window.lastArrivalTime) {
-      depSel.selectedIndex = i;  // <-- Sélectionne automatiquement
-      populateDepartureInfo();
+    if ((num === window.lastArrivalFlightNumber + 1 || num === window.lastArrivalFlightNumber - 1) && depTime > window.lastArrivalTime) {
+      depSel.selectedIndex = i; // Sélectionne l'option
+      populateDepartureInfo();  // Remplit automatiquement
       matched = true;
       break;
     }
   }
 
   if (!matched) {
-    depSel.selectedIndex = 0; // Si pas de match, reste vide
+    depSel.selectedIndex = 0; // Aucun match
   }
 }
  
