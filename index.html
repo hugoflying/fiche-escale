@@ -107,11 +107,10 @@
   <h3>ROTATIONS DISPONIBLES</h3>
   <div class="row">
     <div class="field">
-      <label>Choisir un vol</label>
-      <select id="flightSelector" onchange="populateFlightInfo()">
+      <label>Choisir une rotation</label>
+      <select id="rotationSelector" onchange="populateFlightInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
-      <button onclick="loadFlights()" style="margin-top: 5px; padding: 6px 10px; font-size: 0.85em;">🔄 Actualiser les vols</button>
     </div>
   </div>
 </section>
@@ -142,131 +141,157 @@
 <script>
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
-let immatMap = {};
 
 function isSameLocalDay(dateStr) {
-  const local = new Date();
-  const d = new Date(dateStr);
-  return d.getDate() === local.getDate() && d.getMonth() === local.getMonth() && d.getFullYear() === local.getFullYear();
+  const now = new Date();
+  const date = new Date(dateStr);
+  return date.getFullYear() === now.getFullYear() &&
+         date.getMonth() === now.getMonth() &&
+         date.getDate() === now.getDate();
 }
 
-function formatTime(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substr(11, 5);
+function formatTime(iso, useUTC = false) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  const h = useUTC ? date.getUTCHours() : date.getHours();
+  const m = useUTC ? date.getUTCMinutes() : date.getMinutes();
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-function formatDate(isoTime) {
-  if (!isoTime) return "";
-  const date = new Date(isoTime);
-  return date.toISOString().substring(0, 10);
+function formatDate(iso) {
+  if (!iso) return "";
+  return new Date(iso).toISOString().split("T")[0];
 }
 
-async function loadFlights() {
-  const selector = document.getElementById("flightSelector");
-  selector.innerHTML = '<option value="">-- Chargement... --</option>';
+async function fetchLiveFlights() {
+  try {
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.warn("Erreur API /flights", err);
+    return [];
+  }
+}
+
+async function loadRotations() {
+  const selector = document.getElementById("rotationSelector");
+  selector.innerHTML = `<option value="">-- Chargement... --</option>`;
 
   try {
-    const [depRes, arrRes, flightsRes] = await Promise.all([
+    const [depRes, arrRes, liveData] = await Promise.all([
       fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
       fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`),
-      fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`)
+      fetchLiveFlights()
     ]);
 
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
-    const flightsLive = await flightsRes.json();
 
-    const flights = [];
+    const rotations = [];
 
     for (const dep of departures) {
-      const sobt = dep?.departure?.scheduledTime;
-      if (!sobt || !isSameLocalDay(sobt)) continue;
+      if (!dep?.departure?.scheduledTime || !isSameLocalDay(dep.departure.scheduledTime)) continue;
 
-      const airline = dep?.airline?.iataCode || "?";
-      const flightNum = dep?.flight?.number || "?";
-      const to = dep?.arrival?.iataCode || "???";
+      const flightNum = dep.flight?.number;
+      const airline = dep.airline?.iataCode;
+      const to = dep.arrival?.iataCode;
+      const sobt = dep.departure?.scheduledTime;
 
-      let from = "BVA", sibtTime = "";
-      let reg = dep?.aircraft?.regNumber || "";
+      const live = liveData.find(f =>
+        f.flight?.iataNumber === `${airline}${flightNum}`
+      );
+      const reg = dep?.aircraft?.regNumber || live?.aircraft?.regNumber || "";
 
-      // Étape 1 : tenter de récupérer immat via arrivée (comme avant)
-      if (!reg) {
+      let sibt = "", from = "???";
+      if (reg) {
         const match = arrivals.find(arr =>
-          arr?.flight?.number === flightNum &&
-          arr?.airline?.iataCode === airline &&
-          isSameLocalDay(arr?.arrival?.scheduledTime)
+          arr.aircraft?.regNumber === reg && isSameLocalDay(arr.arrival?.scheduledTime)
         );
-        if (match?.aircraft?.regNumber) {
-          reg = match.aircraft.regNumber;
-          from = match?.departure?.iataCode || "BVA";
-          sibtTime = match?.arrival?.scheduledTime || "";
+        if (match) {
+          sibt = match.arrival?.scheduledTime;
+          from = match.departure?.iataCode || "???";
         }
       }
 
-      // Étape 2 : tenter de récupérer immat via /flights si toujours vide
-      if (!reg) {
-        const liveMatch = flightsLive.find(f =>
-          f?.flight?.number === flightNum &&
-          f?.airline?.iataCode === airline &&
-          f?.aircraft?.regNumber
-        );
-        if (liveMatch) {
-          reg = liveMatch.aircraft.regNumber;
-        }
-      }
-
-      flights.push({
-        label: `${airline}${flightNum} ${from} → ${to}`,
-        sobt: new Date(sobt),
-        sibt: sibtTime,
-        reg,
-        value: JSON.stringify({ arrival: sibtTime, departure: dep, from, to, reg })
+      const label = `${airline}${flightNum} ${from} → ${to}`;
+      rotations.push({
+        label,
+        value: JSON.stringify({
+          departure: dep,
+          from,
+          to,
+          reg,
+          sobt,
+          sibt
+        }),
+        sobt: new Date(sobt)
       });
     }
 
-    if (flights.length === 0) {
-      selector.innerHTML = '<option value="">Aucun vol trouvé</option>';
-      return;
-    }
+    rotations.sort((a, b) => a.sobt - b.sobt);
 
-    flights.sort((a, b) => a.sobt - b.sobt);
-
-    selector.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    flights.forEach(flight => {
+    selector.innerHTML = `<option value="">-- Sélectionner une rotation --</option>`;
+    for (const rot of rotations) {
       const opt = document.createElement("option");
-      opt.value = flight.value;
-      opt.textContent = flight.label;
+      opt.value = rot.value;
+      opt.textContent = rot.label;
       selector.appendChild(opt);
-    });
+    }
   } catch (err) {
-    selector.innerHTML = '<option value="">Erreur lors du chargement</option>';
-    console.error("Erreur API :", err);
+    console.error("Erreur lors du chargement des rotations :", err);
+    selector.innerHTML = `<option value="">Erreur chargement</option>`;
   }
 }
 
 function populateFlightInfo() {
-  const selected = document.getElementById("flightSelector").value;
+  const mode = document.querySelector("input[name='timeMode']:checked")?.value || "local";
+  const useUTC = mode === "utc";
+
+  const selector = document.getElementById("rotationSelector");
+  const selected = selector?.value;
   if (!selected) return;
   const parsed = JSON.parse(selected);
-  const { arrival, departure, from, to, reg } = parsed;
+  const { departure, from, to, reg, sobt, sibt } = parsed;
 
   document.getElementById("compagnie").value = departure.airline?.iataCode || "";
-  document.getElementById("provenance").value = from || "";
-  document.getElementById("destination").value = to || "";
-  document.getElementById("immatriculation").value = reg || "";
-  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
   document.getElementById("numVol").value = departure.flight?.number || "";
-  document.getElementById("sobt").value = formatTime(departure?.departure?.scheduledTime);
-  document.getElementById("sibt").value = formatTime(arrival);
+  document.getElementById("destination").value = to || "";
+  document.getElementById("provenance").value = from || "";
+  document.getElementById("immatriculation").value = reg || "";
+  document.getElementById("sobt").value = formatTime(sobt, useUTC);
+  document.getElementById("sibt").value = formatTime(sibt, useUTC);
+  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
+
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
 }
 
 function setTimeMode(mode) {
-  window.timeMode = mode;
+  const sobt = document.getElementById("sobt").dataset.utc;
+  const sibt = document.getElementById("sibt").dataset.utc;
+  if (sobt) document.getElementById("sobt").value = formatTime(sobt, mode === "utc");
+  if (sibt) document.getElementById("sibt").value = formatTime(sibt, mode === "utc");
+
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
 }
 
-window.addEventListener("DOMContentLoaded", loadFlights);
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":").map(Number);
+  const ref = new Date();
+  ref.setHours(h);
+  ref.setMinutes(m);
+  ref.setMinutes(ref.getMinutes() + offsetMinutes);
+  target.value = `${String(ref.getHours()).padStart(2, '0')}:${String(ref.getMinutes()).padStart(2, '0')}`;
+}
+
+window.addEventListener("DOMContentLoaded", loadRotations);
 </script>
+
 </body>
 </html>
 
