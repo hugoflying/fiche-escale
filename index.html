@@ -51,21 +51,22 @@
       height: 150px;
       width: 100%;
     }
-    .now-btn {
+    .now-group {
+      display: flex;
       margin-top: 4px;
-      padding: 6px 10px;
+      gap: 2px;
+    }
+    .now-group button {
+      flex: 1;
+      padding: 5px;
       font-size: 0.75em;
-      width: 100%;
     }
     input, textarea {
       text-transform: uppercase;
     }
     @media (max-width: 850px) {
       .field {
-        flex: 1 1 calc(33.33% - 10px);
-      }
-      .row {
-        flex-direction: row;
+        flex: 1 1 calc(50% - 10px);
       }
     }
     @media (max-width: 600px) {
@@ -75,29 +76,13 @@
       .row {
         flex-direction: column;
       }
-      .input-now {
-        flex-direction: column;
-      }
-      .input-now button {
-        width: 100%;
-      }
-    }
-    .input-now {
-      display: flex;
-      gap: 5px;
-    }
-    .input-now input {
-      flex: 1;
-    }
-    .input-now button {
-      width: 100px;
     }
   </style>
 </head>
 <body>
   <div style="position: absolute; top: 10px; right: 20px;">
-    <label><input type="radio" name="timeMode" value="local" checked onchange="setTimeMode(this.value)"> Heure locale</label>
-    <label><input type="radio" name="timeMode" value="utc" onchange="setTimeMode(this.value)"> UTC</label>
+    <label><input type="radio" name="timeMode" value="local" onchange="setTimeMode('local')"> Heure locale</label>
+    <label><input type="radio" name="timeMode" value="utc" checked onchange="setTimeMode('utc')"> UTC</label>
   </div>
 
 <h2>Fiche Escale Vol</h2>
@@ -273,6 +258,17 @@ function formatTime(iso, useUTC = false) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
+function adjustTime(id, delta) {
+  const input = document.getElementById(id);
+  if (!input || !input.value) return;
+  const [h, m] = input.value.split(":" ).map(Number);
+  const d = new Date();
+  d.setHours(h);
+  d.setMinutes(m);
+  d.setMinutes(d.getMinutes() + delta);
+  input.value = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 function formatDate(iso) {
   return new Date(iso).toISOString().split("T")[0];
 }
@@ -315,10 +311,32 @@ window.addEventListener("DOMContentLoaded", () => {
 <section>
   <h3>HORAIRES</h3>
   <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-    <div class="field" style="min-width: 120px;"><label>SIBT</label><input type="time" id="sibt"></div>
-    <div class="field" style="min-width: 120px;"><label>AIBT</label><input type="time" id="aibt"><button class="now-btn" onclick="setNow('aibt')">Now</button></div>
-    <div class="field" style="min-width: 120px;"><label>SOBT</label><input type="time" id="sobt"></div>
-    <div class="field" style="min-width: 120px;"><label>AOBT</label><input type="time" id="aobt"><button class="now-btn" onclick="setNow('aobt')">Now</button></div>
+    <div class="field" style="min-width: 120px;">
+      <label>SIBT</label>
+      <input type="time" id="sibt">
+    </div>
+    <div class="field" style="min-width: 120px;">
+      <label>AIBT</label>
+      <input type="time" id="aibt">
+      <div class="now-group">
+        <button onclick="adjustTime('aibt', -1)">-1</button>
+        <button onclick="setNow('aibt')">Now</button>
+        <button onclick="adjustTime('aibt', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field" style="min-width: 120px;">
+      <label>SOBT</label>
+      <input type="time" id="sobt">
+    </div>
+    <div class="field" style="min-width: 120px;">
+      <label>AOBT</label>
+      <input type="time" id="aobt">
+      <div class="now-group">
+        <button onclick="adjustTime('aobt', -1)">-1</button>
+        <button onclick="setNow('aobt')">Now</button>
+        <button onclick="adjustTime('aobt', 1)">+1</button>
+      </div>
+    </div>
   </div>
   <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
     <div class="field" style="min-width: 120px;"><label>EOBT</label><input type="time" id="eobt"></div>
