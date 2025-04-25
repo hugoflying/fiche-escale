@@ -152,6 +152,9 @@
 <script>
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
+let allDepartures = [];
+let lastArrivalTime = null;
+let lastArrivalFlightNumber = null;
 
 async function fetchFlightImmatriculations() {
   try {
@@ -190,6 +193,7 @@ async function loadRotations() {
 
   arrSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
   depSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+  allDepartures = depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime));
 
   arrRes.filter(a => isSameLocalDay(a.arrival?.scheduledTime)).forEach(arr => {
     const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
@@ -199,7 +203,7 @@ async function loadRotations() {
     arrSel.appendChild(opt);
   });
 
-  depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime)).forEach(dep => {
+  allDepartures.forEach(dep => {
     const key = `${dep.airline?.iataCode}${dep.flight?.number}`;
     if (!dep.aircraft?.regNumber && immatMap[key]) {
       dep.aircraft = {
@@ -221,6 +225,19 @@ function populateArrivalInfo() {
   const flight = JSON.parse(selected);
   document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime);
   document.getElementById("provenance").value = flight.departure?.iataCode || "";
+  lastArrivalTime = new Date(flight.arrival?.scheduledTime);
+  lastArrivalFlightNumber = parseInt(flight.flight?.number);
+
+  const depSel = document.getElementById("departureSelector");
+  const match = allDepartures.find(dep => {
+    const num = parseInt(dep.flight?.number);
+    const depTime = new Date(dep.departure?.scheduledTime);
+    return (num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime;
+  });
+  if (match) {
+    depSel.value = JSON.stringify(match);
+    populateDepartureInfo();
+  }
 }
 
 function populateDepartureInfo() {
@@ -268,9 +285,21 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   target.value = `${String(ref.getHours()).padStart(2, '0')}:${String(ref.getMinutes()).padStart(2, '0')}`;
 }
 
+function setTimeMode(mode) {
+  const useUTC = mode === 'utc';
+  const sobt = document.getElementById("sobt");
+  const sibt = document.getElementById("sibt");
+  const a = window.lastArrivalTime;
+  const d = allDepartures.find(dep => JSON.stringify(dep) === document.getElementById("departureSelector").value);
+
+  if (a) sibt.value = formatTime(a.toISOString(), useUTC);
+  if (d?.departure?.scheduledTime) sobt.value = formatTime(d.departure.scheduledTime, useUTC);
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
+}
+
 window.addEventListener("DOMContentLoaded", loadRotations);
 </script>
-
 
 </body>
 </html>
