@@ -353,7 +353,7 @@ window.addEventListener("DOMContentLoaded", () => {
   <h3>TIMING ESCALE</h3>
   <div class="row">
     <div class="field">
-      <label>Arrivée PNT avion</label>
+      <label>Arrivée PNT</label>
       <input type="time" id="arriveePNT">
       <div class="time-controls">
         <button onclick="adjustTime('arriveePNT', -1)">-1</button>
@@ -362,7 +362,7 @@ window.addEventListener("DOMContentLoaded", () => {
       </div>
     </div>
     <div class="field">
-      <label>Arrivée PNC avion</label>
+      <label>Arrivée PNC</label>
       <input type="time" id="arriveePNC">
       <div class="time-controls">
         <button onclick="adjustTime('arriveePNC', -1)">-1</button>
@@ -407,6 +407,60 @@ window.addEventListener("DOMContentLoaded", () => {
       </div>
     </div>
     <div class="field">
+      <label>1er pax OUT</label>
+      <input type="time" id="firstPaxOut">
+      <div class="time-controls">
+        <button onclick="adjustTime('firstPaxOut', -1)">-1</button>
+        <button onclick="setNow('firstPaxOut')">Now</button>
+        <button onclick="adjustTime('firstPaxOut', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Dernier pax OUT</label>
+      <input type="time" id="lastPaxOut">
+      <div class="time-controls">
+        <button onclick="adjustTime('lastPaxOut', -1)">-1</button>
+        <button onclick="setNow('lastPaxOut')">Now</button>
+        <button onclick="adjustTime('lastPaxOut', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>1er pax IN</label>
+      <input type="time" id="firstPaxIn">
+      <div class="time-controls">
+        <button onclick="adjustTime('firstPaxIn', -1)">-1</button>
+        <button onclick="setNow('firstPaxIn')">Now</button>
+        <button onclick="adjustTime('firstPaxIn', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Dernier pax IN</label>
+      <input type="time" id="lastPaxIn">
+      <div class="time-controls">
+        <button onclick="adjustTime('lastPaxIn', -1)">-1</button>
+        <button onclick="setNow('lastPaxIn')">Now</button>
+        <button onclick="adjustTime('lastPaxIn', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Arrivée agent PMR</label>
+      <input type="time" id="arriveePMR">
+      <div class="time-controls">
+        <button onclick="adjustTime('arriveePMR', -1)">-1</button>
+        <button onclick="setNow('arriveePMR')">Now</button>
+        <button onclick="adjustTime('arriveePMR', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Arrivée INAD</label>
+      <input type="time" id="arriveeINAD">
+      <div class="time-controls">
+        <button onclick="adjustTime('arriveeINAD', -1)">-1</button>
+        <button onclick="setNow('arriveeINAD')">Now</button>
+        <button onclick="adjustTime('arriveeINAD', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
       <label>Arrivée NAYAK</label>
       <input type="time" id="arriveeNAYAK">
       <div class="time-controls">
@@ -424,29 +478,8 @@ window.addEventListener("DOMContentLoaded", () => {
         <button onclick="adjustTime('departNAYAK', 1)">+1</button>
       </div>
     </div>
-    <div class="field">
-      <label>Arrivée INAD</label>
-      <input type="time" id="arriveeINAD">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveeINAD', -1)">-1</button>
-        <button onclick="setNow('arriveeINAD')">Now</button>
-        <button onclick="adjustTime('arriveeINAD', 1)">+1</button>
-      </div>
-    </div>
-    <div class="field">
-      <label>Arrivée agent PMR</label>
-      <input type="time" id="arriveePMR">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveePMR', -1)">-1</button>
-        <button onclick="setNow('arriveePMR')">Now</button>
-        <button onclick="adjustTime('arriveePMR', 1)">+1</button>
-      </div>
-    </div>
   </div>
 </section>
-
-
-
 
 <section>
   <h3>CHARGEMENT</h3>
