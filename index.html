@@ -258,31 +258,27 @@ function formatTime(iso, useUTC = false) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-function adjustTime(id, delta) {
-  const input = document.getElementById(id);
-  if (!input || !input.value) return;
-  const [h, m] = input.value.split(":" ).map(Number);
-  const d = new Date();
-  d.setHours(h);
-  d.setMinutes(m);
-  d.setMinutes(d.getMinutes() + delta);
-  input.value = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
 function formatDate(iso) {
   return new Date(iso).toISOString().split("T")[0];
 }
 
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":" ).map(Number);
-  const ref = new Date();
-  ref.setUTCHours(h);
-  ref.setUTCMinutes(m);
-  ref.setMinutes(ref.getMinutes() + offsetMinutes);
-  target.value = `${String(ref.getUTCHours()).padStart(2, '0')}:${String(ref.getUTCMinutes()).padStart(2, '0')}`;
+function adjustTime(id, delta) {
+  const input = document.getElementById(id);
+  if (!input.value) return;
+  const [h, m] = input.value.split(":").map(Number);
+  const d = new Date();
+  d.setUTCHours(h);
+  d.setUTCMinutes(m + delta);
+  const hh = d.getUTCHours().toString().padStart(2, '0');
+  const mm = d.getUTCMinutes().toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+
+ function setNow(id) {
+  const now = new Date();
+  const hh = now.getUTCHours().toString().padStart(2, '0');
+  const mm = now.getUTCMinutes().toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
 }
 
 function isUTC() {
@@ -310,38 +306,45 @@ window.addEventListener("DOMContentLoaded", () => {
 
 <section>
   <h3>HORAIRES</h3>
-  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-    <div class="field" style="min-width: 120px;">
-      <label>SIBT</label>
+  <div class="row">
+    <div class="field">
+      <label for="sibt">SIBT</label>
       <input type="time" id="sibt">
     </div>
-    <div class="field" style="min-width: 120px;">
-      <label>AIBT</label>
+    <div class="field">
+      <label for="aibt">AIBT</label>
       <input type="time" id="aibt">
-      <div class="now-group">
+      <div class="time-controls">
         <button onclick="adjustTime('aibt', -1)">-1</button>
         <button onclick="setNow('aibt')">Now</button>
         <button onclick="adjustTime('aibt', 1)">+1</button>
       </div>
     </div>
-    <div class="field" style="min-width: 120px;">
-      <label>SOBT</label>
+    <div class="field">
+      <label for="sobt">SOBT</label>
       <input type="time" id="sobt">
     </div>
-    <div class="field" style="min-width: 120px;">
-      <label>AOBT</label>
+    <div class="field">
+      <label for="aobt">AOBT</label>
       <input type="time" id="aobt">
-      <div class="now-group">
+      <div class="time-controls">
         <button onclick="adjustTime('aobt', -1)">-1</button>
         <button onclick="setNow('aobt')">Now</button>
         <button onclick="adjustTime('aobt', 1)">+1</button>
       </div>
     </div>
-  </div>
-  <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-    <div class="field" style="min-width: 120px;"><label>EOBT</label><input type="time" id="eobt"></div>
-    <div class="field" style="min-width: 120px;"><label>HLE</label><input type="time" id="hle" readonly></div>
-    <div class="field" style="min-width: 120px;"><label>H-15</label><input type="time" id="h15" readonly></div>
+    <div class="field">
+      <label for="eobt">EOBT</label>
+      <input type="time" id="eobt">
+    </div>
+    <div class="field">
+      <label for="hle">HLE</label>
+      <input type="time" id="hle" readonly>
+    </div>
+    <div class="field">
+      <label for="h15">H-15</label>
+      <input type="time" id="h15" readonly>
+    </div>
   </div>
 </section>
 
@@ -473,9 +476,8 @@ function setTimeMode(mode) {
 }
 function setNow(id) {
   const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  const hh = now.getUTCHours().toString().padStart(2, '0');
+  const mm = now.getUTCMinutes().toString().padStart(2, '0');
   document.getElementById(id).value = `${hh}:${mm}`;
 }
 function setNowToPrevious(btn) {
