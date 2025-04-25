@@ -373,7 +373,7 @@
    <button onclick="document.querySelectorAll('input, select, textarea').forEach(f => f.type === 'checkbox' ? f.checked = false : f.value = '')" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Effacer</button>
  </div>
 
-  <style>
+<style>
 .blink-red {
   animation: blinkRed 1s infinite;
   background-color: #ffcccc !important;
@@ -390,7 +390,7 @@
   color: white;
 }
 </style>
- 
+
 <script>
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
@@ -522,7 +522,7 @@ function formatDate(iso) {
 function adjustTime(id, delta) {
   const input = document.getElementById(id);
   if (!input.value) return;
-  const [h, m] = input.value.split(":").map(Number);
+  const [h, m] = input.value.split(":" ).map(Number);
   const d = new Date();
   d.setUTCHours(h);
   d.setUTCMinutes(m + delta);
@@ -531,14 +531,11 @@ function adjustTime(id, delta) {
   input.value = `${hh}:${mm}`;
 }
 
-function setNowToPrevious(btn) {
-  const input = btn.previousElementSibling;
-  if (!input || input.tagName.toLowerCase() !== 'input') return;
+function setNow(id) {
   const now = new Date();
-  const mode = window.timeMode || 'local';
-  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-  input.value = `${hh}:${mm}`;
+  const hh = now.getUTCHours().toString().padStart(2, '0');
+  const mm = now.getUTCMinutes().toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
 }
 
 function isUTC() {
@@ -560,32 +557,26 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   if (!base || !target || !base.value) return;
   const [h, m] = base.value.split(":" ).map(Number);
   const baseDate = new Date();
-  baseDate.setHours(h);
-  baseDate.setMinutes(m);
-  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-  const hh = baseDate.getHours().toString().padStart(2, '0');
-  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  baseDate.setUTCHours(h);
+  baseDate.setUTCMinutes(m);
+  baseDate.setUTCMinutes(baseDate.getUTCMinutes() + offsetMinutes);
+  const hh = baseDate.getUTCHours().toString().padStart(2, '0');
+  const mm = baseDate.getUTCMinutes().toString().padStart(2, '0');
   target.value = `${hh}:${mm}`;
 }
 
 function checkH15Status() {
   const h15 = document.getElementById("h15");
   if (!h15 || !h15.value) return;
-
-  const [h, m] = h15.value.split(":").map(Number);
   const now = new Date();
-
-  // Crée une date avec heure UTC
+  const [h, m] = h15.value.split(":" ).map(Number);
   const h15Time = new Date();
   h15Time.setUTCHours(h);
   h15Time.setUTCMinutes(m);
   h15Time.setUTCSeconds(0);
   h15Time.setUTCMilliseconds(0);
-
   const diffMin = (h15Time - now) / 60000;
-
   h15.classList.remove("solid-red", "blink-red");
-
   if (diffMin <= 15 && diffMin > 0) {
     h15.classList.add("solid-red");
   } else if (diffMin <= 18 && diffMin > 15) {
