@@ -311,49 +311,53 @@
  </html>
  
  
- <section>
-   <h3>HORAIRES</h3>
-   <div class="row">
-     <div class="field">
-       <label for="sibt">SIBT</label>
-       <input type="time" id="sibt">
-     </div>
-     <div class="field">
-       <label for="aibt">AIBT</label>
-       <input type="time" id="aibt">
-       <div class="time-controls">
-         <button onclick="adjustTime('aibt', -1)">-1</button>
-         <button onclick="setNow('aibt')">Now</button>
-         <button onclick="adjustTime('aibt', 1)">+1</button>
-       </div>
-     </div>
-     <div class="field">
-       <label for="sobt">SOBT</label>
-       <input type="time" id="sobt">
-     </div>
-     <div class="field">
-       <label for="aobt">AOBT</label>
-       <input type="time" id="aobt">
-       <div class="time-controls">
-         <button onclick="adjustTime('aobt', -1)">-1</button>
-         <button onclick="setNow('aobt')">Now</button>
-         <button onclick="adjustTime('aobt', 1)">+1</button>
-       </div>
-     </div>
-     <div class="field">
-       <label for="eobt">EOBT</label>
-       <input type="time" id="eobt">
-     </div>
-     <div class="field">
-       <label for="hle">HLE</label>
-       <input type="time" id="hle" readonly>
-     </div>
-     <div class="field">
-       <label for="h15">H-15</label>
-       <input type="time" id="h15" readonly>
-     </div>
-   </div>
- </section>
+<section>
+  <h3>HORAIRES</h3>
+
+  <div class="row row-grey">
+    <div class="field">
+      <label>SIBT</label>
+      <input type="time" id="sibt">
+    </div>
+    <div class="field">
+      <label>SOBT</label>
+      <input type="time" id="sobt">
+    </div>
+  </div>
+
+  <div class="row row-grey">
+    <div class="field">
+      <label>AIBT</label>
+      <input type="time" id="aibt">
+      <div class="time-controls">
+        <button onclick="adjustTime('aibt', -1)">-1</button>
+        <button onclick="setNow('aibt')">Now</button>
+        <button onclick="adjustTime('aibt', 1)">+1</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>AOBT</label>
+      <input type="time" id="aobt">
+      <div class="time-controls">
+        <button onclick="adjustTime('aobt', -1)">-1</button>
+        <button onclick="setNow('aobt')">Now</button>
+        <button onclick="adjustTime('aobt', 1)">+1</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row row-grey">
+    <div class="field">
+      <label>HLE</label>
+      <input type="time" id="hle" readonly>
+    </div>
+    <div class="field">
+      <label>H-15</label>
+      <input type="time" id="h15" readonly>
+    </div>
+  </div>
+</section>
+
  
 <section>
    <h3>TIMING ESCALE</h3>
