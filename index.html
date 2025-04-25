@@ -146,6 +146,7 @@
 <script>
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
+let allDepartures = [];
 
 function isSameLocalDay(dateStr) {
   const now = new Date();
@@ -206,6 +207,7 @@ async function loadRotations() {
 
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
+    allDepartures = departures;
 
     departures.forEach(dep => {
       if (!dep?.departure?.scheduledTime || !isSameLocalDay(dep.departure.scheduledTime)) return;
@@ -241,6 +243,18 @@ function populateArrivalInfo() {
   window.lastArrival = parsed;
   document.getElementById("sibt").value = formatTime(parsed.arrival?.scheduledTime, useUTC);
   document.getElementById("provenance").value = parsed.departure?.iataCode || "";
+
+  const arrivalFlightNum = parseInt(parsed.flight?.number);
+  if (arrivalFlightNum) {
+    const candidate = allDepartures.find(dep => {
+      const depNum = parseInt(dep.flight?.number);
+      return depNum === arrivalFlightNum + 1 || depNum === arrivalFlightNum - 1;
+    });
+    if (candidate) {
+      document.getElementById("departureSelector").value = JSON.stringify(candidate);
+      populateDepartureInfo();
+    }
+  }
 }
 
 function populateDepartureInfo() {
