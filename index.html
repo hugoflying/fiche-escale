@@ -543,58 +543,63 @@
  </div>
  
  <script>
- function setTimeMode(mode) {
-   window.timeMode = mode;
- }
- function setNow(id) {
-   const now = new Date();
-   const hh = now.getUTCHours().toString().padStart(2, '0');
-   const mm = now.getUTCMinutes().toString().padStart(2, '0');
-   document.getElementById(id).value = `${hh}:${mm}`;
- }
- function setNowToPrevious(btn) {
-   const input = btn.previousElementSibling;
-   if (!input || input.tagName.toLowerCase() !== 'input') return;
-   const now = new Date();
-   const mode = window.timeMode || 'local';
-   const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
-   const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
-   input.value = `${hh}:${mm}`;
- }
- function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-   const base = document.getElementById(baseId);
-   const target = document.getElementById(targetId);
-   if (!base || !target || !base.value) return;
-   const [h, m] = base.value.split(":").map(Number);
-   const baseDate = new Date();
-   baseDate.setHours(h);
-   baseDate.setMinutes(m);
-   baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
-   const hh = baseDate.getHours().toString().padStart(2, '0');
-   const mm = baseDate.getMinutes().toString().padStart(2, '0');
-   target.value = `${hh}:${mm}`;
- }
-  function checkH15Status() {
+<script>
+function setTimeMode(mode) {
+  window.timeMode = mode;
+}
+function setNow(id) {
+  const now = new Date();
+  const hh = now.getUTCHours().toString().padStart(2, '0');
+  const mm = now.getUTCMinutes().toString().padStart(2, '0');
+  document.getElementById(id).value = `${hh}:${mm}`;
+}
+function setNowToPrevious(btn) {
+  const input = btn.previousElementSibling;
+  if (!input || input.tagName.toLowerCase() !== 'input') return;
+  const now = new Date();
+  const mode = window.timeMode || 'local';
+  const hh = (mode === 'utc' ? now.getUTCHours() : now.getHours()).toString().padStart(2, '0');
+  const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+function calculateTimeOffset(baseId, targetId, offsetMinutes) {
+  const base = document.getElementById(baseId);
+  const target = document.getElementById(targetId);
+  if (!base || !target || !base.value) return;
+  const [h, m] = base.value.split(":" ).map(Number);
+  const baseDate = new Date();
+  baseDate.setHours(h);
+  baseDate.setMinutes(m);
+  baseDate.setMinutes(baseDate.getMinutes() + offsetMinutes);
+  const hh = baseDate.getHours().toString().padStart(2, '0');
+  const mm = baseDate.getMinutes().toString().padStart(2, '0');
+  target.value = `${hh}:${mm}`;
+}
+function checkH15Status() {
   const h15 = document.getElementById("h15");
   if (!h15 || !h15.value) return;
-
   const now = new Date();
   const [h, m] = h15.value.split(":" ).map(Number);
   const h15Time = new Date();
   h15Time.setHours(h, m, 0, 0);
-
   const diffMin = (h15Time - now) / 60000;
   h15.classList.remove("solid-red", "blink-red");
-
   if (diffMin <= 15 && diffMin > 0) {
     h15.classList.add("solid-red");
   } else if (diffMin <= 18 && diffMin > 15) {
     h15.classList.add("blink-red");
   }
 }
-
-setInterval(checkH15Status, 10000); // vérifie toutes les 10 secondes
-}
+setInterval(checkH15Status, 10000);
+window.addEventListener('DOMContentLoaded', () => {
+  const sobtField = document.getElementById('sobt');
+  if (sobtField) {
+    sobtField.addEventListener('change', () => {
+      calculateTimeOffset('sobt', 'hle', -40);
+      calculateTimeOffset('sobt', 'h15', -15);
+    });
+  }
+});
  
  window.addEventListener('DOMContentLoaded', () => {
    const sobtField = document.getElementById('sobt');
