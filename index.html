@@ -234,7 +234,11 @@ function populateDepartureInfo() {
   document.getElementById("numVol").value = flight.flight?.number || "";
   document.getElementById("dateField").value = formatDate(flight.departure?.scheduledTime);
   if (flight.aircraft?.icaoCode) {
-    document.getElementById("typeAvion").value = flight.aircraft.icaoCode.toUpperCase();
+    const allowedTypes = ["B737", "B738", "B38M", "A320", "A20N", "A321", "A21N"];
+    const typeCode = flight.aircraft.icaoCode.toUpperCase();
+    if (allowedTypes.includes(typeCode)) {
+      document.getElementById("typeAvion").value = typeCode;
+    }
   }
   calculateTimeOffset("sobt", "hle", -40);
   calculateTimeOffset("sobt", "h15", -15);
