@@ -31,8 +31,8 @@
       margin-bottom: 10px;
     }
     .field {
-      flex: 1 1 calc(25% - 10px);
-      min-width: 120px;
+      flex: 1 1 calc(50% - 10px);
+      min-width: 160px;
       display: flex;
       flex-direction: column;
     }
@@ -51,18 +51,18 @@
       height: 150px;
       width: 100%;
     }
-    .now-group {
-      display: flex;
-      margin-top: 4px;
-      gap: 2px;
-    }
-    .now-group button {
-      flex: 1;
-      padding: 5px;
-      font-size: 0.75em;
-    }
     input, textarea {
       text-transform: uppercase;
+    }
+    .time-controls {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .time-controls button {
+      flex: 1;
+      padding: 10px;
+      font-size: 1em;
     }
     @media (max-width: 850px) {
       .field {
@@ -71,10 +71,11 @@
     }
     @media (max-width: 600px) {
       .field {
-        flex: 1 1 100%;
+        flex: 1 1 calc(50% - 10px);
       }
-      .row {
-        flex-direction: column;
+      .time-controls button {
+        font-size: 0.9em;
+        padding: 12px;
       }
     }
   </style>
