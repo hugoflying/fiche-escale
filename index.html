@@ -157,176 +157,6 @@
    </div>
  </section>
  
- <script>
- const API_KEY = "86b00c-05cc00";
- const AIRPORT_IATA = "BVA";
- let allDepartures = [];
- let lastArrivalTime = null;
- let lastArrivalFlightNumber = null;
- 
- async function fetchFlightImmatriculations() {
-   try {
-     const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
-     const data = await res.json();
-     return Array.isArray(data) ? data : [];
-   } catch (e) {
-     console.warn("Erreur API /flights:", e);
-     return [];
-   }
- }
- 
- function isSameLocalDay(dateStr) {
-   const today = new Date();
-   const d = new Date(dateStr);
-   return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
- }
- 
- async function loadRotations() {
-   const arrSel = document.getElementById("arrivalSelector");
-   const depSel = document.getElementById("departureSelector");
-   arrSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
-   depSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
- 
-   const [arrRes, depRes, flightLive] = await Promise.all([
-     fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`).then(r => r.json()),
-     fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`).then(r => r.json()),
-     fetchFlightImmatriculations()
-   ]);
- 
-   const immatMap = {};
-   flightLive.forEach(f => {
-     const key = `${f.airline?.iataCode}${f.flight?.number}`;
-     if (f.aircraft?.regNumber) immatMap[key] = { reg: f.aircraft.regNumber, type: f.aircraft.icaoCode };
-   });
- 
-   arrSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-   depSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-   allDepartures = depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime));
- 
-   arrRes.filter(a => isSameLocalDay(a.arrival?.scheduledTime)).forEach(arr => {
-     const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
-     const opt = document.createElement("option");
-     opt.value = JSON.stringify(arr);
-     opt.textContent = label;
-     arrSel.appendChild(opt);
-   });
- 
-   allDepartures.forEach(dep => {
-     const key = `${dep.airline?.iataCode}${dep.flight?.number}`;
-     if (!dep.aircraft?.regNumber && immatMap[key]) {
-       dep.aircraft = {
-         regNumber: immatMap[key].reg,
-         icaoCode: immatMap[key].type
-       };
-     }
-     const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
-     const opt = document.createElement("option");
-     opt.value = JSON.stringify(dep);
-     opt.textContent = label;
-     depSel.appendChild(opt);
-   });
- }
- 
- function populateArrivalInfo() {
-   const selected = document.getElementById("arrivalSelector").value;
-   if (!selected) return;
-   const flight = JSON.parse(selected);
-   document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-   document.getElementById("provenance").value = flight.departure?.iataCode || "";
-   lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-   lastArrivalFlightNumber = parseInt(flight.flight?.number);
- 
-   const depSel = document.getElementById("departureSelector");
-   let matched = false;
-   for (const dep of allDepartures) {
-     const num = parseInt(dep.flight?.number);
-     const depTime = new Date(dep.departure?.scheduledTime);
-     if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-       depSel.value = JSON.stringify(dep);
-       populateDepartureInfo();
-       matched = true;
-       break;
-     }
-   }
-   if (!matched) depSel.selectedIndex = 0;
- }
- 
- function populateDepartureInfo() {
-   const selected = document.getElementById("departureSelector").value;
-   if (!selected) return;
-   const flight = JSON.parse(selected);
-   window.lastDeparture = flight;
-   document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime, isUTC());
-   document.getElementById("compagnie").value = flight.airline?.iataCode || "";
-   document.getElementById("destination").value = flight.arrival?.iataCode || "";
-   document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
-   document.getElementById("numVol").value = flight.flight?.number || "";
-   document.getElementById("dateField").value = formatDate(flight.departure?.scheduledTime);
-   if (flight.aircraft?.icaoCode) {
-     const allowedTypes = ["B737", "B738", "B38M", "A320", "A20N", "A321", "A21N"];
-     const typeCode = flight.aircraft.icaoCode.toUpperCase();
-     if (allowedTypes.includes(typeCode)) {
-       document.getElementById("typeAvion").value = typeCode;
-     }
-   }
-   calculateTimeOffset("sobt", "hle", -40);
-   calculateTimeOffset("sobt", "h15", -15);
- }
- 
- function formatTime(iso, useUTC = false) {
-   if (!iso) return "";
-   const d = new Date(iso);
-   const h = useUTC ? d.getUTCHours() : d.getHours();
-   const m = useUTC ? d.getUTCMinutes() : d.getMinutes();
-   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
- }
- 
- function formatDate(iso) {
-   return new Date(iso).toISOString().split("T")[0];
- }
- 
- function adjustTime(id, delta) {
-   const input = document.getElementById(id);
-   if (!input.value) return;
-   const [h, m] = input.value.split(":").map(Number);
-   const d = new Date();
-   d.setUTCHours(h);
-   d.setUTCMinutes(m + delta);
-   const hh = d.getUTCHours().toString().padStart(2, '0');
-   const mm = d.getUTCMinutes().toString().padStart(2, '0');
-   input.value = `${hh}:${mm}`;
- }
- 
-  function setNow(id) {
-   const now = new Date();
-   const hh = now.getUTCHours().toString().padStart(2, '0');
-   const mm = now.getUTCMinutes().toString().padStart(2, '0');
-   document.getElementById(id).value = `${hh}:${mm}`;
- }
- 
- function isUTC() {
-   return document.querySelector("input[name='timeMode']:checked")?.value === 'utc';
- }
- 
- function setTimeMode(mode) {
-   const useUTC = mode === 'utc';
-   document.getElementById("sobt").value = formatTime(window.lastDeparture?.departure?.scheduledTime, useUTC);
-   document.getElementById("sibt").value = formatTime(window.lastArrivalTime?.toISOString(), useUTC);
-   calculateTimeOffset("sobt", "hle", -40);
-   calculateTimeOffset("sobt", "h15", -15);
- }
- 
- window.addEventListener("DOMContentLoaded", () => {
-   document.querySelector("input[name='timeMode'][value='utc']").checked = true;
-   window.timeMode = 'utc';
-   loadRotations();
- });
- </script>
- 
- </body>
- </html>
- 
- 
 <section>
  <section>
   <h3>HORAIRES</h3>
@@ -544,15 +374,143 @@
  </div>
  
 <script>
-function setTimeMode(mode) {
-  window.timeMode = mode;
+const API_KEY = "86b00c-05cc00";
+const AIRPORT_IATA = "BVA";
+let allDepartures = [];
+let lastArrivalTime = null;
+let lastArrivalFlightNumber = null;
+
+async function fetchFlightImmatriculations() {
+  try {
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.warn("Erreur API /flights:", e);
+    return [];
+  }
 }
 
-function setNow(id) {
-  const now = new Date();
-  const hh = now.getUTCHours().toString().padStart(2, '0');
-  const mm = now.getUTCMinutes().toString().padStart(2, '0');
-  document.getElementById(id).value = `${hh}:${mm}`;
+function isSameLocalDay(dateStr) {
+  const today = new Date();
+  const d = new Date(dateStr);
+  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+}
+
+async function loadRotations() {
+  const arrSel = document.getElementById("arrivalSelector");
+  const depSel = document.getElementById("departureSelector");
+  arrSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
+  depSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
+
+  const [arrRes, depRes, flightLive] = await Promise.all([
+    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`).then(r => r.json()),
+    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`).then(r => r.json()),
+    fetchFlightImmatriculations()
+  ]);
+
+  const immatMap = {};
+  flightLive.forEach(f => {
+    const key = `${f.airline?.iataCode}${f.flight?.number}`;
+    if (f.aircraft?.regNumber) immatMap[key] = { reg: f.aircraft.regNumber, type: f.aircraft.icaoCode };
+  });
+
+  arrSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+  depSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+  allDepartures = depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime));
+
+  arrRes.filter(a => isSameLocalDay(a.arrival?.scheduledTime)).forEach(arr => {
+    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
+    const opt = document.createElement("option");
+    opt.value = JSON.stringify(arr);
+    opt.textContent = label;
+    arrSel.appendChild(opt);
+  });
+
+  allDepartures.forEach(dep => {
+    const key = `${dep.airline?.iataCode}${dep.flight?.number}`;
+    if (!dep.aircraft?.regNumber && immatMap[key]) {
+      dep.aircraft = {
+        regNumber: immatMap[key].reg,
+        icaoCode: immatMap[key].type
+      };
+    }
+    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
+    const opt = document.createElement("option");
+    opt.value = JSON.stringify(dep);
+    opt.textContent = label;
+    depSel.appendChild(opt);
+  });
+}
+
+function populateArrivalInfo() {
+  const selected = document.getElementById("arrivalSelector").value;
+  if (!selected) return;
+  const flight = JSON.parse(selected);
+  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
+  document.getElementById("provenance").value = flight.departure?.iataCode || "";
+  lastArrivalTime = new Date(flight.arrival?.scheduledTime);
+  lastArrivalFlightNumber = parseInt(flight.flight?.number);
+
+  const depSel = document.getElementById("departureSelector");
+  let matched = false;
+  for (const dep of allDepartures) {
+    const num = parseInt(dep.flight?.number);
+    const depTime = new Date(dep.departure?.scheduledTime);
+    if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
+      depSel.value = JSON.stringify(dep);
+      populateDepartureInfo();
+      matched = true;
+      break;
+    }
+  }
+  if (!matched) depSel.selectedIndex = 0;
+}
+
+function populateDepartureInfo() {
+  const selected = document.getElementById("departureSelector").value;
+  if (!selected) return;
+  const flight = JSON.parse(selected);
+  window.lastDeparture = flight;
+  document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime, isUTC());
+  document.getElementById("compagnie").value = flight.airline?.iataCode || "";
+  document.getElementById("destination").value = flight.arrival?.iataCode || "";
+  document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
+  document.getElementById("numVol").value = flight.flight?.number || "";
+  document.getElementById("dateField").value = formatDate(flight.departure?.scheduledTime);
+  if (flight.aircraft?.icaoCode) {
+    const allowedTypes = ["B737", "B738", "B38M", "A320", "A20N", "A321", "A21N"];
+    const typeCode = flight.aircraft.icaoCode.toUpperCase();
+    if (allowedTypes.includes(typeCode)) {
+      document.getElementById("typeAvion").value = typeCode;
+    }
+  }
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
+}
+
+function formatTime(iso, useUTC = false) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const h = useUTC ? d.getUTCHours() : d.getHours();
+  const m = useUTC ? d.getUTCMinutes() : d.getMinutes();
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function formatDate(iso) {
+  return new Date(iso).toISOString().split("T")[0];
+}
+
+function adjustTime(id, delta) {
+  const input = document.getElementById(id);
+  if (!input.value) return;
+  const [h, m] = input.value.split(":").map(Number);
+  const d = new Date();
+  d.setUTCHours(h);
+  d.setUTCMinutes(m + delta);
+  const hh = d.getUTCHours().toString().padStart(2, '0');
+  const mm = d.getUTCMinutes().toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
 }
 
 function setNowToPrevious(btn) {
@@ -565,17 +523,17 @@ function setNowToPrevious(btn) {
   input.value = `${hh}:${mm}`;
 }
 
-function adjustTime(id, minutesDelta) {
-  const input = document.getElementById(id);
-  if (!input || !input.value) return;
-  const [h, m] = input.value.split(":").map(Number);
-  const date = new Date();
-  date.setHours(h);
-  date.setMinutes(m);
-  date.setMinutes(date.getMinutes() + minutesDelta);
-  const hh = date.getHours().toString().padStart(2, '0');
-  const mm = date.getMinutes().toString().padStart(2, '0');
-  input.value = `${hh}:${mm}`;
+function isUTC() {
+  return document.querySelector("input[name='timeMode']:checked")?.value === 'utc';
+}
+
+function setTimeMode(mode) {
+  const useUTC = mode === 'utc';
+  window.timeMode = mode;
+  document.getElementById("sobt").value = formatTime(window.lastDeparture?.departure?.scheduledTime, useUTC);
+  document.getElementById("sibt").value = formatTime(window.lastArrivalTime?.toISOString(), useUTC);
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
 }
 
 function calculateTimeOffset(baseId, targetId, offsetMinutes) {
@@ -596,7 +554,7 @@ function checkH15Status() {
   const h15 = document.getElementById("h15");
   if (!h15 || !h15.value) return;
   const now = new Date();
-  const [h, m] = h15.value.split(":").map(Number);
+  const [h, m] = h15.value.split(":" ).map(Number);
   const h15Time = new Date();
   h15Time.setHours(h, m, 0, 0);
   const diffMin = (h15Time - now) / 60000;
@@ -610,7 +568,11 @@ function checkH15Status() {
 
 setInterval(checkH15Status, 10000);
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("input[name='timeMode'][value='utc']").checked = true;
+  window.timeMode = 'utc';
+  loadRotations();
+
   const sobtField = document.getElementById('sobt');
   if (sobtField) {
     sobtField.addEventListener('change', () => {
@@ -619,54 +581,4 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
-function renderAssistances() {
-  const container = document.getElementById('assistancesContainer');
-  const count = parseInt(document.getElementById('assistanceCount').value || '0');
-  container.innerHTML = '';
-  for (let i = 0; i < count; i++) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto;';
-    row.innerHTML = `
-      <div class="field" style="min-width: 120px;">
-        <label>Type ${i + 1}</label>
-        <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
-          <option>-</option>
-          <option>WCHR</option>
-          <option>WCHS</option>
-          <option>WCHC</option>
-          <option>DEAF</option>
-          <option>MUTE</option>
-          <option>DPNA</option>
-          <option>Autre</option>
-        </select>
-      </div>
-      <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
-        <label>Type personnalisé</label>
-        <input type="text" placeholder="Saisir le type">
-      </div>
-      <div class="field" style="min-width: 120px;">
-        <label>Équipement ${i + 1}</label>
-        <select>
-          <option>-</option>
-          <option>WCMP</option>
-          <option>WCLB</option>
-          <option>WCBD</option>
-        </select>
-      </div>
-      <div class="field" style="min-width: 120px;">
-        <label>Siège ${i + 1}</label>
-        <input type="text" placeholder="ex: 12A">
-      </div>
-    `;
-    container.appendChild(row);
-  }
-}
-
-function toggleCustomCode(i) {
-  const select = document.getElementById(`assistance-type-${i}`);
-  const customDiv = document.getElementById(`custom-assistance-${i}`);
-  customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
-}
 </script>
