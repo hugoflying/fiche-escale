@@ -542,17 +542,18 @@
    <button onclick="document.querySelectorAll('input, select, textarea').forEach(f => f.type === 'checkbox' ? f.checked = false : f.value = '')" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Effacer</button>
  </div>
  
- <script>
 <script>
 function setTimeMode(mode) {
   window.timeMode = mode;
 }
+
 function setNow(id) {
   const now = new Date();
   const hh = now.getUTCHours().toString().padStart(2, '0');
   const mm = now.getUTCMinutes().toString().padStart(2, '0');
   document.getElementById(id).value = `${hh}:${mm}`;
 }
+
 function setNowToPrevious(btn) {
   const input = btn.previousElementSibling;
   if (!input || input.tagName.toLowerCase() !== 'input') return;
@@ -562,6 +563,20 @@ function setNowToPrevious(btn) {
   const mm = (mode === 'utc' ? now.getUTCMinutes() : now.getMinutes()).toString().padStart(2, '0');
   input.value = `${hh}:${mm}`;
 }
+
+function adjustTime(id, minutesDelta) {
+  const input = document.getElementById(id);
+  if (!input || !input.value) return;
+  const [h, m] = input.value.split(":").map(Number);
+  const date = new Date();
+  date.setHours(h);
+  date.setMinutes(m);
+  date.setMinutes(date.getMinutes() + minutesDelta);
+  const hh = date.getHours().toString().padStart(2, '0');
+  const mm = date.getMinutes().toString().padStart(2, '0');
+  input.value = `${hh}:${mm}`;
+}
+
 function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const base = document.getElementById(baseId);
   const target = document.getElementById(targetId);
@@ -575,11 +590,12 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const mm = baseDate.getMinutes().toString().padStart(2, '0');
   target.value = `${hh}:${mm}`;
 }
+
 function checkH15Status() {
   const h15 = document.getElementById("h15");
   if (!h15 || !h15.value) return;
   const now = new Date();
-  const [h, m] = h15.value.split(":" ).map(Number);
+  const [h, m] = h15.value.split(":").map(Number);
   const h15Time = new Date();
   h15Time.setHours(h, m, 0, 0);
   const diffMin = (h15Time - now) / 60000;
@@ -590,7 +606,9 @@ function checkH15Status() {
     h15.classList.add("blink-red");
   }
 }
+
 setInterval(checkH15Status, 10000);
+
 window.addEventListener('DOMContentLoaded', () => {
   const sobtField = document.getElementById('sobt');
   if (sobtField) {
@@ -600,63 +618,54 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
- 
- window.addEventListener('DOMContentLoaded', () => {
-   const sobtField = document.getElementById('sobt');
-   if (sobtField) {
-     sobtField.addEventListener('change', () => {
-       calculateTimeOffset('sobt', 'hle', -40);
-       calculateTimeOffset('sobt', 'h15', -15);
-     });
-   }
- });
- function renderAssistances() {
-   const container = document.getElementById('assistancesContainer');
-   const count = parseInt(document.getElementById('assistanceCount').value || '0');
-   container.innerHTML = '';
-   for (let i = 0; i < count; i++) {
-     const row = document.createElement('div');
-     row.className = 'row';
-     row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto;';
-     row.innerHTML = `
-       <div class="field" style="min-width: 120px;">
-         <label>Type ${i + 1}</label>
-         <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
-           <option>-</option>
-           <option>WCHR</option>
-           <option>WCHS</option>
-           <option>WCHC</option>
-           <option>DEAF</option>
-           <option>MUTE</option>
-           <option>DPNA</option>
-           <option>Autre</option>
-         </select>
-       </div>
-       <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
-         <label>Type personnalisé</label>
-         <input type="text" placeholder="Saisir le type">
-       </div>
-       <div class="field" style="min-width: 120px;">
-         <label>Équipement ${i + 1}</label>
-         <select>
-           <option>-</option>
-           <option>WCMP</option>
-           <option>WCLB</option>
-           <option>WCBD</option>
-         </select>
-       </div>
-       <div class="field" style="min-width: 120px;">
-         <label>Siège ${i + 1}</label>
-         <input type="text" placeholder="ex: 12A">
-       </div>
-     `;
-     container.appendChild(row);
-   }
- }
- 
- function toggleCustomCode(i) {
-   const select = document.getElementById(`assistance-type-${i}`);
-   const customDiv = document.getElementById(`custom-assistance-${i}`);
-   customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
- }
- </script>
+
+function renderAssistances() {
+  const container = document.getElementById('assistancesContainer');
+  const count = parseInt(document.getElementById('assistanceCount').value || '0');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto;';
+    row.innerHTML = `
+      <div class="field" style="min-width: 120px;">
+        <label>Type ${i + 1}</label>
+        <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
+          <option>-</option>
+          <option>WCHR</option>
+          <option>WCHS</option>
+          <option>WCHC</option>
+          <option>DEAF</option>
+          <option>MUTE</option>
+          <option>DPNA</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
+        <label>Type personnalisé</label>
+        <input type="text" placeholder="Saisir le type">
+      </div>
+      <div class="field" style="min-width: 120px;">
+        <label>Équipement ${i + 1}</label>
+        <select>
+          <option>-</option>
+          <option>WCMP</option>
+          <option>WCLB</option>
+          <option>WCBD</option>
+        </select>
+      </div>
+      <div class="field" style="min-width: 120px;">
+        <label>Siège ${i + 1}</label>
+        <input type="text" placeholder="ex: 12A">
+      </div>
+    `;
+    container.appendChild(row);
+  }
+}
+
+function toggleCustomCode(i) {
+  const select = document.getElementById(`assistance-type-${i}`);
+  const customDiv = document.getElementById(`custom-assistance-${i}`);
+  customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
+}
+</script>
