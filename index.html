@@ -176,8 +176,8 @@ function isSameLocalDay(dateStr) {
 async function loadRotations() {
   const arrSel = document.getElementById("arrivalSelector");
   const depSel = document.getElementById("departureSelector");
-  arrSel.innerHTML = '<option value="">-- Chargement... --</option>';
-  depSel.innerHTML = '<option value="">-- Chargement... --</option>';
+  arrSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
+  depSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
 
   const [arrRes, depRes, flightLive] = await Promise.all([
     fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`).then(r => r.json()),
@@ -223,29 +223,35 @@ function populateArrivalInfo() {
   const selected = document.getElementById("arrivalSelector").value;
   if (!selected) return;
   const flight = JSON.parse(selected);
-  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime);
+  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
   document.getElementById("provenance").value = flight.departure?.iataCode || "";
   lastArrivalTime = new Date(flight.arrival?.scheduledTime);
   lastArrivalFlightNumber = parseInt(flight.flight?.number);
 
   const depSel = document.getElementById("departureSelector");
-  const match = allDepartures.find(dep => {
+  let matched = false;
+  for (const dep of allDepartures) {
+    let code = dep.airline?.iataCode || "";
+    if (code === "LW" || code === "RR") code = "FR";
     const num = parseInt(dep.flight?.number);
     const depTime = new Date(dep.departure?.scheduledTime);
-    return (num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime;
-  });
-  if (match) {
-    depSel.value = JSON.stringify(match);
-    populateDepartureInfo();
+    if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
+      dep.airline.iataCode = code;
+      depSel.value = JSON.stringify(dep);
+      populateDepartureInfo();
+      matched = true;
+      break;
+    }
   }
+  if (!matched) depSel.selectedIndex = 0;
 }
 
 function populateDepartureInfo() {
   const selected = document.getElementById("departureSelector").value;
   if (!selected) return;
   const flight = JSON.parse(selected);
-  document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime);
-  document.getElementById("compagnie").value = flight.airline?.iataCode || "";
+  document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime, isUTC());
+  document.getElementById("compagnie").value = flight.airline?.iataCode === "LW" || flight.airline?.iataCode === "RR" ? "FR" : flight.airline?.iataCode;
   document.getElementById("destination").value = flight.arrival?.iataCode || "";
   document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
   document.getElementById("numVol").value = flight.flight?.number || "";
@@ -279,26 +285,29 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   if (!base || !target || !base.value) return;
   const [h, m] = base.value.split(":" ).map(Number);
   const ref = new Date();
-  ref.setHours(h);
-  ref.setMinutes(m);
+  ref.setUTCHours(h);
+  ref.setUTCMinutes(m);
   ref.setMinutes(ref.getMinutes() + offsetMinutes);
-  target.value = `${String(ref.getHours()).padStart(2, '0')}:${String(ref.getMinutes()).padStart(2, '0')}`;
+  target.value = `${String(ref.getUTCHours()).padStart(2, '0')}:${String(ref.getUTCMinutes()).padStart(2, '0')}`;
+}
+
+function isUTC() {
+  return document.querySelector("input[name='timeMode']:checked")?.value === 'utc';
 }
 
 function setTimeMode(mode) {
   const useUTC = mode === 'utc';
-  const sobt = document.getElementById("sobt");
-  const sibt = document.getElementById("sibt");
-  const a = window.lastArrivalTime;
-  const d = allDepartures.find(dep => JSON.stringify(dep) === document.getElementById("departureSelector").value);
-
-  if (a) sibt.value = formatTime(a.toISOString(), useUTC);
-  if (d?.departure?.scheduledTime) sobt.value = formatTime(d.departure.scheduledTime, useUTC);
+  document.getElementById("sobt").value = formatTime(window.lastDeparture?.departure?.scheduledTime, useUTC);
+  document.getElementById("sibt").value = formatTime(window.lastArrivalTime?.toISOString(), useUTC);
   calculateTimeOffset("sobt", "hle", -40);
   calculateTimeOffset("sobt", "h15", -15);
 }
 
-window.addEventListener("DOMContentLoaded", loadRotations);
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("input[name='timeMode'][value='utc']").checked = true;
+  window.timeMode = 'utc';
+  loadRotations();
+});
 </script>
 
 </body>
