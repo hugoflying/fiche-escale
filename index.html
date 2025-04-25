@@ -135,8 +135,14 @@
     <div class="field"><label>RZA</label><input type="text" id="rza"></div>
     <div class="field"><label>Immatriculation</label><input type="text" id="immatriculation"></div>
     <div class="field"><label>Type avion</label><select id="typeAvion">
-      <option>B737-800 Y189</option><option>B737-8200 Y197</option><option>A320 Y180</option><option>A320 Y186</option><option>A20N Y186</option><option>A321 Y230</option><option>A21N Y239</option>
-    </select></div>
+       <option>B737</option>
+  <option>B738</option>
+  <option>B38M</option>
+  <option>A320</option>
+  <option>A20N</option>
+  <option>A321</option>
+  <option>A21N</option>
+</select></div>
     <div class="field"><label>Parking</label><select id="parking">
       <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
     </select></div>
@@ -146,41 +152,104 @@
 <script>
 const API_KEY = "86b00c-05cc00";
 const AIRPORT_IATA = "BVA";
-let allDepartures = [];
+
+async function fetchFlightImmatriculations() {
+  try {
+    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.warn("Erreur API /flights:", e);
+    return [];
+  }
+}
 
 function isSameLocalDay(dateStr) {
-  const now = new Date();
-  const date = new Date(dateStr);
-  return date.getFullYear() === now.getFullYear() &&
-         date.getMonth() === now.getMonth() &&
-         date.getDate() === now.getDate();
+  const today = new Date();
+  const d = new Date(dateStr);
+  return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
+}
+
+async function loadRotations() {
+  const arrSel = document.getElementById("arrivalSelector");
+  const depSel = document.getElementById("departureSelector");
+  arrSel.innerHTML = '<option value="">-- Chargement... --</option>';
+  depSel.innerHTML = '<option value="">-- Chargement... --</option>';
+
+  const [arrRes, depRes, flightLive] = await Promise.all([
+    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`).then(r => r.json()),
+    fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`).then(r => r.json()),
+    fetchFlightImmatriculations()
+  ]);
+
+  const immatMap = {};
+  flightLive.forEach(f => {
+    const key = `${f.airline?.iataCode}${f.flight?.number}`;
+    if (f.aircraft?.regNumber) immatMap[key] = { reg: f.aircraft.regNumber, type: f.aircraft.icaoCode };
+  });
+
+  arrSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+  depSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
+
+  arrRes.filter(a => isSameLocalDay(a.arrival?.scheduledTime)).forEach(arr => {
+    const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
+    const opt = document.createElement("option");
+    opt.value = JSON.stringify(arr);
+    opt.textContent = label;
+    arrSel.appendChild(opt);
+  });
+
+  depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime)).forEach(dep => {
+    const key = `${dep.airline?.iataCode}${dep.flight?.number}`;
+    if (!dep.aircraft?.regNumber && immatMap[key]) {
+      dep.aircraft = {
+        regNumber: immatMap[key].reg,
+        icaoCode: immatMap[key].type
+      };
+    }
+    const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
+    const opt = document.createElement("option");
+    opt.value = JSON.stringify(dep);
+    opt.textContent = label;
+    depSel.appendChild(opt);
+  });
+}
+
+function populateArrivalInfo() {
+  const selected = document.getElementById("arrivalSelector").value;
+  if (!selected) return;
+  const flight = JSON.parse(selected);
+  document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime);
+  document.getElementById("provenance").value = flight.departure?.iataCode || "";
+}
+
+function populateDepartureInfo() {
+  const selected = document.getElementById("departureSelector").value;
+  if (!selected) return;
+  const flight = JSON.parse(selected);
+  document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime);
+  document.getElementById("compagnie").value = flight.airline?.iataCode || "";
+  document.getElementById("destination").value = flight.arrival?.iataCode || "";
+  document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
+  document.getElementById("numVol").value = flight.flight?.number || "";
+  document.getElementById("dateField").value = formatDate(flight.departure?.scheduledTime);
+  if (flight.aircraft?.icaoCode) {
+    document.getElementById("typeAvion").value = flight.aircraft.icaoCode.toUpperCase();
+  }
+  calculateTimeOffset("sobt", "hle", -40);
+  calculateTimeOffset("sobt", "h15", -15);
 }
 
 function formatTime(iso, useUTC = false) {
   if (!iso) return "";
-  const date = new Date(iso);
-  const h = useUTC ? date.getUTCHours() : date.getHours();
-  const m = useUTC ? date.getUTCMinutes() : date.getMinutes();
+  const d = new Date(iso);
+  const h = useUTC ? d.getUTCHours() : d.getHours();
+  const m = useUTC ? d.getUTCMinutes() : d.getMinutes();
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 function formatDate(iso) {
-  if (!iso) return "";
   return new Date(iso).toISOString().split("T")[0];
-}
-
-function setTimeMode(mode) {
-  const useUTC = mode === 'utc';
-  if (window.lastArrival) {
-    const sibt = window.lastArrival.arrival?.scheduledTime;
-    document.getElementById("sibt").value = formatTime(sibt, useUTC);
-  }
-  if (window.lastDeparture) {
-    const sobt = window.lastDeparture.departure?.scheduledTime;
-    document.getElementById("sobt").value = formatTime(sobt, useUTC);
-    calculateTimeOffset("sobt", "hle", -40);
-    calculateTimeOffset("sobt", "h15", -15);
-  }
 }
 
 function calculateTimeOffset(baseId, targetId, offsetMinutes) {
@@ -195,104 +264,9 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   target.value = `${String(ref.getHours()).padStart(2, '0')}:${String(ref.getMinutes()).padStart(2, '0')}`;
 }
 
-async function loadRotations() {
-  const arrivalSelector = document.getElementById("arrivalSelector");
-  const departureSelector = document.getElementById("departureSelector");
-  arrivalSelector.innerHTML = `<option value="">-- Chargement en cours... --</option>`;
-  departureSelector.innerHTML = `<option value="">-- Chargement en cours... --</option>`;
-
-  try {
-    const [depRes, arrRes, flightsRes] = await Promise.all([
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`),
-      fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`)
-    ]);
-
-    const departures = await depRes.json();
-    const arrivals = await arrRes.json();
-    const flightsLive = await flightsRes.json();
-    allDepartures = departures;
-
-    departures.forEach(dep => {
-      if (!dep?.departure?.scheduledTime || !isSameLocalDay(dep.departure.scheduledTime)) return;
-      const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify(dep);
-      opt.textContent = label;
-      departureSelector.appendChild(opt);
-    });
-
-    arrivals.forEach(arr => {
-      if (!arr?.arrival?.scheduledTime || !isSameLocalDay(arr.arrival.scheduledTime)) return;
-      const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify(arr);
-      opt.textContent = label;
-      arrivalSelector.appendChild(opt);
-    });
-
-    // map immatriculations from flightsLive
-    flightsLive.forEach(f => {
-      if (f?.airline?.iataCode && f?.flight?.number && f?.aircraft?.regNumber) {
-        const key = `${f.airline.iataCode}${f.flight.number}`;
-        const depMatch = allDepartures.find(dep => `${dep.airline?.iataCode}${dep.flight?.number}` === key);
-        if (depMatch) depMatch.aircraft = { regNumber: f.aircraft.regNumber };
-      }
-    });
-
-  } catch (err) {
-    console.error("Erreur chargement rotations:", err);
-    arrivalSelector.innerHTML = `<option value="">Erreur</option>`;
-    departureSelector.innerHTML = `<option value="">Erreur</option>`;
-  }
-}
-
-function populateArrivalInfo() {
-  const mode = document.querySelector("input[name='timeMode']:checked")?.value || "local";
-  const useUTC = mode === "utc";
-  const selector = document.getElementById("arrivalSelector");
-  const selected = selector.value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  window.lastArrival = parsed;
-  document.getElementById("sibt").value = formatTime(parsed.arrival?.scheduledTime, useUTC);
-  document.getElementById("provenance").value = parsed.departure?.iataCode || "";
-
-  const arrivalTime = new Date(parsed.arrival?.scheduledTime);
-  const arrivalFlightNum = parseInt(parsed.flight?.number);
-  if (arrivalFlightNum) {
-    const candidate = allDepartures.find(dep => {
-      const depNum = parseInt(dep.flight?.number);
-      const depTime = new Date(dep.departure?.scheduledTime);
-      return (depNum === arrivalFlightNum + 1 || depNum === arrivalFlightNum - 1) && depTime > arrivalTime;
-    });
-    if (candidate) {
-      document.getElementById("departureSelector").value = JSON.stringify(candidate);
-      populateDepartureInfo();
-    }
-  }
-}
-
-function populateDepartureInfo() {
-  const mode = document.querySelector("input[name='timeMode']:checked")?.value || "local";
-  const useUTC = mode === "utc";
-  const selector = document.getElementById("departureSelector");
-  const selected = selector.value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  window.lastDeparture = parsed;
-  document.getElementById("sobt").value = formatTime(parsed.departure?.scheduledTime, useUTC);
-  document.getElementById("compagnie").value = parsed.airline?.iataCode || "";
-  document.getElementById("destination").value = parsed.arrival?.iataCode || "";
-  document.getElementById("immatriculation").value = parsed.aircraft?.regNumber || "";
-  document.getElementById("numVol").value = parsed.flight?.number || "";
-  document.getElementById("dateField").value = formatDate(parsed.departure?.scheduledTime);
-  calculateTimeOffset("sobt", "hle", -40);
-  calculateTimeOffset("sobt", "h15", -15);
-}
-
 window.addEventListener("DOMContentLoaded", loadRotations);
 </script>
+
 
 </body>
 </html>
