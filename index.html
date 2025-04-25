@@ -107,7 +107,10 @@
       const now = new Date();
       const [h, m] = h15.value.split(":" ).map(Number);
       const h15Time = new Date();
-      h15Time.setHours(h, m, 0, 0);
+      h15Time.setHours(h);
+      h15Time.setMinutes(m);
+      h15Time.setSeconds(0);
+      h15Time.setMilliseconds(0);
       const diffMin = (h15Time - now) / 60000;
       h15.classList.remove("solid-red", "blink-red");
       if (diffMin <= 15 && diffMin > 0) {
@@ -116,7 +119,11 @@
         h15.classList.add("blink-red");
       }
     }
-    setInterval(checkH15Status, 10000);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      setInterval(checkH15Status, 10000);
+      checkH15Status();
+    });
   </script>
 </head>
 <body>
