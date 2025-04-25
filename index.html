@@ -172,10 +172,12 @@ function formatDate(iso) {
 function setTimeMode(mode) {
   const useUTC = mode === 'utc';
   if (window.lastArrival) {
-    document.getElementById("sibt").value = formatTime(window.lastArrival.arrival?.scheduledTime, useUTC);
+    const sibt = window.lastArrival.arrival?.scheduledTime;
+    document.getElementById("sibt").value = formatTime(sibt, useUTC);
   }
   if (window.lastDeparture) {
-    document.getElementById("sobt").value = formatTime(window.lastDeparture.departure?.scheduledTime, useUTC);
+    const sobt = window.lastDeparture.departure?.scheduledTime;
+    document.getElementById("sobt").value = formatTime(sobt, useUTC);
     calculateTimeOffset("sobt", "hle", -40);
     calculateTimeOffset("sobt", "h15", -15);
   }
@@ -185,7 +187,7 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
   const base = document.getElementById(baseId);
   const target = document.getElementById(targetId);
   if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":").map(Number);
+  const [h, m] = base.value.split(":" ).map(Number);
   const ref = new Date();
   ref.setHours(h);
   ref.setMinutes(m);
@@ -196,8 +198,8 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
 async function loadRotations() {
   const arrivalSelector = document.getElementById("arrivalSelector");
   const departureSelector = document.getElementById("departureSelector");
-  arrivalSelector.innerHTML = `<option value="">-- Chargement... --</option>`;
-  departureSelector.innerHTML = `<option value="">-- Chargement... --</option>`;
+  arrivalSelector.innerHTML = `<option value="">-- Chargement en cours... --</option>`;
+  departureSelector.innerHTML = `<option value="">-- Chargement en cours... --</option>`;
 
   try {
     const [depRes, arrRes] = await Promise.all([
@@ -244,11 +246,13 @@ function populateArrivalInfo() {
   document.getElementById("sibt").value = formatTime(parsed.arrival?.scheduledTime, useUTC);
   document.getElementById("provenance").value = parsed.departure?.iataCode || "";
 
+  const arrivalTime = new Date(parsed.arrival?.scheduledTime);
   const arrivalFlightNum = parseInt(parsed.flight?.number);
   if (arrivalFlightNum) {
     const candidate = allDepartures.find(dep => {
       const depNum = parseInt(dep.flight?.number);
-      return depNum === arrivalFlightNum + 1 || depNum === arrivalFlightNum - 1;
+      const depTime = new Date(dep.departure?.scheduledTime);
+      return (depNum === arrivalFlightNum + 1 || depNum === arrivalFlightNum - 1) && depTime > arrivalTime;
     });
     if (candidate) {
       document.getElementById("departureSelector").value = JSON.stringify(candidate);
@@ -277,6 +281,7 @@ function populateDepartureInfo() {
 
 window.addEventListener("DOMContentLoaded", loadRotations);
 </script>
+
 
 </body>
 </html>
