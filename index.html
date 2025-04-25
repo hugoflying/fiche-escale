@@ -261,6 +261,26 @@ window.addEventListener("DOMContentLoaded", async () => {
   const data = await fetchFlightSummaryForToday(flightsToday);
   populateSelectors(data);
 });
+
+  function suggestDepartureFromArrival() {
+  const arrValue = document.getElementById("arrivalSelector").value;
+  if (!arrValue) return;
+  const arrival = JSON.parse(arrValue);
+  const immat = arrival.aircraft?.registration;
+  const sibt = new Date(arrival.time?.scheduled?.arrival);
+  const depOptions = document.getElementById("departureSelector").options;
+  for (let i = 0; i < depOptions.length; i++) {
+    const dep = JSON.parse(depOptions[i].value);
+    if (!dep?.aircraft?.registration) continue;
+    const sobt = new Date(dep.time?.scheduled?.departure);
+    if (dep.aircraft.registration === immat && sobt > sibt && Math.abs(sobt - sibt) < 6 * 3600 * 1000) {
+      document.getElementById("departureSelector").selectedIndex = i;
+      populateDepartureInfo();
+      break;
+    }
+  }
+}
+</script>
 </script>
 
 </body>
