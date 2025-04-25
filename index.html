@@ -107,14 +107,19 @@
   <h3>ROTATIONS DISPONIBLES</h3>
   <div class="row">
     <div class="field">
-      <label>Choisir une rotation</label>
-      <select id="rotationSelector" onchange="populateFlightInfo()">
+      <label>Choisir un vol à l'arrivée</label>
+      <select id="arrivalSelector" onchange="populateFlightInfo()">
+        <option value="">-- Chargement en cours... --</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Choisir un vol au départ</label>
+      <select id="departureSelector" onchange="populateFlightInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
   </div>
 </section>
-
 
 <!-- SECTION INFORMATIONS -->
 <section>
@@ -163,130 +168,44 @@ function formatDate(iso) {
   return new Date(iso).toISOString().split("T")[0];
 }
 
-async function fetchLiveFlights() {
-  try {
-    const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
-    const data = await res.json();
-    return Array.isArray(data) ? data : [];
-  } catch (err) {
-    console.warn("Erreur API /flights", err);
-    return [];
-  }
-}
-
 async function loadRotations() {
-  const selector = document.getElementById("rotationSelector");
-  selector.innerHTML = `<option value="">-- Chargement... --</option>`;
+  const arrivalSelector = document.getElementById("arrivalSelector");
+  const departureSelector = document.getElementById("departureSelector");
+
+  arrivalSelector.innerHTML = `<option value="">-- Chargement... --</option>`;
+  departureSelector.innerHTML = `<option value="">-- Chargement... --</option>`;
 
   try {
-    const [depRes, arrRes, liveData] = await Promise.all([
+    const [depRes, arrRes] = await Promise.all([
       fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`),
-      fetchLiveFlights()
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
     ]);
 
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
 
-    const rotations = [];
-
-    for (const dep of departures) {
-      if (!dep?.departure?.scheduledTime || !isSameLocalDay(dep.departure.scheduledTime)) continue;
-
-      const flightNum = dep.flight?.number;
-      const airline = dep.airline?.iataCode;
-      const to = dep.arrival?.iataCode;
-      const sobt = dep.departure?.scheduledTime;
-
-      const live = liveData.find(f =>
-        f.flight?.iataNumber === `${airline}${flightNum}`
-      );
-      const reg = dep?.aircraft?.regNumber || live?.aircraft?.regNumber || "";
-
-      let sibt = "", from = "???";
-      if (reg) {
-        const match = arrivals.find(arr =>
-          arr.aircraft?.regNumber === reg && isSameLocalDay(arr.arrival?.scheduledTime)
-        );
-        if (match) {
-          sibt = match.arrival?.scheduledTime;
-          from = match.departure?.iataCode || "???";
-        }
-      }
-
-      const label = `${airline}${flightNum} ${from} → ${to}`;
-      rotations.push({
-        label,
-        value: JSON.stringify({
-          departure: dep,
-          from,
-          to,
-          reg,
-          sobt,
-          sibt
-        }),
-        sobt: new Date(sobt)
-      });
-    }
-
-    rotations.sort((a, b) => a.sobt - b.sobt);
-
-    selector.innerHTML = `<option value="">-- Sélectionner une rotation --</option>`;
-    for (const rot of rotations) {
+    departures.forEach(dep => {
+      if (!dep?.departure?.scheduledTime || !isSameLocalDay(dep.departure.scheduledTime)) return;
+      const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
       const opt = document.createElement("option");
-      opt.value = rot.value;
-      opt.textContent = rot.label;
-      selector.appendChild(opt);
-    }
+      opt.value = JSON.stringify({ departure: dep });
+      opt.textContent = label;
+      departureSelector.appendChild(opt);
+    });
+
+    arrivals.forEach(arr => {
+      if (!arr?.arrival?.scheduledTime || !isSameLocalDay(arr.arrival.scheduledTime)) return;
+      const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
+      const opt = document.createElement("option");
+      opt.value = JSON.stringify({ arrival: arr });
+      opt.textContent = label;
+      arrivalSelector.appendChild(opt);
+    });
   } catch (err) {
-    console.error("Erreur lors du chargement des rotations :", err);
-    selector.innerHTML = `<option value="">Erreur chargement</option>`;
+    console.error("Erreur chargement rotations:", err);
+    arrivalSelector.innerHTML = `<option value="">Erreur</option>`;
+    departureSelector.innerHTML = `<option value="">Erreur</option>`;
   }
-}
-
-function populateFlightInfo() {
-  const mode = document.querySelector("input[name='timeMode']:checked")?.value || "local";
-  const useUTC = mode === "utc";
-
-  const selector = document.getElementById("rotationSelector");
-  const selected = selector?.value;
-  if (!selected) return;
-  const parsed = JSON.parse(selected);
-  const { departure, from, to, reg, sobt, sibt } = parsed;
-
-  document.getElementById("compagnie").value = departure.airline?.iataCode || "";
-  document.getElementById("numVol").value = departure.flight?.number || "";
-  document.getElementById("destination").value = to || "";
-  document.getElementById("provenance").value = from || "";
-  document.getElementById("immatriculation").value = reg || "";
-  document.getElementById("sobt").value = formatTime(sobt, useUTC);
-  document.getElementById("sibt").value = formatTime(sibt, useUTC);
-  document.getElementById("dateField").value = formatDate(departure?.departure?.scheduledTime);
-
-  calculateTimeOffset("sobt", "hle", -40);
-  calculateTimeOffset("sobt", "h15", -15);
-}
-
-function setTimeMode(mode) {
-  const sobt = document.getElementById("sobt").dataset.utc;
-  const sibt = document.getElementById("sibt").dataset.utc;
-  if (sobt) document.getElementById("sobt").value = formatTime(sobt, mode === "utc");
-  if (sibt) document.getElementById("sibt").value = formatTime(sibt, mode === "utc");
-
-  calculateTimeOffset("sobt", "hle", -40);
-  calculateTimeOffset("sobt", "h15", -15);
-}
-
-function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-  const base = document.getElementById(baseId);
-  const target = document.getElementById(targetId);
-  if (!base || !target || !base.value) return;
-  const [h, m] = base.value.split(":").map(Number);
-  const ref = new Date();
-  ref.setHours(h);
-  ref.setMinutes(m);
-  ref.setMinutes(ref.getMinutes() + offsetMinutes);
-  target.value = `${String(ref.getHours()).padStart(2, '0')}:${String(ref.getMinutes()).padStart(2, '0')}`;
 }
 
 window.addEventListener("DOMContentLoaded", loadRotations);
