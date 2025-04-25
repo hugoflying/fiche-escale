@@ -86,19 +86,18 @@
       }
     }
     .blink-red {
-      animation: blink 1s step-start 0s infinite;
-      background-color: red;
+      animation: blinkRed 1s infinite;
+      background-color: #ff0000 !important;
       color: white;
     }
     .solid-red {
-      background-color: red;
+      background-color: #cc0000 !important;
       color: white;
     }
-    @keyframes blink {
-      50% {
-        background-color: white;
-        color: red;
-      }
+    @keyframes blinkRed {
+      0% { background-color: #ff0000; color: white; }
+      50% { background-color: white; color: red; }
+      100% { background-color: #ff0000; color: white; }
     }
   </style>
 </head>
