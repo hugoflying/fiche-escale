@@ -357,7 +357,8 @@
  
 <section>
    <h3>TIMING ESCALE</h3>
-   <div class="row">
+
+   <div class="row row-grey">
      <div class="field">
        <label>Arrivée PNT</label>
        <input type="time" id="arriveePNT">
@@ -376,7 +377,9 @@
          <button onclick="adjustTime('arriveePNC', 1)">+1</button>
        </div>
      </div>
-     <div class="spacer"></div>
+   </div>
+
+   <div class="row row-grey">
      <div class="field">
        <label>Arrivée fuel</label>
        <input type="time" id="arriveeFuel">
@@ -395,7 +398,9 @@
          <button onclick="adjustTime('departFuel', 1)">+1</button>
        </div>
      </div>
-     <div class="spacer"></div>
+   </div>
+
+   <div class="row row-grey">
      <div class="field">
        <label>Arrivée lift</label>
        <input type="time" id="arriveeLift">
@@ -414,7 +419,9 @@
          <button onclick="adjustTime('departLift', 1)">+1</button>
        </div>
      </div>
-     <div class="spacer"></div>
+   </div>
+
+   <div class="row row-grey">
      <div class="field">
        <label>First PAX OUT</label>
        <input type="time" id="firstPaxOut">
@@ -426,16 +433,19 @@
      </div>
      <div class="field">
        <label>Last PAX OUT</label>
-              <input type="time" id="lastPaxOut">
+       <input type="time" id="lastPaxOut">
        <div class="time-controls">
          <button onclick="adjustTime('lastPaxOut', -1)">-1</button>
          <button onclick="setNow('lastPaxOut')">Now</button>
          <button onclick="adjustTime('lastPaxOut', 1)">+1</button>
        </div>
      </div>
+   </div>
+
+   <div class="row row-grey">
      <div class="field">
        <label>First PAX IN</label>
-              <input type="time" id="firstPaxIn">
+       <input type="time" id="firstPaxIn">
        <div class="time-controls">
          <button onclick="adjustTime('firstPaxIn', -1)">-1</button>
          <button onclick="setNow('firstPaxIn')">Now</button>
@@ -444,14 +454,15 @@
      </div>
      <div class="field">
        <label>Last PAX IN</label>
-           <input type="time" id="lastPaxIn">
+       <input type="time" id="lastPaxIn">
        <div class="time-controls">
          <button onclick="adjustTime('lastPaxIn', -1)">-1</button>
          <button onclick="setNow('lastPaxIn')">Now</button>
          <button onclick="adjustTime('lastPaxIn', 1)">+1</button>
        </div>
-        </div>
- </section>
+     </div>
+   </div>
+</section>
  
  <section>
    <h3>CHARGEMENT</h3>
