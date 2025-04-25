@@ -199,7 +199,7 @@ function populateArrivalInfo() {
   const flight = JSON.parse(selected);
   document.getElementById("sibt")?.setAttribute("data-utc", flight.time?.scheduled?.arrival);
   document.getElementById("sibt")?.setAttribute("value", formatTimeFromIso(flight.time?.scheduled?.arrival));
-  document.getElementById("provenance")?.setAttribute("value", flight.airport?.origin?.code?.iata);
+  document.getElementById("provenance")?.value = flight.airport?.origin?.code?.iata || "";
   applyTimeMode();
 }
 
@@ -209,7 +209,7 @@ function populateDepartureInfo() {
   const flight = JSON.parse(selected);
   document.getElementById("sobt")?.setAttribute("data-utc", flight.time?.scheduled?.departure);
   document.getElementById("sobt")?.setAttribute("value", formatTimeFromIso(flight.time?.scheduled?.departure));
-  document.getElementById("destination")?.setAttribute("value", flight.airport?.destination?.code?.iata);
+  document.getElementById("destination")?.value = flight.airport?.destination?.code?.iata || "";
   document.getElementById("compagnie")?.value = flight.airline?.code?.iata || "";
   document.getElementById("numVol")?.value = flight.identification?.number?.default?.replace(/[A-Z]/g, '') || "";
   document.getElementById("immatriculation")?.value = flight.aircraft?.registration || "";
