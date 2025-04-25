@@ -143,6 +143,7 @@
   </div>
 </section>
 
+<!-- Début du script JavaScript dans la balise <script> -->
 <script>
 const API_TOKEN = "01966c89-170a-7317-a3e1-5e5c03a6cb5a|7tTaZHX1vhGwH4UbHhYyg2ZZmgGtiUNaXiJzhvDD4fa9f63c";
 const today = new Date();
@@ -157,24 +158,17 @@ function formatTimeFromIso(iso) {
   return date.toISOString().substr(11, 5);
 }
 
-async function fetchFlightSummaryForToday(flightNumbers) {
-  const params = new URLSearchParams({
-    flight_datetime_from: dateFrom,
-    flight_datetime_to: dateTo,
-    flights: flightNumbers.join(',')
-  });
+async function fetchFlightsFromAirport() {
   try {
-    const res = await fetch(`https://fr24api.flightradar24.com/api/flight-summary/full?${params}`, {
+    const res = await fetch(`https://fr24api.flightradar24.com/api/flights/search?airport=BVA&airports=inbound:BVA,outbound:BVA&date_from=${dateFrom}&date_to=${dateTo}`, {
       headers: {
-        'Accept': 'application/json',
-        'Accept-Version': 'v1',
         'Authorization': `Bearer ${API_TOKEN}`
       }
     });
     const data = await res.json();
-    return data;
+    return Array.isArray(data?.results) ? data.results : [];
   } catch (e) {
-    console.error("Erreur summary FR24:", e);
+    console.error("Erreur API Flightradar24:", e);
     return [];
   }
 }
@@ -257,31 +251,11 @@ function calculateTimeOffset(baseId, targetId, offsetMinutes) {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
-  const flightsToday = ["FR1540", "FR3051", "FR3050", "FR3052"];
-  const data = await fetchFlightSummaryForToday(flightsToday);
+  const data = await fetchFlightsFromAirport();
   populateSelectors(data);
 });
+</script>
 
-  function suggestDepartureFromArrival() {
-  const arrValue = document.getElementById("arrivalSelector").value;
-  if (!arrValue) return;
-  const arrival = JSON.parse(arrValue);
-  const immat = arrival.aircraft?.registration;
-  const sibt = new Date(arrival.time?.scheduled?.arrival);
-  const depOptions = document.getElementById("departureSelector").options;
-  for (let i = 0; i < depOptions.length; i++) {
-    const dep = JSON.parse(depOptions[i].value);
-    if (!dep?.aircraft?.registration) continue;
-    const sobt = new Date(dep.time?.scheduled?.departure);
-    if (dep.aircraft.registration === immat && sobt > sibt && Math.abs(sobt - sibt) < 6 * 3600 * 1000) {
-      document.getElementById("departureSelector").selectedIndex = i;
-      populateDepartureInfo();
-      break;
-    }
-  }
-}
-</script>
-</script>
 
 </body>
 </html>
