@@ -372,6 +372,24 @@
    <button onclick="window.print()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
    <button onclick="document.querySelectorAll('input, select, textarea').forEach(f => f.type === 'checkbox' ? f.checked = false : f.value = '')" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Effacer</button>
  </div>
+
+  <style>
+.blink-red {
+  animation: blinkRed 1s infinite;
+  background-color: #ffcccc !important;
+}
+
+@keyframes blinkRed {
+  0% { background-color: #ffcccc; }
+  50% { background-color: #ff0000; }
+  100% { background-color: #ffcccc; }
+}
+
+.solid-red {
+  background-color: #ff0000 !important;
+  color: white;
+}
+</style>
  
 <script>
 const API_KEY = "86b00c-05cc00";
