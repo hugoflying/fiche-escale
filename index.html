@@ -202,13 +202,15 @@ async function loadRotations() {
   departureSelector.innerHTML = `<option value="">-- Chargement en cours... --</option>`;
 
   try {
-    const [depRes, arrRes] = await Promise.all([
+    const [depRes, arrRes, flightsRes] = await Promise.all([
       fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`)
+      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`),
+      fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`)
     ]);
 
     const departures = await depRes.json();
     const arrivals = await arrRes.json();
+    const flightsLive = await flightsRes.json();
     allDepartures = departures;
 
     departures.forEach(dep => {
@@ -228,6 +230,16 @@ async function loadRotations() {
       opt.textContent = label;
       arrivalSelector.appendChild(opt);
     });
+
+    // map immatriculations from flightsLive
+    flightsLive.forEach(f => {
+      if (f?.airline?.iataCode && f?.flight?.number && f?.aircraft?.regNumber) {
+        const key = `${f.airline.iataCode}${f.flight.number}`;
+        const depMatch = allDepartures.find(dep => `${dep.airline?.iataCode}${dep.flight?.number}` === key);
+        if (depMatch) depMatch.aircraft = { regNumber: f.aircraft.regNumber };
+      }
+    });
+
   } catch (err) {
     console.error("Erreur chargement rotations:", err);
     arrivalSelector.innerHTML = `<option value="">Erreur</option>`;
@@ -281,7 +293,6 @@ function populateDepartureInfo() {
 
 window.addEventListener("DOMContentLoaded", loadRotations);
 </script>
-
 
 </body>
 </html>
