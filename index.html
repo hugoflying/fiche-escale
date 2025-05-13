@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>APPROCHE BVA</title>
+  <title>DÉPARTS BVA</title>
   <style>
     body {
       background-color: #0b0b0b;
@@ -37,18 +37,10 @@
       background-color: #2c2c2c;
       font-size: 1.1em;
     }
-    tr.approche {
-      animation: clignote 1s infinite;
-      cursor: pointer;
-    }
-    @keyframes clignote {
-      0%, 100% { background-color: #1f1f1f; }
-      50% { background-color: #3a3a3a; }
-    }
   </style>
 </head>
 <body>
-  <h1>APPROCHE BVA</h1>
+  <h1>DÉPARTS BVA</h1>
   <div id="status">Chargement...</div>
 
   <table>
@@ -56,35 +48,18 @@
       <tr>
         <th>CALLSIGN</th>
         <th>FLIGHT NUMBER</th>
-        <th>FROM</th>
-        <th>STA</th>
+        <th>TO</th>
+        <th>STD</th>
       </tr>
     </thead>
-    <tbody id="tableau-avions"></tbody>
+    <tbody id="tableau-departs"></tbody>
   </table>
 
   <script>
-    const acknowledged = new Set();
-    const center = { lat: 49.60003, lon: 1.95008 };
-    const radiusKM = 73;
-    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6lQxrA5JliEopo7__CyYvfIA";
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6l";
 
-    function haversine(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
-    function formatTime(date) {
-      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    async function fetchAirportKeeperArrivals() {
-      const from = new Date().toISOString().split("T")[0] + "T00:00:00Z";
-      const to = new Date().toISOString().split("T")[0] + "T23:59:00Z";
-      const url = `https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=ARR&from=${from}&to=${to}`;
+    async function fetchDeparturesBVA() {
+      const url = "https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=DEP&from=2025-02-01T12:00:00Z&to=2025-12-31T12:00:00Z";
 
       const res = await fetch(url, {
         headers: {
@@ -94,86 +69,51 @@
       });
 
       const data = await res.json();
-      const arrivalsMap = new Map();
-
-      data.forEach(flight => {
-        const callsign = flight.callsign?.replace(/\s+/g, '') || '';
-        if (callsign) {
-          arrivalsMap.set(callsign, {
-            callsign,
-            flightNumber: flight.flightNumber || "—",
-            from: flight.departure || "—",
-            sta: flight.scheduledArrival ? new Date(flight.scheduledArrival).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "—"
-          });
-        }
-      });
-
-      return arrivalsMap;
+      return data;
     }
 
-    async function fetchOpenSkyStates() {
-      const proxy = "https://corsproxy.io/?";
-      const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.states || [];
+    function formatTime(timeString) {
+      const date = new Date(timeString);
+      return isNaN(date.getTime()) ? "—" : date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
     async function updateDisplay() {
-      const tableau = document.getElementById("tableau-avions");
+      const tableau = document.getElementById("tableau-departs");
       const status = document.getElementById("status");
       tableau.innerHTML = "";
 
       try {
-        const [arrivalsMap, states] = await Promise.all([
-          fetchAirportKeeperArrivals(),
-          fetchOpenSkyStates()
-        ]);
-
+        const vols = await fetchDeparturesBVA();
         let count = 0;
 
-        states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat] = avion;
-          if (!lat || !lon || !callsignRaw) return;
-
-          const callsign = callsignRaw.replace(/\s+/g, '');
-          if (!arrivalsMap.has(callsign)) return;
-
-          const distance = haversine(center.lat, center.lon, lat, lon);
-          if (distance > radiusKM) return;
-
-          const data = arrivalsMap.get(callsign);
-          count++;
+        vols.forEach(vol => {
+          const callsign = vol.callsign || "—";
+          const flightNumber = vol.flightNumber || "—";
+          const to = vol.arrival || "—";
+          const std = formatTime(vol.scheduledDeparture);
 
           const ligne = document.createElement("tr");
           ligne.innerHTML = `
-            <td>${callsignRaw.trim()}</td>
-            <td>${data.flightNumber}</td>
-            <td>${data.from}</td>
-            <td>${data.sta}</td>
+            <td>${callsign}</td>
+            <td>${flightNumber}</td>
+            <td>${to}</td>
+            <td>${std}</td>
           `;
 
-          if (!acknowledged.has(callsign)) {
-            ligne.classList.add("approche");
-            ligne.addEventListener("click", () => {
-              ligne.classList.remove("approche");
-              acknowledged.add(callsign);
-            });
-          }
-
           tableau.appendChild(ligne);
+          count++;
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) dans la zone`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) au départ`;
       } catch (err) {
-        console.error("Erreur récupération :", err);
-        status.textContent = "Erreur lors de la récupération des données.";
+        console.error("Erreur récupération API :", err);
+        status.textContent = "Erreur lors de la récupération des départs.";
       }
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000); // Mise à jour toutes les 10 sec
+    setInterval(updateDisplay, 60000); // mise à jour toutes les 60 sec
   </script>
 </body>
 </html>
