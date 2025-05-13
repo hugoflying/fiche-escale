@@ -56,17 +56,20 @@
   </table>
 
   <script>
-    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6l";
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6lQxrA5JliEopo7__CyYvfIA";
 
     async function fetchDeparturesBVA() {
       const url = "https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=DEP&from=2025-02-01T12:00:00Z&to=2025-12-31T12:00:00Z";
-
       const res = await fetch(url, {
         headers: {
           "Authorization": "Bearer " + token,
           "Accept": "application/json"
         }
       });
+
+      if (!res.ok) {
+        throw new Error("Erreur API " + res.status);
+      }
 
       const data = await res.json();
       return data;
@@ -107,7 +110,7 @@
         const now = new Date();
         status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) au départ`;
       } catch (err) {
-        console.error("Erreur récupération API :", err);
+        console.error("Erreur API :", err);
         status.textContent = "Erreur lors de la récupération des départs.";
       }
     }
