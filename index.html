@@ -82,26 +82,51 @@
       return isNaN(date.getTime()) ? "—" : date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
-    async function fetchAviationStackArrivals() {
+    async function fetchAndStoreAviationStack() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
       const res = await fetch(url);
       const json = await res.json();
-      const map = new Map();
 
+      const filtered = {};
       (json.data || []).forEach(flight => {
         const cs = flight.flight?.iata || flight.flight?.icao || "";
         const callsign = cs.replace(/\s+/g, '');
         if (callsign) {
-          map.set(callsign, {
+          filtered[callsign] = {
             flightNumber: cs,
             from: flight.departure?.iata || "—",
             sta: formatTime(flight.arrival?.estimated)
-          });
+          };
         }
       });
 
-      return map;
+      localStorage.setItem("aviationstack_arrivals", JSON.stringify(filtered));
+      localStorage.setItem("aviationstack_lastUpdate", new Date().toISOString());
+      console.log("📦 AviationStack data updated");
+    }
+
+    function checkScheduledFetch() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Trigger update at 07h00, 12h00, 17h00
+      const updateTimes = [7, 12, 17];
+      const lastUpdate = new Date(localStorage.getItem("aviationstack_lastUpdate") || 0);
+
+      if (updateTimes.includes(hours) && minutes === 0) {
+        const lastHour = lastUpdate.getHours();
+        const lastDate = lastUpdate.toDateString();
+        if (lastHour !== hours || lastDate !== now.toDateString()) {
+          fetchAndStoreAviationStack();
+        }
+      }
+    }
+
+    function getCachedArrivals() {
+      const raw = localStorage.getItem("aviationstack_arrivals");
+      return raw ? JSON.parse(raw) : {};
     }
 
     async function fetchOpenSkyStates() {
@@ -116,13 +141,11 @@
       const tableau = document.getElementById("tableau-avions");
       const status = document.getElementById("status");
       tableau.innerHTML = "";
+      checkScheduledFetch();
 
       try {
-        const [arrivalsMap, states] = await Promise.all([
-          fetchAviationStackArrivals(),
-          fetchOpenSkyStates()
-        ]);
-
+        const arrivalsMap = getCachedArrivals();
+        const states = await fetchOpenSkyStates();
         let count = 0;
 
         states.forEach(avion => {
@@ -134,9 +157,12 @@
           if (distance > radiusKM) return;
 
           let match = null;
-          arrivalsMap.forEach((info, key) => {
-            if (callsign.startsWith(key)) match = info;
-          });
+          for (const key in arrivalsMap) {
+            if (callsign.startsWith(key)) {
+              match = arrivalsMap[key];
+              break;
+            }
+          }
 
           if (!match) return;
 
@@ -170,7 +196,7 @@
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000);
+    setInterval(updateDisplay, 10000); // OpenSky refresh
   </script>
 </body>
 </html>
