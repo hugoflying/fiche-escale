@@ -55,9 +55,9 @@
     <thead>
       <tr>
         <th>CALLSIGN</th>
-        <th>FLIGHT NUMBER</th>
-        <th>FROM</th>
-        <th>STA</th>
+        <th>DEPARTURE</th>
+        <th>ALT (m)</th>
+        <th>SPD (km/h)</th>
       </tr>
     </thead>
     <tbody id="tableau-avions">
@@ -69,7 +69,6 @@
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
-    const aviationEdgeKey = "86b00c-05cc00";
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -83,30 +82,28 @@
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
-    async function fetchArrivalsBVA() {
-      const url = `https://aviation-edge.com/v2/public/timetable?key=${aviationEdgeKey}&iataCode=BVA&type=arrival`;
+    async function fetchArrivalFlightsLFOB() {
+      const now = Math.floor(Date.now() / 1000);
+      const begin = now - 3600;
+      const end = now + 3600;
+      const proxy = "https://corsproxy.io/?";
+      const url = proxy + `https://opensky-network.org/api/flights/arrival?airport=LFOB&begin=${begin}&end=${end}`;
       const res = await fetch(url);
       const data = await res.json();
-      const map = new Map();
-
+      const arrivalsMap = new Map();
       data.forEach(flight => {
-        const iata = flight.flight?.iataNumber?.replace(/\s+/g, '') || "";
-        const icao = flight.flight?.icaoNumber?.replace(/\s+/g, '') || "";
-        const callsign = iata || icao;
+        const callsign = flight.callsign?.replace(/\s+/g, '') || '';
         if (callsign) {
-          map.set(callsign, {
-            callsign,
-            flightNumber: iata || icao,
-            from: flight.departure?.iataCode || "—",
-            sta: flight.arrival?.scheduledTimeLocal?.split("T")[1]?.slice(0,5) || "—"
+          arrivalsMap.set(callsign, {
+            departure: flight.estDepartureAirport || '—',
+            callsign
           });
         }
       });
-
-      return map;
+      return arrivalsMap;
     }
 
-    async function fetchOpenSky() {
+    async function fetchOpenSkyStates() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
       const res = await fetch(url);
@@ -120,15 +117,15 @@
       tableau.innerHTML = "";
 
       try {
-        const [arrivalsMap, openSkyData] = await Promise.all([
-          fetchArrivalsBVA(),
-          fetchOpenSky()
+        const [arrivalsMap, states] = await Promise.all([
+          fetchArrivalFlightsLFOB(),
+          fetchOpenSkyStates()
         ]);
 
         let count = 0;
 
-        openSkyData.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat] = avion;
+        states.forEach(avion => {
+          const [icao24, callsignRaw, , , , lon, lat, altitude, , velocity] = avion;
           if (!lat || !lon || !callsignRaw) return;
 
           const callsign = callsignRaw.replace(/\s+/g, '');
@@ -137,15 +134,18 @@
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > radiusKM) return;
 
-          const data = arrivalsMap.get(callsign);
           count++;
 
           const ligne = document.createElement("tr");
+          const alt = altitude ? Math.round(altitude) : "—";
+          const spd = velocity ? Math.round(velocity * 3.6) : "—";
+          const dep = arrivalsMap.get(callsign).departure;
+
           ligne.innerHTML = `
             <td>${callsignRaw.trim()}</td>
-            <td>${data.flightNumber}</td>
-            <td>${data.from}</td>
-            <td>${data.sta}</td>
+            <td>${dep}</td>
+            <td>${alt}</td>
+            <td>${spd}</td>
           `;
 
           if (!acknowledged.has(callsign)) {
@@ -160,7 +160,7 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) à destination de BVA`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) détecté(s) à destination de BVA`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
@@ -168,7 +168,7 @@
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000); // Mise à jour toutes les 10 sec
+    setInterval(updateDisplay, 10000); // toutes les 10 secondes
   </script>
 </body>
 </html>
