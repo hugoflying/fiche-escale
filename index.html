@@ -59,7 +59,7 @@
     const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6lQxrA5JliEopo7__CyYvfIA";
 
     async function fetchDeparturesBVA() {
-      const url = "https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=DEP&from=2025-02-01T12:00:00Z&to=2025-12-31T12:00:00Z";
+      const url = "https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=ARR&from=2025-05-13T00:00:00Z&to=2025-05-14T00:00:00Z";
       const res = await fetch(url, {
         headers: {
           "Authorization": "Bearer " + token,
