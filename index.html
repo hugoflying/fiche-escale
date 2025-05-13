@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Avions en Approche - BVA</title>
+  <title>Approches vers BVA</title>
   <style>
     body {
       background-color: #0b0b0b;
@@ -48,12 +48,13 @@
   </style>
 </head>
 <body>
-  <h1>🛬 Avions dans un rayon de 73 km autour de BVA</h1>
+  <h1>🛬 Vols à destination de BVA (dans un rayon de 73 km)</h1>
   <div id="status">Chargement...</div>
 
   <table>
     <thead>
       <tr>
+        <th>Vol</th>
         <th>Callsign</th>
         <th>Pays</th>
         <th>Altitude (m)</th>
@@ -68,7 +69,8 @@
   <script>
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
-    const rayonKM = 73;
+    const radiusKM = 73;
+    const aviationEdgeKey = "86b00c-05cc00";
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -82,25 +84,52 @@
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
-    async function fetchAvions() {
+    async function fetchArrivalsBVA() {
+      const url = `https://aviation-edge.com/v2/public/timetable?key=${aviationEdgeKey}&iataCode=BVA&type=arrival`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const callsigns = new Set();
+
+      data.forEach(flight => {
+        const iata = flight.flight?.iataNumber?.replace(/\s+/g, '') || "";
+        const icao = flight.flight?.icaoNumber?.replace(/\s+/g, '') || "";
+        if (iata) callsigns.add(iata);
+        if (icao) callsigns.add(icao);
+      });
+
+      return callsigns;
+    }
+
+    async function fetchOpenSky() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const avions = data.states || [];
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.states || [];
+    }
 
-        const tableau = document.getElementById("tableau-avions");
-        const status = document.getElementById("status");
-        tableau.innerHTML = "";
+    async function updateDisplay() {
+      const tableau = document.getElementById("tableau-avions");
+      const status = document.getElementById("status");
+      tableau.innerHTML = "";
+
+      try {
+        const [arrivalsBVA, openSkyData] = await Promise.all([
+          fetchArrivalsBVA(),
+          fetchOpenSky()
+        ]);
 
         let count = 0;
-        avions.forEach(avion => {
-          const [icao24, callsign, origin_country, , , lon, lat, baro_altitude, on_ground, velocity] = avion;
-          if (!lat || !lon || !callsign) return;
+
+        openSkyData.forEach(avion => {
+          const [icao24, callsignRaw, origin_country, , , lon, lat, baro_altitude, on_ground, velocity] = avion;
+          if (!lat || !lon || !callsignRaw) return;
+
+          const callsign = callsignRaw.replace(/\s+/g, '');
+          if (!arrivalsBVA.has(callsign)) return;
 
           const distance = haversine(center.lat, center.lon, lat, lon);
-          if (distance > rayonKM) return;
+          if (distance > radiusKM) return;
 
           count++;
 
@@ -109,7 +138,8 @@
           const speed = velocity ? Math.round(velocity * 3.6) : "—";
 
           ligne.innerHTML = `
-            <td>${callsign.trim()}</td>
+            <td>${callsign}</td>
+            <td>${callsignRaw.trim()}</td>
             <td>${origin_country}</td>
             <td>${alt}</td>
             <td>${speed}</td>
@@ -127,15 +157,15 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} avion(s) détecté(s)`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) détecté(s) à destination de BVA`;
       } catch (err) {
-        console.error("Erreur récupération OpenSky :", err);
-        document.getElementById("status").textContent = "Erreur lors de la récupération des données.";
+        console.error("Erreur récupération :", err);
+        status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
-    fetchAvions();
-    setInterval(fetchAvions, 10000); // Mise à jour toutes les 10 secondes
+    updateDisplay();
+    setInterval(updateDisplay, 10000); // Rafraîchit toutes les 10 secondes
   </script>
 </body>
 </html>
