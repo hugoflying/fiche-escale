@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Arrivées Approche - BVA</title>
+  <title>Avions en Approche - BVA</title>
   <style>
     body {
       background-color: #0b0b0b;
@@ -22,7 +22,7 @@
       overflow: hidden;
     }
     th, td {
-      padding: 16px;
+      padding: 12px;
       text-align: center;
       background-color: #1f1f1f;
       border-bottom: 1px solid #333;
@@ -42,100 +42,80 @@
   </style>
 </head>
 <body>
-  <h1>🛬 Vols en approche - Aéroport de Beauvais</h1>
+  <h1>🛬 Avions dans un rayon de 73 km autour de BVA</h1>
   <table>
     <thead>
       <tr>
-        <th>Vol</th>
         <th>Callsign</th>
-        <th>Provenance</th>
-        <th>Heure prévue</th>
+        <th>Pays</th>
+        <th>Altitude (m)</th>
+        <th>Vitesse (km/h)</th>
       </tr>
     </thead>
-    <tbody id="vols-tableau">
-      <!-- Contenu dynamique -->
+    <tbody id="tableau-avions">
+      <!-- Avions injectés ici -->
     </tbody>
   </table>
 
   <script>
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
-    const radiusKM = 73;
-    const keyAE = "86b00c-05cc00";
+    const rayonKM = 73;
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    async function fetchArrivalsAE() {
-      const url = `https://aviation-edge.com/v2/public/timetable?key=${keyAE}&iataCode=BVA&type=arrival`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data;
-    }
-
-    async function fetchOpenSky() {
+    async function fetchAvions() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.states || [];
-    }
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const avions = data.states || [];
 
-    function matchFlight(callsign, aeData) {
-      return aeData.find(flight => {
-        const iata = flight.flight.iataNumber?.replace(/\s+/g, '') || "";
-        const icao = flight.flight.icaoNumber?.replace(/\s+/g, '') || "";
-        return callsign.replace(/\s+/g, '').startsWith(iata) || callsign.replace(/\s+/g, '').startsWith(icao);
-      });
-    }
+        const tableau = document.getElementById("tableau-avions");
+        tableau.innerHTML = "";
 
-    async function updateDisplay() {
-      const tableau = document.getElementById("vols-tableau");
-      tableau.innerHTML = "";
+        avions.forEach(avion => {
+          const [icao24, callsign, origin_country, , , lon, lat, baro_altitude, on_ground, velocity] = avion;
+          if (!lat || !lon || !callsign) return;
 
-      const [aeData, osData] = await Promise.all([fetchArrivalsAE(), fetchOpenSky()]);
+          const distance = haversine(center.lat, center.lon, lat, lon);
+          if (distance > rayonKM) return;
 
-      osData.forEach(avion => {
-        const callsign = (avion[1] || "").trim();
-        const lon = avion[5], lat = avion[6];
-        if (!lat || !lon || !callsign) return;
+          const ligne = document.createElement("tr");
+          const alt = baro_altitude ? Math.round(baro_altitude) : "—";
+          const speed = velocity ? Math.round(velocity * 3.6) : "—";
 
-        const dist = haversine(center.lat, center.lon, lat, lon);
-        const isApproche = dist <= radiusKM;
+          ligne.innerHTML = `
+            <td>${callsign.trim()}</td>
+            <td>${origin_country}</td>
+            <td>${alt}</td>
+            <td>${speed}</td>
+          `;
 
-        const match = matchFlight(callsign, aeData);
-        const iata = match?.flight?.iataNumber || "—";
-        const from = match?.departure?.iataCode || "—";
-        const heure = match?.arrival?.scheduledTimeLocal?.split("T")[1]?.slice(0,5) || "—";
+          if (!acknowledged.has(callsign)) {
+            ligne.classList.add("approche");
+            ligne.addEventListener("click", () => {
+              ligne.classList.remove("approche");
+              acknowledged.add(callsign);
+            });
+          }
 
-        const ligne = document.createElement("tr");
-        ligne.innerHTML = `
-          <td>${iata}</td>
-          <td>${callsign}</td>
-          <td>${from}</td>
-          <td>${heure}</td>
-        `;
-
-        if (isApproche && !acknowledged.has(callsign)) {
-          ligne.classList.add("approche");
-        }
-
-        ligne.addEventListener("click", () => {
-          ligne.classList.remove("approche");
-          acknowledged.add(callsign);
+          tableau.appendChild(ligne);
         });
-
-        tableau.appendChild(ligne);
-      });
+      } catch (err) {
+        console.error("Erreur récupération OpenSky :", err);
+      }
     }
 
-    updateDisplay();
-    setInterval(updateDisplay, 30000);
+    fetchAvions();
+    setInterval(fetchAvions, 30000);
   </script>
 </body>
 </html>
