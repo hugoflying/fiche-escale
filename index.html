@@ -13,7 +13,13 @@
     h1 {
       text-align: center;
       font-size: 2em;
+      margin-bottom: 0.3em;
+    }
+    #status {
+      text-align: center;
+      font-size: 1em;
       margin-bottom: 1em;
+      color: #ccc;
     }
     table {
       width: 100%;
@@ -43,6 +49,8 @@
 </head>
 <body>
   <h1>🛬 Avions dans un rayon de 73 km autour de BVA</h1>
+  <div id="status">Chargement...</div>
+
   <table>
     <thead>
       <tr>
@@ -70,6 +78,10 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
+    function formatTime(date) {
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
     async function fetchAvions() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
@@ -79,14 +91,18 @@
         const avions = data.states || [];
 
         const tableau = document.getElementById("tableau-avions");
+        const status = document.getElementById("status");
         tableau.innerHTML = "";
 
+        let count = 0;
         avions.forEach(avion => {
           const [icao24, callsign, origin_country, , , lon, lat, baro_altitude, on_ground, velocity] = avion;
           if (!lat || !lon || !callsign) return;
 
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > rayonKM) return;
+
+          count++;
 
           const ligne = document.createElement("tr");
           const alt = baro_altitude ? Math.round(baro_altitude) : "—";
@@ -109,13 +125,17 @@
 
           tableau.appendChild(ligne);
         });
+
+        const now = new Date();
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} avion(s) détecté(s)`;
       } catch (err) {
         console.error("Erreur récupération OpenSky :", err);
+        document.getElementById("status").textContent = "Erreur lors de la récupération des données.";
       }
     }
 
     fetchAvions();
-    setInterval(fetchAvions, 30000);
+    setInterval(fetchAvions, 10000); // Mise à jour toutes les 10 secondes
   </script>
 </body>
 </html>
