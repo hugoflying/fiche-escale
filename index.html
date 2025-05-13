@@ -67,7 +67,7 @@
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
-    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6lQxrA5JliEopo7__CyYvfIA";
+    const aviationstackKey = "09f710545f7739acf05bd7986499c799";
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -77,29 +77,26 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    function formatTime(dateString) {
-      const date = new Date(dateString);
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
       return isNaN(date.getTime()) ? "—" : date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
-    async function fetchAirportKeeperArrivals() {
-      const url = "https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=ARR&from=2025-05-13T00:00:00Z&to=2025-05-14T00:00:00Z";
-      const res = await fetch(url, {
-        headers: {
-          "Authorization": "Bearer " + token,
-          "Accept": "application/json"
-        }
-      });
-      const data = await res.json();
+    async function fetchAviationStackArrivals() {
+      const proxy = "https://corsproxy.io/?";
+      const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
+      const res = await fetch(url);
+      const json = await res.json();
       const map = new Map();
 
-      data.forEach(flight => {
-        const raw = (flight.callsign || flight.flightNumber || "").replace(/\s+/g, '');
-        if (raw) {
-          map.set(raw, {
-            flightNumber: flight.flightNumber || "—",
-            from: flight.departure || "—",
-            sta: formatTime(flight.scheduledArrival)
+      (json.data || []).forEach(flight => {
+        const cs = flight.flight?.iata || flight.flight?.icao || "";
+        const callsign = cs.replace(/\s+/g, '');
+        if (callsign) {
+          map.set(callsign, {
+            flightNumber: cs,
+            from: flight.departure?.iata || "—",
+            sta: formatTime(flight.arrival?.estimated)
           });
         }
       });
@@ -122,7 +119,7 @@
 
       try {
         const [arrivalsMap, states] = await Promise.all([
-          fetchAirportKeeperArrivals(),
+          fetchAviationStackArrivals(),
           fetchOpenSkyStates()
         ]);
 
@@ -136,7 +133,6 @@
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > radiusKM) return;
 
-          // Match exact ou début de callsign
           let match = null;
           arrivalsMap.forEach((info, key) => {
             if (callsign.startsWith(key)) match = info;
@@ -166,7 +162,7 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) détecté(s) dans la zone`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) détecté(s) en approche`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
@@ -174,7 +170,7 @@
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000); // rafraîchit toutes les 10 secondes
+    setInterval(updateDisplay, 10000);
   </script>
 </body>
 </html>
