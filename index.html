@@ -55,14 +55,12 @@
     <thead>
       <tr>
         <th>CALLSIGN</th>
-        <th>DEPARTURE</th>
         <th>ALT (m)</th>
         <th>SPD (km/h)</th>
+        <th>VARIO (m/s)</th>
       </tr>
     </thead>
-    <tbody id="tableau-avions">
-      <!-- Avions injectés ici -->
-    </tbody>
+    <tbody id="tableau-avions"></tbody>
   </table>
 
   <script>
@@ -82,27 +80,6 @@
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
-    async function fetchArrivalFlightsLFOB() {
-      const now = Math.floor(Date.now() / 1000);
-      const begin = now - 3600;
-      const end = now + 3600;
-      const proxy = "https://corsproxy.io/?";
-      const url = proxy + `https://opensky-network.org/api/flights/arrival?airport=LFOB&begin=${begin}&end=${end}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const arrivalsMap = new Map();
-      data.forEach(flight => {
-        const callsign = flight.callsign?.replace(/\s+/g, '') || '';
-        if (callsign) {
-          arrivalsMap.set(callsign, {
-            departure: flight.estDepartureAirport || '—',
-            callsign
-          });
-        }
-      });
-      return arrivalsMap;
-    }
-
     async function fetchOpenSkyStates() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
@@ -117,35 +94,27 @@
       tableau.innerHTML = "";
 
       try {
-        const [arrivalsMap, states] = await Promise.all([
-          fetchArrivalFlightsLFOB(),
-          fetchOpenSkyStates()
-        ]);
-
+        const states = await fetchOpenSkyStates();
         let count = 0;
 
         states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat, altitude, , velocity] = avion;
-          if (!lat || !lon || !callsignRaw) return;
+          const [icao24, callsignRaw, , , , lon, lat, alt, onGround, spd, , vario] = avion;
+          if (!lat || !lon || !callsignRaw || onGround) return;
 
-          const callsign = callsignRaw.replace(/\s+/g, '');
-          if (!arrivalsMap.has(callsign)) return;
-
+          const callsign = callsignRaw.trim();
           const distance = haversine(center.lat, center.lon, lat, lon);
-          if (distance > radiusKM) return;
+          const isApproach = distance <= radiusKM && alt < 6000 && vario < -0.3;
+
+          if (!isApproach) return;
 
           count++;
-
           const ligne = document.createElement("tr");
-          const alt = altitude ? Math.round(altitude) : "—";
-          const spd = velocity ? Math.round(velocity * 3.6) : "—";
-          const dep = arrivalsMap.get(callsign).departure;
 
           ligne.innerHTML = `
-            <td>${callsignRaw.trim()}</td>
-            <td>${dep}</td>
-            <td>${alt}</td>
-            <td>${spd}</td>
+            <td>${callsign}</td>
+            <td>${alt ? Math.round(alt) : "—"}</td>
+            <td>${spd ? Math.round(spd * 3.6) : "—"}</td>
+            <td>${vario ? vario.toFixed(1) : "—"}</td>
           `;
 
           if (!acknowledged.has(callsign)) {
@@ -160,15 +129,15 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) détecté(s) à destination de BVA`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} avion(s) en approche`;
       } catch (err) {
-        console.error("Erreur récupération :", err);
+        console.error("Erreur OpenSky :", err);
         status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000); // toutes les 10 secondes
+    setInterval(updateDisplay, 10000);
   </script>
 </body>
 </html>
