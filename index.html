@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <title>Approches vers BVA</title>
   <title>APPROCHE BVA</title>
   <style>
     body {
@@ -48,25 +49,34 @@
   </style>
 </head>
 <body>
+  <h1>🛬 Vols à destination de BVA (dans un rayon de 73 km)</h1>
   <h1>APPROCHE BVA</h1>
   <div id="status">Chargement...</div>
 
   <table>
     <thead>
       <tr>
+        <th>Vol</th>
+        <th>Callsign</th>
+        <th>Pays</th>
+        <th>Altitude (m)</th>
+        <th>Vitesse (km/h)</th>
         <th>CALLSIGN</th>
-        <th>ALT (m)</th>
-        <th>SPD (km/h)</th>
-        <th>VARIO (m/s)</th>
+        <th>FLIGHT NUMBER</th>
+        <th>FROM</th>
+        <th>STA</th>
       </tr>
     </thead>
-    <tbody id="tableau-avions"></tbody>
+    <tbody id="tableau-avions">
+      <!-- Avions injectés ici -->
+    </tbody>
   </table>
 
   <script>
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
+    const aviationEdgeKey = "86b00c-05cc00";
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -80,7 +90,34 @@
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
 
-    async function fetchOpenSkyStates() {
+    async function fetchArrivalsBVA() {
+      const url = `https://aviation-edge.com/v2/public/timetable?key=${aviationEdgeKey}&iataCode=BVA&type=arrival`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const callsigns = new Set();
+      const map = new Map();
+
+      data.forEach(flight => {
+        const iata = flight.flight?.iataNumber?.replace(/\s+/g, '') || "";
+        const icao = flight.flight?.icaoNumber?.replace(/\s+/g, '') || "";
+        if (iata) callsigns.add(iata);
+        if (icao) callsigns.add(icao);
+        const callsign = iata || icao;
+        if (callsign) {
+          map.set(callsign, {
+            callsign,
+            flightNumber: iata || icao,
+            from: flight.departure?.iataCode || "—",
+            sta: flight.arrival?.scheduledTimeLocal?.split("T")[1]?.slice(0,5) || "—"
+          });
+        }
+      });
+
+      return callsigns;
+      return map;
+    }
+
+    async function fetchOpenSky() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
       const res = await fetch(url);
@@ -94,27 +131,42 @@
       tableau.innerHTML = "";
 
       try {
-        const states = await fetchOpenSkyStates();
+        const [arrivalsBVA, openSkyData] = await Promise.all([
+        const [arrivalsMap, openSkyData] = await Promise.all([
+          fetchArrivalsBVA(),
+          fetchOpenSky()
+        ]);
+
         let count = 0;
 
-        states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat, alt, onGround, spd, , vario] = avion;
-          if (!lat || !lon || !callsignRaw || onGround) return;
+        openSkyData.forEach(avion => {
+          const [icao24, callsignRaw, origin_country, , , lon, lat, baro_altitude, on_ground, velocity] = avion;
+          const [icao24, callsignRaw, , , , lon, lat] = avion;
+          if (!lat || !lon || !callsignRaw) return;
 
-          const callsign = callsignRaw.trim();
+          const callsign = callsignRaw.replace(/\s+/g, '');
+          if (!arrivalsBVA.has(callsign)) return;
+          if (!arrivalsMap.has(callsign)) return;
+
           const distance = haversine(center.lat, center.lon, lat, lon);
-          const isApproach = distance <= radiusKM && alt < 6000 && vario < -0.3;
+          if (distance > radiusKM) return;
 
-          if (!isApproach) return;
-
+          const data = arrivalsMap.get(callsign);
           count++;
+
           const ligne = document.createElement("tr");
+          const alt = baro_altitude ? Math.round(baro_altitude) : "—";
+          const speed = velocity ? Math.round(velocity * 3.6) : "—";
 
           ligne.innerHTML = `
             <td>${callsign}</td>
-            <td>${alt ? Math.round(alt) : "—"}</td>
-            <td>${spd ? Math.round(spd * 3.6) : "—"}</td>
-            <td>${vario ? vario.toFixed(1) : "—"}</td>
+            <td>${callsignRaw.trim()}</td>
+            <td>${origin_country}</td>
+            <td>${alt}</td>
+            <td>${speed}</td>
+            <td>${data.flightNumber}</td>
+            <td>${data.from}</td>
+            <td>${data.sta}</td>
           `;
 
           if (!acknowledged.has(callsign)) {
@@ -129,15 +181,17 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} avion(s) en approche`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) détecté(s) à destination de BVA`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) à destination de BVA`;
       } catch (err) {
-        console.error("Erreur OpenSky :", err);
+        console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000);
+    setInterval(updateDisplay, 10000); // Rafraîchit toutes les 10 secondes
+    setInterval(updateDisplay, 10000); // Mise à jour toutes les 10 sec
   </script>
 </body>
 </html>
