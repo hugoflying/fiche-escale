@@ -2,7 +2,6 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Approches vers BVA</title>
   <title>APPROCHE BVA</title>
   <style>
     body {
@@ -49,27 +48,19 @@
   </style>
 </head>
 <body>
-  <h1>🛬 Vols à destination de BVA (dans un rayon de 73 km)</h1>
   <h1>APPROCHE BVA</h1>
   <div id="status">Chargement...</div>
 
   <table>
     <thead>
       <tr>
-        <th>Vol</th>
-        <th>Callsign</th>
-        <th>Pays</th>
-        <th>Altitude (m)</th>
-        <th>Vitesse (km/h)</th>
         <th>CALLSIGN</th>
         <th>FLIGHT NUMBER</th>
         <th>FROM</th>
         <th>STA</th>
       </tr>
     </thead>
-    <tbody id="tableau-avions">
-      <!-- Avions injectés ici -->
-    </tbody>
+    <tbody id="tableau-avions"></tbody>
   </table>
 
   <script>
@@ -94,14 +85,10 @@
       const url = `https://aviation-edge.com/v2/public/timetable?key=${aviationEdgeKey}&iataCode=BVA&type=arrival`;
       const res = await fetch(url);
       const data = await res.json();
-      const callsigns = new Set();
       const map = new Map();
-
       data.forEach(flight => {
         const iata = flight.flight?.iataNumber?.replace(/\s+/g, '') || "";
         const icao = flight.flight?.icaoNumber?.replace(/\s+/g, '') || "";
-        if (iata) callsigns.add(iata);
-        if (icao) callsigns.add(icao);
         const callsign = iata || icao;
         if (callsign) {
           map.set(callsign, {
@@ -112,12 +99,10 @@
           });
         }
       });
-
-      return callsigns;
       return map;
     }
 
-    async function fetchOpenSky() {
+    async function fetchOpenSkyStates() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
       const res = await fetch(url);
@@ -131,21 +116,18 @@
       tableau.innerHTML = "";
 
       try {
-        const [arrivalsBVA, openSkyData] = await Promise.all([
-        const [arrivalsMap, openSkyData] = await Promise.all([
+        const [arrivalsMap, states] = await Promise.all([
           fetchArrivalsBVA(),
-          fetchOpenSky()
+          fetchOpenSkyStates()
         ]);
 
         let count = 0;
 
-        openSkyData.forEach(avion => {
-          const [icao24, callsignRaw, origin_country, , , lon, lat, baro_altitude, on_ground, velocity] = avion;
+        states.forEach(avion => {
           const [icao24, callsignRaw, , , , lon, lat] = avion;
           if (!lat || !lon || !callsignRaw) return;
 
           const callsign = callsignRaw.replace(/\s+/g, '');
-          if (!arrivalsBVA.has(callsign)) return;
           if (!arrivalsMap.has(callsign)) return;
 
           const distance = haversine(center.lat, center.lon, lat, lon);
@@ -155,15 +137,8 @@
           count++;
 
           const ligne = document.createElement("tr");
-          const alt = baro_altitude ? Math.round(baro_altitude) : "—";
-          const speed = velocity ? Math.round(velocity * 3.6) : "—";
-
           ligne.innerHTML = `
-            <td>${callsign}</td>
             <td>${callsignRaw.trim()}</td>
-            <td>${origin_country}</td>
-            <td>${alt}</td>
-            <td>${speed}</td>
             <td>${data.flightNumber}</td>
             <td>${data.from}</td>
             <td>${data.sta}</td>
@@ -181,8 +156,7 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) détecté(s) à destination de BVA`;
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) à destination de BVA`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) en approche réelle`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
@@ -190,7 +164,6 @@
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000); // Rafraîchit toutes les 10 secondes
     setInterval(updateDisplay, 10000); // Mise à jour toutes les 10 sec
   </script>
 </body>
