@@ -55,9 +55,9 @@
     <thead>
       <tr>
         <th>CALLSIGN</th>
-        <th>ALT (m)</th>
-        <th>SPD (km/h)</th>
-        <th>VARIO (m/s)</th>
+        <th>FLIGHT NUMBER</th>
+        <th>FROM</th>
+        <th>STA</th>
       </tr>
     </thead>
     <tbody id="tableau-avions"></tbody>
@@ -67,6 +67,7 @@
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
+    const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJidmFfZXh0IiwidXNlcm5hbWUiOiJidmFfZXh0IiwiYWlycG9ydHMiOiJMRk9CIn0.PkSbBw_BF5dnX0bG3gbP7E7P7SHhW9egJ_in6OaWTnJm0OpirhJP4FZzbztH0r6lQxrA5JliEopo7__CyYvfIA";
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -78,6 +79,36 @@
 
     function formatTime(date) {
       return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    async function fetchAirportKeeperArrivals() {
+      const from = new Date().toISOString().split("T")[0] + "T00:00:00Z";
+      const to = new Date().toISOString().split("T")[0] + "T23:59:00Z";
+      const url = `https://api.app.airport-keeper.com/flights/v1/airport?airport=LFOB&flow=ARR&from=${from}&to=${to}`;
+
+      const res = await fetch(url, {
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Accept": "application/json"
+        }
+      });
+
+      const data = await res.json();
+      const arrivalsMap = new Map();
+
+      data.forEach(flight => {
+        const callsign = flight.callsign?.replace(/\s+/g, '') || '';
+        if (callsign) {
+          arrivalsMap.set(callsign, {
+            callsign,
+            flightNumber: flight.flightNumber || "—",
+            from: flight.departure || "—",
+            sta: flight.scheduledArrival ? new Date(flight.scheduledArrival).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : "—"
+          });
+        }
+      });
+
+      return arrivalsMap;
     }
 
     async function fetchOpenSkyStates() {
@@ -94,27 +125,32 @@
       tableau.innerHTML = "";
 
       try {
-        const states = await fetchOpenSkyStates();
+        const [arrivalsMap, states] = await Promise.all([
+          fetchAirportKeeperArrivals(),
+          fetchOpenSkyStates()
+        ]);
+
         let count = 0;
 
         states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat, alt, onGround, spd, , vario] = avion;
-          if (!lat || !lon || !callsignRaw || onGround) return;
+          const [icao24, callsignRaw, , , , lon, lat] = avion;
+          if (!lat || !lon || !callsignRaw) return;
 
-          const callsign = callsignRaw.trim();
+          const callsign = callsignRaw.replace(/\s+/g, '');
+          if (!arrivalsMap.has(callsign)) return;
+
           const distance = haversine(center.lat, center.lon, lat, lon);
-          const isApproach = distance <= radiusKM && alt < 6000 && vario < -0.3;
+          if (distance > radiusKM) return;
 
-          if (!isApproach) return;
-
+          const data = arrivalsMap.get(callsign);
           count++;
 
           const ligne = document.createElement("tr");
           ligne.innerHTML = `
-            <td>${callsign}</td>
-            <td>${alt ? Math.round(alt) : "—"}</td>
-            <td>${spd ? Math.round(spd * 3.6) : "—"}</td>
-            <td>${vario ? vario.toFixed(1) : "—"}</td>
+            <td>${callsignRaw.trim()}</td>
+            <td>${data.flightNumber}</td>
+            <td>${data.from}</td>
+            <td>${data.sta}</td>
           `;
 
           if (!acknowledged.has(callsign)) {
@@ -129,15 +165,15 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} avion(s) en approche`;
+        status.textContent = `Dernière mise à jour : ${formatTime(now)} — ${count} vol(s) dans la zone`;
       } catch (err) {
-        console.error("Erreur OpenSky :", err);
+        console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
     updateDisplay();
-    setInterval(updateDisplay, 10000);
+    setInterval(updateDisplay, 10000); // Mise à jour toutes les 10 sec
   </script>
 </body>
 </html>
