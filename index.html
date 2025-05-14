@@ -102,9 +102,9 @@
         const icao = flight.flight?.icao?.replace(/\s+/g, '');
         const fullCall = flight.callsign?.replace(/\s+/g, '');
         if (
-          (iata && callsign.includes(iata)) ||
-          (icao && callsign.includes(icao)) ||
-          (fullCall && callsign.includes(fullCall))
+          (iata && callsign.startsWith(iata)) ||
+          (icao && callsign.startsWith(icao)) ||
+          (fullCall && callsign.startsWith(fullCall))
         ) {
           if (flight.arrival?.iata === "BVA") return flight;
         }
@@ -177,8 +177,8 @@
 
     fetchAviationStack();
     updateDisplay();
-    setInterval(fetchAviationStack, 60000);
-    setInterval(updateDisplay, 10000);
+    setInterval(fetchAviationStack, 60000); // update aviationstack
+    setInterval(updateDisplay, 10000);      // update OpenSky
   </script>
 </body>
 </html>
