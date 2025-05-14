@@ -102,26 +102,7 @@
       });
 
       localStorage.setItem("aviationstack_arrivals", JSON.stringify(filtered));
-      localStorage.setItem("aviationstack_lastUpdate", new Date().toISOString());
-      console.log("📦 AviationStack data updated");
-    }
-
-    function checkScheduledFetch() {
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-
-      // Trigger update at 07h00, 12h00, 17h00
-      const updateTimes = [7, 12, 17];
-      const lastUpdate = new Date(localStorage.getItem("aviationstack_lastUpdate") || 0);
-
-      if (updateTimes.includes(hours) && minutes === 0) {
-        const lastHour = lastUpdate.getHours();
-        const lastDate = lastUpdate.toDateString();
-        if (lastHour !== hours || lastDate !== now.toDateString()) {
-          fetchAndStoreAviationStack();
-        }
-      }
+      console.log("✅ AviationStack mise à jour (" + new Date().toLocaleTimeString() + ")");
     }
 
     function getCachedArrivals() {
@@ -141,7 +122,6 @@
       const tableau = document.getElementById("tableau-avions");
       const status = document.getElementById("status");
       tableau.innerHTML = "";
-      checkScheduledFetch();
 
       try {
         const arrivalsMap = getCachedArrivals();
@@ -188,15 +168,22 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) détecté(s) en approche`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) en approche détectés`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
+    // Lancement initial
+    fetchAndStoreAviationStack();
     updateDisplay();
-    setInterval(updateDisplay, 10000); // OpenSky refresh
+
+    // OpenSky toutes les 10 sec
+    setInterval(updateDisplay, 10000);
+
+    // AviationStack toutes les 60 sec
+    setInterval(fetchAndStoreAviationStack, 60000);
   </script>
 </body>
 </html>
