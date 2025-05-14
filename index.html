@@ -104,8 +104,9 @@
       for (const flight of aviationstackData) {
         const iata = flight.flight?.iata?.replace(/\s+/g, '');
         const icao = flight.flight?.icao?.replace(/\s+/g, '');
-        if (iata && callsign.startsWith(iata)) return flight;
-        if (icao && callsign.startsWith(icao)) return flight;
+        if ((iata && callsign.startsWith(iata)) || (icao && callsign.startsWith(icao))) {
+          if (flight.arrival?.iata === "BVA") return flight; // ❗ assure que la destination est bien BVA
+        }
       }
       return null;
     }
@@ -128,9 +129,11 @@
           if (distance > radiusKM) return;
 
           const flight = matchFlightInfo(callsign);
-          const flightNumber = flight?.flight?.iata || flight?.flight?.icao || "—";
-          const from = flight?.departure?.iata || "—";
-          const sta = formatTime(flight?.arrival?.estimated);
+          if (!flight) return; // ❌ on ignore les vols qui ne vont pas à BVA
+
+          const flightNumber = flight.flight?.iata || flight.flight?.icao || "—";
+          const from = flight.departure?.iata || "—";
+          const sta = formatTime(flight.arrival?.estimated);
 
           count++;
           const ligne = document.createElement("tr");
@@ -153,15 +156,15 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} avion(s) détecté(s)`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) en approche de BVA`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
-    fetchAviationStack();                    // Initial load
-    updateDisplay();                         // Initial OpenSky load
+    fetchAviationStack();
+    updateDisplay();
     setInterval(fetchAviationStack, 60000);  // AviationStack toutes les 60 sec
     setInterval(updateDisplay, 10000);       // OpenSky toutes les 10 sec
   </script>
