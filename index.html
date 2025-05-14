@@ -22,21 +22,23 @@
       color: #ccc;
     }
     table {
-      width: 100%;
+      width: auto;
+      margin: 0 auto;
+      table-layout: fixed;
       border-collapse: collapse;
-      border-radius: 12px;
-      overflow: hidden;
     }
     th, td {
       padding: 12px;
       text-align: center;
       background-color: #1f1f1f;
       border-bottom: 1px solid #333;
+      font-size: 1.2em;
     }
-    th {
-      background-color: #2c2c2c;
-      font-size: 1.1em;
-    }
+    th:nth-child(1), td:nth-child(1) { width: 160px; }  /* CALLSIGN */
+    th:nth-child(2), td:nth-child(2) { width: 180px; }  /* FLIGHT NUMBER */
+    th:nth-child(3), td:nth-child(3) { width: 160px; }  /* FROM */
+    th:nth-child(4), td:nth-child(4) { width: 160px; }  /* TYPE */
+    th:nth-child(5), td:nth-child(5) { width: 100px; }  /* PISTE */
     tr.approche {
       animation: clignote 1s infinite;
       cursor: pointer;
@@ -68,8 +70,6 @@
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
-    const aviationstackKey = "09f710545f7739acf05bd7986499c799";
-    let aviationstackData = [];
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -79,13 +79,11 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    async function fetchAviationStack() {
-      const proxy = "https://corsproxy.io/?";
-      const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
-      const res = await fetch(url);
-      const json = await res.json();
-      aviationstackData = json.data || [];
-      console.log("✅ Données AviationStack mises à jour");
+    function detectPiste(altitude, heading) {
+      if (!heading || isNaN(heading) || !altitude) return "—";
+      if (altitude <= 100 && heading >= 110 && heading <= 140) return "12";
+      if (altitude <= 1000 && heading >= 290 && heading <= 310) return "30";
+      return "—";
     }
 
     async function fetchOpenSkyStates() {
@@ -94,29 +92,6 @@
       const res = await fetch(url);
       const data = await res.json();
       return data.states || [];
-    }
-
-    function formatFlightMatch(callsign) {
-      for (const flight of aviationstackData) {
-        const iata = flight.flight?.iata?.replace(/\s+/g, '');
-        const icao = flight.flight?.icao?.replace(/\s+/g, '');
-        const fullCall = flight.callsign?.replace(/\s+/g, '');
-        if (
-          (iata && callsign.includes(iata)) ||
-          (icao && callsign.includes(icao)) ||
-          (fullCall && callsign.includes(fullCall))
-        ) {
-          if (flight.arrival?.iata === "BVA") return flight;
-        }
-      }
-      return null;
-    }
-
-    function detectPiste(altitude, heading) {
-      if (!heading || isNaN(heading) || !altitude) return "—";
-      if (altitude <= 100 && heading >= 110 && heading <= 140) return "12";
-      if (altitude <= 1000 && heading >= 290 && heading <= 310) return "30";
-      return "—";
     }
 
     async function updateDisplay() {
@@ -129,21 +104,18 @@
         let count = 0;
 
         states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat, baroAltitude, onGround, velocity, heading, , geoAltitude] = avion;
+          const [icao24, callsignRaw, originCountry, , , lon, lat, baroAlt, onGround, , heading, , geoAlt, squawk, spi, positionSource, aircraftType] = avion;
           if (!lat || !lon || !callsignRaw || onGround) return;
 
           const callsign = callsignRaw.trim().replace(/\s+/g, '');
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > radiusKM) return;
 
-          const flight = formatFlightMatch(callsign);
-          if (!flight) return;
-
-          const flightNumber = flight.flight?.iata || flight.flight?.icao || "—";
-          const from = flight.departure?.iata || "—";
-          const aircraft = flight.aircraft?.icao || "—";
-          const alt = geoAltitude || baroAltitude || 0;
-          const piste = detectPiste(alt, heading);
+          const flightNumber = callsign.match(/[A-Z]+/)?.[0] || "—";
+          const from = originCountry || "—";
+          const type = aircraftType || "—";
+          const altitude = geoAlt || baroAlt || 0;
+          const piste = detectPiste(altitude, heading);
 
           count++;
           const ligne = document.createElement("tr");
@@ -151,7 +123,7 @@
             <td>${callsignRaw.trim()}</td>
             <td>${flightNumber}</td>
             <td>${from}</td>
-            <td>${aircraft}</td>
+            <td>${type}</td>
             <td>${piste}</td>
           `;
 
@@ -167,17 +139,15 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) en approche détecté(s)`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} avion(s) dans la zone`;
       } catch (err) {
-        console.error("Erreur récupération :", err);
-        status.textContent = "Erreur lors de la récupération des données.";
+        console.error("Erreur OpenSky :", err);
+        status.textContent = "Erreur lors de la récupération des données OpenSky.";
       }
     }
 
-    fetchAviationStack();
     updateDisplay();
-    setInterval(fetchAviationStack, 60000);  // AviationStack toutes les 60 sec
-    setInterval(updateDisplay, 10000);       // OpenSky toutes les 10 sec
+    setInterval(updateDisplay, 10000); // OpenSky toutes les 10 sec
   </script>
 </body>
 </html>
