@@ -57,7 +57,8 @@
         <th>CALLSIGN</th>
         <th>FLIGHT NUMBER</th>
         <th>FROM</th>
-        <th>STA</th>
+        <th>AIRCRAFT TYPE</th>
+        <th>PISTE</th>
       </tr>
     </thead>
     <tbody id="tableau-avions"></tbody>
@@ -78,11 +79,6 @@
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    function formatTime(dateStr) {
-      const date = new Date(dateStr);
-      return isNaN(date.getTime()) ? "—" : date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    }
-
     async function fetchAviationStack() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
@@ -100,21 +96,28 @@
       return data.states || [];
     }
 
-   function matchFlightInfo(callsign) {
-  for (const flight of aviationstackData) {
-    const iata = flight.flight?.iata?.replace(/\s+/g, '');
-    const icao = flight.flight?.icao?.replace(/\s+/g, '');
-    const fullCall = flight.callsign?.replace(/\s+/g, '');
-    if (
-      (iata && callsign.includes(iata)) ||
-      (icao && callsign.includes(icao)) ||
-      (fullCall && callsign.includes(fullCall))
-    ) {
-      if (flight.arrival?.iata === "BVA") return flight;
+    function formatFlightMatch(callsign) {
+      for (const flight of aviationstackData) {
+        const iata = flight.flight?.iata?.replace(/\s+/g, '');
+        const icao = flight.flight?.icao?.replace(/\s+/g, '');
+        const fullCall = flight.callsign?.replace(/\s+/g, '');
+        if (
+          (iata && callsign.includes(iata)) ||
+          (icao && callsign.includes(icao)) ||
+          (fullCall && callsign.includes(fullCall))
+        ) {
+          if (flight.arrival?.iata === "BVA") return flight;
+        }
+      }
+      return null;
     }
-  }
-  return null;
-}
+
+    function detectPiste(altitude, heading) {
+      if (!heading || isNaN(heading) || !altitude) return "—";
+      if (altitude <= 100 && heading >= 110 && heading <= 140) return "12";
+      if (altitude <= 1000 && heading >= 290 && heading <= 310) return "30";
+      return "—";
+    }
 
     async function updateDisplay() {
       const tableau = document.getElementById("tableau-avions");
@@ -126,19 +129,21 @@
         let count = 0;
 
         states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat, , onGround] = avion;
+          const [icao24, callsignRaw, , , , lon, lat, baroAltitude, onGround, velocity, heading, , geoAltitude] = avion;
           if (!lat || !lon || !callsignRaw || onGround) return;
 
           const callsign = callsignRaw.trim().replace(/\s+/g, '');
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > radiusKM) return;
 
-          const flight = matchFlightInfo(callsign);
-          if (!flight) return; // ❌ on ignore les vols qui ne vont pas à BVA
+          const flight = formatFlightMatch(callsign);
+          if (!flight) return;
 
           const flightNumber = flight.flight?.iata || flight.flight?.icao || "—";
           const from = flight.departure?.iata || "—";
-          const sta = formatTime(flight.arrival?.estimated);
+          const aircraft = flight.aircraft?.icao || "—";
+          const alt = geoAltitude || baroAltitude || 0;
+          const piste = detectPiste(alt, heading);
 
           count++;
           const ligne = document.createElement("tr");
@@ -146,7 +151,8 @@
             <td>${callsignRaw.trim()}</td>
             <td>${flightNumber}</td>
             <td>${from}</td>
-            <td>${sta}</td>
+            <td>${aircraft}</td>
+            <td>${piste}</td>
           `;
 
           if (!acknowledged.has(callsign)) {
@@ -161,7 +167,7 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) en approche de BVA`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) en approche détecté(s)`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
