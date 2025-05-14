@@ -68,6 +68,7 @@
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
     const aviationstackKey = "09f710545f7739acf05bd7986499c799";
+    let aviationstackData = [];
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -82,32 +83,13 @@
       return isNaN(date.getTime()) ? "—" : date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
-    async function fetchAndStoreAviationStack() {
+    async function fetchAviationStack() {
       const proxy = "https://corsproxy.io/?";
       const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
       const res = await fetch(url);
       const json = await res.json();
-
-      const filtered = {};
-      (json.data || []).forEach(flight => {
-        const cs = flight.flight?.iata || flight.flight?.icao || "";
-        const callsign = cs.replace(/\s+/g, '');
-        if (callsign) {
-          filtered[callsign] = {
-            flightNumber: cs,
-            from: flight.departure?.iata || "—",
-            sta: formatTime(flight.arrival?.estimated)
-          };
-        }
-      });
-
-      localStorage.setItem("aviationstack_arrivals", JSON.stringify(filtered));
-      console.log("✅ AviationStack mise à jour (" + new Date().toLocaleTimeString() + ")");
-    }
-
-    function getCachedArrivals() {
-      const raw = localStorage.getItem("aviationstack_arrivals");
-      return raw ? JSON.parse(raw) : {};
+      aviationstackData = json.data || [];
+      console.log("✅ Données AviationStack mises à jour");
     }
 
     async function fetchOpenSkyStates() {
@@ -118,13 +100,22 @@
       return data.states || [];
     }
 
+    function matchFlightInfo(callsign) {
+      for (const flight of aviationstackData) {
+        const iata = flight.flight?.iata?.replace(/\s+/g, '');
+        const icao = flight.flight?.icao?.replace(/\s+/g, '');
+        if (iata && callsign.startsWith(iata)) return flight;
+        if (icao && callsign.startsWith(icao)) return flight;
+      }
+      return null;
+    }
+
     async function updateDisplay() {
       const tableau = document.getElementById("tableau-avions");
       const status = document.getElementById("status");
       tableau.innerHTML = "";
 
       try {
-        const arrivalsMap = getCachedArrivals();
         const states = await fetchOpenSkyStates();
         let count = 0;
 
@@ -136,24 +127,18 @@
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > radiusKM) return;
 
-          let match = null;
-          for (const key in arrivalsMap) {
-            if (callsign.startsWith(key)) {
-              match = arrivalsMap[key];
-              break;
-            }
-          }
-
-          if (!match) return;
+          const flight = matchFlightInfo(callsign);
+          const flightNumber = flight?.flight?.iata || flight?.flight?.icao || "—";
+          const from = flight?.departure?.iata || "—";
+          const sta = formatTime(flight?.arrival?.estimated);
 
           count++;
           const ligne = document.createElement("tr");
-
           ligne.innerHTML = `
             <td>${callsignRaw.trim()}</td>
-            <td>${match.flightNumber}</td>
-            <td>${match.from}</td>
-            <td>${match.sta}</td>
+            <td>${flightNumber}</td>
+            <td>${from}</td>
+            <td>${sta}</td>
           `;
 
           if (!acknowledged.has(callsign)) {
@@ -168,22 +153,17 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) en approche détectés`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} avion(s) détecté(s)`;
       } catch (err) {
         console.error("Erreur récupération :", err);
         status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
-    // Lancement initial
-    fetchAndStoreAviationStack();
-    updateDisplay();
-
-    // OpenSky toutes les 10 sec
-    setInterval(updateDisplay, 10000);
-
-    // AviationStack toutes les 60 sec
-    setInterval(fetchAndStoreAviationStack, 60000);
+    fetchAviationStack();                    // Initial load
+    updateDisplay();                         // Initial OpenSky load
+    setInterval(fetchAviationStack, 60000);  // AviationStack toutes les 60 sec
+    setInterval(updateDisplay, 10000);       // OpenSky toutes les 10 sec
   </script>
 </body>
 </html>
