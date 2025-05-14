@@ -100,16 +100,21 @@
       return data.states || [];
     }
 
-    function matchFlightInfo(callsign) {
-      for (const flight of aviationstackData) {
-        const iata = flight.flight?.iata?.replace(/\s+/g, '');
-        const icao = flight.flight?.icao?.replace(/\s+/g, '');
-        if ((iata && callsign.startsWith(iata)) || (icao && callsign.startsWith(icao))) {
-          if (flight.arrival?.iata === "BVA") return flight; // ❗ assure que la destination est bien BVA
-        }
-      }
-      return null;
+   function matchFlightInfo(callsign) {
+  for (const flight of aviationstackData) {
+    const iata = flight.flight?.iata?.replace(/\s+/g, '');
+    const icao = flight.flight?.icao?.replace(/\s+/g, '');
+    const fullCall = flight.callsign?.replace(/\s+/g, '');
+    if (
+      (iata && callsign.includes(iata)) ||
+      (icao && callsign.includes(icao)) ||
+      (fullCall && callsign.includes(fullCall))
+    ) {
+      if (flight.arrival?.iata === "BVA") return flight;
     }
+  }
+  return null;
+}
 
     async function updateDisplay() {
       const tableau = document.getElementById("tableau-avions");
