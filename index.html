@@ -34,11 +34,11 @@
       border-bottom: 1px solid #333;
       font-size: 1.2em;
     }
-    th:nth-child(1), td:nth-child(1) { width: 160px; }  /* CALLSIGN */
-    th:nth-child(2), td:nth-child(2) { width: 180px; }  /* FLIGHT NUMBER */
-    th:nth-child(3), td:nth-child(3) { width: 160px; }  /* FROM */
-    th:nth-child(4), td:nth-child(4) { width: 160px; }  /* TYPE */
-    th:nth-child(5), td:nth-child(5) { width: 100px; }  /* PISTE */
+    th:nth-child(1), td:nth-child(1) { width: 160px; }
+    th:nth-child(2), td:nth-child(2) { width: 180px; }
+    th:nth-child(3), td:nth-child(3) { width: 160px; }
+    th:nth-child(4), td:nth-child(4) { width: 160px; }
+    th:nth-child(5), td:nth-child(5) { width: 100px; }
     tr.approche {
       animation: clignote 1s infinite;
       cursor: pointer;
@@ -70,6 +70,8 @@
     const acknowledged = new Set();
     const center = { lat: 49.60003, lon: 1.95008 };
     const radiusKM = 73;
+    const aviationstackKey = "09f710545f7739acf05bd7986499c799";
+    let aviationstackData = [];
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -84,6 +86,30 @@
       if (altitude <= 100 && heading >= 110 && heading <= 140) return "12";
       if (altitude <= 1000 && heading >= 290 && heading <= 310) return "30";
       return "—";
+    }
+
+    async function fetchAviationStack() {
+      const proxy = "https://corsproxy.io/?";
+      const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
+      const res = await fetch(url);
+      const json = await res.json();
+      aviationstackData = json.data || [];
+    }
+
+    function findFlightData(callsign) {
+      for (const flight of aviationstackData) {
+        const iata = flight.flight?.iata?.replace(/\s+/g, '');
+        const icao = flight.flight?.icao?.replace(/\s+/g, '');
+        const fullCall = flight.callsign?.replace(/\s+/g, '');
+        if (
+          (iata && callsign.includes(iata)) ||
+          (icao && callsign.includes(icao)) ||
+          (fullCall && callsign.includes(fullCall))
+        ) {
+          if (flight.arrival?.iata === "BVA") return flight;
+        }
+      }
+      return null;
     }
 
     async function fetchOpenSkyStates() {
@@ -104,15 +130,18 @@
         let count = 0;
 
         states.forEach(avion => {
-          const [icao24, callsignRaw, originCountry, , , lon, lat, baroAlt, onGround, , heading, , geoAlt, squawk, spi, positionSource, aircraftType] = avion;
+          const [icao24, callsignRaw, , , , lon, lat, baroAlt, onGround, , heading, , geoAlt, , , , aircraftType] = avion;
           if (!lat || !lon || !callsignRaw || onGround) return;
 
           const callsign = callsignRaw.trim().replace(/\s+/g, '');
           const distance = haversine(center.lat, center.lon, lat, lon);
           if (distance > radiusKM) return;
 
-          const flightNumber = callsign.match(/[A-Z]+/)?.[0] || "—";
-          const from = originCountry || "—";
+          const flightData = findFlightData(callsign);
+          if (!flightData) return;
+
+          const flightNumber = flightData.flight?.iata || flightData.flight?.icao || "—";
+          const from = flightData.departure?.iata || "—";
           const type = aircraftType || "—";
           const altitude = geoAlt || baroAlt || 0;
           const piste = detectPiste(altitude, heading);
@@ -139,15 +168,17 @@
         });
 
         const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} avion(s) dans la zone`;
+        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) détecté(s)`;
       } catch (err) {
-        console.error("Erreur OpenSky :", err);
-        status.textContent = "Erreur lors de la récupération des données OpenSky.";
+        console.error("Erreur récupération :", err);
+        status.textContent = "Erreur lors de la récupération des données.";
       }
     }
 
+    fetchAviationStack();
     updateDisplay();
-    setInterval(updateDisplay, 10000); // OpenSky toutes les 10 sec
+    setInterval(fetchAviationStack, 60000);
+    setInterval(updateDisplay, 10000);
   </script>
 </body>
 </html>
