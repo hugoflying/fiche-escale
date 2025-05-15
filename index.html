@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <title>Traçabilité produits</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
+    html, body {
+      margin: 0;
+      padding: 0;
       font-family: Arial, sans-serif;
       background: #f0f4f7;
-      margin: 0;
+      height: 100%;
+      overflow-x: hidden;
     }
+
     header {
       background-color: #74b043;
       color: white;
@@ -17,34 +22,59 @@
       text-align: center;
       font-size: 24px;
     }
+
     .container {
-      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      padding: 15px;
+      max-width: 100%;
+      box-sizing: border-box;
     }
+
+    .form-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: space-between;
+    }
+
     .section {
       background: white;
       border-radius: 10px;
       padding: 15px;
-      margin-bottom: 20px;
+      flex: 1 1 300px;
+      min-width: 280px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     label {
       font-weight: bold;
       display: block;
-      margin-top: 10px;
+      margin-bottom: 5px;
     }
+
     select, input[type="text"], input[type="date"], input[type="file"] {
       padding: 10px;
       width: 100%;
-      max-width: 300px;
       font-size: 16px;
       margin-top: 5px;
+      box-sizing: border-box;
     }
+
     #photo-preview img {
-      max-width: 150px;
-      margin: 10px;
+      max-width: 100px;
+      margin: 10px 10px 0 0;
       border-radius: 8px;
       box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
+
+    .photo-zone {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
     button {
       background-color: #74b043;
       color: white;
@@ -53,6 +83,14 @@
       font-size: 16px;
       border-radius: 6px;
       cursor: pointer;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -62,55 +100,58 @@
   </header>
 
   <div class="container">
+    <div class="form-grid">
+      <div class="section">
+        <label for="date">Date :</label>
+        <input type="date" id="date" name="date">
+      </div>
 
-    <div class="section">
-      <label for="date">Date :</label>
-      <input type="date" id="date" name="date">
+      <div class="section">
+        <label for="operateur">Opérateur :</label>
+        <select id="operateur" name="operateur">
+          <option value="">-- Sélectionner --</option>
+          <option>Vanina</option>
+          <option>Nicolas</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <label for="produit">Type de produit :</label>
+        <select id="produit" name="produit">
+          <option value="">-- Choisir --</option>
+          <option>Viande</option>
+          <option>Pain</option>
+          <option>Légumes</option>
+          <option>Dessert</option>
+          <option>Condiments</option>
+          <option>Épices</option>
+          <option>Liquides</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <label for="lot">N° de lot :</label>
+        <input type="text" id="lot" name="lot" placeholder="Ex : 254A23">
+      </div>
+
+      <div class="section">
+        <label for="photo">Ajouter photo (ou prendre une photo) :</label>
+        <input type="file" id="photo" accept="image/*" capture="environment" multiple>
+        <div class="photo-zone" id="photo-preview"></div>
+      </div>
     </div>
 
-    <div class="section">
-      <label for="operateur">Opérateur :</label>
-      <select id="operateur" name="operateur">
-        <option value="">-- Sélectionner --</option>
-        <option value="Vanina">Vanina</option>
-        <option value="Nicolas">Nicolas</option>
-      </select>
-    </div>
-
-    <div class="section">
-      <label for="produit">Type de produit :</label>
-      <select id="produit" name="produit">
-        <option value="">-- Choisir --</option>
-        <option>Viande</option>
-        <option>Pain</option>
-        <option>Légumes</option>
-        <option>Dessert</option>
-        <option>Condiments</option>
-        <option>Épices</option>
-        <option>Liquides</option>
-      </select>
-    </div>
-
-    <div class="section">
-      <label for="photo">Ajouter une ou plusieurs photos :</label>
-      <input type="file" id="photo" accept="image/*" multiple>
-      <div id="photo-preview"></div>
-    </div>
-
-    <div class="section">
-      <button onclick="exporterPDF()">📄 Exporter en PDF</button>
-    </div>
-
+    <button onclick="exporterPDF()">📄 Exporter en PDF</button>
   </div>
 
   <script>
-    // Date auto remplie
+    // Auto remplir la date
     document.addEventListener("DOMContentLoaded", () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById("date").value = today;
     });
 
-    // Aperçu des photos
+    // Prévisualisation des photos
     const photoInput = document.getElementById('photo');
     const previewContainer = document.getElementById('photo-preview');
     let images = [];
@@ -131,7 +172,7 @@
       });
     });
 
-    // Export PDF
+    // Génération PDF
     async function exporterPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -139,6 +180,7 @@
       const date = document.getElementById('date').value;
       const operateur = document.getElementById('operateur').value;
       const produit = document.getElementById('produit').value;
+      const lot = document.getElementById('lot').value;
 
       doc.setFontSize(16);
       doc.text("Traçabilité Produits - HACCP", 20, 20);
@@ -146,8 +188,9 @@
       doc.text(`Date : ${date}`, 20, 30);
       doc.text(`Opérateur : ${operateur}`, 20, 40);
       doc.text(`Type de produit : ${produit}`, 20, 50);
+      doc.text(`N° de lot : ${lot}`, 20, 60);
 
-      let y = 60;
+      let y = 70;
       for (let i = 0; i < images.length; i++) {
         if (i > 0 && y > 250) {
           doc.addPage();
