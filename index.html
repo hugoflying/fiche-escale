@@ -24,11 +24,7 @@
     }
 
     .container {
-      display: flex;
-      flex-direction: column;
-      flex-wrap: wrap;
       padding: 15px;
-      max-width: 100%;
       box-sizing: border-box;
     }
 
@@ -42,22 +38,23 @@
     .section {
       background: white;
       border-radius: 10px;
-      padding: 15px;
-      flex: 1 1 300px;
-      min-width: 280px;
+      padding: 10px;
+      flex: 1 1 220px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     label {
       font-weight: bold;
-      display: block;
-      margin-bottom: 5px;
+      font-size: 14px;
     }
 
-    select, input[type="text"], input[type="date"], input[type="file"] {
-      padding: 10px;
+    select,
+    input[type="text"],
+    input[type="date"],
+    input[type="file"] {
+      padding: 6px 8px;
       width: 100%;
-      font-size: 16px;
+      font-size: 14px;
       margin-top: 5px;
       box-sizing: border-box;
     }
@@ -83,7 +80,7 @@
       font-size: 16px;
       border-radius: 6px;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 20px;
       width: 100%;
     }
 
@@ -134,7 +131,7 @@
         <input type="text" id="lot" name="lot" placeholder="Ex : 254A23">
       </div>
 
-      <div class="section">
+      <div class="section" style="flex: 1 1 100%;">
         <label for="photo">Ajouter photo (ou prendre une photo) :</label>
         <input type="file" id="photo" accept="image/*" capture="environment" multiple>
         <div class="photo-zone" id="photo-preview"></div>
@@ -145,13 +142,13 @@
   </div>
 
   <script>
-    // Auto remplir la date
+    // Auto-remplir la date
     document.addEventListener("DOMContentLoaded", () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById("date").value = today;
     });
 
-    // Prévisualisation des photos
+    // Prévisualisation photos
     const photoInput = document.getElementById('photo');
     const previewContainer = document.getElementById('photo-preview');
     let images = [];
@@ -175,7 +172,7 @@
     // Génération PDF
     async function exporterPDF() {
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
       const date = document.getElementById('date').value;
       const operateur = document.getElementById('operateur').value;
@@ -186,18 +183,19 @@
       doc.text("Traçabilité Produits - HACCP", 20, 20);
       doc.setFontSize(12);
       doc.text(`Date : ${date}`, 20, 30);
-      doc.text(`Opérateur : ${operateur}`, 20, 40);
-      doc.text(`Type de produit : ${produit}`, 20, 50);
-      doc.text(`N° de lot : ${lot}`, 20, 60);
+      doc.text(`Opérateur : ${operateur}`, 20, 38);
+      doc.text(`Type de produit : ${produit}`, 20, 46);
+      doc.text(`N° de lot : ${lot}`, 20, 54);
 
-      let y = 70;
+      let y = 65;
       for (let i = 0; i < images.length; i++) {
-        if (i > 0 && y > 250) {
+        if (y > 230) {
           doc.addPage();
           y = 20;
         }
-        doc.addImage(images[i], 'JPEG', 20, y, 80, 60);
-        y += 70;
+        // Taille max : largeur 120 mm, hauteur auto (ratio 4:3 à peu près)
+        doc.addImage(images[i], 'JPEG', 45, y, 120, 90);
+        y += 100;
       }
 
       doc.save(`HACCP_trace_${date}.pdf`);
