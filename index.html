@@ -211,47 +211,49 @@
       return `${prefix}_${dd}-${mm}-${yy}_${moment.toLowerCase()}`;
     }
 
-    function exporterPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const date = document.getElementById("date").value;
-      const operateur = document.getElementById("operateur").value;
-      const moment = document.getElementById("moment").value;
-      const now = new Date();
-      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      doc.setFontSize(14);
-      doc.text("Traçabilité Température", 20, 20);
-      doc.setFontSize(10);
-      doc.text(`Date : ${date}`, 20, 30);
-      doc.text(`Opérateur : ${operateur}`, 20, 36);
-      doc.text(`Moment : ${moment}`, 20, 42);
-
-      cellules.forEach((cell, i) => {
-        const val = document.getElementById("temp" + i).value;
-        const affichage = val ? `${val} °C` : "-";
-        doc.text(`${cell.nom} : ${affichage}`, 20, 52 + i * 6);
-      });
-
-      doc.text(`\nRelevé édité le ${date} à ${heure}`, 20, 120);
-      doc.save(nomFichier("HACCP_releve_temperature") + ".pdf");
-    }
-
     function exporterExcel() {
-      const date = document.getElementById("date").value;
+      const dateObj = new Date(document.getElementById("date").value);
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const yy = String(dateObj.getFullYear()).slice(2);
+      const date = `${dd}/${mm}/${yy}`;
+
       const operateur = document.getElementById("operateur").value;
       const moment = document.getElementById("moment").value;
       const now = new Date();
       const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      const data = [["Date", "Heure", "Opérateur", "Moment", "Cellule", "Température (°C)"]];
-
+      const ws_data = [["Date", "Heure", "Opérateur", "Moment", "Cellule", "Température (°C)"]];
       cellules.forEach((cell, i) => {
         const val = document.getElementById("temp" + i).value || "";
-        data.push([date, heure, operateur, moment, cell.nom, val]);
+        ws_data.push([date, heure, operateur, moment, cell.nom, val]);
       });
 
-      const ws = XLSX.utils.aoa_to_sheet(data);
+      const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+      // Merge cells A2:A11, B2:B11, etc.
+      ws['!merges'] = [
+        { s: { r: 1, c: 0 }, e: { r: 10, c: 0 } },
+        { s: { r: 1, c: 1 }, e: { r: 10, c: 1 } },
+        { s: { r: 1, c: 2 }, e: { r: 10, c: 2 } },
+        { s: { r: 1, c: 3 }, e: { r: 10, c: 3 } }
+      ];
+
+      // Align all cells center + bold header
+      Object.keys(ws).forEach(cell => {
+        if (!cell.startsWith('!')) {
+          ws[cell].s = {
+            alignment: { vertical: "center", horizontal: "center" },
+            font: ws[cell].v === "Date" || ws[cell].v === "Heure" || ws[cell].v === "Opérateur" || ws[cell].v === "Moment" || ws[cell].v === "Cellule" || ws[cell].v === "Température (°C)" ? { bold: true } : {}
+          };
+        }
+      });
+
+      ws['!cols'] = [
+        { wch: 9 }, { wch: 9 }, { wch: 9 }, { wch: 9 }, { wch: 25 }, { wch: 15 }
+      ];
+      ws['!rows'] = [{ hpt: 22 }];
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Relevé Température");
       XLSX.writeFile(wb, nomFichier("HACCP_releve_temperature") + ".xlsx");
