@@ -2,183 +2,80 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>APPROCHE BVA</title>
+  <title>Relevé Température HACCP</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body {
-      background-color: #0b0b0b;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      font-size: 2em;
-      margin-bottom: 0.3em;
-    }
-    #status {
-      text-align: center;
-      font-size: 1em;
-      margin-bottom: 1em;
-      color: #ccc;
-    }
-    table {
-      width: auto;
-      margin: 0 auto;
-      table-layout: fixed;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 12px;
-      text-align: center;
-      background-color: #1f1f1f;
-      border-bottom: 1px solid #333;
-      font-size: 1.2em;
-    }
-    th:nth-child(1), td:nth-child(1) { width: 160px; }
-    th:nth-child(2), td:nth-child(2) { width: 180px; }
-    th:nth-child(3), td:nth-child(3) { width: 160px; }
-    th:nth-child(4), td:nth-child(4) { width: 160px; }
-    th:nth-child(5), td:nth-child(5) { width: 100px; }
-    tr.approche {
-      animation: clignote 1s infinite;
-      cursor: pointer;
-    }
-    @keyframes clignote {
-      0%, 100% { background-color: #1f1f1f; }
-      50% { background-color: #3a3a3a; }
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #999; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; }
+    input[type="number"] { width: 80px; }
+    input[type="date"], select { padding: 5px; }
+    button { padding: 10px 15px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>APPROCHE BVA</h1>
-  <div id="status">Chargement...</div>
+
+  <h2>📋 Relevé Températures HACCP – 8 Frigos</h2>
+
+  <label for="date">Date : </label>
+  <input type="date" id="date" required>
+  
+  <label for="moment">Moment : </label>
+  <select id="moment">
+    <option value="Matin">Matin</option>
+    <option value="Après-midi">Après-midi</option>
+  </select>
 
   <table>
     <thead>
       <tr>
-        <th>CALLSIGN</th>
-        <th>FLIGHT NUMBER</th>
-        <th>FROM</th>
-        <th>AIRCRAFT TYPE</th>
-        <th>PISTE</th>
+        <th>#</th>
+        <th>Nom du Frigo</th>
+        <th>Température (°C)</th>
       </tr>
     </thead>
-    <tbody id="tableau-avions"></tbody>
+    <tbody id="frigoTable">
+      <script>
+        const nomsFrigos = ["Frigo 1", "Frigo 2", "Frigo 3", "Frigo 4", "Frigo 5", "Frigo 6", "Frigo 7", "Frigo 8"];
+        nomsFrigos.forEach((nom, i) => {
+          document.write(`
+            <tr>
+              <td>${i + 1}</td>
+              <td>${nom}</td>
+              <td><input type="number" step="0.1" id="temp${i}" required></td>
+            </tr>
+          `);
+        });
+      </script>
+    </tbody>
   </table>
 
+  <button onclick="exporterExcel()">📥 Exporter en Excel</button>
+
   <script>
-    const acknowledged = new Set();
-    const center = { lat: 49.60003, lon: 1.95008 };
-    const radiusKM = 73;
-    const aviationstackKey = "09f710545f7739acf05bd7986499c799";
-    let aviationstackData = [];
-
-    function haversine(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
-    function detectPiste(altitude, heading) {
-      if (!heading || isNaN(heading) || !altitude) return "—";
-      if (altitude <= 100 && heading >= 110 && heading <= 140) return "12";
-      if (altitude <= 1000 && heading >= 290 && heading <= 310) return "30";
-      return "—";
-    }
-
-    async function fetchAviationStack() {
-      const proxy = "https://corsproxy.io/?";
-      const url = proxy + `http://api.aviationstack.com/v1/flights?access_key=${aviationstackKey}&arr_iata=BVA&limit=100`;
-      const res = await fetch(url);
-      const json = await res.json();
-      aviationstackData = json.data || [];
-    }
-
-    function findFlightData(callsign) {
-      for (const flight of aviationstackData) {
-        const iata = flight.flight?.iata?.replace(/\s+/g, '');
-        const icao = flight.flight?.icao?.replace(/\s+/g, '');
-        const fullCall = flight.callsign?.replace(/\s+/g, '');
-        if (
-          (iata && callsign.startsWith(iata)) ||
-          (icao && callsign.startsWith(icao)) ||
-          (fullCall && callsign.startsWith(fullCall))
-        ) {
-          if (flight.arrival?.iata === "BVA") return flight;
-        }
+    function exporterExcel() {
+      const date = document.getElementById("date").value;
+      const moment = document.getElementById("moment").value;
+      if (!date) {
+        alert("Merci de choisir une date.");
+        return;
       }
-      return null;
+
+      const data = [["Date", "Moment", "Nom du Frigo", "Température (°C)"]];
+      nomsFrigos.forEach((nom, i) => {
+        const temp = document.getElementById("temp" + i).value;
+        data.push([date, moment, nom, parseFloat(temp)]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Relevés HACCP");
+
+      const fileName = `Releves_HACCP_${date}_${moment}.xlsx`;
+      XLSX.writeFile(wb, fileName);
     }
-
-    async function fetchOpenSkyStates() {
-      const proxy = "https://corsproxy.io/?";
-      const url = proxy + "https://opensky-network.org/api/states/all?lamin=49.0&lamax=50.2&lomin=1.0&lomax=3.0";
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.states || [];
-    }
-
-    async function updateDisplay() {
-      const tableau = document.getElementById("tableau-avions");
-      const status = document.getElementById("status");
-      tableau.innerHTML = "";
-
-      try {
-        const states = await fetchOpenSkyStates();
-        let count = 0;
-
-        states.forEach(avion => {
-          const [icao24, callsignRaw, , , , lon, lat, baroAlt, onGround, , heading, , geoAlt, , , , aircraftType] = avion;
-          if (!lat || !lon || !callsignRaw || onGround) return;
-
-          const callsign = callsignRaw.trim().replace(/\s+/g, '');
-          const distance = haversine(center.lat, center.lon, lat, lon);
-          if (distance > radiusKM) return;
-
-          const flightData = findFlightData(callsign);
-          if (!flightData) return;
-
-          const flightNumber = flightData.flight?.iata || flightData.flight?.icao || "—";
-          const from = flightData.departure?.iata || "—";
-          const type = aircraftType || "—";
-          const altitude = geoAlt || baroAlt || 0;
-          const piste = detectPiste(altitude, heading);
-
-          count++;
-          const ligne = document.createElement("tr");
-          ligne.innerHTML = `
-            <td>${callsignRaw.trim()}</td>
-            <td>${flightNumber}</td>
-            <td>${from}</td>
-            <td>${type}</td>
-            <td>${piste}</td>
-          `;
-
-          if (!acknowledged.has(callsign)) {
-            ligne.classList.add("approche");
-            ligne.addEventListener("click", () => {
-              ligne.classList.remove("approche");
-              acknowledged.add(callsign);
-            });
-          }
-
-          tableau.appendChild(ligne);
-        });
-
-        const now = new Date();
-        status.textContent = `Dernière mise à jour : ${now.toLocaleTimeString()} — ${count} vol(s) détecté(s)`;
-      } catch (err) {
-        console.error("Erreur récupération :", err);
-        status.textContent = "Erreur lors de la récupération des données.";
-      }
-    }
-
-    fetchAviationStack();
-    updateDisplay();
-    setInterval(fetchAviationStack, 60000); // update aviationstack
-    setInterval(updateDisplay, 10000);      // update OpenSky
   </script>
+
 </body>
 </html>
