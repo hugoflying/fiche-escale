@@ -175,7 +175,7 @@
       card.innerHTML = `
         <div class="frigo-name">${cellule.nom}</div>
         <div class="temperature">
-          <input type="number" step="0.1" id="temp${index}" placeholder="°C" onchange="checkTolerance(${index}, '${cellule.type}')">
+          <input type="number" step="0.1" id="temp${index}" placeholder="" onchange="checkTolerance(${index}, '${cellule.type}')">
           <span class="suffix">°C</span>
         </div>
       `;
