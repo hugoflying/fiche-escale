@@ -2,147 +2,106 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Relevé Température HACCP</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <title>Relevé Température HACCP</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 10px;
-      padding: 0;
-      box-sizing: border-box;
-      background: #f9f9f9;
+      background: #f4f6f8;
     }
 
     h2 {
-      font-size: 1.2em;
       text-align: center;
       margin-bottom: 20px;
     }
 
-    label, select, input[type="date"] {
-      display: block;
-      width: 100%;
-      max-width: 100%;
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      width: 140px;
+      text-align: center;
+      position: relative;
+    }
+
+    .card.positive { border-top: 6px solid #f4b400; }     /* Jaune */
+    .card.negatif  { border-top: 6px solid #4285f4; }     /* Bleu */
+    .card.legumes  { border-top: 6px solid #0f9d58; }     /* Vert */
+
+    .frigo-name {
+      font-weight: bold;
       margin-bottom: 10px;
       font-size: 1em;
-      padding: 6px;
-      box-sizing: border-box;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 15px;
-      background: white;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      font-size: 0.9em;
-      text-align: center;
-    }
-
-    th {
-      background-color: #eaeaea;
-    }
-
-    input[type="number"] {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 6px;
-      font-size: 1em;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 1em;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
+    .temperature {
+      font-size: 1.4em;
       font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .btn-plus {
+      font-size: 1.4em;
+      background: #eee;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 15px;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    @media (min-width: 600px) {
-      body {
-        max-width: 600px;
-        margin: auto;
-      }
+    .btn-plus:active {
+      background: #ccc;
     }
   </style>
 </head>
 <body>
 
-  <h2>📋 Relevé Températures HACCP – 8 Frigos</h2>
+<h2>Relever les températures</h2>
 
-  <label for="date">Date :</label>
-  <input type="date" id="date" required>
+<div class="grid" id="frigoGrid">
+  <!-- Les cartes seront insérées ici -->
+</div>
 
-  <label for="moment">Moment :</label>
-  <select id="moment">
-    <option value="Matin">Matin</option>
-    <option value="Après-midi">Après-midi</option>
-  </select>
+<script>
+  const frigos = [
+    { nom: "Jour produits", type: "positive", valeur: 2.5 },
+    { nom: "Lait", type: "positive", valeur: 3.0 },
+    { nom: "Frigo légumes", type: "legumes", valeur: 1.0 },
+    { nom: "Congelé 1", type: "negatif", valeur: -20.0 },
+    { nom: "Congelé 2", type: "negatif", valeur: -20.0 }
+  ];
 
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Frigo</th>
-        <th>Température (°C)</th>
-      </tr>
-    </thead>
-    <tbody id="frigoTable">
-      <script>
-        const nomsFrigos = ["Frigo 1", "Frigo 2", "Frigo 3", "Frigo 4", "Frigo 5", "Frigo 6", "Frigo 7", "Frigo 8"];
-        nomsFrigos.forEach((nom, i) => {
-          document.write(`
-            <tr>
-              <td>${i + 1}</td>
-              <td>${nom}</td>
-              <td><input type="number" step="0.1" id="temp${i}" required></td>
-            </tr>
-          `);
-        });
-      </script>
-    </tbody>
-  </table>
+  const container = document.getElementById("frigoGrid");
 
-  <button onclick="exporterExcel()">📥 Exporter en Excel</button>
+  frigos.forEach((frigo, i) => {
+    const card = document.createElement("div");
+    card.className = `card ${frigo.type}`;
+    card.innerHTML = `
+      <div class="frigo-name">${frigo.nom}</div>
+      <div class="temperature" id="temp${i}">${frigo.valeur.toFixed(1)} °C</div>
+      <button class="btn-plus" onclick="changerTemp(${i})">+</button>
+    `;
+    container.appendChild(card);
+  });
 
-  <script>
-    function exporterExcel() {
-      const date = document.getElementById("date").value;
-      const moment = document.getElementById("moment").value;
-      if (!date) {
-        alert("Merci de choisir une date.");
-        return;
-      }
-
-      const data = [["Date", "Moment", "Nom du Frigo", "Température (°C)"]];
-      nomsFrigos.forEach((nom, i) => {
-        const temp = document.getElementById("temp" + i).value;
-        data.push([date, moment, nom, parseFloat(temp)]);
-      });
-
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Relevés HACCP");
-
-      const fileName = `Releves_HACCP_${date}_${moment}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+  function changerTemp(index) {
+    const current = frigos[index];
+    const nouvelleTemp = prompt(`Nouvelle température pour "${current.nom}" :`, current.valeur);
+    if (nouvelleTemp !== null && !isNaN(nouvelleTemp)) {
+      frigos[index].valeur = parseFloat(nouvelleTemp);
+      document.getElementById("temp" + index).textContent = `${frigos[index].valeur.toFixed(1)} °C`;
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
