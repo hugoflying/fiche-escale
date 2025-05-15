@@ -244,7 +244,7 @@
         if (!cell.startsWith('!')) {
           ws[cell].s = {
             alignment: { vertical: "center", horizontal: "center" },
-            font: ws[cell].v === "Date" || ws[cell].v === "Heure" || ws[cell].v === "Opérateur" || ws[cell].v === "Moment" || ws[cell].v === "Cellule" || ws[cell].v === "Température (°C)" ? { bold: true } : {}
+            font: { bold: cell.endsWith('1') } // Ligne 1 en gras
           };
         }
       });
