@@ -49,7 +49,6 @@
       width: 48%;
       text-align: center;
       padding: 15px 10px;
-      position: relative;
       box-sizing: border-box;
     }
 
@@ -70,27 +69,24 @@
       font-weight: bold;
       background: #f0f0f0;
       border-radius: 6px;
-      padding: 8px 0;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
-    .temperature input {
-      font-size: 1.4em;
-      font-weight: bold;
-      border: none;
+    .temp-value {
+      min-width: 60px;
       text-align: center;
-      width: 80%;
-      background: transparent;
+    }
+
+    .btn-temp {
+      font-size: 1.2em;
+      padding: 5px 10px;
       border-radius: 6px;
-      padding: 0;
-    }
-
-    .temperature input:focus {
-      outline: none;
-      background: transparent;
-    }
-
-    .temperature::after {
-      content: " °C";
+      border: none;
+      background-color: #ddd;
     }
 
     button {
@@ -158,6 +154,7 @@
     ];
 
     const grid = document.getElementById("frigoGrid");
+    const alertBox = document.getElementById("alert");
 
     cellules.forEach((cellule, index) => {
       const card = document.createElement("div");
@@ -165,16 +162,30 @@
       card.innerHTML = `
         <div class="frigo-name">${cellule.nom}</div>
         <div class="temperature">
-          <input type="text" pattern="-?[0-9]+(\\.[0-9]*)?" placeholder="- °C" id="temp${index}" onchange="checkTolerance(${index}, '${cellule.type}')">
+          <button class="btn-temp" onclick="adjustTemp(${index}, -0.1)">-</button>
+          <span class="temp-value" id="temp${index}">- °C</span>
+          <button class="btn-temp" onclick="adjustTemp(${index}, 0.1)">+</button>
         </div>
       `;
       grid.appendChild(card);
     });
 
-    function checkTolerance(index, type) {
-      const val = parseFloat(document.getElementById("temp" + index).value);
-      const alertBox = document.getElementById("alert");
+    const values = Array(cellules.length).fill(null);
 
+    function adjustTemp(index, delta) {
+      let val = values[index];
+      if (val === null) val = (cellules[index].type === "negatif") ? -10.0 : 0.0;
+      val = parseFloat((val + delta).toFixed(1));
+      values[index] = val;
+
+      const tempLabel = document.getElementById("temp" + index);
+      const formatted = cellules[index].type === "negatif" ? `${val} °C` : `${Math.max(val, 0).toFixed(1)} °C`;
+      tempLabel.textContent = formatted;
+
+      checkTolerance(index, val, cellules[index].type);
+    }
+
+    function checkTolerance(index, val, type) {
       if ((type === "negatif" && val > -10) || (type !== "negatif" && val > 8)) {
         alertBox.innerText = "Hors tolérance - Vérifiez température cellule";
         alertBox.style.display = "block";
@@ -199,8 +210,9 @@
       doc.text(`Moment : ${moment}`, 20, 42);
 
       cellules.forEach((cell, i) => {
-        const temp = document.getElementById("temp" + i).value || "-";
-        doc.text(`${cell.nom} : ${temp} °C`, 20, 52 + i * 6);
+        const val = values[i];
+        const affichage = val !== null ? `${val} °C` : "-";
+        doc.text(`${cell.nom} : ${affichage}`, 20, 52 + i * 6);
       });
 
       doc.text(`\nRelevé édité le ${date} à ${heure}`, 20, 120);
