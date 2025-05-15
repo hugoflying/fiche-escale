@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -139,13 +138,9 @@
   <div class="buttons">
     <button onclick="exporterPDF()">Exporter en PDF</button>
     <button onclick="exporterExcel()">Exporter en Excel</button>
-    <button onclick="handleAuthClick()">Exporter vers Google Drive</button>
   </div>
 
   <script>
-    const CLIENT_ID = '818850569173-m6cvrbdodub3tmikfb4k261k1aq0aknf.apps.googleusercontent.com';
-    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
     document.getElementById("date").valueAsDate = new Date();
 
     const cellules = [
@@ -230,7 +225,7 @@
       doc.save(nomFichier("HACCP_releve_temperature") + ".pdf");
     }
 
-    function exporterExcel(blobOnly = false) {
+    function exporterExcel() {
       const date = document.getElementById("date").value;
       const operateur = document.getElementById("operateur").value;
       const moment = document.getElementById("moment").value;
@@ -247,47 +242,7 @@
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Relevé Température");
-      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([wbout], { type: "application/octet-stream" });
-
-      if (blobOnly) return blob;
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = nomFichier("HACCP_releve_temperature") + ".xlsx";
-      a.click();
-    }
-
-    function handleAuthClick() {
-      gapi.load("client:auth2", () => {
-        gapi.auth2.init({ client_id: CLIENT_ID }).then(() => {
-          gapi.auth2.getAuthInstance().signIn().then(() => uploadToDrive());
-        });
-      });
-    }
-
-    async function uploadToDrive() {
-      const blob = exporterExcel(true);
-      const fileName = nomFichier("HACCP_releve_temperature") + ".xlsx";
-
-      const file = new File([blob], fileName, { type: blob.type });
-      const metadata = {
-        name: fileName,
-        mimeType: file.type
-      };
-
-      const accessToken = gapi.auth.getToken().access_token;
-      const form = new FormData();
-      form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-      form.append("file", file);
-
-      fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {
-        method: "POST",
-        headers: new Headers({ Authorization: "Bearer " + accessToken }),
-        body: form
-      })
-      .then(res => res.json())
-      .then(val => alert("Fichier envoyé sur Google Drive avec succès !"))
-      .catch(err => alert("Erreur d'envoi sur Drive : " + err.message));
+      XLSX.writeFile(wb, nomFichier("HACCP_releve_temperature") + ".xlsx");
     }
   </script>
 
