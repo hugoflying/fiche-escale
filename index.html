@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <title>Traçabilité température</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Relevé Température HACCP</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 10px;
-      background: #f4f6f8;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
     }
 
     h2 {
@@ -16,26 +17,43 @@
       margin-bottom: 20px;
     }
 
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    select, input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
     .grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
       justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
     }
 
     .card {
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 15px;
-      width: 140px;
+      width: 130px;
       text-align: center;
+      padding: 15px 10px;
       position: relative;
     }
 
-    .card.positive { border-top: 6px solid #f4b400; }     /* Jaune */
-    .card.negatif  { border-top: 6px solid #4285f4; }     /* Bleu */
-    .card.legumes  { border-top: 6px solid #0f9d58; }     /* Vert */
+    .card.positive    { border-top: 5px solid #f4b400; }
+    .card.legumes     { border-top: 5px solid #0f9d58; }
+    .card.negatif     { border-top: 5px solid #4285f4; }
 
     .frigo-name {
       font-weight: bold;
@@ -43,65 +61,77 @@
       font-size: 1em;
     }
 
-    .temperature {
+    .temperature input {
       font-size: 1.4em;
       font-weight: bold;
-      margin: 10px 0;
-    }
-
-    .btn-plus {
-      font-size: 1.4em;
-      background: #eee;
       border: none;
+      text-align: center;
+      width: 100%;
+      background: #f0f0f0;
       border-radius: 6px;
-      padding: 5px 15px;
-      cursor: pointer;
+      padding: 8px 0;
     }
 
-    .btn-plus:active {
-      background: #ccc;
+    .temperature input:focus {
+      outline: none;
+      background: #e0e0e0;
+    }
+
+    @media (max-width: 600px) {
+      .card { width: 45%; }
     }
   </style>
 </head>
 <body>
 
-<h2>Relever les températures</h2>
+  <h2>Traçabilité température</h2>
 
-<div class="grid" id="frigoGrid">
-  <!-- Les cartes seront insérées ici -->
-</div>
+  <label for="date">Date</label>
+  <input type="date" id="date">
 
-<script>
-  const frigos = [
-    { nom: "Jour produits", type: "positive", valeur: 2.5 },
-    { nom: "Lait", type: "positive", valeur: 3.0 },
-    { nom: "Frigo légumes", type: "legumes", valeur: 1.0 },
-    { nom: "Congelé 1", type: "negatif", valeur: -20.0 },
-    { nom: "Congelé 2", type: "negatif", valeur: -20.0 }
-  ];
+  <label for="operateur">Opérateur</label>
+  <select id="operateur">
+    <option value="Vanina">Vanina</option>
+    <option value="Nicolas">Nicolas</option>
+  </select>
 
-  const container = document.getElementById("frigoGrid");
+  <label for="moment">Moment du relevé</label>
+  <select id="moment">
+    <option value="Matin">Matin</option>
+    <option value="Après-midi">Après-midi</option>
+  </select>
 
-  frigos.forEach((frigo, i) => {
-    const card = document.createElement("div");
-    card.className = `card ${frigo.type}`;
-    card.innerHTML = `
-      <div class="frigo-name">${frigo.nom}</div>
-      <div class="temperature" id="temp${i}">${frigo.valeur.toFixed(1)} °C</div>
-      <button class="btn-plus" onclick="changerTemp(${i})">+</button>
-    `;
-    container.appendChild(card);
-  });
+  <div class="grid" id="frigoGrid"></div>
 
-  function changerTemp(index) {
-    const current = frigos[index];
-    const nouvelleTemp = prompt(`Nouvelle température pour "${current.nom}" :`, current.valeur);
-    if (nouvelleTemp !== null && !isNaN(nouvelleTemp)) {
-      frigos[index].valeur = parseFloat(nouvelleTemp);
-      document.getElementById("temp" + index).textContent = `${frigos[index].valeur.toFixed(1)} °C`;
-    }
-  }
-</script>
+  <script>
+    // Préremplir la date du jour
+    document.getElementById("date").valueAsDate = new Date();
+
+    const frigos = [
+      { nom: "Jour produits", type: "positive" },
+      { nom: "Lait", type: "positive" },
+      { nom: "Frigo légumes", type: "legumes" },
+      { nom: "Congelé 1", type: "negatif" },
+      { nom: "Congelé 2", type: "negatif" },
+      { nom: "Congelé 3", type: "negatif" },
+      { nom: "Congelé 4", type: "negatif" },
+      { nom: "Congelé 5", type: "negatif" }
+    ];
+
+    const grid = document.getElementById("frigoGrid");
+
+    frigos.forEach((frigo, index) => {
+      const card = document.createElement("div");
+      card.className = `card ${frigo.type}`;
+      card.innerHTML = `
+        <div class="frigo-name">${frigo.nom}</div>
+        <div class="temperature">
+          <input type="number" step="0.1" placeholder="°C" inputmode="decimal" id="temp${index}">
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  </script>
 
 </body>
 </html>
