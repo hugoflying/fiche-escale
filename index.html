@@ -3,25 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <title>Relevé Température HACCP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-    th, td { border: 1px solid #999; padding: 8px; text-align: center; }
-    th { background-color: #f0f0f0; }
-    input[type="number"] { width: 80px; }
-    input[type="date"], select { padding: 5px; }
-    button { padding: 10px 15px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 0;
+      box-sizing: border-box;
+      background: #f9f9f9;
+    }
+
+    h2 {
+      font-size: 1.2em;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label, select, input[type="date"] {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 10px;
+      font-size: 1em;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
+      background: white;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 0.9em;
+      text-align: center;
+    }
+
+    th {
+      background-color: #eaeaea;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      font-size: 1em;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    @media (min-width: 600px) {
+      body {
+        max-width: 600px;
+        margin: auto;
+      }
+    }
   </style>
 </head>
 <body>
 
   <h2>📋 Relevé Températures HACCP – 8 Frigos</h2>
 
-  <label for="date">Date : </label>
+  <label for="date">Date :</label>
   <input type="date" id="date" required>
-  
-  <label for="moment">Moment : </label>
+
+  <label for="moment">Moment :</label>
   <select id="moment">
     <option value="Matin">Matin</option>
     <option value="Après-midi">Après-midi</option>
@@ -31,7 +98,7 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Nom du Frigo</th>
+        <th>Frigo</th>
         <th>Température (°C)</th>
       </tr>
     </thead>
