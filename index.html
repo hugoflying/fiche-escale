@@ -2,261 +2,163 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Traçabilité température</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Traçabilité produits</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f4f8;
+      background: #f0f4f7;
       margin: 0;
+    }
+    header {
+      background-color: #74b043;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+    }
+    .container {
       padding: 20px;
     }
-
-    h2 {
-      text-align: center;
+    .section {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
       margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     label {
       font-weight: bold;
       display: block;
-      margin-top: 15px;
+      margin-top: 10px;
     }
-
-    select, input[type="date"] {
-      width: 100%;
+    select, input[type="text"], input[type="date"], input[type="file"] {
       padding: 10px;
-      font-size: 1em;
+      width: 100%;
+      max-width: 300px;
+      font-size: 16px;
       margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
     }
-
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 20px;
+    #photo-preview img {
+      max-width: 150px;
+      margin: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
     }
-
-    .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      width: 48%;
-      text-align: center;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
-    .card.negatif { border-top: 5px solid #003366; }
-    .card.positive { border-top: 5px solid #3399ff; }
-    .card.verte { border-top: 5px solid #0f9d58; }
-    .card.boisson { border-top: 5px solid #f4b400; }
-    .card.vitrine { border-top: 5px solid #9b59b6; }
-
-    .frigo-name {
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-size: 1em;
-    }
-
-    .temperature {
-      position: relative;
-    }
-
-    .temperature input {
-      font-size: 1.4em;
-      font-weight: bold;
-      width: 100%;
-      text-align: center;
-      border: none;
-      border-radius: 6px;
-      padding: 10px;
-      background-color: #f0f0f0;
-      box-sizing: border-box;
-    }
-
-    .temperature input::placeholder {
-      color: #aaa;
-      font-size: 1em;
-    }
-
-    .temperature .suffix {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-weight: bold;
-      pointer-events: none;
-    }
-
-    .alert {
-      background-color: #ff4d4d;
-      color: white;
-      padding: 10px;
-      margin-top: 15px;
-      border-radius: 6px;
-      text-align: center;
-      display: none;
-    }
-
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .buttons button {
-      width: 100%;
-      padding: 12px;
-      font-size: 1em;
-      font-weight: bold;
-      background-color: #007bff;
+    button {
+      background-color: #74b043;
       color: white;
       border: none;
+      padding: 12px 20px;
+      font-size: 16px;
       border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <header>
+    ➤ TRACABILITÉ PRODUITS
+  </header>
 
-  <h2>Traçabilité température</h2>
+  <div class="container">
 
-  <label for="date">Date</label>
-  <input type="date" id="date">
+    <div class="section">
+      <label for="date">Date :</label>
+      <input type="date" id="date" name="date">
+    </div>
 
-  <label for="operateur">Opérateur</label>
-  <select id="operateur">
-    <option value="Vanina">Vanina</option>
-    <option value="Nicolas">Nicolas</option>
-  </select>
+    <div class="section">
+      <label for="operateur">Opérateur :</label>
+      <select id="operateur" name="operateur">
+        <option value="">-- Sélectionner --</option>
+        <option value="Vanina">Vanina</option>
+        <option value="Nicolas">Nicolas</option>
+      </select>
+    </div>
 
-  <label for="moment">Moment du relevé</label>
-  <select id="moment">
-    <option value="Matin">Matin</option>
-    <option value="Après-midi">Après-midi</option>
-  </select>
+    <div class="section">
+      <label for="produit">Type de produit :</label>
+      <select id="produit" name="produit">
+        <option value="">-- Choisir --</option>
+        <option>Viande</option>
+        <option>Pain</option>
+        <option>Légumes</option>
+        <option>Dessert</option>
+        <option>Condiments</option>
+        <option>Épices</option>
+        <option>Liquides</option>
+      </select>
+    </div>
 
-  <div class="alert" id="alert"></div>
-  <div class="grid" id="frigoGrid"></div>
+    <div class="section">
+      <label for="photo">Ajouter une ou plusieurs photos :</label>
+      <input type="file" id="photo" accept="image/*" multiple>
+      <div id="photo-preview"></div>
+    </div>
 
-  <div class="buttons">
-    <button onclick="exporterPDF()">Exporter en PDF</button>
-    <button onclick="exporterExcel()">Exporter en Excel</button>
+    <div class="section">
+      <button onclick="exporterPDF()">📄 Exporter en PDF</button>
+    </div>
+
   </div>
 
   <script>
-    document.getElementById("date").valueAsDate = new Date();
-
-    const cellules = [
-      { nom: "Cellule négative 1", type: "negatif" },
-      { nom: "Cellule négative 2", type: "negatif" },
-      { nom: "Cellule négative 3", type: "negatif" },
-      { nom: "Cellule positive", type: "positive" },
-      { nom: "Cellule positive sous plan 1", type: "verte" },
-      { nom: "Cellule positive sous plan 2", type: "verte" },
-      { nom: "Cellule boisson", type: "boisson" },
-      { nom: "Vitrine 1", type: "vitrine" },
-      { nom: "Vitrine 2", type: "vitrine" },
-      { nom: "Vitrine 3", type: "vitrine" },
-    ];
-
-    const grid = document.getElementById("frigoGrid");
-
-    cellules.forEach((cellule, index) => {
-      const card = document.createElement("div");
-      card.className = `card ${cellule.type}`;
-      card.innerHTML = `
-        <div class="frigo-name">${cellule.nom}</div>
-        <div class="temperature">
-          <input type="number" step="0.1" id="temp${index}" placeholder="" onchange="checkTolerance(${index}, '${cellule.type}')">
-          <span class="suffix">°C</span>
-        </div>
-      `;
-      grid.appendChild(card);
+    // Date auto remplie
+    document.addEventListener("DOMContentLoaded", () => {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById("date").value = today;
     });
 
-    function checkTolerance(index, type) {
-      const input = document.getElementById("temp" + index);
-      let val = parseFloat(input.value);
+    // Aperçu des photos
+    const photoInput = document.getElementById('photo');
+    const previewContainer = document.getElementById('photo-preview');
+    let images = [];
 
-      if (type === "negatif" && val > 0) {
-        val = -Math.abs(val);
-        input.value = val.toFixed(1);
-      }
+    photoInput.addEventListener('change', () => {
+      previewContainer.innerHTML = '';
+      images = [];
 
-      const alertBox = document.getElementById("alert");
-      input.style.backgroundColor = "#f0f0f0";
+      Array.from(photoInput.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          previewContainer.appendChild(img);
+          images.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
 
-      if ((type === "negatif" && val > -10) || (type !== "negatif" && val > 8)) {
-        alertBox.innerText = "Hors tolérance - Vérifiez température cellule";
-        alertBox.style.display = "block";
-        input.style.backgroundColor = "#ffcccc";
-        setTimeout(() => alertBox.style.display = "none", 4000);
-      }
-    }
-
-    function nomFichier(prefix) {
-      const date = new Date(document.getElementById("date").value);
-      const moment = document.getElementById("moment").value;
-      const dd = String(date.getDate()).padStart(2, '0');
-      const mm = String(date.getMonth() + 1).padStart(2, '0');
-      const yy = String(date.getFullYear()).slice(2);
-      return `${prefix}_${dd}-${mm}-${yy}_${moment.toLowerCase()}`;
-    }
-
-    function exporterPDF() {
+    // Export PDF
+    async function exporterPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      const date = document.getElementById("date").value;
-      const operateur = document.getElementById("operateur").value;
-      const moment = document.getElementById("moment").value;
-      const now = new Date();
-      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      doc.setFontSize(14);
-      doc.text("Traçabilité Température", 20, 20);
-      doc.setFontSize(10);
+      const date = document.getElementById('date').value;
+      const operateur = document.getElementById('operateur').value;
+      const produit = document.getElementById('produit').value;
+
+      doc.setFontSize(16);
+      doc.text("Traçabilité Produits - HACCP", 20, 20);
+      doc.setFontSize(12);
       doc.text(`Date : ${date}`, 20, 30);
-      doc.text(`Opérateur : ${operateur}`, 20, 36);
-      doc.text(`Moment : ${moment}`, 20, 42);
+      doc.text(`Opérateur : ${operateur}`, 20, 40);
+      doc.text(`Type de produit : ${produit}`, 20, 50);
 
-      cellules.forEach((cell, i) => {
-        const val = document.getElementById("temp" + i).value;
-        const affichage = val ? `${val} °C` : "-";
-        doc.text(`${cell.nom} : ${affichage}`, 20, 52 + i * 6);
-      });
+      let y = 60;
+      for (let i = 0; i < images.length; i++) {
+        if (i > 0 && y > 250) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.addImage(images[i], 'JPEG', 20, y, 80, 60);
+        y += 70;
+      }
 
-      doc.text(`\nRelevé édité le ${date} à ${heure}`, 20, 120);
-      doc.save(nomFichier("HACCP_releve_temperature") + ".pdf");
-    }
-
-    function exporterExcel() {
-      const date = document.getElementById("date").value;
-      const operateur = document.getElementById("operateur").value;
-      const moment = document.getElementById("moment").value;
-      const now = new Date();
-      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      const data = [["Date", "Heure", "Opérateur", "Moment", "Cellule", "Température (°C)"]];
-
-      cellules.forEach((cell, i) => {
-        const val = document.getElementById("temp" + i).value || "";
-        data.push([date, heure, operateur, moment, cell.nom, val]);
-      });
-
-      const ws = XLSX.utils.aoa_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Relevé Température");
-      XLSX.writeFile(wb, nomFichier("HACCP_releve_temperature") + ".xlsx");
+      doc.save(`HACCP_trace_${date}.pdf`);
     }
   </script>
-
 </body>
 </html>
