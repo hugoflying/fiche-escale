@@ -77,8 +77,17 @@
     }
 
     .temp-value {
-      min-width: 60px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .temp-input {
+      width: 60px;
+      font-size: 1.2em;
       text-align: center;
+      border: none;
+      background: transparent;
     }
 
     .btn-temp {
@@ -155,6 +164,7 @@
 
     const grid = document.getElementById("frigoGrid");
     const alertBox = document.getElementById("alert");
+    const values = Array(cellules.length).fill(null);
 
     cellules.forEach((cellule, index) => {
       const card = document.createElement("div");
@@ -163,26 +173,30 @@
         <div class="frigo-name">${cellule.nom}</div>
         <div class="temperature">
           <button class="btn-temp" onclick="adjustTemp(${index}, -0.1)">-</button>
-          <span class="temp-value" id="temp${index}">- °C</span>
+          <span class="temp-value">
+            <input class="temp-input" type="number" step="0.1" id="temp${index}" onchange="manualEdit(${index}, this.value)">°C
+          </span>
           <button class="btn-temp" onclick="adjustTemp(${index}, 0.1)">+</button>
         </div>
       `;
       grid.appendChild(card);
     });
 
-    const values = Array(cellules.length).fill(null);
-
     function adjustTemp(index, delta) {
       let val = values[index];
-      if (val === null) val = (cellules[index].type === "negatif") ? -10.0 : 0.0;
+      if (val === null || isNaN(val)) val = 0.0;
       val = parseFloat((val + delta).toFixed(1));
       values[index] = val;
-
-      const tempLabel = document.getElementById("temp" + index);
-      const formatted = cellules[index].type === "negatif" ? `${val} °C` : `${Math.max(val, 0).toFixed(1)} °C`;
-      tempLabel.textContent = formatted;
-
+      document.getElementById("temp" + index).value = val;
       checkTolerance(index, val, cellules[index].type);
+    }
+
+    function manualEdit(index, value) {
+      const val = parseFloat(value);
+      if (!isNaN(val)) {
+        values[index] = val;
+        checkTolerance(index, val, cellules[index].type);
+      }
     }
 
     function checkTolerance(index, val, type) {
