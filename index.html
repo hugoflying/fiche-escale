@@ -48,7 +48,7 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       width: 48%;
       text-align: center;
-      padding: 15px 10px;
+      padding: 10px;
       box-sizing: border-box;
     }
 
@@ -65,37 +65,30 @@
     }
 
     .temperature {
-      font-size: 1.4em;
-      font-weight: bold;
-      background: #f0f0f0;
-      border-radius: 6px;
-      padding: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: #f0f0f0;
+      border-radius: 6px;
+      padding: 8px;
       gap: 10px;
     }
 
     .temp-value {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .temp-input {
-      width: 60px;
-      font-size: 1.2em;
-      text-align: center;
-      border: none;
-      background: transparent;
+      font-size: 1.4em;
+      font-weight: bold;
+      min-width: 60px;
     }
 
     .btn-temp {
-      font-size: 1.2em;
-      padding: 5px 10px;
+      font-size: 1.4em;
+      width: 36px;
+      height: 36px;
+      line-height: 36px;
       border-radius: 6px;
       border: none;
       background-color: #ddd;
+      font-weight: bold;
     }
 
     button {
@@ -164,6 +157,7 @@
 
     const grid = document.getElementById("frigoGrid");
     const alertBox = document.getElementById("alert");
+
     const values = Array(cellules.length).fill(null);
 
     cellules.forEach((cellule, index) => {
@@ -172,10 +166,8 @@
       card.innerHTML = `
         <div class="frigo-name">${cellule.nom}</div>
         <div class="temperature">
-          <button class="btn-temp" onclick="adjustTemp(${index}, -0.1)">-</button>
-          <span class="temp-value">
-            <input class="temp-input" type="number" step="0.1" id="temp${index}" onchange="manualEdit(${index}, this.value)">°C
-          </span>
+          <button class="btn-temp" onclick="adjustTemp(${index}, -0.1)">−</button>
+          <span class="temp-value" id="temp${index}">°C</span>
           <button class="btn-temp" onclick="adjustTemp(${index}, 0.1)">+</button>
         </div>
       `;
@@ -184,19 +176,15 @@
 
     function adjustTemp(index, delta) {
       let val = values[index];
-      if (val === null || isNaN(val)) val = 0.0;
+      if (val === null) val = (cellules[index].type === "negatif") ? -10.0 : 0.0;
       val = parseFloat((val + delta).toFixed(1));
       values[index] = val;
-      document.getElementById("temp" + index).value = val;
-      checkTolerance(index, val, cellules[index].type);
-    }
 
-    function manualEdit(index, value) {
-      const val = parseFloat(value);
-      if (!isNaN(val)) {
-        values[index] = val;
-        checkTolerance(index, val, cellules[index].type);
-      }
+      const tempLabel = document.getElementById("temp" + index);
+      const formatted = `${val.toFixed(1)} °C`;
+      tempLabel.textContent = formatted;
+
+      checkTolerance(index, val, cellules[index].type);
     }
 
     function checkTolerance(index, val, type) {
@@ -225,7 +213,7 @@
 
       cellules.forEach((cell, i) => {
         const val = values[i];
-        const affichage = val !== null ? `${val} °C` : "-";
+        const affichage = val !== null ? `${val.toFixed(1)} °C` : "-";
         doc.text(`${cell.nom} : ${affichage}`, 20, 52 + i * 6);
       });
 
