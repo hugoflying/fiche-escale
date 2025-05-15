@@ -11,7 +11,6 @@
       padding: 0;
       font-family: Arial, sans-serif;
       background: #f0f4f7;
-      height: 100%;
       overflow-x: hidden;
     }
 
@@ -31,21 +30,24 @@
     .form-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
-      justify-content: space-between;
+      gap: 12px;
     }
 
     .section {
       background: white;
       border-radius: 10px;
-      padding: 10px;
-      flex: 1 1 220px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 8px 12px;
+      flex: 1 1 240px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     label {
       font-weight: bold;
       font-size: 14px;
+      margin-bottom: 5px;
     }
 
     select,
@@ -53,9 +55,8 @@
     input[type="date"],
     input[type="file"] {
       padding: 6px 8px;
+      font-size: 15px;
       width: 100%;
-      font-size: 14px;
-      margin-top: 5px;
       box-sizing: border-box;
     }
 
@@ -142,13 +143,11 @@
   </div>
 
   <script>
-    // Auto-remplir la date
     document.addEventListener("DOMContentLoaded", () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById("date").value = today;
     });
 
-    // Prévisualisation photos
     const photoInput = document.getElementById('photo');
     const previewContainer = document.getElementById('photo-preview');
     let images = [];
@@ -169,7 +168,6 @@
       });
     });
 
-    // Génération PDF
     async function exporterPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -188,14 +186,29 @@
       doc.text(`N° de lot : ${lot}`, 20, 54);
 
       let y = 65;
+      const maxWidth = 160;
+
       for (let i = 0; i < images.length; i++) {
-        if (y > 230) {
+        if (y > 240) {
           doc.addPage();
           y = 20;
         }
-        // Taille max : largeur 120 mm, hauteur auto (ratio 4:3 à peu près)
-        doc.addImage(images[i], 'JPEG', 45, y, 120, 90);
-        y += 100;
+
+        const img = new Image();
+        img.src = images[i];
+
+        await new Promise(resolve => {
+          img.onload = () => {
+            const ratio = img.width / img.height;
+            const width = Math.min(maxWidth, img.width * 0.264583); // px to mm
+            const height = width / ratio;
+            const x = (210 - width) / 2;
+
+            doc.addImage(images[i], 'JPEG', x, y, width, height);
+            y += height + 10;
+            resolve();
+          };
+        });
       }
 
       doc.save(`HACCP_trace_${date}.pdf`);
