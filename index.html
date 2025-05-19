@@ -7,14 +7,11 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
     h2 { text-align: center; margin-bottom: 20px; }
+    .section-title { text-align: center; font-weight: bold; font-size: 1.1em; margin-top: 30px; margin-bottom: 10px; color: #003366; }
     label { font-weight: bold; display: block; margin-top: 15px; }
     select, input[type="date"], input[type="password"] {
       width: 100%; padding: 10px; font-size: 1em; margin-top: 5px;
       border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
-    }
-    .section-title {
-      text-align: center; font-weight: bold;
-      font-size: 1.1em; margin-top: 30px; margin-bottom: 10px; color: #003366;
     }
     .grid {
       display: grid; grid-template-columns: repeat(3, 1fr);
@@ -59,14 +56,12 @@
     <option value="Après-midi">Après-midi</option>
   </select>
 
-  <label for="operateur">Par</label>
-  <select id="operateur">
+  <label for="par">Par</label>
+  <select id="par">
+    <option value="">-- Choisir --</option>
     <option value="Nicolas">Nicolas</option>
     <option value="Vanina">Vanina</option>
   </select>
-
-  <label for="password">Mot de passe</label>
-  <input type="password" id="password" placeholder="Mot de passe pour valider">
 
   <div class="section-title">Cellules négatives</div>
   <div class="grid">
@@ -93,13 +88,15 @@
     <div class="card boisson"><div class="frigo-name">BOISS 1</div><div class="temperature"><input type="number" step="0.1" id="temp9"><span class="suffix">°C</span></div></div>
   </div>
 
+  <label for="password">Mot de passe</label>
+  <input type="password" id="password" placeholder="Mot de passe">
+
   <div class="buttons">
-    <button onclick="envoyerVersGoogleSheets()">Archiver sur Google Sheets</button>
+    <button onclick="envoyerDonnées()">Archiver sur Google Sheets</button>
   </div>
 
   <script>
     document.getElementById("date").valueAsDate = new Date();
-
     const cellules = [
       { nom: "CN1" }, { nom: "CN2" }, { nom: "CN3" },
       { nom: "CP1" }, { nom: "CP2" }, { nom: "CP3" },
@@ -107,38 +104,55 @@
       { nom: "BOISS 1" }
     ];
 
-    function envoyerVersGoogleSheets() {
-      const password = document.getElementById("password").value;
+    let dernierEnvoi = 0;
+
+    function envoyerDonnées() {
+      const maintenant = Date.now();
+      if (maintenant - dernierEnvoi < 60000) {
+        alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
+        return;
+      }
+
+      const password = document.getElementById("password").value.trim();
       if (password !== "leon") {
-        alert("Mot de passe incorrect !");
+        alert("❌ Mot de passe incorrect.");
+        return;
+      }
+
+      const par = document.getElementById("par").value;
+      if (!par) {
+        alert("Veuillez sélectionner un nom pour 'Par'.");
         return;
       }
 
       const dateObj = new Date(document.getElementById("date").value);
-      const date = dateObj.toLocaleDateString("fr-FR"); // JJ-MM-AAAA
+      const date = dateObj.toLocaleDateString('fr-FR');
       const moment = document.getElementById("moment").value;
-      const operateur = document.getElementById("operateur").value;
       const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      const temperatures = cellules.map((cell, i) => {
-        return {
-          cellule: cell.nom,
-          valeur: document.getElementById("temp" + i).value || ""
-        };
-      });
+      const temperatures = cellules.map((cell, i) => ({
+        cellule: cell.nom,
+        valeur: document.getElementById("temp" + i).value || ""
+      }));
 
       const data = {
-        date, heure, moment, operateur, temperatures
+        date,
+        heure,
+        moment,
+        signature: { nom: par },
+        temperatures
       };
+
+      dernierEnvoi = maintenant;
 
       fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-      })
-      .then(() => alert("✅ Données envoyées dans Google Sheets."));
+      }).then(() => alert("✅ Données archivées avec succès."));
     }
   </script>
+
 </body>
 </html>
