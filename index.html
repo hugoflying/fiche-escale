@@ -6,94 +6,107 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
 
- <style>
-  @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+    }
 
-  body {
-    font-family: Arial, sans-serif;
-  }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-  .grid {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    margin-top: 20px;
-  }
-  .group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  .row.single {
-    grid-template-columns: 1fr;
-    justify-items: center;
-  }
-  .separator {
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.1em;
-    margin-bottom: 5px;
-  }
-  .card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    text-align: center;
-    padding: 10px;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  .card.negatif { border-top: 5px solid #003366; }
-  .card.positive { border-top: 5px solid #3399ff; }
-  .card.verte { border-top: 5px solid #0f9d58; }
-  .card.boisson { border-top: 5px solid #f4b400; }
-  .card.vitrine { border-top: 5px solid #9b59b6; }
-  .frigo-name {
-    font-weight: bold;
-    margin-bottom: 10px;
-    font-size: 1em;
-  }
-  .temperature {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f0f0;
-    border-radius: 6px;
-    padding: 8px;
-  }
-  .temperature input {
-    font-size: clamp(1em, 4vw, 1.2em);
-    font-weight: bold;
-    width: 60%;
-    text-align: right;
-    border: none;
-    background: transparent;
-    box-sizing: border-box;
-  }
-  .temperature input::placeholder {
-    color: #aaa;
-    font-size: 1em;
-  }
-  .temperature .suffix {
-    font-weight: bold;
-    margin-left: 4px;
-    font-size: clamp(1em, 4vw, 1.2em);
-  }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
 
-  label, input[type="date"], select {
-    display: block;
-    width: 100%;
-    margin-bottom: 12px;
-    font-size: 1em;
-  }
-</style>
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      margin-top: 20px;
+    }
+    .group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .row.single {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+    .separator {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 5px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .card.negatif { border-top: 5px solid #003366; }
+    .card.positive { border-top: 5px solid #3399ff; }
+    .card.verte { border-top: 5px solid #0f9d58; }
+    .card.boisson { border-top: 5px solid #f4b400; }
+    .card.vitrine { border-top: 5px solid #9b59b6; }
+    .frigo-name {
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1em;
+    }
+    .temperature {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0f0f0;
+      border-radius: 6px;
+      padding: 8px;
+    }
+    .temperature input {
+      font-size: clamp(1em, 4vw, 1.2em);
+      font-weight: bold;
+      width: 60%;
+      text-align: right;
+      border: none;
+      background: transparent;
+      box-sizing: border-box;
+    }
+    .temperature input::placeholder {
+      color: #aaa;
+      font-size: 1em;
+    }
+    .temperature .suffix {
+      font-weight: bold;
+      margin-left: 4px;
+      font-size: clamp(1em, 4vw, 1.2em);
+    }
+
+    label, input[type="date"], select {
+      display: block;
+      width: 100%;
+      margin-bottom: 12px;
+      font-size: 1em;
+    }
+  </style>
 </head>
 <body>
 
