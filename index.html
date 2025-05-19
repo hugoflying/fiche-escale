@@ -13,12 +13,10 @@
       margin: 0;
       padding: 20px;
     }
-
     h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-
     .section-title {
       font-size: 1.1em;
       font-weight: bold;
@@ -27,13 +25,11 @@
       color: #003366;
       text-align: center;
     }
-
     label {
       font-weight: bold;
       display: block;
       margin-top: 15px;
     }
-
     select, input[type="date"] {
       width: 100%;
       padding: 10px;
@@ -43,14 +39,12 @@
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       margin-bottom: 10px;
     }
-
     .card {
       background: white;
       border-radius: 12px;
@@ -59,25 +53,21 @@
       padding: 10px;
       box-sizing: border-box;
     }
-
     .card.negatif { border-top: 5px solid #003366; }
     .card.positive { border-top: 5px solid #3399ff; }
     .card.vitrine { border-top: 5px solid #9b59b6; }
     .card.boisson { border-top: 5px solid #f4b400; }
-
     .frigo-name {
       font-weight: bold;
       margin-bottom: 10px;
       font-size: 1em;
     }
-
     .temperature {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
     }
-
     .temperature input {
       font-size: 1em;
       font-weight: bold;
@@ -89,12 +79,10 @@
       background-color: #f0f0f0;
       box-sizing: border-box;
     }
-
     .temperature .suffix {
       font-weight: bold;
       white-space: nowrap;
     }
-
     .alert {
       background-color: #ff4d4d;
       color: white;
@@ -104,14 +92,12 @@
       text-align: center;
       display: none;
     }
-
     .buttons {
       display: flex;
       flex-direction: column;
       gap: 10px;
       margin-top: 20px;
     }
-
     .buttons button {
       width: 100%;
       padding: 12px;
@@ -175,6 +161,7 @@
   <div class="buttons">
     <button onclick="exporterPDF()">Exporter en PDF</button>
     <button onclick="exporterExcel()">Exporter en Excel</button>
+    <button onclick="envoyerVersGoogleSheets()">Archiver sur Google Sheets</button>
   </div>
 
   <script>
@@ -200,12 +187,12 @@
       input.style.backgroundColor = "#f0f0f0";
 
       if (type === "negatif" && val > -15) {
-        alertBox.innerText = "⚠ Température trop haute (max -15°C) pour " + cellules[index].nom;
+        alertBox.innerText = `⚠ Température trop haute (max -15°C) pour ${cellules[index].nom}`;
         alertBox.style.display = "block";
         input.style.backgroundColor = "#ffcccc";
         setTimeout(() => alertBox.style.display = "none", 4000);
       } else if (type === "positive" && val > 5) {
-        alertBox.innerText = "⚠ Température trop haute (max 5°C) pour " + cellules[index].nom;
+        alertBox.innerText = `⚠ Température trop haute (max 5°C) pour ${cellules[index].nom}`;
         alertBox.style.display = "block";
         input.style.backgroundColor = "#ffcccc";
         setTimeout(() => alertBox.style.display = "none", 4000);
@@ -265,6 +252,41 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Relevé Température");
       XLSX.writeFile(wb, nomFichier("HACCP_releve_temperature") + ".xlsx");
+    }
+
+    function envoyerVersGoogleSheets() {
+      const date = document.getElementById("date").value;
+      const operateur = document.getElementById("operateur").value;
+      const moment = document.getElementById("moment").value;
+      const now = new Date();
+      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const temperatures = cellules.map((cell, i) => {
+        const val = document.getElementById("temp" + i).value || "";
+        return {
+          cellule: cell.nom,
+          valeur: val
+        };
+      });
+
+      const data = {
+        date: date,
+        heure: heure,
+        operateur: operateur,
+        moment: moment,
+        temperatures: temperatures
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.text())
+      .then(text => alert("✅ Données enregistrées dans Google Sheets !"))
+      .catch(err => alert("❌ Erreur lors de l'envoi : " + err));
     }
   </script>
 
