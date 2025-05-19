@@ -7,16 +7,12 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
     h2 { text-align: center; margin-bottom: 20px; }
-    .section-title { text-align: center; font-weight: bold; font-size: 1.1em; margin-top: 30px; margin-bottom: 10px; color: #003366; }
     label { font-weight: bold; display: block; margin-top: 15px; }
     select, input[type="date"], input[type="password"] {
       width: 100%; padding: 10px; font-size: 1em; margin-top: 5px;
       border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
     }
-    .grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 10px; margin-bottom: 10px;
-    }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
     .card {
       background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center; padding: 10px; box-sizing: border-box;
@@ -41,9 +37,8 @@
       font-weight: bold; background-color: #007bff; color: white;
       border: none; border-radius: 6px;
     }
-    .alert-red {
-      background-color: #ffcccc !important;
-    }
+    .alert-red { background-color: #ffcccc !important; }
+    .section-title { text-align: center; font-weight: bold; margin-top: 30px; margin-bottom: 10px; color: #003366; }
   </style>
 </head>
 <body>
@@ -100,7 +95,7 @@
 
   <script>
     document.getElementById("date").valueAsDate = new Date();
-    document.getElementById("par").value = ""; // Forcer le champ à vide au chargement
+    document.getElementById("par").value = "";
 
     const cellules = [
       { nom: "CN1", type: "negatif" },
@@ -115,18 +110,16 @@
       { nom: "BOISS 1", type: "boisson" }
     ];
 
-    // Contrôle des tolérances
+    // Tolérances + négatif forcé pour CN
     cellules.forEach((cell, i) => {
       const input = document.getElementById("temp" + i);
       input.addEventListener("change", () => {
         let val = parseFloat(input.value);
         if (isNaN(val)) return;
-
         if (cell.type === "negatif" && val > 0) {
           val = -Math.abs(val);
           input.value = val.toFixed(1);
         }
-
         input.classList.remove("alert-red");
         if ((cell.type === "negatif" && val > -15) || (cell.type !== "negatif" && val > 5)) {
           input.classList.add("alert-red");
@@ -137,54 +130,43 @@
     let dernierEnvoi = 0;
 
     function envoyerDonnées() {
-  const maintenant = Date.now();
-  if (maintenant - dernierEnvoi < 60000) {
-    alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
-    return;
-  }
+      const maintenant = Date.now();
+      if (maintenant - dernierEnvoi < 60000) {
+        alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
+        return;
+      }
 
-  const password = document.getElementById("password").value.trim();
-  if (password !== "leon") {
-    alert("❌ Mot de passe incorrect.");
-    return;
-  }
+      const password = document.getElementById("password").value.trim();
+      if (password !== "leon") {
+        alert("❌ Mot de passe incorrect.");
+        return;
+      }
 
-  const parElement = document.getElementById("par");
-  const par = parElement ? parElement.value : "";
-  if (!par) {
-    alert("Veuillez sélectionner un nom pour 'Par'.");
-    return;
-  }
+      const par = document.getElementById("par").value;
+      if (!par) {
+        alert("Veuillez sélectionner un nom pour 'Par'.");
+        return;
+      }
 
-  const dateObj = new Date(document.getElementById("date").value);
-  const date = dateObj.toLocaleDateString('fr-FR');
-  const moment = document.getElementById("moment").value;
-  const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateObj = new Date(document.getElementById("date").value);
+      const date = dateObj.toLocaleDateString('fr-FR');
+      const moment = document.getElementById("moment").value;
+      const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  const temperatures = cellules.map((cell, i) => ({
-    cellule: cell.nom,
-    valeur: document.getElementById("temp" + i).value || ""
-  }));
+      const temperatures = cellules.map((cell, i) => ({
+        cellule: cell.nom,
+        valeur: document.getElementById("temp" + i).value || ""
+      }));
 
-  const data = {
-    date,
-    heure,
-    moment,
-    signature: { nom: par },
-    temperatures
-  };
+      const data = {
+        date,
+        heure,
+        moment,
+        signature: { nom: par },
+        temperatures
+      };
 
-  console.log("✅ Données envoyées :", data); // ← s'affichera dans la console navigateur
-
-  dernierEnvoi = maintenant;
-
-  fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  }).then(() => alert("✅ Données archivées avec succès."));
-}
+      console.log("✅ Données envoyées :", data); // ← vérifie ici si "Par" est présent
 
       dernierEnvoi = maintenant;
 
