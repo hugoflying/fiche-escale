@@ -7,11 +7,14 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
     h2 { text-align: center; margin-bottom: 20px; }
-    .section-title { text-align: center; font-weight: bold; font-size: 1.1em; margin-top: 30px; margin-bottom: 10px; color: #003366; }
     label { font-weight: bold; display: block; margin-top: 15px; }
-    select, input[type="date"] {
+    select, input[type="date"], input[type="password"] {
       width: 100%; padding: 10px; font-size: 1em; margin-top: 5px;
       border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
+    }
+    .section-title {
+      text-align: center; font-weight: bold;
+      font-size: 1.1em; margin-top: 30px; margin-bottom: 10px; color: #003366;
     }
     .grid {
       display: grid; grid-template-columns: repeat(3, 1fr);
@@ -56,6 +59,15 @@
     <option value="Après-midi">Après-midi</option>
   </select>
 
+  <label for="operateur">Par</label>
+  <select id="operateur">
+    <option value="Nicolas">Nicolas</option>
+    <option value="Vanina">Vanina</option>
+  </select>
+
+  <label for="password">Mot de passe</label>
+  <input type="password" id="password" placeholder="Mot de passe pour valider">
+
   <div class="section-title">Cellules négatives</div>
   <div class="grid">
     <div class="card negatif"><div class="frigo-name">CN1</div><div class="temperature"><input type="number" step="0.1" id="temp0"><span class="suffix">°C</span></div></div>
@@ -96,30 +108,27 @@
     ];
 
     function envoyerVersGoogleSheets() {
-      if (!confirm("Souhaitez-vous valider et archiver les saisies actuelles ?")) return;
-
-      const signatureNom = prompt("Veuillez signer : tapez 'Vanina' ou 'Nicolas'").trim();
-      if (!signatureNom || (signatureNom !== "Vanina" && signatureNom !== "Nicolas")) {
-        alert("Signature invalide ou annulée. Archivage annulé.");
+      const password = document.getElementById("password").value;
+      if (password !== "leonpetitsbouts06") {
+        alert("Mot de passe incorrect !");
         return;
       }
 
-      const dateRaw = new Date(document.getElementById("date").value);
-      const date = dateRaw.toLocaleDateString('fr-FR'); // JJ-MM-AAAA
+      const dateObj = new Date(document.getElementById("date").value);
+      const date = dateObj.toLocaleDateString("fr-FR"); // JJ-MM-AAAA
       const moment = document.getElementById("moment").value;
-      const now = new Date();
-      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const horodatage = now.toISOString();
+      const operateur = document.getElementById("operateur").value;
+      const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       const temperatures = cellules.map((cell, i) => {
-        const val = document.getElementById("temp" + i).value || "";
-        return { cellule: cell.nom, valeur: val };
+        return {
+          cellule: cell.nom,
+          valeur: document.getElementById("temp" + i).value || ""
+        };
       });
 
       const data = {
-        date, heure, moment,
-        signature: { nom: signatureNom, horodatage },
-        temperatures
+        date, heure, moment, operateur, temperatures
       };
 
       fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
@@ -128,10 +137,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
       })
-      .then(() => alert("✅ Données envoyées vers Google Sheets !"))
-      .catch(err => alert("❌ Erreur lors de l'envoi : " + err));
+      .then(() => alert("✅ Données envoyées dans Google Sheets."));
     }
   </script>
-
 </body>
 </html>
