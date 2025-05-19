@@ -7,8 +7,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
-
     body {
       font-family: Arial, sans-serif;
       background: #f0f4f8;
@@ -27,84 +25,102 @@
       margin-top: 15px;
     }
 
+    select, input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1em;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
     .grid {
       display: flex;
-      flex-direction: column;
-      gap: 30px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 10px;
       margin-top: 20px;
     }
-    .group {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    .row.single {
-      grid-template-columns: 1fr;
-      justify-items: center;
-    }
-    .separator {
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.1em;
-      margin-bottom: 5px;
-    }
+
     .card {
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      width: 48%;
       text-align: center;
       padding: 10px;
       box-sizing: border-box;
-      width: 100%;
     }
+
     .card.negatif { border-top: 5px solid #003366; }
     .card.positive { border-top: 5px solid #3399ff; }
     .card.verte { border-top: 5px solid #0f9d58; }
     .card.boisson { border-top: 5px solid #f4b400; }
     .card.vitrine { border-top: 5px solid #9b59b6; }
+
     .frigo-name {
       font-weight: bold;
       margin-bottom: 10px;
       font-size: 1em;
     }
+
     .temperature {
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
-      border-radius: 6px;
-      padding: 8px;
     }
+
     .temperature input {
-      font-size: clamp(1em, 4vw, 1.2em);
+      font-size: 1.4em;
       font-weight: bold;
-      width: 60%;
-      text-align: right;
+      width: 100%;
+      text-align: center;
       border: none;
-      background: transparent;
+      border-radius: 6px;
+      padding: 10px;
+      background-color: #f0f0f0;
       box-sizing: border-box;
     }
+
     .temperature input::placeholder {
       color: #aaa;
       font-size: 1em;
     }
+
     .temperature .suffix {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
       font-weight: bold;
-      margin-left: 4px;
-      font-size: clamp(1em, 4vw, 1.2em);
+      pointer-events: none;
     }
 
-    label, input[type="date"], select {
-      display: block;
+    .alert {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px;
+      margin-top: 15px;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .buttons button {
       width: 100%;
-      margin-bottom: 12px;
+      padding: 12px;
       font-size: 1em;
+      font-weight: bold;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -127,55 +143,43 @@
     <option value="Après-midi">Après-midi</option>
   </select>
 
-  <div class="alert" id="alert" style="display:none;"></div>
+  <div class="alert" id="alert"></div>
+  <div class="grid" id="frigoGrid"></div>
 
-  <div class="grid" id="frigoGrid">
-    <div class="group">
-      <div class="separator">Cellules négatives</div>
-      <div class="row" id="row1"></div>
-    </div>
-    <div class="group">
-      <div class="separator">Cellules positives</div>
-      <div class="row" id="row2"></div>
-    </div>
-    <div class="group">
-      <div class="separator">Vitrines</div>
-      <div class="row" id="row3"></div>
-    </div>
-    <div class="group">
-      <div class="separator">Boisson</div>
-      <div class="row single" id="row4"></div>
-    </div>
+  <div class="buttons">
+    <button onclick="exporterPDF()">Exporter en PDF</button>
+    <button onclick="exporterExcel()">Exporter en Excel</button>
   </div>
 
   <script>
     document.getElementById("date").valueAsDate = new Date();
 
     const cellules = [
-      { nom: "CN1", type: "negatif", group: "row1" },
-      { nom: "CN2", type: "negatif", group: "row1" },
-      { nom: "CN3", type: "negatif", group: "row1" },
-      { nom: "CP1", type: "positive", group: "row2" },
-      { nom: "CP2", type: "verte", group: "row2" },
-      { nom: "CP3", type: "verte", group: "row2" },
-      { nom: "V1", type: "vitrine", group: "row3" },
-      { nom: "V2", type: "vitrine", group: "row3" },
-      { nom: "V3", type: "vitrine", group: "row3" },
-      { nom: "BOISS 1", type: "boisson", group: "row4" }
+      { nom: "Cellule négative 1", type: "negatif" },
+      { nom: "Cellule négative 2", type: "negatif" },
+      { nom: "Cellule négative 3", type: "negatif" },
+      { nom: "Cellule positive", type: "positive" },
+      { nom: "Cellule positive sous plan 1", type: "verte" },
+      { nom: "Cellule positive sous plan 2", type: "verte" },
+      { nom: "Cellule boisson", type: "boisson" },
+      { nom: "Vitrine 1", type: "vitrine" },
+      { nom: "Vitrine 2", type: "vitrine" },
+      { nom: "Vitrine 3", type: "vitrine" },
     ];
 
+    const grid = document.getElementById("frigoGrid");
+
     cellules.forEach((cellule, index) => {
-      const row = document.getElementById(cellule.group);
       const card = document.createElement("div");
       card.className = `card ${cellule.type}`;
       card.innerHTML = `
         <div class="frigo-name">${cellule.nom}</div>
         <div class="temperature">
-          <input type="number" step="0.1" id="temp${index}" placeholder="°C" onchange="checkTolerance(${index}, '${cellule.type}')">
+          <input type="number" step="0.1" id="temp${index}" placeholder="" onchange="checkTolerance(${index}, '${cellule.type}')">
           <span class="suffix">°C</span>
         </div>
       `;
-      row.appendChild(card);
+      grid.appendChild(card);
     });
 
     function checkTolerance(index, type) {
@@ -196,6 +200,61 @@
         input.style.backgroundColor = "#ffcccc";
         setTimeout(() => alertBox.style.display = "none", 4000);
       }
+    }
+
+    function nomFichier(prefix) {
+      const date = new Date(document.getElementById("date").value);
+      const moment = document.getElementById("moment").value;
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yy = String(date.getFullYear()).slice(2);
+      return `${prefix}_${dd}-${mm}-${yy}_${moment.toLowerCase()}`;
+    }
+
+    function exporterPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const date = document.getElementById("date").value;
+      const operateur = document.getElementById("operateur").value;
+      const moment = document.getElementById("moment").value;
+      const now = new Date();
+      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      doc.setFontSize(14);
+      doc.text("Traçabilité Température", 20, 20);
+      doc.setFontSize(10);
+      doc.text(`Date : ${date}`, 20, 30);
+      doc.text(`Opérateur : ${operateur}`, 20, 36);
+      doc.text(`Moment : ${moment}`, 20, 42);
+
+      cellules.forEach((cell, i) => {
+        const val = document.getElementById("temp" + i).value;
+        const affichage = val ? `${val} °C` : "-";
+        doc.text(`${cell.nom} : ${affichage}`, 20, 52 + i * 6);
+      });
+
+      doc.text(`\nRelevé édité le ${date} à ${heure}`, 20, 120);
+      doc.save(nomFichier("HACCP_releve_temperature") + ".pdf");
+    }
+
+    function exporterExcel() {
+      const date = document.getElementById("date").value;
+      const operateur = document.getElementById("operateur").value;
+      const moment = document.getElementById("moment").value;
+      const now = new Date();
+      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const data = [["Date", "Heure", "Opérateur", "Moment", "Cellule", "Température (°C)"]];
+
+      cellules.forEach((cell, i) => {
+        const val = document.getElementById("temp" + i).value || "";
+        data.push([date, heure, operateur, moment, cell.nom, val]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Relevé Température");
+      XLSX.writeFile(wb, nomFichier("HACCP_releve_temperature") + ".xlsx");
     }
   </script>
 
