@@ -38,7 +38,6 @@
     .grid {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
       gap: 10px;
       margin-top: 20px;
     }
@@ -47,10 +46,11 @@
       background: white;
       border-radius: 12px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      width: 48%;
+      flex: 1 1 calc(33.33% - 10px);
       text-align: center;
       padding: 10px;
       box-sizing: border-box;
+      min-width: 120px;
     }
 
     .card.negatif { border-top: 5px solid #003366; }
@@ -70,13 +70,13 @@
     }
 
     .temperature input {
-      font-size: 1.4em;
+      font-size: 1.2em;
       font-weight: bold;
       width: 100%;
       text-align: center;
       border: none;
       border-radius: 6px;
-      padding: 10px;
+      padding: 8px;
       background-color: #f0f0f0;
       box-sizing: border-box;
     }
@@ -155,16 +155,16 @@
     document.getElementById("date").valueAsDate = new Date();
 
     const cellules = [
-      { nom: "Cellule négative 1", type: "negatif" },
-      { nom: "Cellule négative 2", type: "negatif" },
-      { nom: "Cellule négative 3", type: "negatif" },
-      { nom: "Cellule positive", type: "positive" },
-      { nom: "Cellule positive sous plan 1", type: "verte" },
-      { nom: "Cellule positive sous plan 2", type: "verte" },
-      { nom: "Cellule boisson", type: "boisson" },
-      { nom: "Vitrine 1", type: "vitrine" },
-      { nom: "Vitrine 2", type: "vitrine" },
-      { nom: "Vitrine 3", type: "vitrine" },
+      { nom: "CN1", type: "negatif" },
+      { nom: "CN2", type: "negatif" },
+      { nom: "CN3", type: "negatif" },
+      { nom: "CP1", type: "positive" },
+      { nom: "CP2", type: "positive" },
+      { nom: "CP3", type: "positive" },
+      { nom: "V1", type: "vitrine" },
+      { nom: "V2", type: "vitrine" },
+      { nom: "V3", type: "vitrine" },
+      { nom: "BOISS 1", type: "boisson" }
     ];
 
     const grid = document.getElementById("frigoGrid");
