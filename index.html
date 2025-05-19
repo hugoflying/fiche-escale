@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     .grid {
       display: flex;
@@ -47,11 +48,13 @@
     .card.verte { border-top: 5px solid #0f9d58; }
     .card.boisson { border-top: 5px solid #f4b400; }
     .card.vitrine { border-top: 5px solid #9b59b6; }
+
     .frigo-name {
       font-weight: bold;
       margin-bottom: 10px;
       font-size: 1em;
     }
+
     .temperature {
       position: relative;
       display: flex;
@@ -59,10 +62,11 @@
       justify-content: center;
       background-color: #f0f0f0;
       border-radius: 6px;
-      padding: 10px;
+      padding: 8px;
     }
+
     .temperature input {
-      font-size: 1.4em;
+      font-size: clamp(1em, 4vw, 1.2em);
       font-weight: bold;
       width: 60%;
       text-align: right;
@@ -70,13 +74,16 @@
       background: transparent;
       box-sizing: border-box;
     }
+
     .temperature input::placeholder {
       color: #aaa;
       font-size: 1em;
     }
+
     .temperature .suffix {
       font-weight: bold;
       margin-left: 4px;
+      font-size: clamp(1em, 4vw, 1.2em);
     }
   </style>
 </head>
