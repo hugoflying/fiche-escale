@@ -137,41 +137,54 @@
     let dernierEnvoi = 0;
 
     function envoyerDonnées() {
-      const maintenant = Date.now();
-      if (maintenant - dernierEnvoi < 60000) {
-        alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
-        return;
-      }
+  const maintenant = Date.now();
+  if (maintenant - dernierEnvoi < 60000) {
+    alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
+    return;
+  }
 
-      const password = document.getElementById("password").value.trim();
-      if (password !== "leon") {
-        alert("❌ Mot de passe incorrect.");
-        return;
-      }
+  const password = document.getElementById("password").value.trim();
+  if (password !== "leon") {
+    alert("❌ Mot de passe incorrect.");
+    return;
+  }
 
-      const par = document.getElementById("par").value;
-      if (!par) {
-        alert("Veuillez sélectionner un nom pour 'Par'.");
-        return;
-      }
+  const parElement = document.getElementById("par");
+  const par = parElement ? parElement.value : "";
+  if (!par) {
+    alert("Veuillez sélectionner un nom pour 'Par'.");
+    return;
+  }
 
-      const dateObj = new Date(document.getElementById("date").value);
-      const date = dateObj.toLocaleDateString('fr-FR');
-      const moment = document.getElementById("moment").value;
-      const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const dateObj = new Date(document.getElementById("date").value);
+  const date = dateObj.toLocaleDateString('fr-FR');
+  const moment = document.getElementById("moment").value;
+  const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      const temperatures = cellules.map((cell, i) => ({
-        cellule: cell.nom,
-        valeur: document.getElementById("temp" + i).value || ""
-      }));
+  const temperatures = cellules.map((cell, i) => ({
+    cellule: cell.nom,
+    valeur: document.getElementById("temp" + i).value || ""
+  }));
 
-      const data = {
-        date,
-        heure,
-        moment,
-        signature: { nom: par },
-        temperatures
-      };
+  const data = {
+    date,
+    heure,
+    moment,
+    signature: { nom: par },
+    temperatures
+  };
+
+  console.log("✅ Données envoyées :", data); // ← s'affichera dans la console navigateur
+
+  dernierEnvoi = maintenant;
+
+  fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  }).then(() => alert("✅ Données archivées avec succès."));
+}
 
       dernierEnvoi = maintenant;
 
