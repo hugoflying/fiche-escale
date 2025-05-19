@@ -100,6 +100,8 @@
 
   <script>
     document.getElementById("date").valueAsDate = new Date();
+    document.getElementById("par").value = ""; // Forcer le champ à vide au chargement
+
     const cellules = [
       { nom: "CN1", type: "negatif" },
       { nom: "CN2", type: "negatif" },
@@ -113,22 +115,19 @@
       { nom: "BOISS 1", type: "boisson" }
     ];
 
-    // Contrôle de tolérance et correction automatique négatif
+    // Contrôle des tolérances
     cellules.forEach((cell, i) => {
       const input = document.getElementById("temp" + i);
       input.addEventListener("change", () => {
         let val = parseFloat(input.value);
         if (isNaN(val)) return;
 
-        // Force en négatif si CN
         if (cell.type === "negatif" && val > 0) {
           val = -Math.abs(val);
           input.value = val.toFixed(1);
         }
 
-        // Alerte si hors tolérance
         input.classList.remove("alert-red");
-
         if ((cell.type === "negatif" && val > -15) || (cell.type !== "negatif" && val > 5)) {
           input.classList.add("alert-red");
         }
