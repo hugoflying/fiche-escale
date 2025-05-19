@@ -41,6 +41,9 @@
       font-weight: bold; background-color: #007bff; color: white;
       border: none; border-radius: 6px;
     }
+    .alert-red {
+      background-color: #ffcccc !important;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +61,7 @@
 
   <label for="par">Par</label>
   <select id="par">
-    <option value="">-- Choisir --</option>
+    <option value="" disabled selected hidden>Choisir</option>
     <option value="Nicolas">Nicolas</option>
     <option value="Vanina">Vanina</option>
   </select>
@@ -98,18 +101,36 @@
   <script>
     document.getElementById("date").valueAsDate = new Date();
     const cellules = [
-      { nom: "CN1" }, { nom: "CN2" }, { nom: "CN3" },
-      { nom: "CP1" }, { nom: "CP2" }, { nom: "CP3" },
-      { nom: "V1" }, { nom: "V2" }, { nom: "V3" },
-      { nom: "BOISS 1" }
+      { nom: "CN1", type: "negatif" },
+      { nom: "CN2", type: "negatif" },
+      { nom: "CN3", type: "negatif" },
+      { nom: "CP1", type: "positive" },
+      { nom: "CP2", type: "positive" },
+      { nom: "CP3", type: "positive" },
+      { nom: "V1", type: "vitrine" },
+      { nom: "V2", type: "vitrine" },
+      { nom: "V3", type: "vitrine" },
+      { nom: "BOISS 1", type: "boisson" }
     ];
 
-    // Conversion automatique des températures négatives
-    document.querySelectorAll('.card.negatif input').forEach(input => {
-      input.addEventListener('change', () => {
+    // Contrôle de tolérance et correction automatique négatif
+    cellules.forEach((cell, i) => {
+      const input = document.getElementById("temp" + i);
+      input.addEventListener("change", () => {
         let val = parseFloat(input.value);
-        if (!isNaN(val) && val > 0) {
-          input.value = -val;
+        if (isNaN(val)) return;
+
+        // Force en négatif si CN
+        if (cell.type === "negatif" && val > 0) {
+          val = -Math.abs(val);
+          input.value = val.toFixed(1);
+        }
+
+        // Alerte si hors tolérance
+        input.classList.remove("alert-red");
+
+        if ((cell.type === "negatif" && val > -15) || (cell.type !== "negatif" && val > 5)) {
+          input.classList.add("alert-red");
         }
       });
     });
