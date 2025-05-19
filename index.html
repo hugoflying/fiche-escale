@@ -150,37 +150,51 @@
     <button onclick="exporterPDF()">Exporter en PDF</button>
     <button onclick="exporterExcel()">Exporter en Excel</button>
   </div>
+  <div class="grid" id="frigoGrid">
+  <div class="group">
+    <div class="separator">Cellules négatives</div>
+    <div class="row" id="row1"></div>
+  </div>
+  <div class="group">
+    <div class="separator">Cellules positives</div>
+    <div class="row" id="row2"></div>
+  </div>
+  <div class="group">
+    <div class="separator">Vitrines</div>
+    <div class="row" id="row3"></div>
+  </div>
+  <div class="group">
+    <div class="separator">Boisson</div>
+    <div class="row single" id="row4"></div>
+  </div>
+</div>
+<script>
+  const cellules = [
+    { nom: "CN1", type: "negatif", group: "row1" },
+    { nom: "CN2", type: "negatif", group: "row1" },
+    { nom: "CN3", type: "negatif", group: "row1" },
+    { nom: "CP1", type: "positive", group: "row2" },
+    { nom: "CP2", type: "verte", group: "row2" },
+    { nom: "CP3", type: "verte", group: "row2" },
+    { nom: "V1", type: "vitrine", group: "row3" },
+    { nom: "V2", type: "vitrine", group: "row3" },
+    { nom: "V3", type: "vitrine", group: "row3" },
+    { nom: "BOISS 1", type: "boisson", group: "row4" }
+  ];
 
-  <script>
-    document.getElementById("date").valueAsDate = new Date();
-
-    const cellules = [
-      { nom: "CN1", type: "negatif" },
-      { nom: "CN2", type: "negatif" },
-      { nom: "CN3", type: "negatif" },
-      { nom: "CP1", type: "positive" },
-      { nom: "CP2", type: "verte" },
-      { nom: "CP3", type: "verte" },
-      { nom: "BOISS 1", type: "boisson" },
-      { nom: "V1", type: "vitrine" },
-      { nom: "V2", type: "vitrine" },
-      { nom: "V3", type: "vitrine" },
-    ];
-
-    const grid = document.getElementById("frigoGrid");
-
-    cellules.forEach((cellule, index) => {
-      const card = document.createElement("div");
-      card.className = `card ${cellule.type}`;
-      card.innerHTML = `
-        <div class="frigo-name">${cellule.nom}</div>
-        <div class="temperature">
-          <input type="number" step="0.1" id="temp${index}" placeholder="" onchange="checkTolerance(${index}, '${cellule.type}')">
-          <span class="suffix">°C</span>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
+  cellules.forEach((cellule, index) => {
+    const row = document.getElementById(cellule.group);
+    const card = document.createElement("div");
+    card.className = `card ${cellule.type}`;
+    card.innerHTML = `
+      <div class="frigo-name">${cellule.nom}</div>
+      <div class="temperature">
+        <input type="number" step="0.1" id="temp${index}" placeholder="°C" onchange="checkTolerance(${index}, '${cellule.type}')">
+        <span class="suffix">°C</span>
+      </div>
+    `;
+    row.appendChild(card);
+  });
 
     function checkTolerance(index, type) {
       const input = document.getElementById("temp" + index);
