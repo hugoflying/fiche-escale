@@ -123,6 +123,80 @@
       border-radius: 6px;
     }
   </style>
+
+  <style>
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 20px;
+  }
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .row.single {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .separator {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+  }
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+  .card.negatif { border-top: 5px solid #003366; }
+  .card.positive { border-top: 5px solid #3399ff; }
+  .card.verte { border-top: 5px solid #0f9d58; }
+  .card.boisson { border-top: 5px solid #f4b400; }
+  .card.vitrine { border-top: 5px solid #9b59b6; }
+  .frigo-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 1em;
+  }
+  .temperature {
+    position: relative;
+  }
+  .temperature input {
+    font-size: 1.4em;
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    box-sizing: border-box;
+  }
+  .temperature input::placeholder {
+    color: #aaa;
+    font-size: 1em;
+  }
+  .temperature .suffix {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: bold;
+    pointer-events: none;
+  }
+</style>
 </head>
 <body>
 
