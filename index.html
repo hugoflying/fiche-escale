@@ -167,45 +167,45 @@
     ];
 
     function envoyerVersGoogleSheets() {
-      if (!confirm("Souhaitez-vous valider et archiver les saisies actuelles ?")) return;
+  if (!confirm("Souhaitez-vous valider et archiver les saisies actuelles ?")) return;
 
-      const signatureNom = document.getElementById("signature").value;
-      const horodatage = new Date().toISOString();
-      const date = document.getElementById("date").value;
-      const moment = document.getElementById("moment").value;
-      const now = new Date();
-      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const signatureNom = document.getElementById("signature").value;
+  const horodatage = new Date().toISOString();
+  const date = document.getElementById("date").value;
+  const moment = document.getElementById("moment").value;
+  const now = new Date();
+  const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      const temperatures = cellules.map((cell, i) => {
-        const val = document.getElementById("temp" + i).value || "";
-        return {
-          cellule: cell.nom,
-          valeur: val
-        };
-      });
+  const temperatures = cellules.map((cell, i) => {
+    const val = document.getElementById("temp" + i).value || "";
+    return {
+      cellule: cell.nom,
+      valeur: val
+    };
+  });
 
-      const data = {
-        date,
-        heure,
-        moment,
-        signature: {
-          nom: signatureNom,
-          horodatage
-        },
-        temperatures
-      };
+  const data = {
+    date,
+    heure,
+    moment,
+    signature: {
+      nom: signatureNom,
+      horodatage
+    },
+    temperatures
+  };
 
-      fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(response => response.text())
-      .then(text => alert("✅ Données enregistrées dans Google Sheets !"))
-      .catch(err => alert("❌ Erreur lors de l'envoi : " + err));
-    }
+  fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
+    method: "POST",
+    mode: "no-cors", // important pour éviter le blocage CORS
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  })
+  .then(() => alert("✅ Données envoyées vers Google Sheets !"))
+  .catch(err => alert("❌ Erreur lors de l'envoi : " + err));
+}
   </script>
 
 </body>
