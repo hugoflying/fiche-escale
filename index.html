@@ -5,106 +5,41 @@
   <title>Traçabilité température</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .section-title {
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.1em;
-      margin-top: 30px;
-      margin-bottom: 10px;
-      color: #003366;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 15px;
-    }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .section-title { text-align: center; font-weight: bold; font-size: 1.1em; margin-top: 30px; margin-bottom: 10px; color: #003366; }
+    label { font-weight: bold; display: block; margin-top: 15px; }
     select, input[type="date"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 1em;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+      width: 100%; padding: 10px; font-size: 1em; margin-top: 5px;
+      border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
     }
     .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 10px;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 10px;
     }
     .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      padding: 10px;
-      box-sizing: border-box;
+      background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center; padding: 10px; box-sizing: border-box;
     }
     .card.negatif { border-top: 5px solid #003366; }
     .card.positive { border-top: 5px solid #3399ff; }
     .card.vitrine { border-top: 5px solid #9b59b6; }
     .card.boisson { border-top: 5px solid #f4b400; }
-    .frigo-name {
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-size: 1em;
-    }
+    .frigo-name { font-weight: bold; margin-bottom: 10px; font-size: 1em; }
     .temperature {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .temperature input {
-      font-size: 1em;
-      font-weight: bold;
-      text-align: center;
-      padding: 6px;
-      width: 60px;
-      border: none;
-      border-radius: 6px;
-      background-color: #f0f0f0;
-      box-sizing: border-box;
+      font-size: 1em; font-weight: bold; text-align: center;
+      padding: 6px; width: 60px; border: none;
+      border-radius: 6px; background-color: #f0f0f0; box-sizing: border-box;
     }
-    .temperature .suffix {
-      font-weight: bold;
-      white-space: nowrap;
-    }
-    .alert {
-      background-color: #ff4d4d;
-      color: white;
-      padding: 10px;
-      margin-top: 15px;
-      border-radius: 6px;
-      text-align: center;
-      display: none;
-    }
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
+    .temperature .suffix { font-weight: bold; white-space: nowrap; }
+    .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
     .buttons button {
-      width: 100%;
-      padding: 12px;
-      font-size: 1em;
-      font-weight: bold;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
+      width: 100%; padding: 12px; font-size: 1em;
+      font-weight: bold; background-color: #007bff; color: white;
+      border: none; border-radius: 6px;
     }
   </style>
 </head>
@@ -115,16 +50,10 @@
   <label for="date">Date</label>
   <input type="date" id="date">
 
-  <label for="moment">Moment du relevé</label>
+  <label for="moment">Relevé</label>
   <select id="moment">
     <option value="Matin">Matin</option>
     <option value="Après-midi">Après-midi</option>
-  </select>
-
-  <label for="signature">Signature</label>
-  <select id="signature">
-    <option value="Vanina">Vanina</option>
-    <option value="Nicolas">Nicolas</option>
   </select>
 
   <div class="section-title">Cellules négatives</div>
@@ -167,45 +96,41 @@
     ];
 
     function envoyerVersGoogleSheets() {
-  if (!confirm("Souhaitez-vous valider et archiver les saisies actuelles ?")) return;
+      if (!confirm("Souhaitez-vous valider et archiver les saisies actuelles ?")) return;
 
-  const signatureNom = document.getElementById("signature").value;
-  const horodatage = new Date().toISOString();
-  const date = document.getElementById("date").value;
-  const moment = document.getElementById("moment").value;
-  const now = new Date();
-  const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const signatureNom = prompt("Veuillez signer : tapez 'Vanina' ou 'Nicolas'").trim();
+      if (!signatureNom || (signatureNom !== "Vanina" && signatureNom !== "Nicolas")) {
+        alert("Signature invalide ou annulée. Archivage annulé.");
+        return;
+      }
 
-  const temperatures = cellules.map((cell, i) => {
-    const val = document.getElementById("temp" + i).value || "";
-    return {
-      cellule: cell.nom,
-      valeur: val
-    };
-  });
+      const dateRaw = new Date(document.getElementById("date").value);
+      const date = dateRaw.toLocaleDateString('fr-FR'); // JJ-MM-AAAA
+      const moment = document.getElementById("moment").value;
+      const now = new Date();
+      const heure = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const horodatage = now.toISOString();
 
-  const data = {
-    date,
-    heure,
-    moment,
-    signature: {
-      nom: signatureNom,
-      horodatage
-    },
-    temperatures
-  };
+      const temperatures = cellules.map((cell, i) => {
+        const val = document.getElementById("temp" + i).value || "";
+        return { cellule: cell.nom, valeur: val };
+      });
 
-  fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
-    method: "POST",
-    mode: "no-cors", // important pour éviter le blocage CORS
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  })
-  .then(() => alert("✅ Données envoyées vers Google Sheets !"))
-  .catch(err => alert("❌ Erreur lors de l'envoi : " + err));
-}
+      const data = {
+        date, heure, moment,
+        signature: { nom: signatureNom, horodatage },
+        temperatures
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(() => alert("✅ Données envoyées vers Google Sheets !"))
+      .catch(err => alert("❌ Erreur lors de l'envoi : " + err));
+    }
   </script>
 
 </body>
