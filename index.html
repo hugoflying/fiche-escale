@@ -104,6 +104,16 @@
       { nom: "BOISS 1" }
     ];
 
+    // Conversion automatique des températures négatives
+    document.querySelectorAll('.card.negatif input').forEach(input => {
+      input.addEventListener('change', () => {
+        let val = parseFloat(input.value);
+        if (!isNaN(val) && val > 0) {
+          input.value = -val;
+        }
+      });
+    });
+
     let dernierEnvoi = 0;
 
     function envoyerDonnées() {
