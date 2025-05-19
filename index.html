@@ -20,13 +20,13 @@
     }
 
     .section-title {
-  font-size: 1.1em;
-  font-weight: bold;
-  margin-top: 30px;
-  margin-bottom: 10px;
-  color: #003366;
-  text-align: center; /* ← centré */
-}
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #003366;
+      text-align: center;
+    }
 
     label {
       font-weight: bold;
@@ -148,28 +148,28 @@
   <!-- Cellules négatives -->
   <div class="section-title">Cellules négatives</div>
   <div class="grid">
-    <div class="card negatif"><div class="frigo-name">CN1</div><div class="temperature"><input type="number" step="0.1" id="temp0"><span class="suffix">°C</span></div></div>
-    <div class="card negatif"><div class="frigo-name">CN2</div><div class="temperature"><input type="number" step="0.1" id="temp1"><span class="suffix">°C</span></div></div>
-    <div class="card negatif"><div class="frigo-name">CN3</div><div class="temperature"><input type="number" step="0.1" id="temp2"><span class="suffix">°C</span></div></div>
+    <div class="card negatif"><div class="frigo-name">CN1</div><div class="temperature"><input type="number" step="0.1" id="temp0" onchange="checkTolerance(0, 'negatif')"><span class="suffix">°C</span></div></div>
+    <div class="card negatif"><div class="frigo-name">CN2</div><div class="temperature"><input type="number" step="0.1" id="temp1" onchange="checkTolerance(1, 'negatif')"><span class="suffix">°C</span></div></div>
+    <div class="card negatif"><div class="frigo-name">CN3</div><div class="temperature"><input type="number" step="0.1" id="temp2" onchange="checkTolerance(2, 'negatif')"><span class="suffix">°C</span></div></div>
   </div>
 
   <!-- Cellules positives -->
   <div class="section-title">Cellules positives</div>
   <div class="grid">
-    <div class="card positive"><div class="frigo-name">CP1</div><div class="temperature"><input type="number" step="0.1" id="temp3"><span class="suffix">°C</span></div></div>
-    <div class="card positive"><div class="frigo-name">CP2</div><div class="temperature"><input type="number" step="0.1" id="temp4"><span class="suffix">°C</span></div></div>
-    <div class="card positive"><div class="frigo-name">CP3</div><div class="temperature"><input type="number" step="0.1" id="temp5"><span class="suffix">°C</span></div></div>
+    <div class="card positive"><div class="frigo-name">CP1</div><div class="temperature"><input type="number" step="0.1" id="temp3" onchange="checkTolerance(3, 'positive')"><span class="suffix">°C</span></div></div>
+    <div class="card positive"><div class="frigo-name">CP2</div><div class="temperature"><input type="number" step="0.1" id="temp4" onchange="checkTolerance(4, 'positive')"><span class="suffix">°C</span></div></div>
+    <div class="card positive"><div class="frigo-name">CP3</div><div class="temperature"><input type="number" step="0.1" id="temp5" onchange="checkTolerance(5, 'positive')"><span class="suffix">°C</span></div></div>
   </div>
 
   <!-- Vitrines -->
   <div class="section-title">Vitrines</div>
   <div class="grid">
-    <div class="card vitrine"><div class="frigo-name">V1</div><div class="temperature"><input type="number" step="0.1" id="temp6"><span class="suffix">°C</span></div></div>
-    <div class="card vitrine"><div class="frigo-name">V2</div><div class="temperature"><input type="number" step="0.1" id="temp7"><span class="suffix">°C</span></div></div>
-    <div class="card vitrine"><div class="frigo-name">V3</div><div class="temperature"><input type="number" step="0.1" id="temp8"><span class="suffix">°C</span></div></div>
+    <div class="card vitrine"><div class="frigo-name">V1</div><div class="temperature"><input type="number" step="0.1" id="temp6" onchange="checkTolerance(6, 'positive')"><span class="suffix">°C</span></div></div>
+    <div class="card vitrine"><div class="frigo-name">V2</div><div class="temperature"><input type="number" step="0.1" id="temp7" onchange="checkTolerance(7, 'positive')"><span class="suffix">°C</span></div></div>
+    <div class="card vitrine"><div class="frigo-name">V3</div><div class="temperature"><input type="number" step="0.1" id="temp8" onchange="checkTolerance(8, 'positive')"><span class="suffix">°C</span></div></div>
   </div>
   <div class="grid" style="grid-template-columns: 1fr;">
-    <div class="card boisson"><div class="frigo-name">BOISS 1</div><div class="temperature"><input type="number" step="0.1" id="temp9"><span class="suffix">°C</span></div></div>
+    <div class="card boisson"><div class="frigo-name">BOISS 1</div><div class="temperature"><input type="number" step="0.1" id="temp9" onchange="checkTolerance(9, 'positive')"><span class="suffix">°C</span></div></div>
   </div>
 
   <div class="buttons">
@@ -187,26 +187,25 @@
       { nom: "CP1", type: "positive" },
       { nom: "CP2", type: "positive" },
       { nom: "CP3", type: "positive" },
-      { nom: "V1", type: "vitrine" },
-      { nom: "V2", type: "vitrine" },
-      { nom: "V3", type: "vitrine" },
-      { nom: "BOISS 1", type: "boisson" }
+      { nom: "V1", type: "positive" },
+      { nom: "V2", type: "positive" },
+      { nom: "V3", type: "positive" },
+      { nom: "BOISS 1", type: "positive" }
     ];
 
     function checkTolerance(index, type) {
       const input = document.getElementById("temp" + index);
-      let val = parseFloat(input.value);
-
-      if (type === "negatif" && val > 0) {
-        val = -Math.abs(val);
-        input.value = val.toFixed(1);
-      }
-
+      const val = parseFloat(input.value);
       const alertBox = document.getElementById("alert");
       input.style.backgroundColor = "#f0f0f0";
 
-      if ((type === "negatif" && val > -10) || (type !== "negatif" && val > 8)) {
-        alertBox.innerText = "Hors tolérance - Vérifiez température cellule";
+      if (type === "negatif" && val > -15) {
+        alertBox.innerText = "⚠ Température trop haute (max -15°C) pour " + cellules[index].nom;
+        alertBox.style.display = "block";
+        input.style.backgroundColor = "#ffcccc";
+        setTimeout(() => alertBox.style.display = "none", 4000);
+      } else if (type === "positive" && val > 5) {
+        alertBox.innerText = "⚠ Température trop haute (max 5°C) pour " + cellules[index].nom;
         alertBox.style.display = "block";
         input.style.backgroundColor = "#ffcccc";
         setTimeout(() => alertBox.style.display = "none", 4000);
