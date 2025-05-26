@@ -2,103 +2,182 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Turnaround Management App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <title>Traçabilité température</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #ffffff;
-      padding: 15px;
+    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    select, input[type="date"], input[type="password"] {
+      width: 100%; padding: 10px; font-size: 1em; margin-top: 5px;
+      border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
     }
-    .flight-card {
-      background-color: #1e1e1e;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+    .card {
+      background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center; padding: 10px; box-sizing: border-box;
     }
-    button {
-      padding: 8px 16px;
-      margin-top: 5px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .card.negatif { border-top: 5px solid #003366; }
+    .card.positive { border-top: 5px solid #3399ff; }
+    .card.vitrine { border-top: 5px solid #9b59b6; }
+    .card.boisson { border-top: 5px solid #f4b400; }
+    .frigo-name { font-weight: bold; margin-bottom: 10px; font-size: 1em; }
+    .temperature {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    button.start { background-color: #388e3c; }
-    button.finish { background-color: #d32f2f; }
-    .hidden { display: none; }
+    .temperature input {
+      font-size: 1em; font-weight: bold; text-align: center;
+      padding: 6px; width: 60px; border: none;
+      border-radius: 6px; background-color: #f0f0f0; box-sizing: border-box;
+    }
+    .temperature .suffix { font-weight: bold; white-space: nowrap; }
+    .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .buttons button {
+      width: 100%; padding: 12px; font-size: 1em;
+      font-weight: bold; background-color: #007bff; color: white;
+      border: none; border-radius: 6px;
+    }
+    .alert-red { background-color: #ffcccc !important; }
+    .section-title { text-align: center; font-weight: bold; margin-top: 30px; margin-bottom: 10px; color: #003366; }
   </style>
 </head>
 <body>
 
-<h2>Liste des Vols Aujourd'hui</h2>
-<div id="flights"></div>
-<button onclick="exportData()">Exporter en Excel</button>
+  <h2>Traçabilité température</h2>
 
-<script>
-let flightsData = [
-  { flightNo: "FR3214", from: "BLQ", STA: "16:55", registration: "EIIFZ", type: "B73M", STD: "17:20", stand: "11", terminal: "2", gate: "D" }
-];
+  <label for="date">Date</label>
+  <input type="date" id="date">
 
-let actions = ["Check-In", "Boarding", "Fueling", "Crew at Aircraft"];
+  <label for="moment">Relevé</label>
+  <select id="moment">
+    <option value="Matin">Matin</option>
+    <option value="Après-midi">Après-midi</option>
+  </select>
 
-let timingReports = [];
+  <label for="par">Par</label>
+  <select id="par">
+    <option value="" disabled selected hidden>Choisir</option>
+    <option value="Nicolas">Nicolas</option>
+    <option value="Vanina">Vanina</option>
+  </select>
 
-function renderFlights() {
-  let container = document.getElementById('flights');
-  flightsData.forEach((flight, index) => {
-    let flightDiv = document.createElement('div');
-    flightDiv.className = 'flight-card';
-    flightDiv.innerHTML = `
-      <strong>Flight No: ${flight.flightNo}</strong> (${flight.from})<br>
-      STA: ${flight.STA}, STD: ${flight.STD}<br>
-      Reg: ${flight.registration}, Type: ${flight.type}<br>
-      Stand: ${flight.stand}, Terminal: ${flight.terminal}, Gate: ${flight.gate}<br>
-      <button onclick="toggleActions(${index})">Voir Actions</button>
-      <div id="actions-${index}" class="hidden"></div>
-    `;
-    container.appendChild(flightDiv);
-  });
-}
+  <div class="section-title">Cellules négatives</div>
+  <div class="grid">
+    <div class="card negatif"><div class="frigo-name">CN1</div><div class="temperature"><input type="number" step="0.1" id="temp0"><span class="suffix">°C</span></div></div>
+    <div class="card negatif"><div class="frigo-name">CN2</div><div class="temperature"><input type="number" step="0.1" id="temp1"><span class="suffix">°C</span></div></div>
+    <div class="card negatif"><div class="frigo-name">CN3</div><div class="temperature"><input type="number" step="0.1" id="temp2"><span class="suffix">°C</span></div></div>
+  </div>
 
-function toggleActions(index) {
-  let actionsDiv = document.getElementById(`actions-${index}`);
-  actionsDiv.classList.toggle('hidden');
-  actionsDiv.innerHTML = '';
-  actions.forEach(action => {
-    actionsDiv.innerHTML += `
-      <div>
-        <strong>${action}</strong><br>
-        <button class="start" onclick="recordTime('${flightsData[index].flightNo}','${action}','start')">Start</button>
-        <button class="finish" onclick="recordTime('${flightsData[index].flightNo}','${action}','finish')">Finish</button>
-        <input type="time" id="manual-${flightsData[index].flightNo}-${action}" placeholder="hh:mm">
-        <input type="text" id="comment-${flightsData[index].flightNo}-${action}" placeholder="Commentaires">
-      </div>
-    `;
-  });
-}
+  <div class="section-title">Cellules positives</div>
+  <div class="grid">
+    <div class="card positive"><div class="frigo-name">CP1</div><div class="temperature"><input type="number" step="0.1" id="temp3"><span class="suffix">°C</span></div></div>
+    <div class="card positive"><div class="frigo-name">CP2</div><div class="temperature"><input type="number" step="0.1" id="temp4"><span class="suffix">°C</span></div></div>
+    <div class="card positive"><div class="frigo-name">CP3</div><div class="temperature"><input type="number" step="0.1" id="temp5"><span class="suffix">°C</span></div></div>
+  </div>
 
-function recordTime(flightNo, action, type) {
-  let now = new Date();
-  let manualInput = document.getElementById(`manual-${flightNo}-${action}`).value;
-  let recordedTime = manualInput || now.toTimeString().slice(0,5);
-  timingReports.push({flightNo, action, type, time: recordedTime});
-  alert(`${type.toUpperCase()} enregistré à ${recordedTime}`);
-}
+  <div class="section-title">Vitrines</div>
+  <div class="grid">
+    <div class="card vitrine"><div class="frigo-name">V1</div><div class="temperature"><input type="number" step="0.1" id="temp6"><span class="suffix">°C</span></div></div>
+    <div class="card vitrine"><div class="frigo-name">V2</div><div class="temperature"><input type="number" step="0.1" id="temp7"><span class="suffix">°C</span></div></div>
+    <div class="card vitrine"><div class="frigo-name">V3</div><div class="temperature"><input type="number" step="0.1" id="temp8"><span class="suffix">°C</span></div></div>
+  </div>
 
-function exportData() {
-  let wb = XLSX.utils.book_new();
-  let ws_data = [["Flight No", "Action", "Type", "Time"]];
-  timingReports.forEach(r => {
-    ws_data.push([r.flightNo, r.action, r.type, r.time]);
-  });
-  let ws = XLSX.utils.aoa_to_sheet(ws_data);
-  XLSX.utils.book_append_sheet(wb, ws, "Turnaround Data");
-  XLSX.writeFile(wb, "turnaround_data.xlsx");
-}
+  <div class="grid" style="grid-template-columns: 1fr;">
+    <div class="card boisson"><div class="frigo-name">BOISS 1</div><div class="temperature"><input type="number" step="0.1" id="temp9"><span class="suffix">°C</span></div></div>
+  </div>
 
-renderFlights();
-</script>
+  <label for="password">Mot de passe</label>
+  <input type="password" id="password" placeholder="Mot de passe">
+
+  <div class="buttons">
+    <button onclick="envoyerDonnées()">Archiver sur Google Sheets</button>
+  </div>
+
+  <script>
+    document.getElementById("date").valueAsDate = new Date();
+    document.getElementById("par").value = "";
+
+    const cellules = [
+      { nom: "CN1", type: "negatif" },
+      { nom: "CN2", type: "negatif" },
+      { nom: "CN3", type: "negatif" },
+      { nom: "CP1", type: "positive" },
+      { nom: "CP2", type: "positive" },
+      { nom: "CP3", type: "positive" },
+      { nom: "V1", type: "vitrine" },
+      { nom: "V2", type: "vitrine" },
+      { nom: "V3", type: "vitrine" },
+      { nom: "BOISS 1", type: "boisson" }
+    ];
+
+    // Tolérances + négatif forcé pour CN
+    cellules.forEach((cell, i) => {
+      const input = document.getElementById("temp" + i);
+      input.addEventListener("change", () => {
+        let val = parseFloat(input.value);
+        if (isNaN(val)) return;
+        if (cell.type === "negatif" && val > 0) {
+          val = -Math.abs(val);
+          input.value = val.toFixed(1);
+        }
+        input.classList.remove("alert-red");
+        if ((cell.type === "negatif" && val > -15) || (cell.type !== "negatif" && val > 5)) {
+          input.classList.add("alert-red");
+        }
+      });
+    });
+
+    let dernierEnvoi = 0;
+
+    function envoyerDonnées() {
+      const maintenant = Date.now();
+      if (maintenant - dernierEnvoi < 60000) {
+        alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
+        return;
+      }
+
+      const password = document.getElementById("password").value.trim();
+      if (password !== "leon") {
+        alert("❌ Mot de passe incorrect.");
+        return;
+      }
+
+      const par = document.getElementById("par").value;
+      if (!par) {
+        alert("Veuillez sélectionner un nom pour 'Par'.");
+        return;
+      }
+
+      const dateObj = new Date(document.getElementById("date").value);
+      const date = dateObj.toLocaleDateString('fr-FR');
+      const moment = document.getElementById("moment").value;
+      const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const temperatures = cellules.map((cell, i) => ({
+        cellule: cell.nom,
+        valeur: document.getElementById("temp" + i).value || ""
+      }));
+
+      const data = {
+        date,
+        heure,
+        moment,
+        signature: { nom: par },
+        temperatures
+      };
+
+      console.log("✅ Données envoyées :", data); // ← vérifie ici si "Par" est présent
+
+      dernierEnvoi = maintenant;
+
+      fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      }).then(() => alert("✅ Données archivées avec succès."));
+    }
+  </script>
+
 </body>
 </html>
