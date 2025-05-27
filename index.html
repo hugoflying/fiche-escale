@@ -89,7 +89,7 @@
           return lat && lon && haversine(BVA_LAT, BVA_LON, lat, lon) <= RADIUS_KM;
         });
 
-        const aviationResp = await fetch(proxy(`http://api.aviationstack.com/v1/flights?access_key=${aviationStackKey}&arr_iata=BVA`));
+        const aviationResp = await fetch(proxy(`https://api.aviationstack.com/v1/flights?access_key=${aviationStackKey}&arr_iata=BVA`));
         const aviationData = await aviationResp.json();
         const flights = aviationData.data || [];
 
