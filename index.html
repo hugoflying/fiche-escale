@@ -2,182 +2,158 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Traçabilité température</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APPROCHES BVA</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 20px; }
-    h2 { text-align: center; margin-bottom: 20px; }
-    label { font-weight: bold; display: block; margin-top: 15px; }
-    select, input[type="date"], input[type="password"] {
-      width: 100%; padding: 10px; font-size: 1em; margin-top: 5px;
-      border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box;
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
     }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .refresh-button {
+      display: block;
+      margin: 0 auto 20px;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
     .card {
-      background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center; padding: 10px; box-sizing: border-box;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    .card.negatif { border-top: 5px solid #003366; }
-    .card.positive { border-top: 5px solid #3399ff; }
-    .card.vitrine { border-top: 5px solid #9b59b6; }
-    .card.boisson { border-top: 5px solid #f4b400; }
-    .frigo-name { font-weight: bold; margin-bottom: 10px; font-size: 1em; }
-    .temperature {
-      display: flex; align-items: center; justify-content: center; gap: 6px;
+    .left, .right {
+      flex: 1;
+      min-width: 200px;
     }
-    .temperature input {
-      font-size: 1em; font-weight: bold; text-align: center;
-      padding: 6px; width: 60px; border: none;
-      border-radius: 6px; background-color: #f0f0f0; box-sizing: border-box;
+    .status {
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      min-width: 100px;
     }
-    .temperature .suffix { font-weight: bold; white-space: nowrap; }
-    .buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-    .buttons button {
-      width: 100%; padding: 12px; font-size: 1em;
-      font-weight: bold; background-color: #007bff; color: white;
-      border: none; border-radius: 6px;
+    .green { background-color: #2e7d32; color: white; }
+    .orange { background-color: #ef6c00; color: white; }
+    .red { background-color: #c62828; color: white; }
+    .airline {
+      font-size: 0.9em;
+      color: #999;
     }
-    .alert-red { background-color: #ffcccc !important; }
-    .section-title { text-align: center; font-weight: bold; margin-top: 30px; margin-bottom: 10px; color: #003366; }
   </style>
 </head>
 <body>
-
-  <h2>Traçabilité température</h2>
-
-  <label for="date">Date</label>
-  <input type="date" id="date">
-
-  <label for="moment">Relevé</label>
-  <select id="moment">
-    <option value="Matin">Matin</option>
-    <option value="Après-midi">Après-midi</option>
-  </select>
-
-  <label for="par">Par</label>
-  <select id="par">
-    <option value="" disabled selected hidden>Choisir</option>
-    <option value="Nicolas">Nicolas</option>
-    <option value="Vanina">Vanina</option>
-  </select>
-
-  <div class="section-title">Cellules négatives</div>
-  <div class="grid">
-    <div class="card negatif"><div class="frigo-name">CN1</div><div class="temperature"><input type="number" step="0.1" id="temp0"><span class="suffix">°C</span></div></div>
-    <div class="card negatif"><div class="frigo-name">CN2</div><div class="temperature"><input type="number" step="0.1" id="temp1"><span class="suffix">°C</span></div></div>
-    <div class="card negatif"><div class="frigo-name">CN3</div><div class="temperature"><input type="number" step="0.1" id="temp2"><span class="suffix">°C</span></div></div>
-  </div>
-
-  <div class="section-title">Cellules positives</div>
-  <div class="grid">
-    <div class="card positive"><div class="frigo-name">CP1</div><div class="temperature"><input type="number" step="0.1" id="temp3"><span class="suffix">°C</span></div></div>
-    <div class="card positive"><div class="frigo-name">CP2</div><div class="temperature"><input type="number" step="0.1" id="temp4"><span class="suffix">°C</span></div></div>
-    <div class="card positive"><div class="frigo-name">CP3</div><div class="temperature"><input type="number" step="0.1" id="temp5"><span class="suffix">°C</span></div></div>
-  </div>
-
-  <div class="section-title">Vitrines</div>
-  <div class="grid">
-    <div class="card vitrine"><div class="frigo-name">V1</div><div class="temperature"><input type="number" step="0.1" id="temp6"><span class="suffix">°C</span></div></div>
-    <div class="card vitrine"><div class="frigo-name">V2</div><div class="temperature"><input type="number" step="0.1" id="temp7"><span class="suffix">°C</span></div></div>
-    <div class="card vitrine"><div class="frigo-name">V3</div><div class="temperature"><input type="number" step="0.1" id="temp8"><span class="suffix">°C</span></div></div>
-  </div>
-
-  <div class="grid" style="grid-template-columns: 1fr;">
-    <div class="card boisson"><div class="frigo-name">BOISS 1</div><div class="temperature"><input type="number" step="0.1" id="temp9"><span class="suffix">°C</span></div></div>
-  </div>
-
-  <label for="password">Mot de passe</label>
-  <input type="password" id="password" placeholder="Mot de passe">
-
-  <div class="buttons">
-    <button onclick="envoyerDonnées()">Archiver sur Google Sheets</button>
-  </div>
+  <h1>APPROCHES BVA</h1>
+  <button class="refresh-button" onclick="loadData()">Actualiser</button>
+  <div id="flights-container"></div>
 
   <script>
-    document.getElementById("date").valueAsDate = new Date();
-    document.getElementById("par").value = "";
+    const openskyUrl = 'https://opensky-network.org/api/states/all';
+    const aviationStackKey = '1c2e5ccbfadeae18f0330ca50e632904';
+    const aviationStackBase = 'http://api.aviationstack.com/v1/flights';
+    const BVA_LAT = 49.53590;
+    const BVA_LON = 1.95556;
 
-    const cellules = [
-      { nom: "CN1", type: "negatif" },
-      { nom: "CN2", type: "negatif" },
-      { nom: "CN3", type: "negatif" },
-      { nom: "CP1", type: "positive" },
-      { nom: "CP2", type: "positive" },
-      { nom: "CP3", type: "positive" },
-      { nom: "V1", type: "vitrine" },
-      { nom: "V2", type: "vitrine" },
-      { nom: "V3", type: "vitrine" },
-      { nom: "BOISS 1", type: "boisson" }
-    ];
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
-    // Tolérances + négatif forcé pour CN
-    cellules.forEach((cell, i) => {
-      const input = document.getElementById("temp" + i);
-      input.addEventListener("change", () => {
-        let val = parseFloat(input.value);
-        if (isNaN(val)) return;
-        if (cell.type === "negatif" && val > 0) {
-          val = -Math.abs(val);
-          input.value = val.toFixed(1);
-        }
-        input.classList.remove("alert-red");
-        if ((cell.type === "negatif" && val > -15) || (cell.type !== "negatif" && val > 5)) {
-          input.classList.add("alert-red");
-        }
+    async function loadData() {
+      document.getElementById('flights-container').innerHTML = 'Chargement...';
+
+      const openskyResp = await fetch(openskyUrl);
+      const openskyData = await openskyResp.json();
+
+      const nearby = openskyData.states.filter(state => {
+        const [_, callsign, reg, lat, lon, geoAlt, _, _, heading] = state;
+        if (!lat || !lon || !callsign) return false;
+        const dist = haversine(BVA_LAT, BVA_LON, lat, lon);
+        return dist <= 73.68;
       });
-    });
 
-    let dernierEnvoi = 0;
+      const results = [];
 
-    function envoyerDonnées() {
-      const maintenant = Date.now();
-      if (maintenant - dernierEnvoi < 60000) {
-        alert("⏱️ Veuillez attendre 1 minute avant de réarchiver.");
+      for (const state of nearby) {
+        const callsign = state[1]?.trim();
+        if (!callsign) continue;
+
+        const flightResp = await fetch(`${aviationStackBase}?access_key=${aviationStackKey}&flight_iata=${callsign}`);
+        const flightData = await flightResp.json();
+        const match = flightData.data?.find(f => f.arrival?.iata === 'BVA');
+        if (!match) continue;
+
+        const eta = new Date(match.arrival.estimated);
+        const sta = new Date(match.arrival.scheduled);
+        const delayMin = Math.round((eta - sta) / 60000);
+
+        const heading = state[10];
+        const altitude = state[13];
+        let runway = '-';
+        if (altitude <= 2000) {
+          if (heading >= 110 && heading <= 130) runway = '12';
+          else if (heading >= 290 && heading <= 310) runway = '30';
+        }
+        const eibt = new Date(eta.getTime() + (runway === '12' ? 7 : 5) * 60000);
+
+        results.push({
+          flight: match.flight.iata,
+          from: match.departure.iata,
+          reg: match.aircraft?.registration || 'N/A',
+          callsign,
+          sta: sta.toLocaleTimeString(),
+          eta: eta.toLocaleTimeString(),
+          eibt: eibt.toLocaleTimeString(),
+          delayMin,
+          runway
+        });
+      }
+
+      const container = document.getElementById('flights-container');
+      container.innerHTML = '';
+      if (results.length === 0) {
+        container.innerHTML = '<p>Aucun vol à l\'approche.</p>';
         return;
       }
 
-      const password = document.getElementById("password").value.trim();
-      if (password !== "leon") {
-        alert("❌ Mot de passe incorrect.");
-        return;
-      }
-
-      const par = document.getElementById("par").value;
-      if (!par) {
-        alert("Veuillez sélectionner un nom pour 'Par'.");
-        return;
-      }
-
-      const dateObj = new Date(document.getElementById("date").value);
-      const date = dateObj.toLocaleDateString('fr-FR');
-      const moment = document.getElementById("moment").value;
-      const heure = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      const temperatures = cellules.map((cell, i) => ({
-        cellule: cell.nom,
-        valeur: document.getElementById("temp" + i).value || ""
-      }));
-
-      const data = {
-        date,
-        heure,
-        moment,
-        signature: { nom: par },
-        temperatures
-      };
-
-      console.log("✅ Données envoyées :", data); // ← vérifie ici si "Par" est présent
-
-      dernierEnvoi = maintenant;
-
-      fetch("https://script.google.com/macros/s/AKfycbxjQ3ZP-28NKbaZvzklKS2N6V4TWrQA2_91ZrPMQi-zTnytJWxRoj3kMXlEeYkUQIBk/exec", {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      }).then(() => alert("✅ Données archivées avec succès."));
+      results.forEach(f => {
+        const statusClass = f.delayMin > 30 ? 'red' : f.delayMin > 10 ? 'orange' : 'green';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="left">
+            <h2>${f.flight}</h2>
+            <p>${f.from} ➜ BVA</p>
+            <p class="airline">Callsign: ${f.callsign} | Reg: ${f.reg}</p>
+            <p>STA: ${f.sta} | ETA: ${f.eta} | EIBT: ${f.eibt}</p>
+            <p>Piste estimée: ${f.runway}</p>
+          </div>
+          <div class="right">
+            <div class="status ${statusClass}">
+              ${f.delayMin <= 10 ? 'On Time' : f.delayMin + ' min delay'}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
     }
   </script>
-
 </body>
 </html>
