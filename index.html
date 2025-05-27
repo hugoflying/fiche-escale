@@ -62,11 +62,12 @@
   <div id="flights-container"></div>
 
   <script>
-    const openskyUrl = 'https://opensky-network.org/api/states/all';
-    const aviationStackKey = '1c2e5ccbfadeae18f0330ca50e632904';
-    const aviationStackBase = 'http://api.aviationstack.com/v1/flights';
     const BVA_LAT = 49.53590;
     const BVA_LON = 1.95556;
+    const RADIUS_KM = 73.68;
+    const aviationStackKey = '1c2e5ccbfadeae18f0330ca50e632904';
+
+    const proxy = url => `https://corsproxy.io/?${encodeURIComponent(url)}`;
 
     function haversine(lat1, lon1, lat2, lon2) {
       const R = 6371;
@@ -79,80 +80,87 @@
     async function loadData() {
       document.getElementById('flights-container').innerHTML = 'Chargement...';
 
-      const openskyResp = await fetch(openskyUrl);
-      const openskyData = await openskyResp.json();
+      try {
+        const openskyResp = await fetch(proxy('https://opensky-network.org/api/states/all'));
+        const openskyData = await openskyResp.json();
 
-      const nearby = openskyData.states.filter(state => {
-        const [_, callsign, reg, lat, lon, geoAlt, _, _, heading] = state;
-        if (!lat || !lon || !callsign) return false;
-        const dist = haversine(BVA_LAT, BVA_LON, lat, lon);
-        return dist <= 73.68;
-      });
-
-      const results = [];
-
-      for (const state of nearby) {
-        const callsign = state[1]?.trim();
-        if (!callsign) continue;
-
-        const flightResp = await fetch(`${aviationStackBase}?access_key=${aviationStackKey}&flight_iata=${callsign}`);
-        const flightData = await flightResp.json();
-        const match = flightData.data?.find(f => f.arrival?.iata === 'BVA');
-        if (!match) continue;
-
-        const eta = new Date(match.arrival.estimated);
-        const sta = new Date(match.arrival.scheduled);
-        const delayMin = Math.round((eta - sta) / 60000);
-
-        const heading = state[10];
-        const altitude = state[13];
-        let runway = '-';
-        if (altitude <= 2000) {
-          if (heading >= 110 && heading <= 130) runway = '12';
-          else if (heading >= 290 && heading <= 310) runway = '30';
-        }
-        const eibt = new Date(eta.getTime() + (runway === '12' ? 7 : 5) * 60000);
-
-        results.push({
-          flight: match.flight.iata,
-          from: match.departure.iata,
-          reg: match.aircraft?.registration || 'N/A',
-          callsign,
-          sta: sta.toLocaleTimeString(),
-          eta: eta.toLocaleTimeString(),
-          eibt: eibt.toLocaleTimeString(),
-          delayMin,
-          runway
+        const filteredStates = openskyData.states.filter(state => {
+          const lat = state[6], lon = state[5];
+          return lat && lon && haversine(BVA_LAT, BVA_LON, lat, lon) <= RADIUS_KM;
         });
-      }
 
-      const container = document.getElementById('flights-container');
-      container.innerHTML = '';
-      if (results.length === 0) {
-        container.innerHTML = '<p>Aucun vol à l\'approche.</p>';
-        return;
-      }
+        const aviationResp = await fetch(proxy(`http://api.aviationstack.com/v1/flights?access_key=${aviationStackKey}&arr_iata=BVA`));
+        const aviationData = await aviationResp.json();
+        const flights = aviationData.data || [];
 
-      results.forEach(f => {
-        const statusClass = f.delayMin > 30 ? 'red' : f.delayMin > 10 ? 'orange' : 'green';
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="left">
-            <h2>${f.flight}</h2>
-            <p>${f.from} ➜ BVA</p>
-            <p class="airline">Callsign: ${f.callsign} | Reg: ${f.reg}</p>
-            <p>STA: ${f.sta} | ETA: ${f.eta} | EIBT: ${f.eibt}</p>
-            <p>Piste estimée: ${f.runway}</p>
-          </div>
-          <div class="right">
-            <div class="status ${statusClass}">
-              ${f.delayMin <= 10 ? 'On Time' : f.delayMin + ' min delay'}
+        const result = [];
+
+        for (const state of filteredStates) {
+          const callsign = state[1]?.trim();
+          if (!callsign) continue;
+
+          const match = flights.find(f => f.flight?.iata === callsign || f.flight?.icao === callsign || f.callsign === callsign);
+          if (!match || !match.arrival?.scheduled || !match.arrival?.estimated) continue;
+
+          const sta = new Date(match.arrival.scheduled);
+          const eta = new Date(match.arrival.estimated);
+          const delayMin = Math.round((eta - sta) / 60000);
+          const heading = state[10] || 0;
+          const altitude = state[7] || 0;
+
+          let runway = '-';
+          if (altitude <= 2000) {
+            if (heading >= 110 && heading <= 130) runway = '12';
+            else if (heading >= 290 && heading <= 310) runway = '30';
+          }
+          const eibt = new Date(eta.getTime() + (runway === '12' ? 7 : 5) * 60000);
+
+          result.push({
+            flight: match.flight?.iata || 'N/A',
+            from: match.departure?.iata || '???',
+            reg: match.aircraft?.registration || 'N/A',
+            callsign: callsign,
+            sta: sta.toLocaleTimeString(),
+            eta: eta.toLocaleTimeString(),
+            eibt: eibt.toLocaleTimeString(),
+            delayMin,
+            runway
+          });
+        }
+
+        const container = document.getElementById('flights-container');
+        container.innerHTML = '';
+
+        if (result.length === 0) {
+          container.innerHTML = '<p>Aucun vol à l\'approche détecté.</p>';
+          return;
+        }
+
+        result.forEach(f => {
+          const statusClass = f.delayMin > 30 ? 'red' : f.delayMin > 10 ? 'orange' : 'green';
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="left">
+              <h2>${f.flight}</h2>
+              <p>${f.from} ➜ BVA</p>
+              <p class="airline">Callsign: ${f.callsign} | Reg: ${f.reg}</p>
+              <p>STA: ${f.sta} | ETA: ${f.eta} | EIBT: ${f.eibt}</p>
+              <p>Piste estimée: ${f.runway}</p>
             </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
+            <div class="right">
+              <div class="status ${statusClass}">
+                ${f.delayMin <= 10 ? 'On Time' : f.delayMin + ' min delay'}
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        document.getElementById('flights-container').innerHTML = '<p>Erreur de chargement des données.</p>';
+        console.error(err);
+      }
     }
   </script>
 </body>
