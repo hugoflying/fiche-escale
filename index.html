@@ -425,6 +425,87 @@
 
 </section>
 
+  <section>
+  <h3>CHARGEMENT</h3>
+
+  <!-- Bloc Passagers -->
+  <div class="row row-grey">
+    <div class="field">
+      <label>Adultes HOMME</label>
+      <input type="number" min="0" id="adulteHomme" value="0" oninput="updateTOB()">
+    </div>
+
+    <div class="field">
+      <label>Adultes FEMME</label>
+      <input type="number" min="0" id="adulteFemme" value="0" oninput="updateTOB()">
+    </div>
+  </div>
+
+  <div class="row row-grey">
+    <div class="field">
+      <label>ENFANTS</label>
+      <input type="number" min="0" id="enfants" value="0" oninput="updateTOB()">
+    </div>
+
+    <div class="field">
+      <label>BÉBÉS</label>
+      <input type="number" min="0" id="bebes" value="0" oninput="updateTOB()">
+    </div>
+  </div>
+
+  <div class="row row-grey">
+    <div class="field" style="flex: 1 1 100%;">
+      <label>TOB (Adultes+Enfants + Bébés)</label>
+      <input type="text" id="tob" readonly>
+    </div>
+  </div>
+
+  <!-- Bloc OA / OB / OC / OD -->
+  <div class="row row-grey">
+    <div class="field">
+      <label>OA / FWD</label>
+      <input type="number" min="0" id="oa">
+    </div>
+
+    <div class="field">
+      <label>OB / MID</label>
+      <input type="number" min="0" id="ob">
+    </div>
+  </div>
+
+  <div class="row row-grey">
+    <div class="field">
+      <label>OC / AFT</label>
+      <input type="number" min="0" id="oc">
+    </div>
+
+    <div class="field">
+      <label>OD</label>
+      <input type="number" min="0" id="od">
+    </div>
+  </div>
+
+  <!-- Bloc Bagages -->
+  <div class="row row-grey">
+    <div class="field">
+      <label>BAGS</label>
+      <input type="number" min="0" id="bags">
+    </div>
+
+    <div class="field">
+      <label>POIDS (kg)</label>
+      <input type="number" min="0" id="poids">
+    </div>
+  </div>
+
+  <div class="row row-grey">
+    <div class="field" style="flex: 1 1 100%;">
+      <label>GB</label>
+      <input type="number" min="0" id="gb">
+    </div>
+  </div>
+</section>
+
 <section>
   <h3>ASSISTANCES</h3>
 
@@ -691,6 +772,18 @@
     calculateTimeOffset("sobt", "hle", -40);
     calculateTimeOffset("sobt", "h15", -15);
   }
+
+    function updateTOB() {
+      const homme = parseInt(document.getElementById('adulteHomme').value) || 0;
+      const femme = parseInt(document.getElementById('adulteFemme').value) || 0;
+      const enfants = parseInt(document.getElementById('enfants').value) || 0;
+      const bebes = parseInt(document.getElementById('bebes').value) || 0;
+
+      const totalSansBebe = homme + femme + enfants;
+      const tobDisplay = `${totalSansBebe} + ${bebes}`;
+
+      document.getElementById('tob').value = tobDisplay;
+  }
  
   function calculateTimeOffset(baseId, targetId, offsetMinutes) {
     const base = document.getElementById(baseId);
@@ -706,57 +799,7 @@
     target.value = `${hh}:${mm}`;
   }
  
-   function renderAssistances() {
-   const container = document.getElementById('assistancesContainer');
-   const count = parseInt(document.getElementById('assistanceCount').value || '0');
-   container.innerHTML = '';
-   for (let i = 0; i < count; i++) {
-     const row = document.createElement('div');
-     row.className = 'row';
-     row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto; background-color: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 8px;';
-     row.innerHTML = `
-       <div class="field" style="min-width: 120px;">
-         <label>Type ${i + 1}</label>
-         <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
-           <option>-</option>
-           <option>WCHR</option>
-           <option>WCHS</option>
-           <option>WCHC</option>
-           <option>DEAF</option>
-           <option>MUTE</option>
-           <option>DPNA</option>
-           <option>Autre</option>
-         </select>
-       </div>
-       <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
-         <label>Type personnalisé</label>
-         <input type="text" placeholder="Saisir le type">
-       </div>
-       <div class="field" style="min-width: 120px;">
-         <label>Équipement ${i + 1}</label>
-         <select>
-           <option>-</option>
-           <option>WCMP</option>
-           <option>WCLB</option>
-           <option>WCBD</option>
-         </select>
-       </div>
-       <div class="field" style="min-width: 120px;">
-         <label>Siège ${i + 1}</label>
-         <input type="text" placeholder="ex: 12A">
-       </div>
-     `;
-     container.appendChild(row);
-   }
- }
- 
- function toggleCustomCode(i) {
-   const select = document.getElementById(`assistance-type-${i}`);
-   const customDiv = document.getElementById(`custom-assistance-${i}`);
-   customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
- }
- 
-  function checkH15Status() {
+    function checkH15Status() {
        const h15 = document.getElementById("h15");
        if (!h15 || !h15.value) return;
        const now = new Date();
