@@ -9,95 +9,77 @@
       font-family: sans-serif;
       padding: 10px;
       margin: auto;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
+      background-color: #f0f4f8;
       box-sizing: border-box;
     }
-    section {
-      margin-bottom: 30px;
+
+    .field {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+      flex: 1 1 48%;
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
+    .field:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .field label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 1em;
+      text-align: center;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      padding: 8px;
+      font-size: 1em;
+      margin-top: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .row-grey {
+      background-color: transparent;
+    }
+
+    .time-controls button {
+      background-color: #e9ecef;
+      border: none;
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .time-controls button:hover {
+      background-color: #dee2e6;
+    }
+
     h3 {
       background: #000;
       color: #fff;
       padding: 10px;
       margin: 0 -10px 15px;
       text-align: center;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .row-grey {
-      background-color: #f2f2f2;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-    }
-    .field {
-      flex: 1 1 48%;
-      min-width: 160px;
-      display: flex;
-      flex-direction: column;
-      background: #f9f9f9;
-      border-radius: 5px;
-    }
-    .field label {
-      font-weight: bold;
-      margin-bottom: 3px;
-      font-size: 0.95em;
-      text-align: center;
-    }
-    .field input,
-    .field select,
-    .field textarea {
-      padding: 10px;
-      font-size: 1em;
-      margin-top: 5px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    textarea {
-      height: 150px;
-    }
-    input, textarea {
-      text-transform: uppercase;
-    }
-    .time-controls {
-      display: flex;
-      gap: 5px;
-      margin-top: 5px;
-    }
-    .time-controls button {
-      flex: 1;
-      padding: 10px;
-      font-size: 1em;
-    }
-    @media (max-width: 850px) {
-      .field {
-        flex: 1 1 48%;
-      }
-    }
-    @media (max-width: 600px) {
-      .field {
-        flex: 1 1 100%;
-      }
-    }
-    .blink-red {
-      animation: blinkRed 1s infinite;
-      background-color: #ff0000 !important;
-      color: white;
-    }
-    .solid-red {
-      background-color: #cc0000 !important;
-      color: white;
-    }
-    @keyframes blinkRed {
-      0% { background-color: #ff0000; color: white; }
-      50% { background-color: white; color: red; }
-      100% { background-color: #ff0000; color: white; }
+      border-radius: 8px;
     }
   </style>
 </head>
