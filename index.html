@@ -9,7 +9,8 @@
       font-family: sans-serif;
       padding: 10px;
       margin: auto;
-      background-color: #f0f4f8;
+      background-color: #2b2b2b; /* fond plus foncé */
+      color: #f0f0f0; /* texte plus clair par défaut */
       box-sizing: border-box;
     }
 
@@ -22,10 +23,10 @@
     }
 
     .field {
-      background-color: #fff;
+      background-color: #ffffff;
       border-radius: 12px;
       padding: 15px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* ombre un peu plus marquée */
       transition: box-shadow 0.3s ease;
       flex: 0 0 50%;
       min-width: auto;
@@ -36,7 +37,7 @@
     }
 
     .field:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
     }
 
     .field.label-blue { border-top-color: #007bff; }
@@ -51,6 +52,7 @@
       margin-bottom: 5px;
       font-size: 1em;
       text-align: center;
+      color: #333333;
     }
 
     .field input,
@@ -63,6 +65,8 @@
       border: 1px solid #ccc;
       border-radius: 8px;
       box-sizing: border-box;
+      color: #333333;
+      background-color: #ffffff;
     }
 
     .row-grey {
@@ -91,6 +95,7 @@
       border-radius: 8px;
     }
   </style>
+
 </head>
 <body>
      <div style="position: absolute; top: 10px; right: 20px;">
