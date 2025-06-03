@@ -1,4 +1,11 @@
-<style>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fiche Escale Interactive</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
     body {
       font-family: sans-serif;
       padding: 10px;
@@ -98,23 +105,12 @@
       border-radius: 8px;
     }
 
-    /* AJOUT pour les petites cartes (ROTATIONS) */
-    .small-field {
-      flex: 1 1 calc(50% - 15px);
-      min-width: 200px;
-    }
-
     @media (max-width: 700px) {
       .field {
         flex: 1 1 100%;
       }
-
-      .small-field {
-        flex: 1 1 100%;
-      }
     }
-</style>
-
+  </style>
 </head>
 <body>
      <div style="position: absolute; top: 10px; right: 20px;">
@@ -125,18 +121,18 @@
    <h2>Fiche Escale Vol</h2>
  
    <!-- MENU DE SÉLECTION DES ROTATIONS DU JOUR -->
- <section>
+<section>
   <h3>ROTATIONS DISPONIBLES</h3>
 
   <div class="row">
-    <div class="field small-field">
+    <div class="field">
       <label>Choisir un vol à l'arrivée</label>
       <select id="arrivalSelector" onchange="populateArrivalInfo()">
         <option value="">-- Chargement en cours... --</option>
       </select>
     </div>
 
-    <div class="field small-field">
+    <div class="field">
       <label>Choisir un vol au départ</label>
       <select id="departureSelector" onchange="populateDepartureInfo()">
         <option value="">-- Chargement en cours... --</option>
