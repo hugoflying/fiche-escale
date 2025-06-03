@@ -24,11 +24,19 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      border-top: 5px solid transparent;
     }
 
     .field:hover {
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     }
+
+    .field.label-blue { border-top-color: #007bff; }
+    .field.label-green { border-top-color: #28a745; }
+    .field.label-red { border-top-color: #dc3545; }
+    .field.label-violet { border-top-color: #6f42c1; }
+    .field.label-orange { border-top-color: #fd7e14; }
+    .field.label-brown { border-top-color: #8b4513; }
 
     .field label {
       font-weight: bold;
