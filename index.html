@@ -199,10 +199,10 @@
         <label>HLE</label>
         <input type="time" id="hle" readonly>
       </div>
-      <div class="field">
-        <label>H-15</label>
-        <input type="time" id="h15" readonly>
-      </div>
+     <div class="field label-red">
+  <label>H-15</label>
+  <input type="time" id="h15" readonly>
+</div>
     </div>
   </section>
  
@@ -212,119 +212,119 @@
  
     <div class="row row-grey">
       <div class="field">
-        <label>Arrivée PNT</label>
-        <input type="time" id="arriveePNT">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveePNT', -1)">-1</button>
-          <button onclick="setNow('arriveePNT')">Now</button>
-          <button onclick="adjustTime('arriveePNT', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Arrivée PNC</label>
-        <input type="time" id="arriveePNC">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveePNC', -1)">-1</button>
-          <button onclick="setNow('arriveePNC')">Now</button>
-          <button onclick="adjustTime('arriveePNC', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>Arrivée fuel</label>
-        <input type="time" id="arriveeFuel">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveeFuel', -1)">-1</button>
-          <button onclick="setNow('arriveeFuel')">Now</button>
-          <button onclick="adjustTime('arriveeFuel', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Départ fuel</label>
-        <input type="time" id="departFuel">
-        <div class="time-controls">
-          <button onclick="adjustTime('departFuel', -1)">-1</button>
-          <button onclick="setNow('departFuel')">Now</button>
-          <button onclick="adjustTime('departFuel', 1)">+1</button>
-        </div>
+       <div class="field label-brown">
+  <label>ARRIVEE PNT</label>
+  <input type="time" id="arriveePNT">
+  <div class="time-controls">
+    <button onclick="adjustTime('arriveePNT', -1)">-1</button>
+    <button onclick="setNow('arriveePNT')">Now</button>
+    <button onclick="adjustTime('arriveePNT', 1)">+1</button>
+  </div>
+</div>
+
+<div class="field label-brown">
+  <label>ARRIVEE PNC</label>
+  <input type="time" id="arriveePNC">
+  <div class="time-controls">
+    <button onclick="adjustTime('arriveePNC', -1)">-1</button>
+    <button onclick="setNow('arriveePNC')">Now</button>
+    <button onclick="adjustTime('arriveePNC', 1)">+1</button>
+  </div>
+</div>
       </div>
     </div>
  
     <div class="row row-grey">
       <div class="field">
-        <label>Arrivée lift</label>
-        <input type="time" id="arriveeLift">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveeLift', -1)">-1</button>
-          <button onclick="setNow('arriveeLift')">Now</button>
-          <button onclick="adjustTime('arriveeLift', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Départ lift</label>
-        <input type="time" id="departLift">
-        <div class="time-controls">
-          <button onclick="adjustTime('departLift', -1)">-1</button>
-          <button onclick="setNow('departLift')">Now</button>
-          <button onclick="adjustTime('departLift', 1)">+1</button>
-        </div>
-      </div>
-    </div>
+       <div class="field label-orange">
+  <label>ARRIVEE FUEL</label>
+  <input type="time" id="arriveeFuel">
+  <div class="time-controls">
+    <button onclick="adjustTime('arriveeFuel', -1)">-1</button>
+    <button onclick="setNow('arriveeFuel')">Now</button>
+    <button onclick="adjustTime('arriveeFuel', 1)">+1</button>
+  </div>
+</div>
+
+<div class="field label-orange">
+  <label>DEPART FUEL</label>
+  <input type="time" id="departFuel">
+  <div class="time-controls">
+    <button onclick="adjustTime('departFuel', -1)">-1</button>
+    <button onclick="setNow('departFuel')">Now</button>
+    <button onclick="adjustTime('departFuel', 1)">+1</button>
+  </div>
+</div>
  
-    <div class="row row-grey">
-      <div class="field">
-        <label>First PAX OUT</label>
-        <input type="time" id="firstPaxOut">
-        <div class="time-controls">
-          <button onclick="adjustTime('firstPaxOut', -1)">-1</button>
-          <button onclick="setNow('firstPaxOut')">Now</button>
-          <button onclick="adjustTime('firstPaxOut', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Last PAX OUT</label>
-        <input type="time" id="lastPaxOut">
-        <div class="time-controls">
-          <button onclick="adjustTime('lastPaxOut', -1)">-1</button>
-          <button onclick="setNow('lastPaxOut')">Now</button>
-          <button onclick="adjustTime('lastPaxOut', 1)">+1</button>
-        </div>
-      </div>
-    </div>
+    <div class="field label-violet">
+  <label>ARRIVEE LIFT</label>
+  <input type="time" id="arriveeLift">
+  <div class="time-controls">
+    <button onclick="adjustTime('arriveeLift', -1)">-1</button>
+    <button onclick="setNow('arriveeLift')">Now</button>
+    <button onclick="adjustTime('arriveeLift', 1)">+1</button>
+  </div>
+</div>
+
+<div class="field label-violet">
+  <label>DEPART LIFT</label>
+  <input type="time" id="departLift">
+  <div class="time-controls">
+    <button onclick="adjustTime('departLift', -1)">-1</button>
+    <button onclick="setNow('departLift')">Now</button>
+    <button onclick="adjustTime('departLift', 1)">+1</button>
+  </div>
+</div>
  
-    <div class="row row-grey">
-      <div class="field">
-        <label>First PAX IN</label>
-        <input type="time" id="firstPaxIn">
-        <div class="time-controls">
-          <button onclick="adjustTime('firstPaxIn', -1)">-1</button>
-          <button onclick="setNow('firstPaxIn')">Now</button>
-          <button onclick="adjustTime('firstPaxIn', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Last PAX IN</label>
-        <input type="time" id="lastPaxIn">
-        <div class="time-controls">
-          <button onclick="adjustTime('lastPaxIn', -1)">-1</button>
-          <button onclick="setNow('lastPaxIn')">Now</button>
-          <button onclick="adjustTime('lastPaxIn', 1)">+1</button>
-        </div>
-      </div>
-    </div>
+    <div class="field label-blue">
+  <label>FIRST PAX OUT</label>
+  <input type="time" id="firstPaxOut">
+  <div class="time-controls">
+    <button onclick="adjustTime('firstPaxOut', -1)">-1</button>
+    <button onclick="setNow('firstPaxOut')">Now</button>
+    <button onclick="adjustTime('firstPaxOut', 1)">+1</button>
+  </div>
+</div>
+
+<div class="field label-blue">
+  <label>LAST PAX OUT</label>
+  <input type="time" id="lastPaxOut">
+  <div class="time-controls">
+    <button onclick="adjustTime('lastPaxOut', -1)">-1</button>
+    <button onclick="setNow('lastPaxOut')">Now</button>
+    <button onclick="adjustTime('lastPaxOut', 1)">+1</button>
+  </div>
+</div>
  
-    <div class="row row-grey">
-      <div class="field">
-        <label>Arrivée INAD</label>
-        <input type="time" id="arriveeINAD">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveeINAD', -1)">-1</button>
-          <button onclick="setNow('arriveeINAD')">Now</button>
-          <button onclick="adjustTime('arriveeINAD', 1)">+1</button>
-        </div>
-      </div>
+    <div class="field label-green">
+  <label>FIRST PAX IN</label>
+  <input type="time" id="firstPaxIn">
+  <div class="time-controls">
+    <button onclick="adjustTime('firstPaxIn', -1)">-1</button>
+    <button onclick="setNow('firstPaxIn')">Now</button>
+    <button onclick="adjustTime('firstPaxIn', 1)">+1</button>
+  </div>
+</div>
+
+<div class="field label-green">
+  <label>LAST PAX IN</label>
+  <input type="time" id="lastPaxIn">
+  <div class="time-controls">
+    <button onclick="adjustTime('lastPaxIn', -1)">-1</button>
+    <button onclick="setNow('lastPaxIn')">Now</button>
+    <button onclick="adjustTime('lastPaxIn', 1)">+1</button>
+  </div>
+</div>
+ 
+    <div class="field label-red">
+  <label>ARRIVEE INAD</label>
+  <input type="time" id="arriveeINAD">
+  <div class="time-controls">
+    <button onclick="adjustTime('arriveeINAD', -1)">-1</button>
+    <button onclick="setNow('arriveeINAD')">Now</button>
+    <button onclick="adjustTime('arriveeINAD', 1)">+1</button>
+  </div>
+</div>
       <div class="field">
         <label>Fermeture porte avion</label>
         <input type="time" id="fermeturePorte">
