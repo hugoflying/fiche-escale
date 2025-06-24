@@ -151,7 +151,7 @@
       tab.onclick = () => switchTab(tabId);
       document.getElementById("tabs").appendChild(tab);
 
-      tabs[tabId] = { element: tab, timestamps: [] };
+      tabs[tabId] = { element: tab, timestamps: [], label: tabLabel };
 
       const card = document.createElement("div");
       card.className = "card";
@@ -257,6 +257,9 @@
           input.type = f.type;
           input.name = f.name;
           if (f.value) input.value = f.value;
+          if (f.name === "provenance" || f.name === "destination") {
+            input.oninput = () => updateTabLabel(tabId);
+          }
           wrapper.appendChild(input);
         }
         infoSection.appendChild(wrapper);
@@ -296,6 +299,13 @@
     function updateDisplay(elem) {
       const dt = DateTime.fromISO(elem.dataset.timestamp);
       elem.textContent = isUTC ? dt.toUTC().toFormat("HH:mm") + " UTC" : dt.toLocal().toFormat("HH:mm") + " Local";
+    }
+
+    function updateTabLabel(id) {
+      const card = tabs[id].card;
+      const provenance = card.querySelector('input[name="provenance"]')?.value.trim().toUpperCase();
+      const destination = card.querySelector('input[name="destination"]')?.value.trim().toUpperCase();
+      tabs[id].label.textContent = (provenance || destination) ? `${provenance || "---"}-${destination || "---"}` : `VOL ${id.replace('tab', '')}`;
     }
 
     function deleteTab(id) {
