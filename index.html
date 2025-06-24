@@ -367,6 +367,74 @@
       });
 
       infoSection.appendChild(infoGrid);
+
+      // Section: Passenger Timing
+      const paxTitle = document.createElement("h3");
+      paxTitle.textContent = "Passagers";
+      infoSection.appendChild(paxTitle);
+
+      const paxGrid = document.createElement("div");
+      paxGrid.style.display = "grid";
+      paxGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(140px, 1fr))";
+      paxGrid.style.gap = "12px";
+
+      const paxTimings = [
+        "First pax OUT", "Last pax OUT",
+        "First pax IN", "Last pax IN",
+        "A/C doors closed"
+      ];
+
+      paxTimings.forEach(labelText => {
+        const box = document.createElement("div");
+        box.style.border = "1px solid #ccc";
+        box.style.borderRadius = "14px";
+        box.style.padding = "10px";
+        box.style.background = "#fff";
+        box.style.boxShadow = "0 1px 4px rgba(0,0,0,0.05)";
+        box.style.textAlign = "center";
+        box.style.display = "flex";
+        box.style.flexDirection = "column";
+        box.style.justifyContent = "space-between";
+
+        const label = document.createElement("div");
+        label.textContent = labelText;
+        label.style.fontSize = "0.85rem";
+        label.style.marginBottom = "8px";
+        label.style.fontWeight = "600";
+        box.appendChild(label);
+
+        const timeDisplay = document.createElement("div");
+        timeDisplay.className = "timestamp";
+        timeDisplay.dataset.timestamp = DateTime.now().toISO();
+        timeDisplay.onclick = () => setTimeNow(timeDisplay);
+
+        const area = document.createElement("div");
+        area.className = "clock-area";
+
+        const left = document.createElement("div");
+        left.className = "clock-left";
+        left.ondblclick = (e) => {
+          e.stopPropagation();
+          modifyTime(-1, timeDisplay);
+        };
+
+        const right = document.createElement("div");
+        right.className = "clock-right";
+        right.ondblclick = (e) => {
+          e.stopPropagation();
+          modifyTime(1, timeDisplay);
+        };
+
+        area.appendChild(left);
+        area.appendChild(right);
+        box.appendChild(timeDisplay);
+        box.appendChild(area);
+        paxGrid.appendChild(box);
+
+        tabs[tabId].timestamps.push(timeDisplay);
+      });
+
+      infoSection.appendChild(paxGrid);
       card.appendChild(infoSection);
       document.getElementById("main").appendChild(card);
       switchTab(tabId);
