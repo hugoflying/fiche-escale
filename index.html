@@ -130,12 +130,13 @@
 
     function addTab() {
       const tabId = `tab${tabCounter++}`;
-      const provenance = "OPO";
+      let provenance = "";
+      let destination = "";
       const destination = "OPO";
 
       const tab = document.createElement("div");
       tab.className = "tab";
-      tab.textContent = `${provenance}-${destination}`;
+      tab.textContent = (provenance && destination) ? `${provenance}-${destination}` : `VOL ${tabCounter - 1}`;
       tab.onclick = () => switchTab(tabId);
       document.getElementById("tabs").appendChild(tab);
 
@@ -172,6 +173,15 @@
 
       tabs[tabId].element = tab;
       tabs[tabId].card = card;
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "✖";
+      deleteBtn.style.position = "absolute";
+      deleteBtn.style.top = "10px";
+      deleteBtn.style.right = "10px";
+      deleteBtn.style.fontSize = "1em";
+      deleteBtn.onclick = () => deleteTab(tabId);
+      card.appendChild(deleteBtn);
       tabs[tabId].timestamps.push(timestamp);
 
       document.getElementById("main").appendChild(card);
@@ -203,6 +213,18 @@
     function updateDisplay(elem) {
       const dt = DateTime.fromISO(elem.dataset.timestamp);
       elem.textContent = isUTC ? dt.toUTC().toFormat("HH:mm") + " UTC" : dt.toLocal().toFormat("HH:mm") + " Local";
+    }
+
+    function deleteTab(id) {
+      const tab = tabs[id];
+      if (!tab) return;
+      tab.element.remove();
+      tab.card.remove();
+      delete tabs[id];
+      if (currentTab === id) {
+        const nextTabId = Object.keys(tabs)[0];
+        if (nextTabId) switchTab(nextTabId);
+      }
     }
 
     addTab(); // initial tab
