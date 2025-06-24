@@ -226,10 +226,20 @@
           });
           wrapper.appendChild(select);
         } else if (f.type === "clock") {
+          const spanWrapper = document.createElement("div");
+          spanWrapper.style.border = "1px solid #ccc";
+          spanWrapper.style.borderRadius = "12px";
+          spanWrapper.style.padding = "10px";
+          spanWrapper.style.background = "#fefefe";
+          spanWrapper.style.boxShadow = "0 2px 4px rgba(0,0,0,0.05)";
+          spanWrapper.style.position = "relative";
+          spanWrapper.style.marginTop = "5px";
+
           const span = document.createElement("div");
           span.className = "timestamp";
           span.dataset.timestamp = DateTime.now().toISO();
           span.onclick = () => setTimeNow(span);
+          spanWrapper.appendChild(span);
 
           const area = document.createElement("div");
           area.className = "clock-area";
@@ -250,8 +260,8 @@
 
           area.appendChild(left);
           area.appendChild(right);
-          wrapper.appendChild(span);
-          wrapper.appendChild(area);
+          spanWrapper.appendChild(area);
+          wrapper.appendChild(spanWrapper);
           tabs[tabId].timestamps.push(span);
         } else {
           const input = document.createElement("input");
