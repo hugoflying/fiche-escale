@@ -276,6 +276,97 @@
         infoSection.appendChild(wrapper);
       });
 
+      const infoGrid = document.createElement("div");
+      infoGrid.style.display = "grid";
+      infoGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(140px, 1fr))";
+      infoGrid.style.gap = "12px";
+
+      const cards = [
+        { label: "Date", type: "date", name: "date", value: DateTime.now().toISODate() },
+        { label: "Compagnie", type: "select", name: "compagnie", options: ["FR", "RK", "W4", "W6", "H4", "U2", "V7", "Autre"] },
+        { label: "Vol arrivée", type: "text", name: "vol_arr" },
+        { label: "Provenance", type: "text", name: "provenance" },
+        { label: "Destination", type: "text", name: "destination" },
+        { label: "Vol départ", type: "text", name: "vol_dep" },
+        { label: "Stand", type: "text", name: "stand" },
+        { label: "STA", type: "clock", name: "sta" },
+        { label: "ATA", type: "clock", name: "ata" },
+        { label: "STD", type: "clock", name: "std" },
+        { label: "ATD", type: "clock", name: "atd" }
+      ];
+
+      cards.forEach(f => {
+        const box = document.createElement("div");
+        box.style.border = "1px solid #ccc";
+        box.style.borderRadius = "14px";
+        box.style.padding = "10px";
+        box.style.background = "#fff";
+        box.style.boxShadow = "0 1px 4px rgba(0,0,0,0.05)";
+        box.style.textAlign = "center";
+        box.style.display = "flex";
+        box.style.flexDirection = "column";
+        box.style.justifyContent = "space-between";
+
+        const label = document.createElement("div");
+        label.textContent = f.label;
+        label.style.fontSize = "0.85rem";
+        label.style.marginBottom = "8px";
+        label.style.fontWeight = "600";
+        box.appendChild(label);
+
+        if (f.type === "select") {
+          const select = document.createElement("select");
+          select.name = f.name;
+          f.options.forEach(opt => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            select.appendChild(o);
+          });
+          box.appendChild(select);
+        } else if (f.type === "clock") {
+          const timeDisplay = document.createElement("div");
+          timeDisplay.className = "timestamp";
+          timeDisplay.dataset.timestamp = DateTime.now().toISO();
+          timeDisplay.onclick = () => setTimeNow(timeDisplay);
+
+          const area = document.createElement("div");
+          area.className = "clock-area";
+
+          const left = document.createElement("div");
+          left.className = "clock-left";
+          left.ondblclick = (e) => {
+            e.stopPropagation();
+            modifyTime(-1, timeDisplay);
+          };
+
+          const right = document.createElement("div");
+          right.className = "clock-right";
+          right.ondblclick = (e) => {
+            e.stopPropagation();
+            modifyTime(1, timeDisplay);
+          };
+
+          area.appendChild(left);
+          area.appendChild(right);
+          box.appendChild(timeDisplay);
+          box.appendChild(area);
+          tabs[tabId].timestamps.push(timeDisplay);
+        } else {
+          const input = document.createElement("input");
+          input.type = f.type;
+          input.name = f.name;
+          if (f.value) input.value = f.value;
+          if (f.name === "provenance" || f.name === "destination") {
+            input.oninput = () => updateTabLabel(tabId);
+          }
+          box.appendChild(input);
+        }
+
+        infoGrid.appendChild(box);
+      });
+
+      infoSection.appendChild(infoGrid);
       card.appendChild(infoSection);
       document.getElementById("main").appendChild(card);
       switchTab(tabId);
