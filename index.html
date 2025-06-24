@@ -327,8 +327,47 @@
         } else if (f.type === "clock") {
           const timeDisplay = document.createElement("div");
           timeDisplay.className = "timestamp";
+        timeDisplay.style.background = "#e0f7fa";
+        timeDisplay.style.borderRadius = "8px";
+        timeDisplay.style.padding = "6px 0";
           timeDisplay.dataset.timestamp = DateTime.now().toISO();
           timeDisplay.onclick = () => setTimeNow(timeDisplay);
+        timeDisplay.ondblclick = () => {
+          const input = document.createElement('input');
+          input.type = 'time';
+          input.style.width = '100%';
+          input.style.fontSize = '1.2em';
+          input.style.textAlign = 'center';
+          input.value = DateTime.fromISO(timeDisplay.dataset.timestamp).toFormat("HH:mm");
+          input.onblur = () => {
+            const parts = input.value.split(":");
+            let dt = DateTime.now().set({ hour: +parts[0], minute: +parts[1] });
+            timeDisplay.dataset.timestamp = dt.toISO();
+            updateDisplay(timeDisplay);
+            timeDisplay.replaceWith(input.previousDisplay);
+          };
+          input.previousDisplay = timeDisplay;
+          timeDisplay.replaceWith(input);
+          input.focus();
+        };
+        timeDisplay.ondblclick = () => {
+          const input = document.createElement('input');
+          input.type = 'time';
+          input.style.width = '100%';
+          input.style.fontSize = '1.2em';
+          input.style.textAlign = 'center';
+          input.value = DateTime.fromISO(timeDisplay.dataset.timestamp).toFormat("HH:mm");
+          input.onblur = () => {
+            const parts = input.value.split(":");
+            let dt = DateTime.now().set({ hour: +parts[0], minute: +parts[1] });
+            timeDisplay.dataset.timestamp = dt.toISO();
+            updateDisplay(timeDisplay);
+            timeDisplay.replaceWith(input.previousDisplay);
+          };
+          input.previousDisplay = timeDisplay;
+          timeDisplay.replaceWith(input);
+          input.focus();
+        };
 
           const area = document.createElement("div");
           area.className = "clock-area";
