@@ -1,836 +1,192 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Fiche Escale Interactive</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turnaround Manager</title>
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
   <style>
+    :root {
+      --bg-color-light: #f5f5f5;
+      --bg-color-dark: #121212;
+      --text-color-light: #000;
+      --text-color-dark: #fff;
+      --card-color-light: #fff;
+      --card-color-dark: #1f1f1f;
+    }
     body {
-      font-family: sans-serif;
-      padding: 10px;
-      margin: auto;
-      background-color: #2b2b2b; /* fond plus foncé */
-      color: #f0f0f0; /* texte plus clair par défaut */
-      box-sizing: border-box;
-      max-width: 1200px; /* pour limiter la largeur */
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color-light);
+      color: var(--text-color-light);
     }
-
-    .row {
+    .dark-mode {
+      background-color: var(--bg-color-dark);
+      color: var(--text-color-dark);
+    }
+    .header {
+      padding: 10px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 15px;
       justify-content: space-between;
-    }
-
-    .field {
-      background-color: #ffffff;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      transition: box-shadow 0.3s ease;
-      flex: 1 1 calc(50% - 15px);
-      min-width: 300px;
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      border-top: 5px solid transparent;
     }
-
-    .field:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-    }
-
-    .field.label-blue { border-top-color: #007bff; }
-    .field.label-green { border-top-color: #28a745; }
-    .field.label-red { border-top-color: #dc3545; }
-    .field.label-violet { border-top-color: #6f42c1; }
-    .field.label-orange { border-top-color: #fd7e14; }
-    .field.label-brown { border-top-color: #8b4513; }
-    .field.label-assistance { border-top-color: #007bff; }
-
-    .field label {
-      font-weight: bold;
-      margin-bottom: 5px;
-      font-size: 1em;
-      text-align: center;
-      color: #333333;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      padding: 8px;
-      font-size: 1em;
-      margin-top: 5px;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-sizing: border-box;
-      color: #333333;
-      background-color: #ffffff;
-    }
-
-    .row-grey {
-      background-color: transparent;
-    }
-
-    .time-controls {
+    .tabs {
       display: flex;
-      width: 100%;
-      gap: 5px;
-      margin-top: 5px;
+      padding: 0 10px;
+      overflow-x: auto;
     }
-
-    .time-controls button {
-      flex: 1;
-      background-color: #e9ecef;
-      border: none;
-      border-radius: 8px;
-      padding: 8px;
+    .tab {
+      padding: 10px 15px;
+      margin-right: 5px;
+      background: #ccc;
+      border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.2s ease;
     }
-
-    .time-controls button:hover {
-      background-color: #dee2e6;
+    .tab.active {
+      background: #666;
+      color: white;
     }
-
-    h3 {
-      background: #000;
-      color: #fff;
-      padding: 10px;
-      margin: 0 -10px 15px;
-      text-align: center;
-      border-radius: 8px;
+    .card {
+      margin: 15px;
+      padding: 20px;
+      background: var(--card-color-light);
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      position: relative;
+      font-size: 1.4em;
     }
-
-    @media (max-width: 700px) {
-      .field {
-        flex: 1 1 100%;
-      }
+    .dark-mode .card {
+      background: var(--card-color-dark);
+    }
+    .timestamp {
+      font-size: 1.6em;
+      margin-top: 10px;
+    }
+    .clock-area {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+    .clock-left, .clock-right {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 33%;
+    }
+    .clock-left { left: 0; }
+    .clock-right { right: 0; }
+    .settings {
+      margin: 10px 15px;
     }
   </style>
 </head>
 <body>
-     <div style="position: absolute; top: 10px; right: 20px;">
-       <label><input type="radio" name="timeMode" value="local" onchange="setTimeMode('local')"> Heure locale</label>
-       <label><input type="radio" name="timeMode" value="utc" checked onchange="setTimeMode('utc')"> UTC</label>
-     </div>
- 
-   <h2>Fiche Escale Vol</h2>
- 
-   <!-- MENU DE SÉLECTION DES ROTATIONS DU JOUR -->
-<section>
-  <h3>ROTATIONS DISPONIBLES</h3>
-
-  <div class="row">
-    <div class="field">
-      <label>Choisir un vol à l'arrivée</label>
-      <select id="arrivalSelector" onchange="populateArrivalInfo()">
-        <option value="">-- Chargement en cours... --</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Choisir un vol au départ</label>
-      <select id="departureSelector" onchange="populateDepartureInfo()">
-        <option value="">-- Chargement en cours... --</option>
-      </select>
+  <div class="header">
+    <h1>Turnaround Manager</h1>
+    <div>
+      <button onclick="toggleDarkMode()">Mode Jour/Nuit</button>
+      <button onclick="toggleTimeMode()">UTC/Local</button>
+      <button onclick="addTab()">+</button>
     </div>
   </div>
-</section>
- 
-   <!-- SECTION INFORMATIONS -->
-<section>
-  <h3>INFORMATIONS</h3>
+  <div class="tabs" id="tabs"></div>
+  <div id="main"></div>
 
-  <div class="row">
-    <div class="field">
-      <label>Date</label>
-      <input type="date" id="dateField">
-    </div>
-
-    <div class="field">
-      <label>Compagnie</label>
-      <select id="compagnie">
-        <option>FR</option>
-        <option>RK</option>
-        <option>W4</option>
-        <option>W6</option>
-        <option>H4</option>
-        <option>H6</option>
-        <option>U5</option>
-        <option>V7</option>
-        <option>Autre</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="field">
-      <label>N° de vol arrivée</label>
-      <input type="number" id="numVolArrivee" readonly>
-    </div>
-
-    <div class="field">
-      <label>N° de vol départ</label>
-      <input type="number" id="numVol">
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="field">
-      <label>Provenance</label>
-      <input type="text" id="provenance">
-    </div>
-
-    <div class="field">
-      <label>Destination</label>
-      <input type="text" id="destination">
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="field">
-      <label>Immatriculation</label>
-      <input type="text" id="immatriculation">
-    </div>
-
-    <div class="field">
-      <label>Type avion</label>
-      <select id="typeAvion">
-        <option value="">Choisir un type</option>
-        <option>B737</option>
-        <option>B738</option>
-        <option>B38M</option>
-        <option>A320</option>
-        <option>A20N</option>
-        <option>A321</option>
-        <option>A21N</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="field" style="flex: 1 1 100%;">
-      <label>Parking</label>
-      <select id="parking">
-        <option value="">Choisir un point de parking</option>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-        <option>5</option>
-        <option>6</option>
-        <option>7</option>
-        <option>8</option>
-        <option>9</option>
-        <option>10</option>
-        <option>11</option>
-        <option>12</option>
-      </select>
-    </div>
-  </div>
-
-</section>
-  
-<section>
-  <h3>HORAIRES</h3>
-
-  <div class="row row-grey">
-    <div class="field">
-      <label>SIBT</label>
-      <input type="time" id="sibt">
-    </div>
-
-    <div class="field">
-      <label>SOBT</label>
-      <input type="time" id="sobt">
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field">
-      <label>AIBT</label>
-      <input type="time" id="aibt">
-      <div class="time-controls">
-        <button onclick="adjustTime('aibt', -1)">-1</button>
-        <button onclick="setNow('aibt')">Now</button>
-        <button onclick="adjustTime('aibt', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>AOBT</label>
-      <input type="time" id="aobt">
-      <div class="time-controls">
-        <button onclick="adjustTime('aobt', -1)">-1</button>
-        <button onclick="setNow('aobt')">Now</button>
-        <button onclick="adjustTime('aobt', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field">
-      <label>HLE</label>
-      <input type="time" id="hle" readonly>
-    </div>
-
-    <div class="field label-red">
-      <label>H-15</label>
-      <input type="time" id="h15" readonly>
-    </div>
-  </div>
-
-</section>
-
- 
-<section>
-  <h3>TIMING ESCALE</h3>
-
-  <div class="row row-grey">
-    <div class="field label-brown">
-      <label>Arrivée PNT</label>
-      <input type="time" id="arriveePNT">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveePNT', -1)">-1</button>
-        <button onclick="setNow('arriveePNT')">Now</button>
-        <button onclick="adjustTime('arriveePNT', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field label-brown">
-      <label>Arrivée PNC</label>
-      <input type="time" id="arriveePNC">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveePNC', -1)">-1</button>
-        <button onclick="setNow('arriveePNC')">Now</button>
-        <button onclick="adjustTime('arriveePNC', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field label-orange">
-      <label>Arrivée fuel</label>
-      <input type="time" id="arriveeFuel">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveeFuel', -1)">-1</button>
-        <button onclick="setNow('arriveeFuel')">Now</button>
-        <button onclick="adjustTime('arriveeFuel', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field label-orange">
-      <label>Départ fuel</label>
-      <input type="time" id="departFuel">
-      <div class="time-controls">
-        <button onclick="adjustTime('departFuel', -1)">-1</button>
-        <button onclick="setNow('departFuel')">Now</button>
-        <button onclick="adjustTime('departFuel', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field label-violet">
-      <label>Arrivée lift</label>
-      <input type="time" id="arriveeLift">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveeLift', -1)">-1</button>
-        <button onclick="setNow('arriveeLift')">Now</button>
-        <button onclick="adjustTime('arriveeLift', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field label-violet">
-      <label>Départ lift</label>
-      <input type="time" id="departLift">
-      <div class="time-controls">
-        <button onclick="adjustTime('departLift', -1)">-1</button>
-        <button onclick="setNow('departLift')">Now</button>
-        <button onclick="adjustTime('departLift', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field label-blue">
-      <label>First PAX OUT</label>
-      <input type="time" id="firstPaxOut">
-      <div class="time-controls">
-        <button onclick="adjustTime('firstPaxOut', -1)">-1</button>
-        <button onclick="setNow('firstPaxOut')">Now</button>
-        <button onclick="adjustTime('firstPaxOut', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field label-blue">
-      <label>Last PAX OUT</label>
-      <input type="time" id="lastPaxOut">
-      <div class="time-controls">
-        <button onclick="adjustTime('lastPaxOut', -1)">-1</button>
-        <button onclick="setNow('lastPaxOut')">Now</button>
-        <button onclick="adjustTime('lastPaxOut', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field label-green">
-      <label>First PAX IN</label>
-      <input type="time" id="firstPaxIn">
-      <div class="time-controls">
-        <button onclick="adjustTime('firstPaxIn', -1)">-1</button>
-        <button onclick="setNow('firstPaxIn')">Now</button>
-        <button onclick="adjustTime('firstPaxIn', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field label-green">
-      <label>Last PAX IN</label>
-      <input type="time" id="lastPaxIn">
-      <div class="time-controls">
-        <button onclick="adjustTime('lastPaxIn', -1)">-1</button>
-        <button onclick="setNow('lastPaxIn')">Now</button>
-        <button onclick="adjustTime('lastPaxIn', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field label-red">
-      <label>Arrivée INAD</label>
-      <input type="time" id="arriveeINAD">
-      <div class="time-controls">
-        <button onclick="adjustTime('arriveeINAD', -1)">-1</button>
-        <button onclick="setNow('arriveeINAD')">Now</button>
-        <button onclick="adjustTime('arriveeINAD', 1)">+1</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label>Fermeture porte avion</label>
-      <input type="time" id="fermeturePorte">
-      <div class="time-controls">
-        <button onclick="adjustTime('fermeturePorte', -1)">-1</button>
-        <button onclick="setNow('fermeturePorte')">Now</button>
-        <button onclick="adjustTime('fermeturePorte', 1)">+1</button>
-      </div>
-    </div>
-  </div>
-
-</section>
-
-  <section>
-  <h3>CHARGEMENT</h3>
-
-  <!-- Bloc Passagers -->
-  <div class="row row-grey">
-    <div class="field">
-      <label>Adultes HOMME</label>
-      <input type="number" min="0" id="adulteHomme" value="0" oninput="updateTOB()">
-    </div>
-
-    <div class="field">
-      <label>Adultes FEMME</label>
-      <input type="number" min="0" id="adulteFemme" value="0" oninput="updateTOB()">
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field">
-      <label>ENFANTS</label>
-      <input type="number" min="0" id="enfants" value="0" oninput="updateTOB()">
-    </div>
-
-    <div class="field">
-      <label>BÉBÉS</label>
-      <input type="number" min="0" id="bebes" value="0" oninput="updateTOB()">
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field" style="flex: 1 1 100%;">
-      <label>TOB (Adultes+Enfants + Bébés)</label>
-      <input type="text" id="tob" readonly>
-    </div>
-  </div>
-
-  <!-- Bloc OA / OB / OC / OD -->
-  <div class="row row-grey">
-    <div class="field">
-      <label>OA / FWD</label>
-      <input type="number" min="0" id="oa">
-    </div>
-
-    <div class="field">
-      <label>OB / MID</label>
-      <input type="number" min="0" id="ob">
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field">
-      <label>OC / AFT</label>
-      <input type="number" min="0" id="oc">
-    </div>
-
-    <div class="field">
-      <label>OD</label>
-      <input type="number" min="0" id="od">
-    </div>
-  </div>
-
-  <!-- Bloc Bagages -->
-  <div class="row row-grey">
-    <div class="field">
-      <label>BAGS</label>
-      <input type="number" min="0" id="bags">
-    </div>
-
-    <div class="field">
-      <label>POIDS (kg)</label>
-      <input type="number" min="0" id="poids">
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field" style="flex: 1 1 100%;">
-      <label>GB</label>
-      <input type="number" min="0" id="gb">
-    </div>
-  </div>
-</section>
-
-<section>
-  <h3>ASSISTANCES</h3>
-
-  <div class="row row-grey">
-    <div class="field label-assistance">
-      <label>WCHR</label>
-      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" placeholder="0">
-    </div>
-
-    <div class="field label-assistance">
-      <label>WCHS</label>
-      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" placeholder="0">
-    </div>
-  </div>
-
-  <div class="row row-grey">
-    <div class="field label-assistance">
-      <label>WCHC</label>
-      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" placeholder="0">
-    </div>
-
-    <div class="field label-assistance">
-      <label>Autre</label>
-      <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" placeholder="0">
-    </div>
-  </div>
-</section>
- 
-    <section>
-     <h3>PRESTATIONS</h3>
-     <div class="row">
-       <div class="field"><label><input type="checkbox"> GPU</label></div>
-       <div class="field"><label><input type="checkbox"> ASU</label></div>
-       <div class="field"><label><input type="checkbox"> Collecte d'ordures</label></div>
-       <div class="field"><label><input type="checkbox"> Eau potable</label></div>
-       <div class="field"><label><input type="checkbox"> Vidange toilettes</label></div>
-       <div class="field"><label><input type="checkbox"> Échelle supplémentaire</label></div>
-       <div class="field"><label><input type="checkbox"> Dégivrage</label></div>
-       <div class="field"><label><input type="checkbox"> Toilet kit</label></div>
-       <div class="field"><label><input type="checkbox"> Flux par le RZA</label></div>
-       <div class="field"><label><input type="checkbox"> Ménage Assist'Air</label></div>
-       <div class="field">
-         <label>Ménage Atalian</label>
-         <select>
-           <option value="">--</option>
-           <option value="Full">Full</option>
-           <option value="Tidy">Tidy</option>
-         </select>
-       </div>
-       <div class="field"><label><input type="checkbox"> Push-Pull</label></div>
-     </div>
-   </section>
- 
-   <section>
-     <h3>FAITS SAILLANTS</h3>
-     <textarea></textarea>
-   </section>
- 
-   <!-- BOUTONS -->
-   <div class="row">
-     <button onclick="window.print()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
-     <button onclick="document.querySelectorAll('input, select, textarea').forEach(f => f.type === 'checkbox' ? f.checked = false : f.value = '')" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Effacer</button>
-   </div>
- 
-  <style>
-  .blink-red {
-    animation: blinkRed 1s infinite;
-    background-color: #ffcccc !important;
-  }
- 
-  @keyframes blinkRed {
-    0% { background-color: #ffcccc; }
-    50% { background-color: #ff0000; }
-    100% { background-color: #ffcccc; }
-  }
- 
-  .solid-red {
-    background-color: #ff0000 !important;
-    color: white;
-  }
-  </style>
- 
   <script>
-  const API_KEY = "86b00c-05cc00";
-  const AIRPORT_IATA = "BVA";
-  let allDepartures = [];
-  let lastArrivalTime = null;
-  let lastArrivalFlightNumber = null;
- 
-  async function fetchFlightImmatriculations() {
-    try {
-      const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    } catch (e) {
-      console.warn("Erreur API /flights:", e);
-      return [];
+    const DateTime = luxon.DateTime;
+    let isUTC = false;
+    let tabCounter = 1;
+    let currentTab = null;
+    const tabs = {};
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
     }
-  }
- 
-  function isSameLocalDay(dateStr) {
-    const today = new Date();
-    const d = new Date(dateStr);
-    return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
-  }
- 
-  async function loadRotations() {
-    const arrSel = document.getElementById("arrivalSelector");
-    const depSel = document.getElementById("departureSelector");
-    arrSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
-    depSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
- 
-    const [arrRes, depRes, flightLive] = await Promise.all([
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`).then(r => r.json()),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`).then(r => r.json()),
-      fetchFlightImmatriculations()
-    ]);
- 
-    const immatMap = {};
-    flightLive.forEach(f => {
-      const key = `${f.airline?.iataCode}${f.flight?.number}`;
-      if (f.aircraft?.regNumber) immatMap[key] = { reg: f.aircraft.regNumber, type: f.aircraft.icaoCode };
-    });
- 
-    arrSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    depSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    allDepartures = depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime));
- 
-    arrRes.filter(a => isSameLocalDay(a.arrival?.scheduledTime)).forEach(arr => {
-      const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify(arr);
-      opt.textContent = label;
-      arrSel.appendChild(opt);
-    });
- 
-    allDepartures.forEach(dep => {
-      const key = `${dep.airline?.iataCode}${dep.flight?.number}`;
-      if (!dep.aircraft?.regNumber && immatMap[key]) {
-        dep.aircraft = {
-          regNumber: immatMap[key].reg,
-          icaoCode: immatMap[key].type
-        };
-      }
-      const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify(dep);
-      opt.textContent = label;
-      depSel.appendChild(opt);
-    });
-  }
- 
-  function populateArrivalInfo() {
-    const selected = document.getElementById("arrivalSelector").value;
-    if (!selected) return;
-    const flight = JSON.parse(selected);
-    document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-    document.getElementById("provenance").value = flight.departure?.iataCode || "";
-    lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-    lastArrivalFlightNumber = parseInt(flight.flight?.number);
- 
-    const depSel = document.getElementById("departureSelector");
-    let matched = false;
-    for (const dep of allDepartures) {
-      const num = parseInt(dep.flight?.number);
-      const depTime = new Date(dep.departure?.scheduledTime);
-      if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-        depSel.value = JSON.stringify(dep);
-        populateDepartureInfo();
-        matched = true;
-        break;
+
+    function toggleTimeMode() {
+      isUTC = !isUTC;
+      for (const tabId in tabs) {
+        tabs[tabId].timestamps.forEach(item => updateDisplay(item));
       }
     }
-    if (!matched) depSel.selectedIndex = 0;
-  }
- 
-  function populateDepartureInfo() {
-    const selected = document.getElementById("departureSelector").value;
-    if (!selected) return;
-    const flight = JSON.parse(selected);
-    window.lastDeparture = flight;
-    document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime, isUTC());
-    document.getElementById("compagnie").value = flight.airline?.iataCode || "";
-    document.getElementById("destination").value = flight.arrival?.iataCode || "";
-    document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
-    document.getElementById("numVol").value = flight.flight?.number || "";
-    document.getElementById("dateField").value = formatDate(flight.departure?.scheduledTime);
-    if (flight.aircraft?.icaoCode) {
-      const allowedTypes = ["B737", "B738", "B38M", "A320", "A20N", "A321", "A21N"];
-      const typeCode = flight.aircraft.icaoCode.toUpperCase();
-      if (allowedTypes.includes(typeCode)) {
-        document.getElementById("typeAvion").value = typeCode;
+
+    function addTab() {
+      const tabId = `tab${tabCounter++}`;
+      const tab = document.createElement("div");
+      tab.className = "tab";
+      tab.textContent = `Vol ${tabCounter - 1}`;
+      tab.onclick = () => switchTab(tabId);
+      document.getElementById("tabs").appendChild(tab);
+
+      tabs[tabId] = { element: tab, timestamps: [] };
+
+      const card = document.createElement("div");
+      card.className = "card";
+      const timestamp = document.createElement("div");
+      timestamp.className = "timestamp";
+      card.appendChild(timestamp);
+
+      const clickArea = document.createElement("div");
+      clickArea.className = "clock-area";
+
+      const left = document.createElement("div");
+      left.className = "clock-left";
+      left.ondblclick = (e) => {
+        e.stopPropagation();
+        modifyTime(-1, timestamp);
+      };
+
+      const right = document.createElement("div");
+      right.className = "clock-right";
+      right.ondblclick = (e) => {
+        e.stopPropagation();
+        modifyTime(1, timestamp);
+      };
+
+      clickArea.onclick = () => setTimeNow(timestamp);
+
+      clickArea.appendChild(left);
+      clickArea.appendChild(right);
+      card.appendChild(clickArea);
+
+      tabs[tabId].element = tab;
+      tabs[tabId].card = card;
+      tabs[tabId].timestamps.push(timestamp);
+
+      document.getElementById("main").appendChild(card);
+      switchTab(tabId);
+    }
+
+    function switchTab(id) {
+      for (const t in tabs) {
+        tabs[t].element.classList.remove("active");
+        tabs[t].card.style.display = "none";
       }
+      tabs[id].element.classList.add("active");
+      tabs[id].card.style.display = "block";
+      currentTab = id;
     }
-    calculateTimeOffset("sobt", "hle", -40);
-    calculateTimeOffset("sobt", "h15", -15);
-  }
- 
- function populateArrivalInfo() {
-   const selected = document.getElementById("arrivalSelector").value;
-   if (!selected) return;
-   const flight = JSON.parse(selected);
-   document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-   document.getElementById("provenance").value = flight.departure?.iataCode || "";
-   document.getElementById("numVolArrivee").value = flight.flight?.number || "";
-   lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-   lastArrivalFlightNumber = parseInt(flight.flight?.number);
- 
-   const depSel = document.getElementById("departureSelector");
-   let matched = false;
-   for (const dep of allDepartures) {
-     const num = parseInt(dep.flight?.number);
-     const depTime = new Date(dep.departure?.scheduledTime);
-     if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-       depSel.value = JSON.stringify(dep);
-       populateDepartureInfo();
-       matched = true;
-       break;
-     }
-   }
-   if (!matched) depSel.selectedIndex = 0;
- }
- 
-  function formatTime(iso, useUTC = false) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    const h = useUTC ? d.getUTCHours() : d.getHours();
-    const m = useUTC ? d.getUTCMinutes() : d.getMinutes();
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  }
- 
-  function formatDate(iso) {
-    return new Date(iso).toISOString().split("T")[0];
-  }
- 
-  function adjustTime(id, delta) {
-    const input = document.getElementById(id);
-    if (!input.value) return;
-    const [h, m] = input.value.split(":" ).map(Number);
-    const d = new Date();
-    d.setUTCHours(h);
-    d.setUTCMinutes(m + delta);
-    const hh = d.getUTCHours().toString().padStart(2, '0');
-    const mm = d.getUTCMinutes().toString().padStart(2, '0');
-    input.value = `${hh}:${mm}`;
-  }
- 
-  function setNow(id) {
-    const now = new Date();
-    const hh = now.getUTCHours().toString().padStart(2, '0');
-    const mm = now.getUTCMinutes().toString().padStart(2, '0');
-    document.getElementById(id).value = `${hh}:${mm}`;
-  }
- 
-  function isUTC() {
-    return document.querySelector("input[name='timeMode']:checked")?.value === 'utc';
-  }
- 
-  function setTimeMode(mode) {
-    const useUTC = mode === 'utc';
-    window.timeMode = mode;
-    document.getElementById("sobt").value = formatTime(window.lastDeparture?.departure?.scheduledTime, useUTC);
-    document.getElementById("sibt").value = formatTime(window.lastArrivalTime?.toISOString(), useUTC);
-    calculateTimeOffset("sobt", "hle", -40);
-    calculateTimeOffset("sobt", "h15", -15);
-  }
 
-    function updateTOB() {
-      const homme = parseInt(document.getElementById('adulteHomme').value) || 0;
-      const femme = parseInt(document.getElementById('adulteFemme').value) || 0;
-      const enfants = parseInt(document.getElementById('enfants').value) || 0;
-      const bebes = parseInt(document.getElementById('bebes').value) || 0;
-
-      const totalSansBebe = homme + femme + enfants;
-      const tobDisplay = `${totalSansBebe} + ${bebes}`;
-
-      document.getElementById('tob').value = tobDisplay;
-  }
- 
-  function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-    const base = document.getElementById(baseId);
-    const target = document.getElementById(targetId);
-    if (!base || !target || !base.value) return;
-    const [h, m] = base.value.split(":" ).map(Number);
-    const baseDate = new Date();
-    baseDate.setUTCHours(h);
-    baseDate.setUTCMinutes(m);
-    baseDate.setUTCMinutes(baseDate.getUTCMinutes() + offsetMinutes);
-    const hh = baseDate.getUTCHours().toString().padStart(2, '0');
-    const mm = baseDate.getUTCMinutes().toString().padStart(2, '0');
-    target.value = `${hh}:${mm}`;
-  }
- 
-    function checkH15Status() {
-       const h15 = document.getElementById("h15");
-       if (!h15 || !h15.value) return;
-       const now = new Date();
-       const [h, m] = h15.value.split(":" ).map(Number);
-       const h15Time = new Date();
-       h15Time.setHours(h);
-       h15Time.setMinutes(m);
-       h15Time.setSeconds(0);
-       h15Time.setMilliseconds(0);
-       const diffMin = (h15Time - now) / 60000;
-       h15.classList.remove("solid-red", "blink-red");
-       if (diffMin <= 15 && diffMin > 0) {
-         h15.classList.add("solid-red");
-       } else if (diffMin <= 18 && diffMin > 15) {
-         h15.classList.add("blink-red");
-       }
-     }
- 
-  setInterval(checkH15Status, 5000);
- 
-  window.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("input[name='timeMode'][value='utc']").checked = true;
-    window.timeMode = 'utc';
-    loadRotations();
- 
-    const sobtField = document.getElementById('sobt');
-    if (sobtField) {
-      sobtField.addEventListener('change', () => {
-        calculateTimeOffset('sobt', 'hle', -40);
-        calculateTimeOffset('sobt', 'h15', -15);
-      });
+    function setTimeNow(elem) {
+      elem.dataset.timestamp = DateTime.now().toISO();
+      updateDisplay(elem);
     }
-  });
+
+    function modifyTime(minutes, elem) {
+      let dt = DateTime.fromISO(elem.dataset.timestamp || DateTime.now().toISO());
+      dt = dt.plus({ minutes });
+      elem.dataset.timestamp = dt.toISO();
+      updateDisplay(elem);
+    }
+
+    function updateDisplay(elem) {
+      const dt = DateTime.fromISO(elem.dataset.timestamp);
+      elem.textContent = isUTC ? dt.toUTC().toFormat("HH:mm") + " UTC" : dt.toLocal().toFormat("HH:mm") + " Local";
+    }
+
+    addTab(); // initial tab
   </script>
+</body>
+</html>
