@@ -185,6 +185,85 @@
       tabs[tabId].element = tab;
       tabs[tabId].card = card;
 
+      // Section 1 – Informations générales
+      const infoSection = document.createElement("div");
+      infoSection.style.marginTop = "10px";
+
+      const title = document.createElement("h3");
+      title.textContent = "Informations générales";
+      title.style.fontSize = "1em";
+      infoSection.appendChild(title);
+
+      const fields = [
+        { label: "Date", type: "date", name: "date", value: DateTime.now().toISODate() },
+        { label: "Compagnie", type: "select", name: "compagnie", options: ["FR", "RK", "W4", "W6", "H4", "U2", "V7", "Autre"] },
+        { label: "Vol arrivée", type: "text", name: "vol_arr" },
+        { label: "Provenance", type: "text", name: "provenance" },
+        { label: "STA", type: "clock", name: "sta" },
+        { label: "ATA", type: "clock", name: "ata" },
+        { label: "Immatriculation", type: "text", name: "immat" },
+        { label: "Type avion", type: "text", name: "type" }
+      ];
+
+      fields.forEach(f => {
+        const wrapper = document.createElement("div");
+        wrapper.style.marginBottom = "10px";
+        const label = document.createElement("label");
+        label.textContent = f.label;
+        label.style.display = "block";
+        label.style.fontSize = "0.9em";
+        wrapper.appendChild(label);
+
+        if (f.type === "select") {
+          const select = document.createElement("select");
+          select.name = f.name;
+          f.options.forEach(opt => {
+            const o = document.createElement("option");
+            o.value = opt;
+            o.textContent = opt;
+            select.appendChild(o);
+          });
+          wrapper.appendChild(select);
+        } else if (f.type === "clock") {
+          const span = document.createElement("div");
+          span.className = "timestamp";
+          span.dataset.timestamp = DateTime.now().toISO();
+          span.onclick = () => setTimeNow(span);
+
+          const area = document.createElement("div");
+          area.className = "clock-area";
+
+          const left = document.createElement("div");
+          left.className = "clock-left";
+          left.ondblclick = (e) => {
+            e.stopPropagation();
+            modifyTime(-1, span);
+          };
+
+          const right = document.createElement("div");
+          right.className = "clock-right";
+          right.ondblclick = (e) => {
+            e.stopPropagation();
+            modifyTime(1, span);
+          };
+
+          area.appendChild(left);
+          area.appendChild(right);
+          wrapper.appendChild(span);
+          wrapper.appendChild(area);
+          tabs[tabId].timestamps.push(span);
+        } else {
+          const input = document.createElement("input");
+          input.type = f.type;
+          input.name = f.name;
+          if (f.value) input.value = f.value;
+          wrapper.appendChild(input);
+        }
+        infoSection.appendChild(wrapper);
+      });
+
+      card.appendChild(infoSection);
+
       
       tabs[tabId].timestamps.push(timestamp);
 
