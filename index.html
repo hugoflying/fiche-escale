@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Turnaround Manager</title>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
   <style>
@@ -16,7 +16,7 @@
     }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: system-ui, sans-serif;
       background-color: var(--bg-color-light);
       color: var(--text-color-light);
     }
@@ -29,6 +29,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
     .tabs {
       display: flex;
@@ -37,14 +38,24 @@
       gap: 5px;
     }
     .tab {
-      padding: 10px 15px;
+      padding: 8px 12px;
       background: #ccc;
       border-radius: 5px;
       cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
     }
     .tab.active {
       background: #666;
       color: white;
+    }
+    .tab button {
+      margin-left: 5px;
+      font-size: 0.9em;
+      background: none;
+      border: none;
+      color: inherit;
     }
     .cards {
       display: flex;
@@ -53,21 +64,21 @@
       padding: 15px;
     }
     .card {
-      flex: 1 1 calc(25% - 30px);
-      min-width: 250px;
+      flex: 1 1 calc(100% - 30px);
+      min-width: 260px;
       background: var(--card-color-light);
       border-radius: 10px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       position: relative;
-      font-size: 1.4em;
-      padding: 20px;
+      padding: 15px;
+      font-size: 1rem;
     }
     .dark-mode .card {
       background: var(--card-color-dark);
     }
     .timestamp {
-      font-size: 1.6em;
-      margin-top: 10px;
+      font-size: 1.4em;
+      margin-top: 5px;
     }
     .clock-area {
       position: absolute;
@@ -84,17 +95,33 @@
     }
     .clock-left { left: 0; }
     .clock-right { right: 0; }
-    .settings {
-      margin: 10px 15px;
+    label {
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
     }
-    @media (max-width: 1200px) {
-      .card { flex: 1 1 calc(33% - 30px); }
+    input, select {
+      font-size: 1rem;
+      padding: 6px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
-    @media (max-width: 800px) {
+    h3 {
+      margin-top: 10px;
+      font-size: 1.2em;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 4px;
+    }
+    @media (min-width: 600px) {
       .card { flex: 1 1 calc(50% - 30px); }
     }
-    @media (max-width: 500px) {
-      .card { flex: 1 1 100%; }
+    @media (min-width: 900px) {
+      .card { flex: 1 1 calc(33.33% - 30px); }
+    }
+    @media (min-width: 1200px) {
+      .card { flex: 1 1 calc(25% - 30px); }
     }
   </style>
 </head>
@@ -141,8 +168,6 @@
 
       const closeBtn = document.createElement("button");
       closeBtn.textContent = "✖";
-      closeBtn.style.marginLeft = "8px";
-      closeBtn.style.cursor = "pointer";
       closeBtn.onclick = (e) => {
         e.stopPropagation();
         deleteTab(tabId);
@@ -151,47 +176,13 @@
       tab.onclick = () => switchTab(tabId);
       document.getElementById("tabs").appendChild(tab);
 
-      tabs[tabId] = { element: tab, timestamps: [], label: tabLabel };
-
       const card = document.createElement("div");
       card.className = "card";
-      const timestamp = document.createElement("div");
-      timestamp.className = "timestamp";
-      card.appendChild(timestamp);
 
-      const clickArea = document.createElement("div");
-      clickArea.className = "clock-area";
-
-      const left = document.createElement("div");
-      left.className = "clock-left";
-      left.ondblclick = (e) => {
-        e.stopPropagation();
-        modifyTime(-1, timestamp);
-      };
-
-      const right = document.createElement("div");
-      right.className = "clock-right";
-      right.ondblclick = (e) => {
-        e.stopPropagation();
-        modifyTime(1, timestamp);
-      };
-
-      clickArea.onclick = () => setTimeNow(timestamp);
-
-      clickArea.appendChild(left);
-      clickArea.appendChild(right);
-      card.appendChild(clickArea);
-
-      tabs[tabId].element = tab;
-      tabs[tabId].card = card;
-
-      // Section 1 – Informations générales
       const infoSection = document.createElement("div");
       infoSection.style.marginTop = "10px";
-
       const title = document.createElement("h3");
       title.textContent = "Informations générales";
-      title.style.fontSize = "1em";
       infoSection.appendChild(title);
 
       const fields = [
@@ -205,13 +196,13 @@
         { label: "Type avion", type: "text", name: "type" }
       ];
 
+      tabs[tabId] = { element: tab, timestamps: [], card: card, label: tabLabel };
+
       fields.forEach(f => {
         const wrapper = document.createElement("div");
         wrapper.style.marginBottom = "10px";
         const label = document.createElement("label");
         label.textContent = f.label;
-        label.style.display = "block";
-        label.style.fontSize = "0.9em";
         wrapper.appendChild(label);
 
         if (f.type === "select") {
@@ -266,12 +257,15 @@
       });
 
       card.appendChild(infoSection);
-
-      
-      tabs[tabId].timestamps.push(timestamp);
-
       document.getElementById("main").appendChild(card);
       switchTab(tabId);
+    }
+
+    function updateTabLabel(id) {
+      const card = tabs[id].card;
+      const provenance = card.querySelector('input[name="provenance"]')?.value.trim().toUpperCase();
+      const destination = card.querySelector('input[name="destination"]')?.value.trim().toUpperCase();
+      tabs[id].label.textContent = (provenance || destination) ? `${provenance || "---"}-${destination || "---"}` : `VOL ${id.replace('tab', '')}`;
     }
 
     function switchTab(id) {
@@ -282,6 +276,18 @@
       tabs[id].element.classList.add("active");
       tabs[id].card.style.display = "block";
       currentTab = id;
+    }
+
+    function deleteTab(id) {
+      const tab = tabs[id];
+      if (!tab) return;
+      tab.element.remove();
+      tab.card.remove();
+      delete tabs[id];
+      if (currentTab === id) {
+        const nextTabId = Object.keys(tabs)[0];
+        if (nextTabId) switchTab(nextTabId);
+      }
     }
 
     function setTimeNow(elem) {
@@ -301,26 +307,7 @@
       elem.textContent = isUTC ? dt.toUTC().toFormat("HH:mm") + " UTC" : dt.toLocal().toFormat("HH:mm") + " Local";
     }
 
-    function updateTabLabel(id) {
-      const card = tabs[id].card;
-      const provenance = card.querySelector('input[name="provenance"]')?.value.trim().toUpperCase();
-      const destination = card.querySelector('input[name="destination"]')?.value.trim().toUpperCase();
-      tabs[id].label.textContent = (provenance || destination) ? `${provenance || "---"}-${destination || "---"}` : `VOL ${id.replace('tab', '')}`;
-    }
-
-    function deleteTab(id) {
-      const tab = tabs[id];
-      if (!tab) return;
-      tab.element.remove();
-      tab.card.remove();
-      delete tabs[id];
-      if (currentTab === id) {
-        const nextTabId = Object.keys(tabs)[0];
-        if (nextTabId) switchTab(nextTabId);
-      }
-    }
-
-    addTab(); // initial tab
+    addTab();
   </script>
 </body>
 </html>
