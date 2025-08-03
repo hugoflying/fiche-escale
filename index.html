@@ -514,6 +514,37 @@ function updateDLCode() {
     }
 }
 
+    /* Sauvegarde auto dans localStorage */
+function enableAutoSave() {
+    const fields = document.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+        // Charger la valeur sauvegardée si elle existe
+        const savedValue = localStorage.getItem(field.id);
+        if (savedValue !== null) field.value = savedValue;
+
+        // Sauvegarder en temps réel à chaque modification
+        field.addEventListener('input', () => {
+            localStorage.setItem(field.id, field.value);
+        });
+        field.addEventListener('change', () => {
+            localStorage.setItem(field.id, field.value);
+        });
+    });
+}
+
+/* Vider les données locales si besoin */
+function clearAutoSave() {
+    const fields = document.querySelectorAll('input, select, textarea');
+    fields.forEach(field => localStorage.removeItem(field.id));
+}
+
+/* Appeler la fonction dans initForm */
+function initForm() {
+    document.getElementById('Date').valueAsDate = new Date();
+    generateTimingFields();
+    enableAutoSave(); // active la sauvegarde auto
+}
+
 /* Validation champs obligatoires */
 function validateForm() {
     const required = ['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
