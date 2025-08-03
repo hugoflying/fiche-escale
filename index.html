@@ -39,6 +39,7 @@ h2 {
 .form-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
 .form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
+.form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
 
 /* Labels en gras et centrés */
 .form-group label {
@@ -64,7 +65,7 @@ textarea {
     font-size: 0.95rem;
     border: 1px solid #ccc;
     border-radius: 4px;
-    resize: vertical;
+    resize: both; /* redimension libre */
     min-height: 60px;
     text-align: left;
 }
@@ -250,6 +251,9 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
+<!-- Bouton Save après HORAIRES -->
+<button id="save" onclick="manualSave()">SAVE</button>
+
 <!-- TIMING -->
 <section>
     <h2>TIMING</h2>
@@ -285,10 +289,10 @@ button.plus  { background: #555; color: white; }
 <section>
     <h2>Assistances prises en charge A/D</h2>
     <div class="form-grid">
-        <div class="form-group"><label>WCHC<input type="number" id="WCHC"></label></div>
-        <div class="form-group"><label>WCHS<input type="number" id="WCHS"></label></div>
-        <div class="form-group"><label>WCHR<input type="number" id="WCHR"></label></div>
-        <div class="form-group"><label>Autre<input type="number" id="AutreAssist"></label></div>
+        <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC"></label></div>
+        <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS"></label></div>
+        <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR"></label></div>
+        <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
     </div>
 </section>
 
@@ -311,22 +315,22 @@ button.plus  { background: #555; color: white; }
 </section>
 
 <button id="validate" onclick="validateForm()">VALIDER</button>
-<button id="save" onclick="manualSave()">SAVE</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER</button>
 
 <script>
 let isUTC = false;
 let manualSOBT = false;
 
-/* Initialisation */
+/* --- Initialisation --- */
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
     generateTimingFields();
-    restoreSettings(); // restaurer dark/UTC
+    restoreSettings();
     enableAutoSave();
+    setInterval(() => { updateAllCalculations(); manualSaveTimers(); }, 60000); // sauvegarde timers toutes 60 sec
 }
 
-/* Génération champs Timing */
+/* --- Génération champs Timing --- */
 function generateTimingFields() {
     const timings = [
         "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
@@ -363,7 +367,7 @@ function generateTimingFields() {
     enableAutoSave(); // activer auto-save après génération dynamique
 }
 
-/* Sauvegarde auto */
+/* --- Sauvegarde auto --- */
 function enableAutoSave() {
     const fields = document.querySelectorAll('input, select, textarea');
     fields.forEach(field => {
@@ -381,16 +385,31 @@ function manualSave() {
     fields.forEach(field => localStorage.setItem(field.id, field.value));
     localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
     localStorage.setItem('modeUTC', isUTC ? '1' : '0');
+    manualSaveTimers();
     alert("Données sauvegardées !");
 }
 
-/* Restaurer les paramètres (dark/UTC) */
+/* Sauvegarde timers */
+function manualSaveTimers() {
+    localStorage.setItem('timer-h40', document.getElementById('timer-h40').textContent);
+    localStorage.setItem('timer-h15', document.getElementById('timer-h15').textContent);
+    localStorage.setItem('timer-h8', document.getElementById('timer-h8').textContent);
+    localStorage.setItem('timer-tobt', document.getElementById('timer-tobt').textContent);
+}
+
+/* Restaurer paramètres */
 function restoreSettings() {
     if (localStorage.getItem('modeDark') === '1') document.body.classList.add('dark');
     if (localStorage.getItem('modeUTC') === '1') isUTC = true;
+
+    // restaurer timers
+    if (localStorage.getItem('timer-h40')) document.getElementById('timer-h40').textContent = localStorage.getItem('timer-h40');
+    if (localStorage.getItem('timer-h15')) document.getElementById('timer-h15').textContent = localStorage.getItem('timer-h15');
+    if (localStorage.getItem('timer-h8')) document.getElementById('timer-h8').textContent = localStorage.getItem('timer-h8');
+    if (localStorage.getItem('timer-tobt')) document.getElementById('timer-tobt').textContent = localStorage.getItem('timer-tobt');
 }
 
-/* Vider la sauvegarde */
+/* Vider sauvegarde */
 function clearAutoSave() {
     localStorage.clear();
     location.reload();
