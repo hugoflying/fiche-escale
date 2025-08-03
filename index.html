@@ -309,6 +309,7 @@ button.plus  { background: #555; color: white; }
 </section>
 
 <button id="validate" onclick="validateForm()">VALIDER</button>
+<button id="reset" style="margin-top:10px;background:#d32f2f;color:white;padding:10px;border:none;border-radius:5px;cursor:pointer;" onclick="clearAutoSave()">RÉINITIALISER LA FICHE</button>
 
 <script>
 let isUTC = false;
@@ -318,6 +319,7 @@ let manualSOBT = false;
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
     generateTimingFields();
+    enableAutoSave();
 }
 
 /* Génération champs Timing */
@@ -353,6 +355,32 @@ function generateTimingFields() {
         `;
         container.appendChild(div);
     });
+
+    enableAutoSave(); // important : activer sauvegarde sur ces champs dynamiques
+}
+
+/* Sauvegarde auto */
+function enableAutoSave() {
+    const fields = document.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+        const savedValue = localStorage.getItem(field.id);
+        if (savedValue !== null) field.value = savedValue;
+
+        field.addEventListener('input', () => localStorage.setItem(field.id, field.value));
+        field.addEventListener('change', () => localStorage.setItem(field.id, field.value));
+    });
+}
+
+/* Vider la sauvegarde */
+function clearAutoSave() {
+    const fields = document.querySelectorAll('input, select, textarea');
+    fields.forEach(field => {
+        localStorage.removeItem(field.id);
+        if (field.type === "date") field.valueAsDate = new Date();
+        else field.value = "";
+    });
+    manualSOBT = false;
+    updateAllCalculations();
 }
 
 /* Bouton Now */
@@ -385,7 +413,7 @@ function toggleTimeMode() {
     inputs.forEach(input => {
         if (!input.value) return;
         let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2; // bascule
+        hh = isUTC ? hh + 2 : hh - 2; // bascule simple (ajuste selon ton fuseau)
         if (hh < 0) hh += 24;
         if (hh >= 24) hh -= 24;
         input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
@@ -425,7 +453,7 @@ function updateTimers() {
 
 /* Calcul SOBT par défaut pour FR */
 function updateSOBTDefault() {
-    if (manualSOBT) return; // si l’utilisateur a modifié SOBT, ne pas recalculer
+    if (manualSOBT) return;
     const cie = document.getElementById('Cie').value;
     const sibt = document.getElementById('SIBT').value;
     const arrPNT = document.getElementById('ArrPNT')?.value;
@@ -512,37 +540,6 @@ function updateDLCode() {
         document.getElementById('DLcode1').value = '';
         document.getElementById('DLduree1').value = '';
     }
-}
-
-    /* Sauvegarde auto dans localStorage */
-function enableAutoSave() {
-    const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => {
-        // Charger la valeur sauvegardée si elle existe
-        const savedValue = localStorage.getItem(field.id);
-        if (savedValue !== null) field.value = savedValue;
-
-        // Sauvegarder en temps réel à chaque modification
-        field.addEventListener('input', () => {
-            localStorage.setItem(field.id, field.value);
-        });
-        field.addEventListener('change', () => {
-            localStorage.setItem(field.id, field.value);
-        });
-    });
-}
-
-/* Vider les données locales si besoin */
-function clearAutoSave() {
-    const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => localStorage.removeItem(field.id));
-}
-
-/* Appeler la fonction dans initForm */
-function initForm() {
-    document.getElementById('Date').valueAsDate = new Date();
-    generateTimingFields();
-    enableAutoSave(); // active la sauvegarde auto
 }
 
 /* Validation champs obligatoires */
