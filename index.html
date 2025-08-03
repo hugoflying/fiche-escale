@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
 <style>
-/* ---- RESET ---- */
+/* RESET & BASE */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: Arial, sans-serif;
@@ -15,10 +15,7 @@ body {
 }
 body.dark { background: #121212; color: #f8f9fa; }
 
-h1 {
-    text-align: center;
-    margin: 10px 0 15px;
-}
+h1 { text-align: center; margin: 10px 0 15px; }
 
 section {
     background: #fff;
@@ -35,21 +32,17 @@ h2 {
     padding-bottom: 5px;
 }
 
-/* ---- GRILLE ---- */
-.form-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
+/* GRILLES */
+.form-grid { display: flex; flex-wrap: wrap; gap: 10px; }
 .form-group {
     flex: 1 1 calc(50% - 10px); /* 2 colonnes */
     min-width: 150px;
 }
-.form-group label {
-    font-size: 0.9rem;
-    margin-bottom: 3px;
-    display: block;
+.form-group-3col {
+    flex: 1 1 calc(33.33% - 10px); /* 3 colonnes */
+    min-width: 120px;
 }
+.form-group label { font-size: 0.9rem; display: block; margin-bottom: 3px; }
 input, select, textarea {
     width: 100%;
     padding: 6px;
@@ -59,9 +52,10 @@ input, select, textarea {
 }
 textarea { resize: vertical; min-height: 60px; }
 
-/* ---- BOUTONS ACTION ---- */
+/* BOUTONS ACTIONS HORAIRES */
 .btn-actions {
     display: flex;
+    justify-content: space-between;
     gap: 5px;
     margin-top: 3px;
 }
@@ -73,10 +67,11 @@ button.action {
     border-radius: 4px;
     cursor: pointer;
 }
-button.now { background: #1976d2; color: white; }
-button.minus, button.plus { background: #555; color: white; }
+button.minus { background: #555; color: white; }
+button.now   { background: #1976d2; color: white; }
+button.plus  { background: #555; color: white; }
 
-/* ---- VALIDATION ---- */
+/* VALIDATION */
 #validate {
     width: 100%;
     padding: 12px;
@@ -89,7 +84,7 @@ button.minus, button.plus { background: #555; color: white; }
     margin-top: 10px;
 }
 
-/* ---- TIMERS ---- */
+/* TIMERS H-15 / LID */
 .timer-box {
     display: flex;
     justify-content: center;
@@ -97,6 +92,13 @@ button.minus, button.plus { background: #555; color: white; }
     margin-bottom: 15px;
 }
 .timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+.timer-label { font-weight: bold; font-size: 1rem; }
+.timer-value {
     background: #d32f2f;
     color: #fff;
     font-weight: bold;
@@ -105,10 +107,10 @@ button.minus, button.plus { background: #555; color: white; }
     font-size: 1.1rem;
 }
 
-/* ---- TOGGLE MODE ---- */
+/* TOGGLES */
 .toggle-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-bottom: 10px;
 }
 .toggle-container button {
@@ -121,13 +123,20 @@ button.minus, button.plus { background: #555; color: white; }
 
 <div class="toggle-container">
     <button onclick="toggleDarkMode()">🌙 / ☀️</button>
+    <button onclick="toggleTimeMode()">Local / UTC</button>
 </div>
 
 <h1>SUIVI PERFORMANCE</h1>
 
 <div class="timer-box">
-    <div id="timer-h15" class="timer">H-15</div>
-    <div id="timer-h8" class="timer">H-8</div>
+    <div class="timer">
+        <div class="timer-label">H-15</div>
+        <div id="timer-h15" class="timer-value">--:--</div>
+    </div>
+    <div class="timer">
+        <div class="timer-label">LID</div>
+        <div id="timer-h8" class="timer-value">--:--</div>
+    </div>
 </div>
 
 <!-- INFO VOL -->
@@ -142,11 +151,13 @@ button.minus, button.plus { background: #555; color: white; }
                 <option>V7</option><option>Autre</option>
             </select>
         </label></div>
+
         <div class="form-group"><label>N° Vol<input type="text" id="NVol"></label></div>
         <div class="form-group"><label>Provenance<input type="text" id="From"></label></div>
         <div class="form-group"><label>Destination<input type="text" id="To"></label></div>
-        <div class="form-group"><label>RZA<input type="text" id="RZA"></label></div>
+
         <div class="form-group"><label>Immat<input type="text" id="Immat"></label></div>
+        <div class="form-group"><label>RZA<input type="text" id="RZA"></label></div>
         <div class="form-group"><label>Parking
             <select id="Parking">
                 <option>1</option><option>2</option><option>3</option><option>4</option>
@@ -154,6 +165,7 @@ button.minus, button.plus { background: #555; color: white; }
                 <option>9</option><option>10</option><option>11</option><option>12</option>
             </select>
         </label></div>
+
         <div class="form-group"><label>FNC
             <select id="FNC">
                 <option>Y</option><option selected>N</option>
@@ -166,20 +178,45 @@ button.minus, button.plus { background: #555; color: white; }
 <section>
     <h2>HORAIRES</h2>
     <div class="form-grid">
-        <div class="form-group"><label>SIBT<input type="time" id="SIBT"></label></div>
-        <div class="form-group"><label>AIBT<input type="time" id="AIBT"></label></div>
-        <div class="form-group"><label>SOBT<input type="time" id="SOBT"></label></div>
-        <div class="form-group"><label>AOBT<input type="time" id="AOBT"></label></div>
+        <div class="form-group">
+            <label>SIBT<input type="time" id="SIBT"></label>
+            <div class="btn-actions">
+                <button class="action minus" onclick="adjustTime('SIBT',-1)">-1</button>
+                <button class="action now" onclick="setNow('SIBT')">Now</button>
+                <button class="action plus" onclick="adjustTime('SIBT',1)">+1</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>AIBT<input type="time" id="AIBT"></label>
+            <div class="btn-actions">
+                <button class="action minus" onclick="adjustTime('AIBT',-1)">-1</button>
+                <button class="action now" onclick="setNow('AIBT')">Now</button>
+                <button class="action plus" onclick="adjustTime('AIBT',1)">+1</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>SOBT<input type="time" id="SOBT" onchange="updateTimers()"></label>
+            <div class="btn-actions">
+                <button class="action minus" onclick="adjustTime('SOBT',-1);updateTimers()">-1</button>
+                <button class="action now" onclick="setNow('SOBT');updateTimers()">Now</button>
+                <button class="action plus" onclick="adjustTime('SOBT',1);updateTimers()">+1</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>AOBT<input type="time" id="AOBT"></label>
+            <div class="btn-actions">
+                <button class="action minus" onclick="adjustTime('AOBT',-1)">-1</button>
+                <button class="action now" onclick="setNow('AOBT')">Now</button>
+                <button class="action plus" onclick="adjustTime('AOBT',1)">+1</button>
+            </div>
+        </div>
     </div>
 </section>
 
 <!-- TIMING -->
 <section>
     <h2>TIMING</h2>
-    <button class="action now" style="width:100%;margin-bottom:10px;" onclick="fillAllNow()">Remplir tout en Now</button>
-    <div class="form-grid" id="timing-grid">
-        <!-- Tous les champs horaires avec boutons -->
-    </div>
+    <div class="form-grid" id="timing-grid"></div>
 </section>
 
 <!-- RETARDS -->
@@ -187,11 +224,11 @@ button.minus, button.plus { background: #555; color: white; }
     <h2>RETARDS (Départ)</h2>
     <div class="form-grid">
         <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
-        <div class="form-group"><label>DL Durée 1<input type="text" id="DLduree1"></label></div>
+        <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1"></label></div>
         <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
-        <div class="form-group"><label>DL Durée 2<input type="text" id="DLduree2"></label></div>
+        <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2"></label></div>
         <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
-        <div class="form-group"><label>DL Durée 3<input type="text" id="DLduree3"></label></div>
+        <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3"></label></div>
     </div>
 </section>
 
@@ -222,26 +259,41 @@ button.minus, button.plus { background: #555; color: white; }
 <section>
     <h2>Prestations</h2>
     <div class="form-grid">
-        <div class="form-group"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Flux par le RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
-        <div class="form-group"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
-        <div class="form-group"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
+        <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
+        <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
     </div>
 </section>
 
 <button id="validate">VALIDER</button>
 
 <script>
-// Toggle mode sombre
+// Mode sombre
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
+}
+
+// Mode Local/UTC
+let isUTC = false;
+function toggleTimeMode() {
+    const inputs = document.querySelectorAll('input[type="time"]');
+    inputs.forEach(input => {
+        if (!input.value) return;
+        let [hh, mm] = input.value.split(':').map(Number);
+        hh = isUTC ? hh + 2 : hh - 2; // ajustement
+        if (hh < 0) hh += 24;
+        if (hh >= 24) hh -= 24;
+        input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+    });
+    isUTC = !isUTC;
 }
 
 // Boutons horaires
@@ -254,14 +306,14 @@ function setNow(fieldId) {
 function adjustTime(fieldId, delta) {
     const input = document.getElementById(fieldId);
     if (!input.value) return;
-    const [hh, mm] = input.value.split(':').map(Number);
-    let date = new Date();
-    date.setHours(hh);
-    date.setMinutes(mm + delta);
-    input.value = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+    let [hh, mm] = input.value.split(':').map(Number);
+    let d = new Date();
+    d.setHours(hh);
+    d.setMinutes(mm + delta);
+    input.value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// Génération des champs Timing
+// Générer les champs Timing
 const timings = [
     "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
     "AvionPremierEmbarque","AvionDernierEmbarque",
@@ -283,17 +335,34 @@ timings.forEach((id, i) => {
     div.innerHTML = `
         <label>${timingLabels[i]}<input type="time" id="${id}"></label>
         <div class="btn-actions">
-            <button class="action now" onclick="setNow('${id}')">Now</button>
             <button class="action minus" onclick="adjustTime('${id}',-1)">-1</button>
+            <button class="action now" onclick="setNow('${id}')">Now</button>
             <button class="action plus" onclick="adjustTime('${id}',1)">+1</button>
         </div>
     `;
     container.appendChild(div);
 });
 
-// Bouton remplir tout en Now
-function fillAllNow() {
-    timings.forEach(id => setNow(id));
+// Calcul H-15 et H-8 (LID)
+function updateTimers() {
+    const sobt = document.getElementById('SOBT').value;
+    if (!sobt) {
+        document.getElementById('timer-h15').textContent = '--:--';
+        document.getElementById('timer-h8').textContent = '--:--';
+        return;
+    }
+    const [hh, mm] = sobt.split(':').map(Number);
+    const base = new Date();
+    base.setHours(hh);
+    base.setMinutes(mm);
+
+    const h15 = new Date(base.getTime() - 15*60000);
+    const h8 = new Date(base.getTime() - 8*60000);
+
+    document.getElementById('timer-h15').textContent =
+        `${String(h15.getHours()).padStart(2,'0')}:${String(h15.getMinutes()).padStart(2,'0')}`;
+    document.getElementById('timer-h8').textContent =
+        `${String(h8.getHours()).padStart(2,'0')}:${String(h8.getMinutes()).padStart(2,'0')}`;
 }
 </script>
 
