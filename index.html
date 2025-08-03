@@ -1,699 +1,144 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Fiche Escale Interactive</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 10px;
-      margin: auto;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-      box-sizing: border-box;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUIVI PERFORMANCE</title>
+<style>
+    body { font-family: Arial, sans-serif; background: #f8f9fa; color: #222; padding: 10px; }
+    body.dark { background: #121212; color: #f8f9fa; }
+    h1 { text-align: center; margin-bottom: 15px; }
+    .timer-box { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+    .timer { background: #d32f2f; color: #fff; font-weight: bold; padding: 10px 20px; border-radius: 6px; }
+    section { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+    body.dark section { background: #1e1e1e; }
+    label { display: block; margin-bottom: 8px; }
+    input, select, textarea { width: 100%; padding: 8px; font-size: 1rem; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    #validate, #login {
+        width: 100%; padding: 12px; margin-top: 10px;
+        font-size: 1.2rem; border: none; border-radius: 6px; cursor: pointer;
     }
-    section {
-      margin-bottom: 30px;
-    }
-    h3 {
-      background: #000;
-      color: #fff;
-      padding: 10px;
-      margin: 0 -10px 15px;
-      text-align: center;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .row-grey {
-      background-color: #f2f2f2;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-    }
-    .field {
-      flex: 1 1 48%;
-      min-width: 160px;
-      display: flex;
-      flex-direction: column;
-      background: #f9f9f9;
-      border-radius: 5px;
-    }
-    .field label {
-      font-weight: bold;
-      margin-bottom: 3px;
-      font-size: 0.95em;
-      text-align: center;
-    }
-    .field input,
-    .field select,
-    .field textarea {
-      padding: 10px;
-      font-size: 1em;
-      margin-top: 5px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    textarea {
-      height: 150px;
-    }
-    input, textarea {
-      text-transform: uppercase;
-    }
-    .time-controls {
-      display: flex;
-      gap: 5px;
-      margin-top: 5px;
-    }
-    .time-controls button {
-      flex: 1;
-      padding: 10px;
-      font-size: 1em;
-    }
-    @media (max-width: 850px) {
-      .field {
-        flex: 1 1 48%;
-      }
-    }
-    @media (max-width: 600px) {
-      .field {
-        flex: 1 1 100%;
-      }
-    }
-    .blink-red {
-      animation: blinkRed 1s infinite;
-      background-color: #ff0000 !important;
-      color: white;
-    }
-    .solid-red {
-      background-color: #cc0000 !important;
-      color: white;
-    }
-    @keyframes blinkRed {
-      0% { background-color: #ff0000; color: white; }
-      50% { background-color: white; color: red; }
-      100% { background-color: #ff0000; color: white; }
-    }
-  </style>
+    #login { background: #1976d2; color: #fff; }
+    #validate { background: #4caf50; color: #fff; }
+</style>
 </head>
 <body>
-     <div style="position: absolute; top: 10px; right: 20px;">
-       <label><input type="radio" name="timeMode" value="local" onchange="setTimeMode('local')"> Heure locale</label>
-       <label><input type="radio" name="timeMode" value="utc" checked onchange="setTimeMode('utc')"> UTC</label>
-     </div>
- 
-   <h2>Fiche Escale Vol</h2>
- 
-   <!-- MENU DE SÉLECTION DES ROTATIONS DU JOUR -->
-   <section>
-     <h3>ROTATIONS DISPONIBLES</h3>
-     <div class="row">
-       <div class="field">
-         <label>Choisir un vol à l'arrivée</label>
-         <select id="arrivalSelector" onchange="populateArrivalInfo()">
-           <option value="">-- Chargement en cours... --</option>
-         </select>
-       </div>
-       <div class="field">
-         <label>Choisir un vol au départ</label>
-         <select id="departureSelector" onchange="populateDepartureInfo()">
-           <option value="">-- Chargement en cours... --</option>
-         </select>
-       </div>
-     </div>
-   </section>
- 
-   <!-- SECTION INFORMATIONS -->
- <section>
-   <h3>INFORMATIONS</h3>
-   <div class="row">
-     <div class="field"><label>Date</label><input type="date" id="dateField"></div>
-     <div class="field"><label>Compagnie</label><select id="compagnie">
-       <option>FR</option><option>RK</option><option>W4</option><option>W6</option><option>H4</option><option>H6</option><option>U5</option><option>V7</option><option>Autre</option>
-     </select></div>
-   </div>
-   <div class="row">
-     <div class="field"><label>N° de vol arrivée</label><input type="number" id="numVolArrivee" readonly></div>
-     <div class="field"><label>N° de vol départ</label><input type="number" id="numVol"></div>
-   </div>
-   <div class="row">
-     <div class="field"><label>Provenance</label><input type="text" id="provenance"></div>
-     <div class="field"><label>Destination</label><input type="text" id="destination"></div>
-   </div>
-   <div class="row">
-     <div class="field"><label>Immatriculation</label><input type="text" id="immatriculation"></div>
-     <div class="field"><label>Type avion</label><select id="typeAvion">
-       <option value="">Choisir un type</option>
-       <option value="">-- Choisir un type --</option>
-       <option>B737</option>
-       <option>B738</option>
-       <option>B38M</option>
-       <option>A320</option>
-       <option>A20N</option>
-       <option>A321</option>
-       <option>A21N</option>
-     </select></div>
-   </div>
-   <div class="row">
-     <div class="field"><label>Parking</label><select id="parking">
-       <option value="">Choisir un point de parking</option>
-       <option value="">-- Choisir un point de parking --</option>
-       <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option>
-     </select></div>
-   </div>
- </section>
- 
-  <section>
-   <section>
-    <h3>HORAIRES</h3>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>SIBT</label>
-        <input type="time" id="sibt">
-      </div>
-      <div class="field">
-        <label>SOBT</label>
-        <input type="time" id="sobt">
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>AIBT</label>
-        <input type="time" id="aibt">
-        <div class="time-controls">
-          <button onclick="adjustTime('aibt', -1)">-1</button>
-          <button onclick="setNow('aibt')">Now</button>
-          <button onclick="adjustTime('aibt', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>AOBT</label>
-        <input type="time" id="aobt">
-        <div class="time-controls">
-          <button onclick="adjustTime('aobt', -1)">-1</button>
-          <button onclick="setNow('aobt')">Now</button>
-          <button onclick="adjustTime('aobt', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>HLE</label>
-        <input type="time" id="hle" readonly>
-      </div>
-      <div class="field">
-        <label>H-15</label>
-        <input type="time" id="h15" readonly>
-      </div>
-    </div>
-  </section>
- 
- 
-  <section>
-    <h3>TIMING ESCALE</h3>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>Arrivée PNT</label>
-        <input type="time" id="arriveePNT">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveePNT', -1)">-1</button>
-          <button onclick="setNow('arriveePNT')">Now</button>
-          <button onclick="adjustTime('arriveePNT', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Arrivée PNC</label>
-        <input type="time" id="arriveePNC">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveePNC', -1)">-1</button>
-          <button onclick="setNow('arriveePNC')">Now</button>
-          <button onclick="adjustTime('arriveePNC', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>Arrivée fuel</label>
-        <input type="time" id="arriveeFuel">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveeFuel', -1)">-1</button>
-          <button onclick="setNow('arriveeFuel')">Now</button>
-          <button onclick="adjustTime('arriveeFuel', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Départ fuel</label>
-        <input type="time" id="departFuel">
-        <div class="time-controls">
-          <button onclick="adjustTime('departFuel', -1)">-1</button>
-          <button onclick="setNow('departFuel')">Now</button>
-          <button onclick="adjustTime('departFuel', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>Arrivée lift</label>
-        <input type="time" id="arriveeLift">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveeLift', -1)">-1</button>
-          <button onclick="setNow('arriveeLift')">Now</button>
-          <button onclick="adjustTime('arriveeLift', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Départ lift</label>
-        <input type="time" id="departLift">
-        <div class="time-controls">
-          <button onclick="adjustTime('departLift', -1)">-1</button>
-          <button onclick="setNow('departLift')">Now</button>
-          <button onclick="adjustTime('departLift', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>First PAX OUT</label>
-        <input type="time" id="firstPaxOut">
-        <div class="time-controls">
-          <button onclick="adjustTime('firstPaxOut', -1)">-1</button>
-          <button onclick="setNow('firstPaxOut')">Now</button>
-          <button onclick="adjustTime('firstPaxOut', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Last PAX OUT</label>
-        <input type="time" id="lastPaxOut">
-        <div class="time-controls">
-          <button onclick="adjustTime('lastPaxOut', -1)">-1</button>
-          <button onclick="setNow('lastPaxOut')">Now</button>
-          <button onclick="adjustTime('lastPaxOut', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>First PAX IN</label>
-        <input type="time" id="firstPaxIn">
-        <div class="time-controls">
-          <button onclick="adjustTime('firstPaxIn', -1)">-1</button>
-          <button onclick="setNow('firstPaxIn')">Now</button>
-          <button onclick="adjustTime('firstPaxIn', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Last PAX IN</label>
-        <input type="time" id="lastPaxIn">
-        <div class="time-controls">
-          <button onclick="adjustTime('lastPaxIn', -1)">-1</button>
-          <button onclick="setNow('lastPaxIn')">Now</button>
-          <button onclick="adjustTime('lastPaxIn', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-    <div class="row row-grey">
-      <div class="field">
-        <label>Arrivée INAD</label>
-        <input type="time" id="arriveeINAD">
-        <div class="time-controls">
-          <button onclick="adjustTime('arriveeINAD', -1)">-1</button>
-          <button onclick="setNow('arriveeINAD')">Now</button>
-          <button onclick="adjustTime('arriveeINAD', 1)">+1</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>Fermeture porte avion</label>
-        <input type="time" id="fermeturePorte">
-        <div class="time-controls">
-          <button onclick="adjustTime('fermeturePorte', -1)">-1</button>
-          <button onclick="setNow('fermeturePorte')">Now</button>
-          <button onclick="adjustTime('fermeturePorte', 1)">+1</button>
-        </div>
-      </div>
-    </div>
- 
-  </section>
-    <section>
-     <h3>ASSISTANCES</h3>
-     <div class="row" style="flex-wrap: nowrap; overflow-x: auto;">
-       <div class="field" style="min-width: 120px;">
-         <label>Quantité</label>
-         <input type="number" id="assistanceCount" min="0" onchange="renderAssistances()" inputmode="numeric" pattern="[0-9]*" placeholder="Quantité">
-       </div>
-     </div>
-     <div id="assistancesContainer"></div>
-   </section>
- 
- 
-    <section>
-     <h3>PRESTATIONS</h3>
-     <div class="row">
-       <div class="field"><label><input type="checkbox"> GPU</label></div>
-       <div class="field"><label><input type="checkbox"> ASU</label></div>
-       <div class="field"><label><input type="checkbox"> Collecte d'ordures</label></div>
-       <div class="field"><label><input type="checkbox"> Eau potable</label></div>
-       <div class="field"><label><input type="checkbox"> Vidange toilettes</label></div>
-       <div class="field"><label><input type="checkbox"> Échelle supplémentaire</label></div>
-       <div class="field"><label><input type="checkbox"> Dégivrage</label></div>
-       <div class="field"><label><input type="checkbox"> Toilet kit</label></div>
-       <div class="field"><label><input type="checkbox"> Flux par le RZA</label></div>
-       <div class="field"><label><input type="checkbox"> Ménage Assist'Air</label></div>
-       <div class="field">
-         <label>Ménage Atalian</label>
-         <select>
-           <option value="">--</option>
-           <option value="Full">Full</option>
-           <option value="Tidy">Tidy</option>
-         </select>
-       </div>
-       <div class="field"><label><input type="checkbox"> Push-Pull</label></div>
-     </div>
-   </section>
- 
-   <section>
-     <h3>FAITS SAILLANTS</h3>
-     <textarea></textarea>
-   </section>
- 
-   <!-- BOUTONS -->
-   <div class="row">
-     <button onclick="window.print()" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Exporter en PDF</button>
-     <button onclick="document.querySelectorAll('input, select, textarea').forEach(f => f.type === 'checkbox' ? f.checked = false : f.value = '')" style="margin-top: 10px; padding: 10px 20px; font-size: 1em;">Effacer</button>
-   </div>
- 
-  <style>
-  .blink-red {
-    animation: blinkRed 1s infinite;
-    background-color: #ffcccc !important;
-  }
- 
-  @keyframes blinkRed {
-    0% { background-color: #ffcccc; }
-    50% { background-color: #ff0000; }
-    100% { background-color: #ffcccc; }
-  }
- 
-  .solid-red {
-    background-color: #ff0000 !important;
-    color: white;
-  }
-  </style>
- 
-  <script>
-  const API_KEY = "86b00c-05cc00";
-  const AIRPORT_IATA = "BVA";
-  let allDepartures = [];
-  let lastArrivalTime = null;
-  let lastArrivalFlightNumber = null;
- 
-  async function fetchFlightImmatriculations() {
+<h1>SUIVI PERFORMANCE</h1>
+
+<div class="timer-box">
+    <div id="timer-h15" class="timer">H-15</div>
+    <div id="timer-h8" class="timer">H-8</div>
+</div>
+
+<button id="login">Se connecter avec Microsoft</button>
+
+<section>
+    <h2>INFO VOL</h2>
+    <label>Date <input type="date" id="Date"></label>
+    <label>Cie 
+        <select id="Cie">
+            <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
+            <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
+            <option>V7</option><option>Autre</option>
+        </select>
+    </label>
+    <label>N° Vol <input type="text" id="N° Vol"></label>
+    <label>Provenance <input type="text" id="From"></label>
+    <label>Destination <input type="text" id="To"></label>
+    <label>RZA <input type="text" id="RZA"></label>
+    <label>Immat <input type="text" id="Immat"></label>
+    <label>Parking 
+        <select id="Park">
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+            <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+    </label>
+    <label>FNC 
+        <input type="radio" name="FNC" value="Y"> Oui
+        <input type="radio" name="FNC" value="N" checked> Non
+    </label>
+</section>
+
+<!-- AJOUTER ICI LES AUTRES SECTIONS (Horaires, Timing, etc.) -->
+
+<button id="validate">VALIDER</button>
+
+<script src="https://alcdn.msauth.net/browser/2.32.0/js/msal-browser.min.js"></script>
+<script>
+const msalConfig = {
+    auth: {
+        clientId: "04f0c124-f2bc-4f81-b82f-03fa74e4d5b7", // Client Microsoft public
+        authority: "https://login.microsoftonline.com/common",
+        redirectUri: window.location.href
+    }
+};
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+let accessToken = null;
+
+// Connexion
+document.getElementById('login').addEventListener('click', async () => {
+    const loginRequest = { scopes: ["Files.ReadWrite", "Sites.ReadWrite.All"] };
     try {
-      const res = await fetch(`https://aviation-edge.com/v2/public/flights?key=${API_KEY}`);
-      const data = await res.json();
-      return Array.isArray(data) ? data : [];
-    } catch (e) {
-      console.warn("Erreur API /flights:", e);
-      return [];
+        const loginResponse = await msalInstance.loginPopup(loginRequest);
+        const tokenResponse = await msalInstance.acquireTokenSilent(loginRequest)
+            .catch(() => msalInstance.acquireTokenPopup(loginRequest));
+        accessToken = tokenResponse.accessToken;
+        alert("Connecté avec succès !");
+    } catch (err) {
+        console.error(err);
+        alert("Erreur de connexion");
     }
-  }
- 
-  function isSameLocalDay(dateStr) {
-    const today = new Date();
-    const d = new Date(dateStr);
-    return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate();
-  }
- 
-  async function loadRotations() {
-    const arrSel = document.getElementById("arrivalSelector");
-    const depSel = document.getElementById("departureSelector");
-    arrSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
-    depSel.innerHTML = '<option value="">-- Chargement en cours... --</option>';
- 
-    const [arrRes, depRes, flightLive] = await Promise.all([
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=arrival`).then(r => r.json()),
-      fetch(`https://aviation-edge.com/v2/public/timetable?key=${API_KEY}&iataCode=${AIRPORT_IATA}&type=departure`).then(r => r.json()),
-      fetchFlightImmatriculations()
-    ]);
- 
-    const immatMap = {};
-    flightLive.forEach(f => {
-      const key = `${f.airline?.iataCode}${f.flight?.number}`;
-      if (f.aircraft?.regNumber) immatMap[key] = { reg: f.aircraft.regNumber, type: f.aircraft.icaoCode };
+});
+
+// Validation
+document.getElementById('validate').addEventListener('click', async () => {
+    if (!accessToken) {
+        alert("Connectez-vous d'abord !");
+        return;
+    }
+    const data = collectFormData();
+    await sendToExcel(data);
+    alert("Données envoyées dans le tableau Performance !");
+});
+
+// Collecte des données
+function collectFormData() {
+    const data = {};
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.type === 'radio') {
+            if (el.checked) data[el.name || el.id] = el.value;
+        } else {
+            data[el.name || el.id] = el.value;
+        }
     });
- 
-    arrSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    depSel.innerHTML = '<option value="">-- Sélectionner un vol --</option>';
-    allDepartures = depRes.filter(d => isSameLocalDay(d.departure?.scheduledTime));
- 
-    arrRes.filter(a => isSameLocalDay(a.arrival?.scheduledTime)).forEach(arr => {
-      const label = `${arr.airline?.iataCode || "??"}${arr.flight?.number || "???"} - ${arr.departure?.iataCode || "???"}`;
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify(arr);
-      opt.textContent = label;
-      arrSel.appendChild(opt);
+    return data;
+}
+
+// Envoi vers Excel
+async function sendToExcel(data) {
+    const siteId = "itssageb.sharepoint.com,74818751-8768-48d1-bea0-68319419cec2,69072204-40bf-4803-b656-abe7855b4952";
+    const filePath = "/sites/aeronet-operations/Suivi Performance/Archive 2025/TEST_____PERFORMANCE (07) Juillet 2025.xlsm";
+    const tableName = "Performance";
+
+    const url = `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:${filePath}:/workbook/tables('${tableName}')/rows/add`;
+
+    const body = { values: [Object.values(data)] };
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessToken}`
+        },
+        body: JSON.stringify(body)
     });
- 
-    allDepartures.forEach(dep => {
-      const key = `${dep.airline?.iataCode}${dep.flight?.number}`;
-      if (!dep.aircraft?.regNumber && immatMap[key]) {
-        dep.aircraft = {
-          regNumber: immatMap[key].reg,
-          icaoCode: immatMap[key].type
-        };
-      }
-      const label = `${dep.airline?.iataCode || "??"}${dep.flight?.number || "???"} - ${dep.arrival?.iataCode || "???"}`;
-      const opt = document.createElement("option");
-      opt.value = JSON.stringify(dep);
-      opt.textContent = label;
-      depSel.appendChild(opt);
-    });
-  }
- 
-  function populateArrivalInfo() {
-    const selected = document.getElementById("arrivalSelector").value;
-    if (!selected) return;
-    const flight = JSON.parse(selected);
-    document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-    document.getElementById("provenance").value = flight.departure?.iataCode || "";
-    lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-    lastArrivalFlightNumber = parseInt(flight.flight?.number);
- 
-    const depSel = document.getElementById("departureSelector");
-    let matched = false;
-    for (const dep of allDepartures) {
-      const num = parseInt(dep.flight?.number);
-      const depTime = new Date(dep.departure?.scheduledTime);
-      if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-        depSel.value = JSON.stringify(dep);
-        populateDepartureInfo();
-        matched = true;
-        break;
-      }
+
+    if (!response.ok) {
+        console.error("Erreur Graph API", await response.text());
+        alert("Erreur lors de l’envoi des données");
     }
-    if (!matched) depSel.selectedIndex = 0;
-  }
- 
-  function populateDepartureInfo() {
-    const selected = document.getElementById("departureSelector").value;
-    if (!selected) return;
-    const flight = JSON.parse(selected);
-    window.lastDeparture = flight;
-    document.getElementById("sobt").value = formatTime(flight.departure?.scheduledTime, isUTC());
-    document.getElementById("compagnie").value = flight.airline?.iataCode || "";
-    document.getElementById("destination").value = flight.arrival?.iataCode || "";
-    document.getElementById("immatriculation").value = flight.aircraft?.regNumber || "";
-    document.getElementById("numVol").value = flight.flight?.number || "";
-    document.getElementById("dateField").value = formatDate(flight.departure?.scheduledTime);
-    if (flight.aircraft?.icaoCode) {
-      const allowedTypes = ["B737", "B738", "B38M", "A320", "A20N", "A321", "A21N"];
-      const typeCode = flight.aircraft.icaoCode.toUpperCase();
-      if (allowedTypes.includes(typeCode)) {
-        document.getElementById("typeAvion").value = typeCode;
-      }
-    }
-    calculateTimeOffset("sobt", "hle", -40);
-    calculateTimeOffset("sobt", "h15", -15);
-  }
- 
- function populateArrivalInfo() {
-   const selected = document.getElementById("arrivalSelector").value;
-   if (!selected) return;
-   const flight = JSON.parse(selected);
-   document.getElementById("sibt").value = formatTime(flight.arrival?.scheduledTime, isUTC());
-   document.getElementById("provenance").value = flight.departure?.iataCode || "";
-   document.getElementById("numVolArrivee").value = flight.flight?.number || "";
-   lastArrivalTime = new Date(flight.arrival?.scheduledTime);
-   lastArrivalFlightNumber = parseInt(flight.flight?.number);
- 
-   const depSel = document.getElementById("departureSelector");
-   let matched = false;
-   for (const dep of allDepartures) {
-     const num = parseInt(dep.flight?.number);
-     const depTime = new Date(dep.departure?.scheduledTime);
-     if ((num === lastArrivalFlightNumber + 1 || num === lastArrivalFlightNumber - 1) && depTime > lastArrivalTime) {
-       depSel.value = JSON.stringify(dep);
-       populateDepartureInfo();
-       matched = true;
-       break;
-     }
-   }
-   if (!matched) depSel.selectedIndex = 0;
- }
- 
-  function formatTime(iso, useUTC = false) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    const h = useUTC ? d.getUTCHours() : d.getHours();
-    const m = useUTC ? d.getUTCMinutes() : d.getMinutes();
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  }
- 
-  function formatDate(iso) {
-    return new Date(iso).toISOString().split("T")[0];
-  }
- 
-  function adjustTime(id, delta) {
-    const input = document.getElementById(id);
-    if (!input.value) return;
-    const [h, m] = input.value.split(":" ).map(Number);
-    const d = new Date();
-    d.setUTCHours(h);
-    d.setUTCMinutes(m + delta);
-    const hh = d.getUTCHours().toString().padStart(2, '0');
-    const mm = d.getUTCMinutes().toString().padStart(2, '0');
-    input.value = `${hh}:${mm}`;
-  }
- 
-  function setNow(id) {
-    const now = new Date();
-    const hh = now.getUTCHours().toString().padStart(2, '0');
-    const mm = now.getUTCMinutes().toString().padStart(2, '0');
-    document.getElementById(id).value = `${hh}:${mm}`;
-  }
- 
-  function isUTC() {
-    return document.querySelector("input[name='timeMode']:checked")?.value === 'utc';
-  }
- 
-  function setTimeMode(mode) {
-    const useUTC = mode === 'utc';
-    window.timeMode = mode;
-    document.getElementById("sobt").value = formatTime(window.lastDeparture?.departure?.scheduledTime, useUTC);
-    document.getElementById("sibt").value = formatTime(window.lastArrivalTime?.toISOString(), useUTC);
-    calculateTimeOffset("sobt", "hle", -40);
-    calculateTimeOffset("sobt", "h15", -15);
-  }
- 
-  function calculateTimeOffset(baseId, targetId, offsetMinutes) {
-    const base = document.getElementById(baseId);
-    const target = document.getElementById(targetId);
-    if (!base || !target || !base.value) return;
-    const [h, m] = base.value.split(":" ).map(Number);
-    const baseDate = new Date();
-    baseDate.setUTCHours(h);
-    baseDate.setUTCMinutes(m);
-    baseDate.setUTCMinutes(baseDate.getUTCMinutes() + offsetMinutes);
-    const hh = baseDate.getUTCHours().toString().padStart(2, '0');
-    const mm = baseDate.getUTCMinutes().toString().padStart(2, '0');
-    target.value = `${hh}:${mm}`;
-  }
- 
-   function renderAssistances() {
-   const container = document.getElementById('assistancesContainer');
-   const count = parseInt(document.getElementById('assistanceCount').value || '0');
-   container.innerHTML = '';
-   for (let i = 0; i < count; i++) {
-     const row = document.createElement('div');
-     row.className = 'row';
-     row.style.cssText = 'flex-wrap: nowrap; overflow-x: auto; background-color: #f0f0f0; padding: 10px; margin-bottom: 10px; border-radius: 8px;';
-     row.innerHTML = `
-       <div class="field" style="min-width: 120px;">
-         <label>Type ${i + 1}</label>
-         <select id="assistance-type-${i}" onchange="toggleCustomCode(${i})">
-           <option>-</option>
-           <option>WCHR</option>
-           <option>WCHS</option>
-           <option>WCHC</option>
-           <option>DEAF</option>
-           <option>MUTE</option>
-           <option>DPNA</option>
-           <option>Autre</option>
-         </select>
-       </div>
-       <div class="field" id="custom-assistance-${i}" style="min-width: 120px; display: none;">
-         <label>Type personnalisé</label>
-         <input type="text" placeholder="Saisir le type">
-       </div>
-       <div class="field" style="min-width: 120px;">
-         <label>Équipement ${i + 1}</label>
-         <select>
-           <option>-</option>
-           <option>WCMP</option>
-           <option>WCLB</option>
-           <option>WCBD</option>
-         </select>
-       </div>
-       <div class="field" style="min-width: 120px;">
-         <label>Siège ${i + 1}</label>
-         <input type="text" placeholder="ex: 12A">
-       </div>
-     `;
-     container.appendChild(row);
-   }
- }
- 
- function toggleCustomCode(i) {
-   const select = document.getElementById(`assistance-type-${i}`);
-   const customDiv = document.getElementById(`custom-assistance-${i}`);
-   customDiv.style.display = select.value === 'Autre' ? 'block' : 'none';
- }
- 
-  function checkH15Status() {
-       const h15 = document.getElementById("h15");
-       if (!h15 || !h15.value) return;
-       const now = new Date();
-       const [h, m] = h15.value.split(":" ).map(Number);
-       const h15Time = new Date();
-       h15Time.setHours(h);
-       h15Time.setMinutes(m);
-       h15Time.setSeconds(0);
-       h15Time.setMilliseconds(0);
-       const diffMin = (h15Time - now) / 60000;
-       h15.classList.remove("solid-red", "blink-red");
-       if (diffMin <= 15 && diffMin > 0) {
-         h15.classList.add("solid-red");
-       } else if (diffMin <= 18 && diffMin > 15) {
-         h15.classList.add("blink-red");
-       }
-     }
- 
-  setInterval(checkH15Status, 5000);
- 
-  window.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("input[name='timeMode'][value='utc']").checked = true;
-    window.timeMode = 'utc';
-    loadRotations();
- 
-    const sobtField = document.getElementById('sobt');
-    if (sobtField) {
-      sobtField.addEventListener('change', () => {
-        calculateTimeOffset('sobt', 'hle', -40);
-        calculateTimeOffset('sobt', 'h15', -15);
-      });
-    }
-  });
-  </script>
+}
+</script>
+</body>
+</html>
