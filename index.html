@@ -63,7 +63,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 button.action {
     flex: 1;
-    padding: 10px; /* plus haut */
+    padding: 10px;
     font-size: 0.95rem;
     border: none;
     border-radius: 4px;
@@ -162,7 +162,7 @@ button.plus  { background: #555; color: white; }
     <div class="form-grid">
         <div class="form-group"><label>Date<input type="date" id="Date"></label></div>
         <div class="form-group"><label>Cie
-            <select id="Cie">
+            <select id="Cie" onchange="updateAllCalculations()">
                 <option value="">--</option>
                 <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
                 <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
@@ -171,11 +171,11 @@ button.plus  { background: #555; color: white; }
         </label></div>
 
         <div class="form-group"><label>N° Vol<input type="text" id="NVol"></label></div>
-        <div class="form-group"><label>Provenance<input type="text" id="From"></label></div>
-        <div class="form-group"><label>Destination<input type="text" id="To"></label></div>
+        <div class="form-group"><label>Provenance<input type="text" id="From" maxlength="3"></label></div>
+        <div class="form-group"><label>Destination<input type="text" id="To" maxlength="3"></label></div>
 
-        <div class="form-group"><label>Immat<input type="text" id="Immat"></label></div>
-        <div class="form-group"><label>RZA<input type="text" id="RZA"></label></div>
+        <div class="form-group"><label>Immat<input type="text" id="Immat" maxlength="5"></label></div>
+        <div class="form-group"><label>RZA<input type="text" id="RZA" maxlength="3"></label></div>
         <div class="form-group"><label>Parking
             <select id="Parking">
                 <option value="">--</option>
@@ -284,11 +284,14 @@ button.plus  { background: #555; color: white; }
         <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
+        <!-- Collecte & Toilet Kit -->
         <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
-        <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
+        <!-- Dégivrage & Push-Pull -->
+        <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
+        <!-- Échelle seule -->
+        <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
     </div>
 </section>
 
@@ -310,17 +313,20 @@ function generateTimingFields() {
         "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
         "AvionPremierEmbarque","AvionDernierEmbarque",
         "PortePremierEmbarque","PorteDernierEmbarque",
-        "FermeturePorteAvion","ArriveeFuel","DepartFuel",
-        "ArriveeLift","DepartLift"
+        "ArriveeFuel","DepartFuel",
+        "ArriveeLift","DepartLift",
+        "FermeturePorteAvion"
     ];
     const labels = [
         "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
         "Avion : Premier embarqué","Avion : Dernier embarqué",
         "Porte : Premier embarqué","Porte : Dernier embarqué",
-        "Fermeture porte avion","Arrivée Fuel","Départ Fuel",
-        "Arrivée Lift","Départ Lift"
+        "Arrivée Fuel","Départ Fuel",
+        "Arrivée Lift","Départ Lift",
+        "Fermeture porte avion"
     ];
     const container = document.getElementById('timing-grid');
+    container.innerHTML = "";
     timings.forEach((id,i)=>{
         const div = document.createElement('div');
         div.className = 'form-group';
@@ -339,15 +345,9 @@ function generateTimingFields() {
 /* === Boutons horaires === */
 function setNow(fieldId) {
     const now = new Date();
-    if (isUTC) {
-        const hh = String(now.getUTCHours()).padStart(2,'0');
-        const mm = String(now.getUTCMinutes()).padStart(2,'0');
-        document.getElementById(fieldId).value = `${hh}:${mm}`;
-    } else {
-        const hh = String(now.getHours()).padStart(2,'0');
-        const mm = String(now.getMinutes()).padStart(2,'0');
-        document.getElementById(fieldId).value = `${hh}:${mm}`;
-    }
+    const hh = isUTC ? now.getUTCHours() : now.getHours();
+    const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
+    document.getElementById(fieldId).value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
 }
 
 function adjustTime(fieldId, delta) {
@@ -377,6 +377,7 @@ function toggleTimeMode() {
         input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
     });
     isUTC = !isUTC;
+    updateAllCalculations();
 }
 
 /* === Calcul global === */
@@ -466,8 +467,12 @@ function updateDLCode() {
 
     if (AIBT > SIBT) {
         if (cie === 'FR') document.getElementById('DLcode1').value = '93';
-        if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
+        else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
+        else document.getElementById('DLcode1').value = '';
         document.getElementById('DLduree1').value = Math.round((AIBT - SIBT)/60000);
+    } else {
+        document.getElementById('DLcode1').value = '';
+        document.getElementById('DLduree1').value = '';
     }
 }
 
