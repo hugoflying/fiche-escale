@@ -22,6 +22,7 @@ h1 { text-align: center; margin: 10px 0 15px; }
     gap: 10px;
     margin-bottom: 10px;
     justify-content: flex-start;
+    flex-wrap: wrap;
 }
 .tab-bar button {
     padding: 6px 12px;
@@ -153,15 +154,16 @@ button.plus  { background: #555; color: white; }
 }
 .timer-label { font-weight: bold; font-size: 1rem; }
 .timer-value {
-    background: #d32f2f;
     color: #fff;
     font-weight: bold;
     padding: 10px 20px;
     border-radius: 6px;
     font-size: 1.1rem;
 }
-#timer-tobt { background: #2e7d32; }
+#timer-h40 { background: #d32f2f; }
+#timer-h15 { background: #d32f2f; }
 #timer-h8 { background: orange; }
+#timer-tobt { background: #2e7d32; }
 
 /* Toggles */
 .toggle-container {
@@ -174,7 +176,7 @@ button.plus  { background: #555; color: white; }
     font-size: 0.9rem;
 }
 
-/* Majuscules INFO VOL */
+/* Majuscules pour INFO VOL */
 #Date, #Cie, #NVol, #From, #To, #Immat, #RZA, #Parking, #FNC {
     text-transform: uppercase;
 }
@@ -200,22 +202,22 @@ button.plus  { background: #555; color: white; }
 <div id="tab-contents"></div>
 
 <script>
-/* ========= VARIABLES ========= */
+/* VARIABLES GLOBALES */
 let currentTab = 1;
-let maxTabs = 3;
+let maxTabs = 8;
 let tabCount = 1;
 let isUTC = false;
 let manualSOBT = {};
 
-/* ========= INIT ONGLET ========= */
+/* === Init Onglets === */
 function initTabs() {
     createTabContent(1);
     loadTabData(1);
 }
 
-/* ========= AJOUTER ONGLET ========= */
+/* === Ajouter un onglet (sans perte données existantes) === */
 function addTab() {
-    if (tabCount >= maxTabs) return alert("Maximum 3 vols !");
+    if (tabCount >= maxTabs) return alert("Maximum 8 vols !");
     tabCount++;
     createTabButton(tabCount);
     createTabContent(tabCount);
@@ -223,7 +225,7 @@ function addTab() {
     loadTabData(tabCount);
 }
 
-/* ========= CREER BOUTON ONGLET ========= */
+/* === Créer bouton d’onglet === */
 function createTabButton(num) {
     const btn = document.createElement("button");
     btn.id = `tab-btn-${num}`;
@@ -232,7 +234,7 @@ function createTabButton(num) {
     document.getElementById("tab-bar").insertBefore(btn, document.getElementById("add-tab"));
 }
 
-/* ========= CREER CONTENU ONGLET ========= */
+/* === Créer contenu formulaire === */
 function createTabContent(num) {
     const container = document.createElement("div");
     container.id = `tab-${num}`;
@@ -242,7 +244,7 @@ function createTabContent(num) {
     initForm(num);
 }
 
-/* ========= SWITCH ONGLET ========= */
+/* === Switch onglet === */
 function switchTab(num) {
     document.querySelectorAll('[id^="tab-"]').forEach(div => div.style.display = 'none');
     document.querySelectorAll('[id^="tab-btn-"]').forEach(btn => btn.classList.remove('active'));
@@ -252,143 +254,14 @@ function switchTab(num) {
     loadTabData(num);
 }
 
-/* ========= RENAME ONGLET ========= */
-function renameTab(num) {
-    const dest = document.getElementById(`To-${num}`).value;
-    const park = document.getElementById(`Parking-${num}`).value;
-    const btn = document.getElementById(`tab-btn-${num}`);
-    btn.textContent = (dest && park) ? `${dest}_${park}` : `VOL ${num}`;
-}
-
-/* ========= GENERATE FORM HTML ========= */
-function generateFormHTML(num) {
-    return `
-    <!-- Timers -->
-    <div class="timer-box">
-        <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40-${num}" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15-${num}" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">LID</div><div id="timer-h8-${num}" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt-${num}" class="timer-value">--:--</div></div>
-    </div>
-
-    <!-- INFO VOL -->
-    <section>
-        <h2>INFO VOL</h2>
-        <div class="form-grid">
-            <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date-${num}"></label></div>
-            <div class="form-group"><label>Cie
-                <select id="Cie-${num}" onchange="updateAllCalculations(${num})">
-                    <option value="">--</option>
-                    <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
-                    <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
-                    <option>V7</option><option>Autre</option>
-                </select>
-            </label></div>
-            <div class="form-group"><label>N° Vol<input type="text" id="NVol-${num}"></label></div>
-
-            <div class="form-group"><label>Provenance<input type="text" id="From-${num}" maxlength="3"></label></div>
-            <div class="form-group"><label>Destination<input type="text" id="To-${num}" maxlength="3" oninput="renameTab(${num})"></label></div>
-
-            <div class="form-group"><label>Immat<input type="text" id="Immat-${num}" maxlength="5"></label></div>
-            <div class="form-group"><label>Parking
-                <select id="Parking-${num}" onchange="renameTab(${num})">
-                    <option value="">--</option>
-                    <option>1</option><option>2</option><option>3</option><option>4</option>
-                    <option>5</option><option>6</option><option>7</option><option>8</option>
-                    <option>9</option><option>10</option><option>11</option><option>12</option>
-                </select>
-            </label></div>
-
-            <div class="form-group"><label>RZA<input type="text" id="RZA-${num}" maxlength="3"></label></div>
-            <div class="form-group"><label>FNC
-                <select id="FNC-${num}">
-                    <option>Y</option><option selected>N</option>
-                </select>
-            </label></div>
-        </div>
-    </section>
-
-    <!-- HORAIRES -->
-    <section>
-        <h2>HORAIRES</h2>
-        <div class="form-grid">
-            ${generateTimeField("SIBT", num)}
-            ${generateTimeField("AIBT", num)}
-            ${generateTimeField("SOBT", num, true)}
-            ${generateTimeField("AOBT", num)}
-        </div>
-    </section>
-
-    <button class="save-btn" onclick="manualSave(${num})">SAUVEGARDER</button>
-
-    <!-- TIMING -->
-    <section>
-        <h2>TIMING</h2>
-        <div class="form-grid" id="timing-grid-${num}"></div>
-    </section>
-
-    <button class="save-btn" onclick="manualSave(${num})">SAUVEGARDER</button>
-
-    <!-- RETARDS -->
-    <section>
-        <h2>RETARDS (DÉPART)</h2>
-        <div class="form-grid">
-            <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1-${num}"></label></div>
-            <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1-${num}"></label></div>
-            <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2-${num}"></label></div>
-            <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2-${num}"></label></div>
-            <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3-${num}"></label></div>
-            <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3-${num}"></label></div>
-        </div>
-    </section>
-
-    <!-- DL JUSTIFICATIONS -->
-    <section>
-        <h2>DL JUSTIFICATIONS</h2>
-        <textarea id="DLJustif-${num}"></textarea>
-    </section>
-
-    <!-- FAITS SAILLANTS -->
-    <section>
-        <h2>FAITS SAILLANTS</h2>
-        <textarea id="FaitsSaillants-${num}"></textarea>
-    </section>
-
-    <!-- ASSISTANCES PRISES EN CHARGE A/D -->
-    <section>
-        <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
-        <div class="form-grid">
-            <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC-${num}"></label></div>
-            <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS-${num}"></label></div>
-            <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR-${num}"></label></div>
-            <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist-${num}"></label></div>
-        </div>
-    </section>
-
-    <!-- PRESTATIONS -->
-    <section>
-        <h2>PRESTATIONS</h2>
-        <div class="form-grid">
-            <div class="form-group-3col"><label>ASU<select id="ASU-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Eau potable<select id="EauPotable-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian-${num}"><option>N</option><option>T</option><option>F</option></select></label></div>
-            <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures-${num}"><option>Y</option><option>N</option></select></label></div>
-            <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Dégivrage<select id="Degivrage-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Push-Pull<select id="PushPull-${num}"><option>N</option><option>Y</option></select></label></div>
-            <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle-${num}"><option>N</option><option>Y</option></select></label></div>
-        </div>
-    </section>
-
-    <!-- Boutons finaux -->
-    <button id="validate" onclick="validateForm(${num})">VALIDER</button>
-    <button class="save-btn" onclick="manualSave(${num})">SAUVEGARDER</button>
-    <button id="reset" onclick="clearAutoSave(${num})">RÉINITIALISER</button>
-    `;
-}
+/* === Majuscules auto === */
+document.addEventListener('input', (e)=>{
+    if(e.target.matches('input[type="text"]')){
+        if(["NVol","From","To","Immat"].some(prefix=>e.target.id.includes(prefix))){
+            e.target.value = e.target.value.toUpperCase();
+        }
+    }
+});
 
 /* Génère champ horaire avec boutons */
 function generateTimeField(name, num, sobt=false) {
@@ -404,7 +277,7 @@ function generateTimeField(name, num, sobt=false) {
     </div>`;
 }
 
-/* === INITIALISATION FORMULAIRE === */
+/* === Init Formulaire === */
 function initForm(num) {
     document.getElementById(`Date-${num}`).valueAsDate = new Date();
     generateTimingFields(num);
@@ -413,7 +286,7 @@ function initForm(num) {
     setInterval(() => { updateAllCalculations(num); manualSaveTimers(num); }, 60000);
 }
 
-/* === GENERATION CHAMPS TIMING === */
+/* === Génération des champs TIMING === */
 function generateTimingFields(num) {
     const timings = [
         "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
@@ -448,7 +321,7 @@ function generateTimingFields(num) {
     });
 }
 
-/* === SAUVEGARDE AUTO & RESTAURATION === */
+/* === Sauvegarde auto === */
 function enableAutoSave(num) {
     const fields = document.querySelectorAll(`#tab-${num} input, #tab-${num} select, #tab-${num} textarea`);
     fields.forEach(field => {
@@ -510,7 +383,7 @@ function clearAutoSave(num) {
     location.reload();
 }
 
-/* === BOUTON NOW === */
+/* Bouton Now */
 function setNow(fieldId) {
     const now = new Date();
     const hh = isUTC ? now.getUTCHours() : now.getHours();
@@ -518,7 +391,7 @@ function setNow(fieldId) {
     document.getElementById(fieldId).value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
 }
 
-/* === AJUSTEMENT TEMPS === */
+/* Ajustement temps */
 function adjustTime(fieldId, delta) {
     const input = document.getElementById(fieldId);
     if (!input.value) return;
@@ -529,19 +402,19 @@ function adjustTime(fieldId, delta) {
     input.value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === MODE SOMBRE === */
+/* Mode sombre */
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
 }
 
-/* === MODE LOCAL / UTC === */
+/* Mode Local/UTC */
 function toggleTimeMode() {
     const inputs = document.querySelectorAll('input[type="time"]');
     inputs.forEach(input => {
         if (!input.value) return;
         let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2; // Ajuste selon ton fuseau
+        hh = isUTC ? hh + 2 : hh - 2; // adapter fuseau
         if (hh < 0) hh += 24;
         if (hh >= 24) hh -= 24;
         input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
@@ -550,15 +423,16 @@ function toggleTimeMode() {
     localStorage.setItem('modeUTC', isUTC ? '1' : '0');
 }
 
-/* === CALCULS GLOBAUX === */
+/* Calcul global */
 function updateAllCalculations(num) {
     updateTimers(num);
     updateSOBTDefault(num);
     updateTOBT(num);
     updateDLCode(num);
+    updateDLDuree2(num);
 }
 
-/* === TIMERS H-40 / H-15 / LID === */
+/* Timers H-40 / H-15 / LID */
 function updateTimers(num) {
     const sobt = document.getElementById(`SOBT-${num}`).value;
     if (!sobt) {
@@ -579,7 +453,7 @@ function updateTimers(num) {
     document.getElementById(`timer-h8-${num}`).textContent = `${String(h8.getHours()).padStart(2,'0')}:${String(h8.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === CALCUL SOBT PAR DEFAUT POUR FR === */
+/* Calcul SOBT par défaut pour FR */
 function updateSOBTDefault(num) {
     if (manualSOBT[num]) return;
     const cie = document.getElementById(`Cie-${num}`).value;
@@ -600,7 +474,7 @@ function updateSOBTDefault(num) {
         `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === CALCUL TOBT === */
+/* Calcul TOBT */
 function updateTOBT(num) {
     const cie = document.getElementById(`Cie-${num}`).value;
     const sibttxt = document.getElementById(`SIBT-${num}`).value;
@@ -646,7 +520,7 @@ function updateTOBT(num) {
         `${String(TOBT.getHours()).padStart(2,'0')}:${String(TOBT.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === DL CODE AUTO 93 / 93A === */
+/* DL Code automatique */
 function updateDLCode(num) {
     const cie = document.getElementById(`Cie-${num}`).value;
     const sibttxt = document.getElementById(`SIBT-${num}`).value;
@@ -670,7 +544,28 @@ function updateDLCode(num) {
     }
 }
 
-/* === VALIDATION FORMULAIRE === */
+/* Calcul DL Durée 2 = (AOBT - SOBT) - DL Durée 1 */
+function updateDLDuree2(num) {
+    const sobt = document.getElementById(`SOBT-${num}`).value;
+    const aobt = document.getElementById(`AOBT-${num}`).value;
+    const dl1 = parseInt(document.getElementById(`DLduree1-${num}`).value) || 0;
+
+    if (sobt && aobt) {
+        const [soH,soM] = sobt.split(':').map(Number);
+        const [aoH,aoM] = aobt.split(':').map(Number);
+
+        const SOBT = new Date(); SOBT.setHours(soH, soM);
+        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
+
+        let diff = (AOBT - SOBT) / 60000; // total minutes
+        diff -= dl1; // retrancher durée 1
+
+        if (diff < 0) diff = 0;
+        document.getElementById(`DLduree2-${num}`).value = diff;
+    }
+}
+
+/* Validation */
 function validateForm(num) {
     const required = ['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
     for (let id of required) {
@@ -680,6 +575,17 @@ function validateForm(num) {
         }
     }
     alert("Formulaire valide et prêt à être envoyé !");
+}
+
+/* Renommer onglet si Destination + Parking rempli */
+function renameTab(num) {
+    const dest = document.getElementById(`To-${num}`).value;
+    const park = document.getElementById(`Parking-${num}`).value;
+    if (dest && park) {
+        document.getElementById(`tab-btn-${num}`).textContent = `${dest}_${park}`;
+    } else {
+        document.getElementById(`tab-btn-${num}`).textContent = `VOL ${num}`;
+    }
 }
 </script>
 
