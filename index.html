@@ -36,9 +36,9 @@ h2 {
 }
 
 /* GRILLES */
-.form-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-.form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; }
-.form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; }
+.form-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
+.form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
 
 /* Labels en gras et centrés */
 .form-group label {
@@ -69,10 +69,10 @@ textarea {
     text-align: left;
 }
 
-/* Boutons horaires plus grands */
+/* Boutons horaires alignés et centrés */
 .btn-actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     gap: 5px;
     margin-top: 5px;
 }
@@ -83,6 +83,7 @@ button.action {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    max-width: 60px;
 }
 button.minus { background: #555; color: white; }
 button.now   { background: #1976d2; color: white; }
@@ -171,11 +172,11 @@ button.plus  { background: #555; color: white; }
     </div>
 </div>
 
-<!-- SECTION INFO VOL -->
+<!-- INFO VOL -->
 <section>
     <h2>INFO VOL</h2>
     <div class="form-grid">
-        <div class="form-group"><label>Date<input type="date" id="Date"></label></div>
+        <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
         <div class="form-group"><label>Cie
             <select id="Cie" onchange="updateAllCalculations()">
                 <option value="">--</option>
@@ -184,13 +185,12 @@ button.plus  { background: #555; color: white; }
                 <option>V7</option><option>Autre</option>
             </select>
         </label></div>
-
         <div class="form-group"><label>N° Vol<input type="text" id="NVol"></label></div>
+
         <div class="form-group"><label>Provenance<input type="text" id="From" maxlength="3"></label></div>
         <div class="form-group"><label>Destination<input type="text" id="To" maxlength="3"></label></div>
 
         <div class="form-group"><label>Immat<input type="text" id="Immat" maxlength="5"></label></div>
-        <div class="form-group"><label>RZA<input type="text" id="RZA" maxlength="3"></label></div>
         <div class="form-group"><label>Parking
             <select id="Parking">
                 <option value="">--</option>
@@ -200,6 +200,7 @@ button.plus  { background: #555; color: white; }
             </select>
         </label></div>
 
+        <div class="form-group"><label>RZA<input type="text" id="RZA" maxlength="3"></label></div>
         <div class="form-group"><label>FNC
             <select id="FNC">
                 <option>Y</option><option selected>N</option>
@@ -208,7 +209,7 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- SECTION HORAIRES -->
+<!-- HORAIRES -->
 <section>
     <h2>HORAIRES</h2>
     <div class="form-grid">
@@ -229,11 +230,11 @@ button.plus  { background: #555; color: white; }
             </div>
         </div>
         <div class="form-group">
-            <label>SOBT<input type="time" id="SOBT" onchange="updateAllCalculations()"></label>
+            <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
             <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('SOBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('SOBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('SOBT',1);updateAllCalculations()">+1</button>
+                <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
+                <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
+                <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
             </div>
         </div>
         <div class="form-group">
@@ -247,13 +248,13 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- SECTION TIMING -->
+<!-- TIMING -->
 <section>
     <h2>TIMING</h2>
     <div class="form-grid" id="timing-grid"></div>
 </section>
 
-<!-- SECTION RETARDS -->
+<!-- RETARDS -->
 <section>
     <h2>RETARDS (Départ)</h2>
     <div class="form-grid">
@@ -266,19 +267,19 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- SECTION DL JUSTIFICATION -->
+<!-- DL JUSTIFICATION -->
 <section>
     <h2>DL Justification</h2>
     <textarea id="DLJustif"></textarea>
 </section>
 
-<!-- SECTION FAITS SAILLANTS -->
+<!-- FAITS SAILLANTS -->
 <section>
     <h2>Faits saillants</h2>
     <textarea id="FaitsSaillants"></textarea>
 </section>
 
-<!-- SECTION ASSISTANCES -->
+<!-- ASSISTANCES -->
 <section>
     <h2>Assistances prises en charge A/D</h2>
     <div class="form-grid">
@@ -289,7 +290,7 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- SECTION PRESTATIONS -->
+<!-- PRESTATIONS -->
 <section>
     <h2>Prestations</h2>
     <div class="form-grid">
@@ -299,13 +300,10 @@ button.plus  { background: #555; color: white; }
         <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
-        <!-- Collecte & Toilet Kit -->
         <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
         <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
-        <!-- Dégivrage & Push-Pull -->
         <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
-        <!-- Échelle seule -->
         <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
     </div>
 </section>
@@ -314,14 +312,15 @@ button.plus  { background: #555; color: white; }
 
 <script>
 let isUTC = false;
+let manualSOBT = false;
 
-/* === Initialisation === */
+/* Initialisation */
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
     generateTimingFields();
 }
 
-/* === Génération champs Timing === */
+/* Génération champs Timing */
 function generateTimingFields() {
     const timings = [
         "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
@@ -356,7 +355,7 @@ function generateTimingFields() {
     });
 }
 
-/* === Bouton Now === */
+/* Bouton Now */
 function setNow(fieldId) {
     const now = new Date();
     const hh = isUTC ? now.getUTCHours() : now.getHours();
@@ -364,7 +363,7 @@ function setNow(fieldId) {
     document.getElementById(fieldId).value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
 }
 
-/* === Ajustement temps === */
+/* Ajustement temps */
 function adjustTime(fieldId, delta) {
     const input = document.getElementById(fieldId);
     if (!input.value) return;
@@ -375,18 +374,18 @@ function adjustTime(fieldId, delta) {
     input.value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === Mode sombre === */
+/* Mode sombre */
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
 }
 
-/* === Mode Local/UTC === */
+/* Mode Local/UTC */
 function toggleTimeMode() {
     const inputs = document.querySelectorAll('input[type="time"]');
     inputs.forEach(input => {
         if (!input.value) return;
         let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2;
+        hh = isUTC ? hh + 2 : hh - 2; // bascule
         if (hh < 0) hh += 24;
         if (hh >= 24) hh -= 24;
         input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
@@ -395,7 +394,7 @@ function toggleTimeMode() {
     updateAllCalculations();
 }
 
-/* === Calcul global === */
+/* Calcul global */
 function updateAllCalculations() {
     updateTimers();
     updateSOBTDefault();
@@ -403,7 +402,7 @@ function updateAllCalculations() {
     updateDLCode();
 }
 
-/* === Timers H-40 / H-15 / LID === */
+/* Timers H-40 / H-15 / LID */
 function updateTimers() {
     const sobt = document.getElementById('SOBT').value;
     if (!sobt) {
@@ -424,12 +423,13 @@ function updateTimers() {
     document.getElementById('timer-h8').textContent = `${String(h8.getHours()).padStart(2,'0')}:${String(h8.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === Calcul SOBT par défaut pour FR === */
+/* Calcul SOBT par défaut pour FR */
 function updateSOBTDefault() {
+    if (manualSOBT) return; // si l’utilisateur a modifié SOBT, ne pas recalculer
     const cie = document.getElementById('Cie').value;
     const sibt = document.getElementById('SIBT').value;
-    const arrPNT = document.getElementById('ArrPNT').value;
-    const arrPNC = document.getElementById('ArrPNC').value;
+    const arrPNT = document.getElementById('ArrPNT')?.value;
+    const arrPNC = document.getElementById('ArrPNC')?.value;
 
     if (cie !== 'FR' || !sibt) return;
 
@@ -444,7 +444,7 @@ function updateSOBTDefault() {
         `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === Calcul TOBT === */
+/* Calcul TOBT */
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
@@ -490,7 +490,7 @@ function updateTOBT() {
         `${String(TOBT.getHours()).padStart(2,'0')}:${String(TOBT.getMinutes()).padStart(2,'0')}`;
 }
 
-/* === DL Code automatique === */
+/* DL Code automatique */
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
@@ -514,7 +514,7 @@ function updateDLCode() {
     }
 }
 
-/* === Validation champs obligatoires === */
+/* Validation champs obligatoires */
 function validateForm() {
     const required = ['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
     for (let id of required) {
