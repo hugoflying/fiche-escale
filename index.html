@@ -17,7 +17,7 @@ body.dark { background: #121212; color: #f8f9fa; }
 
 h1 { text-align: center; margin: 10px 0 15px; }
 
-/* Sections avec ombre renforcée */
+/* Sections */
 section {
     background: #fff;
     border-radius: 8px;
@@ -35,13 +35,13 @@ h2 {
     text-align: center;
 }
 
-/* GRILLES */
+/* Grilles */
 .form-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
 .form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
 .form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
 
-/* Labels en gras et centrés */
+/* Labels en gras */
 .form-group label {
     font-size: 0.9rem;
     font-weight: bold;
@@ -50,7 +50,7 @@ h2 {
     text-align: center;
 }
 
-/* Champs centrés */
+/* Champs */
 input, select {
     width: 100%;
     padding: 6px;
@@ -65,12 +65,13 @@ textarea {
     font-size: 0.95rem;
     border: 1px solid #ccc;
     border-radius: 4px;
-    resize: both; /* redimension libre */
+    resize: both;
     min-height: 60px;
     text-align: left;
+    overflow: auto;
 }
 
-/* Boutons horaires alignés et centrés */
+/* Boutons horaires */
 .btn-actions {
     display: flex;
     justify-content: center;
@@ -90,7 +91,7 @@ button.minus { background: #555; color: white; }
 button.now   { background: #1976d2; color: white; }
 button.plus  { background: #555; color: white; }
 
-/* Validateur + save + reset */
+/* Boutons principaux */
 #validate, #save, #reset {
     width: 100%;
     padding: 12px;
@@ -101,7 +102,7 @@ button.plus  { background: #555; color: white; }
     cursor: pointer;
 }
 #validate { background: #4caf50; color: white; }
-#save { background: #2196f3; color: white; }
+#save { background: #2196f3; color: white; margin: 15px 0; }
 #reset { background: #d32f2f; color: white; }
 
 /* Timers */
@@ -149,6 +150,7 @@ button.plus  { background: #555; color: white; }
 </head>
 <body onload="initForm()">
 
+<!-- Modes -->
 <div class="toggle-container">
     <button onclick="toggleDarkMode()">🌙 / ☀️</button>
     <button onclick="toggleTimeMode()">Local / UTC</button>
@@ -156,6 +158,7 @@ button.plus  { background: #555; color: white; }
 
 <h1>SUIVI PERFORMANCE</h1>
 
+<!-- Timers -->
 <div class="timer-box">
     <div class="timer">
         <div class="timer-label">H-40</div>
@@ -251,7 +254,7 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- Bouton Save après HORAIRES -->
+<!-- SAVE après HORAIRES -->
 <button id="save" onclick="manualSave()">SAVE</button>
 
 <!-- TIMING -->
@@ -259,6 +262,9 @@ button.plus  { background: #555; color: white; }
     <h2>TIMING</h2>
     <div class="form-grid" id="timing-grid"></div>
 </section>
+
+<!-- SAVE après TIMING -->
+<button id="save" onclick="manualSave()">SAVE</button>
 
 <!-- RETARDS -->
 <section>
@@ -314,23 +320,25 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
+<!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
+<button id="save" onclick="manualSave()">SAVE</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER</button>
 
 <script>
 let isUTC = false;
 let manualSOBT = false;
 
-/* --- Initialisation --- */
+/* === Initialisation === */
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
     generateTimingFields();
     restoreSettings();
     enableAutoSave();
-    setInterval(() => { updateAllCalculations(); manualSaveTimers(); }, 60000); // sauvegarde timers toutes 60 sec
+    setInterval(() => { updateAllCalculations(); manualSaveTimers(); }, 60000);
 }
 
-/* --- Génération champs Timing --- */
+/* === Génération des champs Timing === */
 function generateTimingFields() {
     const timings = [
         "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
@@ -367,7 +375,7 @@ function generateTimingFields() {
     enableAutoSave(); // activer auto-save après génération dynamique
 }
 
-/* --- Sauvegarde auto --- */
+/* === Sauvegarde auto === */
 function enableAutoSave() {
     const fields = document.querySelectorAll('input, select, textarea');
     fields.forEach(field => {
@@ -576,7 +584,7 @@ function updateDLCode() {
     }
 }
 
-/* Validation champs obligatoires */
+/* Validation */
 function validateForm() {
     const required = ['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
     for (let id of required) {
@@ -588,5 +596,6 @@ function validateForm() {
     alert("Formulaire valide et prêt à être envoyé !");
 }
 </script>
+
 </body>
 </html>
