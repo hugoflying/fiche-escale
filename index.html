@@ -17,11 +17,13 @@ body.dark { background: #121212; color: #f8f9fa; }
 
 h1 { text-align: center; margin: 10px 0 15px; }
 
+/* Sections avec ombre renforcée */
 section {
     background: #fff;
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 body.dark section { background: #1e1e1e; }
 
@@ -30,13 +32,19 @@ h2 {
     margin-bottom: 10px;
     border-bottom: 1px solid #ccc;
     padding-bottom: 5px;
+    text-align: center;
 }
 
 /* GRILLES */
 .form-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-.form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; }
-.form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; }
-.form-group label { font-size: 0.9rem; display: block; margin-bottom: 3px; }
+.form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; }
+.form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; }
+.form-group label {
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 3px;
+    text-align: center;
+}
 input, select, textarea {
     width: 100%;
     padding: 6px;
@@ -46,17 +54,17 @@ input, select, textarea {
 }
 textarea { resize: vertical; min-height: 60px; }
 
-/* BOUTONS ACTIONS HORAIRES */
+/* Boutons horaires plus grands */
 .btn-actions {
     display: flex;
     justify-content: space-between;
     gap: 5px;
-    margin-top: 3px;
+    margin-top: 5px;
 }
 button.action {
     flex: 1;
-    padding: 8px; /* plus haut pour tablette */
-    font-size: 0.9rem;
+    padding: 10px; /* plus haut */
+    font-size: 0.95rem;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -65,7 +73,7 @@ button.minus { background: #555; color: white; }
 button.now   { background: #1976d2; color: white; }
 button.plus  { background: #555; color: white; }
 
-/* VALIDATION */
+/* Validateur */
 #validate {
     width: 100%;
     padding: 12px;
@@ -78,7 +86,7 @@ button.plus  { background: #555; color: white; }
     margin-top: 10px;
 }
 
-/* TIMERS H-40 / H-15 / LID / TOBT */
+/* Timers */
 .timer-box {
     display: flex;
     justify-content: center;
@@ -101,11 +109,9 @@ button.plus  { background: #555; color: white; }
     border-radius: 6px;
     font-size: 1.1rem;
 }
-#timer-tobt {
-    background: #2e7d32; /* vert */
-}
+#timer-tobt { background: #2e7d32; }
 
-/* TOGGLES */
+/* Toggles */
 .toggle-container {
     display: flex;
     justify-content: space-between;
@@ -114,6 +120,11 @@ button.plus  { background: #555; color: white; }
 .toggle-container button {
     padding: 5px 10px;
     font-size: 0.9rem;
+}
+
+/* Majuscules pour INFO VOL */
+#Date, #Cie, #NVol, #From, #To, #Immat, #RZA, #Parking, #FNC {
+    text-transform: uppercase;
 }
 </style>
 </head>
@@ -284,13 +295,16 @@ button.plus  { background: #555; color: white; }
 <button id="validate" onclick="validateForm()">VALIDER</button>
 
 <script>
-// Initialisation : date auto + génération timing
+/* === Variables === */
+let isUTC = false;
+
+/* === Initialisation === */
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
     generateTimingFields();
 }
 
-// Génération des champs Timing
+/* === Génération champs Timing === */
 function generateTimingFields() {
     const timings = [
         "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
@@ -322,13 +336,20 @@ function generateTimingFields() {
     });
 }
 
-// Boutons horaires
+/* === Boutons horaires === */
 function setNow(fieldId) {
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mm = String(now.getMinutes()).padStart(2,'0');
-    document.getElementById(fieldId).value = `${hh}:${mm}`;
+    if (isUTC) {
+        const hh = String(now.getUTCHours()).padStart(2,'0');
+        const mm = String(now.getUTCMinutes()).padStart(2,'0');
+        document.getElementById(fieldId).value = `${hh}:${mm}`;
+    } else {
+        const hh = String(now.getHours()).padStart(2,'0');
+        const mm = String(now.getMinutes()).padStart(2,'0');
+        document.getElementById(fieldId).value = `${hh}:${mm}`;
+    }
 }
+
 function adjustTime(fieldId, delta) {
     const input = document.getElementById(fieldId);
     if (!input.value) return;
@@ -339,19 +360,18 @@ function adjustTime(fieldId, delta) {
     input.value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// Mode sombre
+/* === Mode sombre === */
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
 }
 
-// Mode Local/UTC
-let isUTC = false;
+/* === Mode Local / UTC === */
 function toggleTimeMode() {
     const inputs = document.querySelectorAll('input[type="time"]');
     inputs.forEach(input => {
         if (!input.value) return;
         let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2; // ajustement
+        hh = isUTC ? hh + 2 : hh - 2; // bascule
         if (hh < 0) hh += 24;
         if (hh >= 24) hh -= 24;
         input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
@@ -359,14 +379,14 @@ function toggleTimeMode() {
     isUTC = !isUTC;
 }
 
-// Calcul timers et DL Code
+/* === Calcul global === */
 function updateAllCalculations() {
     updateTimers();
     updateTOBT();
     updateDLCode();
 }
 
-// Calcul H-40, H-15, H-8
+/* === Timers H-40 / H-15 / H-8 === */
 function updateTimers() {
     const sobt = document.getElementById('SOBT').value;
     if (!sobt) {
@@ -387,21 +407,21 @@ function updateTimers() {
     document.getElementById('timer-h8').textContent = `${String(h8.getHours()).padStart(2,'0')}:${String(h8.getMinutes()).padStart(2,'0')}`;
 }
 
-// Calcul TOBT
+/* === Calcul TOBT === */
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
     const aibttxt = document.getElementById('AIBT').value;
     const sobttxt = document.getElementById('SOBT').value;
 
-    if (!cie || !sibttxt || !sobttxt) {
+    if (!cie || !sibttxt) {
         document.getElementById('timer-tobt').textContent = '--:--';
         return;
     }
 
     const [sH,sM] = sibttxt.split(':').map(Number);
     const [aH,aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH,sM];
-    const [soH,soM] = sobttxt.split(':').map(Number);
+    const [soH,soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH,sM];
 
     const SIBT = new Date(); SIBT.setHours(sH, sM);
     const AIBT = new Date(); AIBT.setHours(aH, aM);
@@ -414,15 +434,14 @@ function updateTOBT() {
             const arrPNT = document.getElementById('ArrPNT').value;
             const arrPNC = document.getElementById('ArrPNC').value;
             const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT = new Date(SOBT.getTime() + add*60000);
+            TOBT = new Date(AIBT.getTime() + add*60000);
         } else {
             TOBT = new Date(SIBT);
         }
-    }
-    if (cie === 'W4' || cie === 'W6') {
+    } else {
         if (AIBT > SIBT) {
             const diff = (SOBT - SIBT) / 60000;
-            TOBT = new Date(SOBT.getTime() + diff*60000);
+            TOBT = new Date(AIBT.getTime() + diff*60000);
         } else {
             TOBT = new Date(SIBT);
         }
@@ -432,7 +451,7 @@ function updateTOBT() {
         `${String(TOBT.getHours()).padStart(2,'0')}:${String(TOBT.getMinutes()).padStart(2,'0')}`;
 }
 
-// Calcul DL Code 1 auto
+/* === DL Code automatique === */
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
@@ -452,7 +471,7 @@ function updateDLCode() {
     }
 }
 
-// Validation champs obligatoires
+/* === Validation champs obligatoires === */
 function validateForm() {
     const required = ['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
     for (let id of required) {
