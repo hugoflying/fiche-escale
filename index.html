@@ -43,7 +43,7 @@ h2 {
 }
 .form-group {
     flex: 1 1 calc(50% - 10px); /* 2 colonnes */
-    min-width: 140px;
+    min-width: 150px;
 }
 .form-group label {
     font-size: 0.9rem;
@@ -57,7 +57,7 @@ input, select, textarea {
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-textarea { resize: vertical; }
+textarea { resize: vertical; min-height: 60px; }
 
 /* ---- BOUTONS ACTION ---- */
 .btn-actions {
@@ -176,144 +176,81 @@ button.minus, button.plus { background: #555; color: white; }
 <!-- TIMING -->
 <section>
     <h2>TIMING</h2>
-    <div class="form-grid">
-        <!-- On répète ce bloc pour chaque champ timing -->
-        <div class="form-group">
-            <label>Arrivée PNT avion<input type="time" id="ArrPNT"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('ArrPNT')">Now</button>
-                <button class="action minus" onclick="adjustTime('ArrPNT',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('ArrPNT',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Arrivée PNC avion<input type="time" id="ArrPNC"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('ArrPNC')">Now</button>
-                <button class="action minus" onclick="adjustTime('ArrPNC',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('ArrPNC',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Premier débarqué<input type="time" id="PremierDebarque"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('PremierDebarque')">Now</button>
-                <button class="action minus" onclick="adjustTime('PremierDebarque',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('PremierDebarque',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Dernier débarqué<input type="time" id="DernierDebarque"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('DernierDebarque')">Now</button>
-                <button class="action minus" onclick="adjustTime('DernierDebarque',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('DernierDebarque',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Avion : Premier embarqué<input type="time" id="AvionPremierEmbarque"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('AvionPremierEmbarque')">Now</button>
-                <button class="action minus" onclick="adjustTime('AvionPremierEmbarque',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('AvionPremierEmbarque',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Avion : Dernier embarqué<input type="time" id="AvionDernierEmbarque"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('AvionDernierEmbarque')">Now</button>
-                <button class="action minus" onclick="adjustTime('AvionDernierEmbarque',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('AvionDernierEmbarque',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Porte : Premier embarqué<input type="time" id="PortePremierEmbarque"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('PortePremierEmbarque')">Now</button>
-                <button class="action minus" onclick="adjustTime('PortePremierEmbarque',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('PortePremierEmbarque',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Porte : Dernier embarqué<input type="time" id="PorteDernierEmbarque"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('PorteDernierEmbarque')">Now</button>
-                <button class="action minus" onclick="adjustTime('PorteDernierEmbarque',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('PorteDernierEmbarque',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Fermeture porte avion<input type="time" id="FermeturePorteAvion"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('FermeturePorteAvion')">Now</button>
-                <button class="action minus" onclick="adjustTime('FermeturePorteAvion',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('FermeturePorteAvion',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Arrivée Fuel<input type="time" id="ArriveeFuel"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('ArriveeFuel')">Now</button>
-                <button class="action minus" onclick="adjustTime('ArriveeFuel',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('ArriveeFuel',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Départ Fuel<input type="time" id="DepartFuel"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('DepartFuel')">Now</button>
-                <button class="action minus" onclick="adjustTime('DepartFuel',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('DepartFuel',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Arrivée Lift<input type="time" id="ArriveeLift"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('ArriveeLift')">Now</button>
-                <button class="action minus" onclick="adjustTime('ArriveeLift',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('ArriveeLift',1)">+1</button>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Départ Lift<input type="time" id="DepartLift"></label>
-            <div class="btn-actions">
-                <button class="action now" onclick="setNow('DepartLift')">Now</button>
-                <button class="action minus" onclick="adjustTime('DepartLift',-1)">-1</button>
-                <button class="action plus" onclick="adjustTime('DepartLift',1)">+1</button>
-            </div>
-        </div>
+    <button class="action now" style="width:100%;margin-bottom:10px;" onclick="fillAllNow()">Remplir tout en Now</button>
+    <div class="form-grid" id="timing-grid">
+        <!-- Tous les champs horaires avec boutons -->
     </div>
 </section>
 
-<!-- Autres sections (Retards, Justification, Faits saillants, Assistances, Prestations) -->
-<!-- ... (garder mêmes principes de grid pour 2 colonnes) -->
+<!-- RETARDS -->
+<section>
+    <h2>RETARDS (Départ)</h2>
+    <div class="form-grid">
+        <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
+        <div class="form-group"><label>DL Durée 1<input type="text" id="DLduree1"></label></div>
+        <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
+        <div class="form-group"><label>DL Durée 2<input type="text" id="DLduree2"></label></div>
+        <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
+        <div class="form-group"><label>DL Durée 3<input type="text" id="DLduree3"></label></div>
+    </div>
+</section>
+
+<!-- DL JUSTIFICATION -->
+<section>
+    <h2>DL Justification</h2>
+    <textarea id="DLJustif"></textarea>
+</section>
+
+<!-- FAITS SAILLANTS -->
+<section>
+    <h2>Faits saillants</h2>
+    <textarea id="FaitsSaillants"></textarea>
+</section>
+
+<!-- ASSISTANCES -->
+<section>
+    <h2>Assistances prises en charge A/D</h2>
+    <div class="form-grid">
+        <div class="form-group"><label>WCHC<input type="number" id="WCHC"></label></div>
+        <div class="form-group"><label>WCHS<input type="number" id="WCHS"></label></div>
+        <div class="form-group"><label>WCHR<input type="number" id="WCHR"></label></div>
+        <div class="form-group"><label>Autre<input type="number" id="AutreAssist"></label></div>
+    </div>
+</section>
+
+<!-- PRESTATIONS -->
+<section>
+    <h2>Prestations</h2>
+    <div class="form-grid">
+        <div class="form-group"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Flux par le RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
+        <div class="form-group"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
+        <div class="form-group"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
+        <div class="form-group"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
+    </div>
+</section>
 
 <button id="validate">VALIDER</button>
 
 <script>
+// Toggle mode sombre
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
 }
 
+// Boutons horaires
 function setNow(fieldId) {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2,'0');
     const mm = String(now.getMinutes()).padStart(2,'0');
     document.getElementById(fieldId).value = `${hh}:${mm}`;
 }
-
 function adjustTime(fieldId, delta) {
     const input = document.getElementById(fieldId);
     if (!input.value) return;
@@ -322,6 +259,41 @@ function adjustTime(fieldId, delta) {
     date.setHours(hh);
     date.setMinutes(mm + delta);
     input.value = `${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+}
+
+// Génération des champs Timing
+const timings = [
+    "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
+    "AvionPremierEmbarque","AvionDernierEmbarque",
+    "PortePremierEmbarque","PorteDernierEmbarque",
+    "FermeturePorteAvion","ArriveeFuel","DepartFuel",
+    "ArriveeLift","DepartLift"
+];
+const timingLabels = [
+    "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
+    "Avion : Premier embarqué","Avion : Dernier embarqué",
+    "Porte : Premier embarqué","Porte : Dernier embarqué",
+    "Fermeture porte avion","Arrivée Fuel","Départ Fuel",
+    "Arrivée Lift","Départ Lift"
+];
+const container = document.getElementById('timing-grid');
+timings.forEach((id, i) => {
+    const div = document.createElement('div');
+    div.className = 'form-group';
+    div.innerHTML = `
+        <label>${timingLabels[i]}<input type="time" id="${id}"></label>
+        <div class="btn-actions">
+            <button class="action now" onclick="setNow('${id}')">Now</button>
+            <button class="action minus" onclick="adjustTime('${id}',-1)">-1</button>
+            <button class="action plus" onclick="adjustTime('${id}',1)">+1</button>
+        </div>
+    `;
+    container.appendChild(div);
+});
+
+// Bouton remplir tout en Now
+function fillAllNow() {
+    timings.forEach(id => setNow(id));
 }
 </script>
 
