@@ -162,12 +162,20 @@ button.plus  { background: #555; color: white; }
     border: none;
     cursor: pointer;
     border-radius: 4px;
+    font-size: 1rem;
+    padding: 8px 15px;
 }
 #tab-bar {
     display: flex;
     gap: 5px;
     margin-bottom: 10px;
     flex-wrap: wrap;
+}
+#tab-bar button:first-child {
+    font-weight: bold;
+    font-size: 1.1rem;
+    background: #4caf50;
+    color: #fff;
 }
 </style>
 </head>
@@ -181,7 +189,7 @@ button.plus  { background: #555; color: white; }
 
 <!-- Barre d’onglets -->
 <div id="tab-bar">
-    <button onclick="createNewTab()" style="padding:5px 10px;">+ Ajouter vol</button>
+    <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
 </div>
 
 <h1>SUIVI PERFORMANCE</h1>
@@ -200,7 +208,6 @@ button.plus  { background: #555; color: white; }
     <div class="form-grid">
         <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
         <div class="form-group"><label>Cie
-            <select id="Cie" onchange="updateAllCalculations()">
             <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
                 <option value="">--</option>
                 <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
@@ -283,6 +290,12 @@ button.plus  { background: #555; color: white; }
 <!-- SAUVEGARDER après TIMING -->
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 
+<!-- CHARGEMENT -->
+<section>
+    <h2>CHARGEMENT</h2>
+    <div id="chargement-container" class="form-grid"></div>
+</section>
+
 <!-- RETARDS -->
 <section>
     <h2>RETARDS (Départ)</h2>
@@ -337,302 +350,222 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- CHARGEMENT -->
-<section>
-    <h2>CHARGEMENT</h2>
-    <div id="chargement-container" class="form-grid"></div>
-</section>
-
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
-<button id="reset" onclick="clearAutoSave()">RÉINITIALISER</button>
+<button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <script>
-/* === Variables globales === */
+/* === CODE JS COMPLET : multi-onglets + calculs + timers + retards + chargement dynamique === */
+
+/* ---------------- VARIABLES GLOBALES ---------------- */
 let isUTC = false;
 let manualSOBT = false;
 let currentTabId = null;
 
-/* === Initialisation générale === */
+/* ---------------- INIT & ONGLET ---------------- */
 function initForm() {
-    document.getElementById('Date').valueAsDate = new Date();
+    renderTabs();
+    let lastTab = localStorage.getItem('lastTabId');
+    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+    if (tabs.length === 0) createNewTab();
+    else if (lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
+    else switchTab(tabs[0]);
+
     generateTimingFields();
     generateChargementFields();
-    enableAutoSave();
     setInterval(() => { updateAllCalculations(); saveCurrentTabData(); }, 60000);
 }
 
-/* === Gestion des onglets === */
+function renderTabs() {
+    const tabBar = document.getElementById('tab-bar');
+    tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
+    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+    tabs.forEach((id,index) => {
+        const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
+        let label = data.To && data.Parking ? `${data.To}_${data.Parking}`.toUpperCase() : `VOL ${index+1}`;
+        const btn = document.createElement('button');
+        btn.textContent = label;
+        btn.style.fontWeight = id === currentTabId ? 'bold' : 'normal';
+        btn.onclick = () => switchTab(id);
+        btn.ondblclick = () => deleteTab(id);
+        tabBar.appendChild(btn);
+    });
+}
+
 function createNewTab() {
     const newId = Date.now();
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs.push(newId);
     localStorage.setItem('flightTabs', JSON.stringify(tabs));
-
-    currentTabId = newId;
     clearFormFields();
+    currentTabId = newId;
+    localStorage.setItem('lastTabId', newId);
     saveCurrentTabData();
     renderTabs();
-    loadTabData(newId);
-}
-
-function renderTabs() {
-    const tabBar = document.getElementById('tab-bar');
-    tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:5px 10px;">+ Ajouter vol</button>';
-
-    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-
-    tabs.forEach((id, index) => {
-        const data = JSON.parse(localStorage.getItem(`flightData_${id}`) || '{}');
-        let label = '';
-
-        // Si Destination ou Parking existent → afficher DESTINATION_PARKING en majuscule
-        if ((data['To'] && data['Parking']) && (data['To'] !== '' || data['Parking'] !== '')) {
-            label = `${(data['To'] || '').toUpperCase()}_${(data['Parking'] || '').toUpperCase()}`;
-        } else {
-            // Sinon afficher Vol + numéro (basé sur index)
-            label = `Vol ${index + 1}`;
-            label = `VOL ${index + 1}`;
-        }
-
-        const btn = document.createElement('button');
-        btn.textContent = label;
-        btn.style.padding = '5px 10px';
-        btn.style.background = (id === currentTabId) ? '#2196f3' : '#ccc';
-        btn.style.color = (id === currentTabId) ? '#fff' : '#000';
-        btn.onclick = () => { switchTab(id); };
-        btn.ondblclick = () => { deleteTab(id); };
-
-        tabBar.appendChild(btn);
-    });
 }
 
 function switchTab(id) {
     saveCurrentTabData();
     currentTabId = id;
+    localStorage.setItem('lastTabId', id);
     loadTabData(id);
     renderTabs();
 }
 
 function deleteTab(id) {
-    if (!confirm("Voulez-vous vraiment supprimer cet onglet ?")) return;
-
+    if (!confirm("Supprimer cet onglet ?")) return;
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs = tabs.filter(tabId => tabId !== id);
+    tabs = tabs.filter(t => t !== id);
     localStorage.setItem('flightTabs', JSON.stringify(tabs));
-    localStorage.removeItem(`flightData_${id}`);
+    localStorage.removeItem('tab-' + id);
+    if (tabs.length > 0) switchTab(tabs[0]);
+    else createNewTab();
+    renderTabs();
+}
 
-    if (currentTabId === id) {
-        if (tabs.length > 0) {
-            currentTabId = tabs[0];
-            loadTabData(currentTabId);
-        } else {
-            createNewTab();
-        }
-    }
+function clearFormFields() {
+    document.querySelectorAll('input, select, textarea').forEach(el=>{
+        if(el.type==='checkbox'||el.type==='radio') el.checked=false;
+        else if(el.tagName==='SELECT') el.selectedIndex=0;
+        else el.value='';
+    });
+    document.getElementById('Date').valueAsDate=new Date();
+    document.getElementById('FNC').value='N';
+    updateAllCalculations();
+}
+
+function saveCurrentTabData() {
+    if(!currentTabId) return;
+    let data={};
+    document.querySelectorAll('input, select, textarea').forEach(el=>data[el.id]=el.value);
+    data.modeDark=document.body.classList.contains('dark')?'1':'0';
+    data.modeUTC=isUTC?'1':'0';
+    data.timer_h40=document.getElementById('timer-h40').textContent;
+    data.timer_h15=document.getElementById('timer-h15').textContent;
+    data.timer_h8=document.getElementById('timer-h8').textContent;
+    data.timer_tobt=document.getElementById('timer-tobt').textContent;
+    localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
+    localStorage.setItem('lastTabId',currentTabId);
     renderTabs();
 }
 
 function loadTabData(id) {
-    const data = JSON.parse(localStorage.getItem(`flightData_${id}`) || '{}');
-    const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => {
-        if (data[field.id] !== undefined) {
-            field.value = data[field.id];
-        } else {
-            field.value = '';
-        }
+    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+    document.querySelectorAll('input, select, textarea').forEach(el=>{
+        if(data[el.id]!==undefined) el.value=data[el.id];
     });
-
-    document.body.classList.toggle('dark', data.modeDark === '1');
-    isUTC = (data.modeUTC === '1');
-    if (data['timer-h40']) document.getElementById('timer-h40').textContent = data['timer-h40'];
-    if (data['timer-h15']) document.getElementById('timer-h15').textContent = data['timer-h15'];
-    if (data['timer-h8']) document.getElementById('timer-h8').textContent = data['timer-h8'];
-    if (data['timer-tobt']) document.getElementById('timer-tobt').textContent = data['timer-tobt'];
-
-    updateAllCalculations();
+    if(data.modeDark==='1') document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+    isUTC=data.modeUTC==='1';
+    document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
+    document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
+    document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
+    document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
     generateChargementFields();
+    updateAllCalculations();
 }
 
-function saveCurrentTabData() {
-    if (!currentTabId) return;
-    const fields = document.querySelectorAll('input, select, textarea');
-    let data = {};
-    fields.forEach(field => {
-        data[field.id] = field.value;
-    });
-    data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
-    data.modeUTC = isUTC ? '1' : '0';
-    data['timer-h40'] = document.getElementById('timer-h40').textContent;
-    data['timer-h15'] = document.getElementById('timer-h15').textContent;
-    data['timer-h8'] = document.getElementById('timer-h8').textContent;
-    data['timer-tobt'] = document.getElementById('timer-tobt').textContent;
-
-    localStorage.setItem(`flightData_${currentTabId}`, JSON.stringify(data));
-}
-
-function manualSave() {
-    saveCurrentTabData();
-    alert("Données sauvegardées !");
-}
-
-function clearFormFields() {
-    const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => {
-        if (field.type === 'select-one') field.selectedIndex = 0;
-        else field.value = '';
-    });
-    document.body.classList.remove('dark');
-    isUTC = false;
-}
-
-function initTabs() {
-    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    if (tabs.length === 0) {
-        createNewTab();
-    } else {
-        currentTabId = tabs[0];
-        renderTabs();
-        loadTabData(currentTabId);
-    }
-}
-
-document.getElementById('To').addEventListener('input', renderTabs);
-document.getElementById('Parking').addEventListener('change', renderTabs);
-
-window.addEventListener('load', initTabs);
-
-/* === Fonctions CHARGEMENT === */
-function generateChargementFields() {
-    const cie = document.getElementById('Cie').value;
-    const container = document.getElementById('chargement-container');
-    container.innerHTML = '';
-
-    if (cie === 'FR' || cie === 'RK') {
-        container.innerHTML += `
-            <div class="form-group-3col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-        `;
-    } else {
-        container.innerHTML += `
-            <div class="form-group-3col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-        `;
-    }
-
-    container.innerHTML += `
-        <div class="form-group" style="flex:1 1 100%;">
-            <label>TOB (calcul auto)<input type="text" id="TOB" readonly></label>
-        </div>
-    `;
-
-    container.innerHTML += `
-        <div class="form-group-3col"><label>OA<input type="number" id="OA"></label></div>
-        <div class="form-group-3col"><label>OB<input type="number" id="OB"></label></div>
-        <div class="form-group-3col"><label>OC<input type="number" id="OC"></label></div>
-        <div class="form-group-3col"><label>OD<input type="number" id="OD"></label></div>
-    `;
-
-    if (cie === 'FR' || cie === 'RK') {
-        container.innerHTML += `
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
-            <div class="form-group-3col"><label>H1<input type="number" id="H1"></label></div>
-            <div class="form-group-3col"><label>H2<input type="number" id="H2"></label></div>
-            <div class="form-group-3col"><label>H3<input type="number" id="H3"></label></div>
-            <div class="form-group-3col"><label>H4<input type="number" id="H4"></label></div>
-        `;
-    } else {
-        container.innerHTML += `
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
-            <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
-            <div class="form-group-3col"><label>CP1<input type="number" id="CP1"></label></div>
-            <div class="form-group-3col"><label>CP2<input type="number" id="CP2"></label></div>
-            <div class="form-group-3col"><label>CP3<input type="number" id="CP3"></label></div>
-            <div class="form-group-3col"><label>CP4<input type="number" id="CP4"></label></div>
-            <div class="form-group-3col"><label>CP5<input type="number" id="CP5"></label></div>
-        `;
-    }
-
-    enableAutoSave();
-}
-
-function updateTOB() {
-    const cie = document.getElementById('Cie').value;
-
-    let tob1 = 0; 
-    let tob2 = 0; 
-
-    if (cie === 'FR' || cie === 'RK') {
-        const adult = parseInt(document.getElementById('ADULT')?.value) || 0;
-        const child = parseInt(document.getElementById('CHILD')?.value) || 0;
-        const infant = parseInt(document.getElementById('INFANT')?.value) || 0;
-        tob1 = adult + child;
-        tob2 = infant;
-    } else {
-        const male = parseInt(document.getElementById('MALE')?.value) || 0;
-        const female = parseInt(document.getElementById('FEMALE')?.value) || 0;
-        const child = parseInt(document.getElementById('CHILD')?.value) || 0;
-        const infant = parseInt(document.getElementById('INFANT')?.value) || 0;
-        tob1 = male + female + child;
-        tob2 = infant;
-    }
-
-    document.getElementById('TOB').value = `${tob1} + ${tob2}`;
-}
-
-/* === Fonctions d'origine (timers, calculs, etc.) === */
+/* ---------------- TIMING ---------------- */
 function generateTimingFields() {
-    const timings = [
-        "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
-        "AvionPremierEmbarque","AvionDernierEmbarque",
-        "PortePremierEmbarque","PorteDernierEmbarque",
-        "ArriveeFuel","DepartFuel",
-        "ArriveeLift","DepartLift",
-        "RemiseLID","FermeturePorteAvion"
-    ];
-    const labels = [
-        "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
-        "Avion : Premier embarqué","Avion : Dernier embarqué",
-        "Porte : Premier embarqué","Porte : Dernier embarqué",
-        "Arrivée Fuel","Départ Fuel",
-        "Arrivée Lift","Départ Lift",
-        "Remise LID/LDS","Fermeture porte avion"
-    ];
-    const container = document.getElementById('timing-grid');
-    container.innerHTML = "";
+    const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque","AvionPremierEmbarque","AvionDernierEmbarque","PortePremierEmbarque","PorteDernierEmbarque","ArriveeFuel","DepartFuel","ArriveeLift","DepartLift","RemiseLID","FermeturePorteAvion"];
+    const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué","Avion : Premier embarqué","Avion : Dernier embarqué","Porte : Premier embarqué","Porte : Dernier embarqué","Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift","Remise LID/LDS","Fermeture porte avion"];
+    const container=document.getElementById('timing-grid');
+    container.innerHTML="";
     timings.forEach((id,i)=>{
-        const div = document.createElement('div');
-        div.className = 'form-group';
-        div.innerHTML = `
+        const div=document.createElement('div');
+        div.className='form-group';
+        div.innerHTML=`
             <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
             <div class="btn-actions">
                 <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
                 <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
                 <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-            </div>
-        `;
+            </div>`;
         container.appendChild(div);
     });
-    enableAutoSave();
 }
 
-function enableAutoSave() {
-    const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => {
-        field.addEventListener('input', saveCurrentTabData);
-        field.addEventListener('change', saveCurrentTabData);
-    });
+/* ---------------- CHARGEMENT ---------------- */
+function generateChargementFields() {
+    const cie=document.getElementById('Cie').value;
+    const container=document.getElementById('chargement-container');
+    container.innerHTML="";
+
+    let html="";
+    if(cie==="FR"||cie==="RK"){
+        html+=`
+        <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
+        <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
+        <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>`;
+        html+=`
+        <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
+        <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
+        <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>`;
+        html+=`
+        <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+        <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>`;
+    } else {
+        html+=`
+        <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
+        <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
+        <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
+        <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>`;
+        html+=`
+        <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
+        <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
+        <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
+        <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>`;
+        html+=`
+        <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+        <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
+        <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>`;
+    }
+    html+=`
+    <div class="form-group" style="flex:1 1 100%;">
+        <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
+    </div>`;
+    container.innerHTML=html;
+    updateTOB();
 }
 
-/* Fonctions calculs */
-function updateAllCalculations() {
+function updateTOB() {
+    const cie=document.getElementById('Cie').value;
+    let totalMain=0;
+    let infants=parseInt(document.getElementById('INFANT')?.value)||0;
+
+    if(cie==="FR"||cie==="RK"){
+        totalMain=(parseInt(document.getElementById('ADULT')?.value)||0)+(parseInt(document.getElementById('CHILD')?.value)||0);
+    } else {
+        totalMain=(parseInt(document.getElementById('MALE')?.value)||0)+(parseInt(document.getElementById('FEMALE')?.value)||0)+(parseInt(document.getElementById('CHILD')?.value)||0);
+    }
+
+    document.getElementById('TOB').value=`${totalMain} + ${infants}`;
+    checkTOBCoherence();
+}
+
+function checkTOBCoherence() {
+    const cie=document.getElementById('Cie').value;
+    let tobMain=0;
+    if(cie==="FR"||cie==="RK"){
+        tobMain=(parseInt(document.getElementById('ADULT')?.value)||0)+(parseInt(document.getElementById('CHILD')?.value)||0);
+        const sum=(parseInt(document.getElementById('FWD')?.value)||0)+(parseInt(document.getElementById('MID')?.value)||0)+(parseInt(document.getElementById('AFT')?.value)||0);
+        styleTOB(sum===tobMain);
+    } else {
+        tobMain=(parseInt(document.getElementById('MALE')?.value)||0)+(parseInt(document.getElementById('FEMALE')?.value)||0)+(parseInt(document.getElementById('CHILD')?.value)||0);
+        const sum=(parseInt(document.getElementById('OA')?.value)||0)+(parseInt(document.getElementById('OB')?.value)||0)+(parseInt(document.getElementById('OC')?.value)||0)+(parseInt(document.getElementById('OD')?.value)||0);
+        styleTOB(sum===tobMain);
+    }
+}
+
+function styleTOB(valid){
+    const tobField=document.getElementById('TOB');
+    if(valid){tobField.style.border="1px solid #ccc";tobField.style.fontWeight="bold";tobField.style.color="#000";}
+    else {tobField.style.border="2px solid red";tobField.style.fontWeight="bold";tobField.style.color="red";}
+}
+
+/* ---------------- TIMERS & CALCULS ---------------- */
+function updateAllCalculations(){
     updateTimers();
     updateSOBTDefault();
     updateTOBT();
@@ -641,159 +574,177 @@ function updateAllCalculations() {
     updateLID();
 }
 
-function updateTimers() {
-    const sobt = document.getElementById('SOBT').value;
-    if (!sobt) {
-        ['timer-h40','timer-h15','timer-h8'].forEach(id=>document.getElementById(id).textContent='--:--');
-        return;
-    }
-    const [hh, mm] = sobt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(hh);
-    base.setMinutes(mm);
-    const h40 = new Date(base.getTime() - 40*60000);
-    const h15 = new Date(base.getTime() - 15*60000);
-    const h8 = new Date(base.getTime() - 8*60000);
-    document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2,'0')}:${String(h40.getMinutes()).padStart(2,'0')}`;
-    document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2,'0')}:${String(h15.getMinutes()).padStart(2,'0')}`;
+function updateTimers(){
+    const sobt=document.getElementById('SOBT').value;
+    if(!sobt){['timer-h40','timer-h15','timer-h8'].forEach(id=>document.getElementById(id).textContent='--:--');return;}
+    const [hh,mm]=sobt.split(':').map(Number);
+    const base=new Date();
+    base.setHours(hh);base.setMinutes(mm);
+    const h40=new Date(base.getTime()-40*60000);
+    const h15=new Date(base.getTime()-15*60000);
+    const h8=new Date(base.getTime()-8*60000);
+    document.getElementById('timer-h40').textContent=`${String(h40.getHours()).padStart(2,'0')}:${String(h40.getMinutes()).padStart(2,'0')}`;
+    document.getElementById('timer-h15').textContent=`${String(h15.getHours()).padStart(2,'0')}:${String(h15.getMinutes()).padStart(2,'0')}`;
 }
 
-function updateLID() {
-    const cie = document.getElementById('Cie').value;
-    const tobt = document.getElementById('timer-tobt').textContent;
-    if ((cie === "FR" || cie === "RK") && tobt !== "--:--") {
-        let [hh, mm] = tobt.split(':').map(Number);
-        const d = new Date();
-        d.setHours(hh);
-        d.setMinutes(mm - 8);
-        document.getElementById('timer-h8').textContent =
-            `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+function updateLID(){
+    const cie=document.getElementById('Cie').value;
+    const tobt=document.getElementById('timer-tobt').textContent;
+    if((cie==="FR"||cie==="RK")&&tobt!=="--:--"){
+        let [hh,mm]=tobt.split(':').map(Number);
+        const d=new Date();d.setHours(hh);d.setMinutes(mm-8);
+        document.getElementById('timer-h8').textContent=`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     } else {
-        document.getElementById('timer-h8').textContent = "--:--";
+        document.getElementById('timer-h8').textContent="--:--";
     }
 }
 
-function updateSOBTDefault() {
-    if (manualSOBT) return;
-    const cie = document.getElementById('Cie').value;
-    const sibt = document.getElementById('SIBT').value;
-    const arrPNT = document.getElementById('ArrPNT')?.value;
-    const arrPNC = document.getElementById('ArrPNC')?.value;
-    if (cie !== 'FR' || !sibt) return;
-    if ((cie !== 'FR' && cie !== 'RK' && cie !== 'W4' && cie !== 'W6') || !sibt) return;
-    let [sH, sM] = sibt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(sH, sM);
-    const add = (arrPNT || arrPNC) ? 35 : 25;
-    const add = (cie === 'W4' || cie === 'W6') ? 35 : (arrPNT || arrPNC) ? 35 : 25;
-    const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value =
-        `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
+function updateSOBTDefault(){
+    if(manualSOBT) return;
+    const cie=document.getElementById('Cie').value;
+    const sibt=document.getElementById('SIBT').value;
+    const arrPNT=document.getElementById('ArrPNT')?.value;
+    const arrPNC=document.getElementById('ArrPNC')?.value;
+    if((cie!=='FR'&&cie!=='W4'&&cie!=='W6'&&cie!=='RK')||!sibt) return;
+    let [sH,sM]=sibt.split(':').map(Number);
+    const base=new Date();
+    base.setHours(sH,sM);
+    const add=(arrPNT||arrPNC)?35:35; // 35 min pour FR/RK/W4/W6
+    const sobtCalc=new Date(base.getTime()+add*60000);
+    document.getElementById('SOBT').value=`${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
 }
 
-function updateTOBT() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    const sobttxt = document.getElementById('SOBT').value;
-    if (!cie || !sibttxt) {
-        document.getElementById('timer-tobt').textContent = '--:--';
-        return;
-    }
-    const [sH,sM] = sibttxt.split(':').map(Number);
-    const [aH,aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH,sM];
-    const [soH,soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH,sM];
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-    const SOBT = new Date(); SOBT.setHours(soH, soM);
-    let TOBT = new Date(SIBT);
-    if (cie === 'FR') {
-        if (AIBT > SIBT) {
-            const arrPNT = document.getElementById('ArrPNT').value;
-            const arrPNC = document.getElementById('ArrPNC').value;
-            const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT = new Date(AIBT.getTime() + add*60000);
+function updateTOBT(){
+    const cie=document.getElementById('Cie').value;
+    const sibttxt=document.getElementById('SIBT').value;
+    const aibttxt=document.getElementById('AIBT').value;
+    const sobttxt=document.getElementById('SOBT').value;
+    if(!cie||!sibttxt){document.getElementById('timer-tobt').textContent='--:--';return;}
+    const [sH,sM]=sibttxt.split(':').map(Number);
+    const [aH,aM]=aibttxt?aibttxt.split(':').map(Number):[sH,sM];
+    const [soH,soM]=sobttxt?sobttxt.split(':').map(Number):[sH,sM];
+    const SIBT=new Date();SIBT.setHours(sH,sM);
+    const AIBT=new Date();AIBT.setHours(aH,aM);
+    const SOBT=new Date();SOBT.setHours(soH,soM);
+    let TOBT=new Date(SIBT);
+    if(cie==='FR'||cie==='W4'||cie==='W6'||cie==='RK'){
+        if(AIBT>SIBT){
+            const arrPNT=document.getElementById('ArrPNT').value;
+            const arrPNC=document.getElementById('ArrPNC').value;
+            const add=(arrPNT||arrPNC)?35:35;
+            TOBT=new Date(AIBT.getTime()+add*60000);
         } else {
-            TOBT = new Date(SIBT);
+            TOBT=new Date(SIBT);
         }
     } else {
-        if (AIBT > SIBT) {
-            const diff = (SOBT - SIBT) / 60000;
-            TOBT = new Date(AIBT.getTime() + diff*60000);
+        if(AIBT>SIBT){
+            const diff=(SOBT-SIBT)/60000;
+            TOBT=new Date(AIBT.getTime()+diff*60000);
         } else {
-            TOBT = new Date(SIBT);
+            TOBT=new Date(SIBT);
         }
     }
-    if (TOBT < SOBT) TOBT = SOBT;
-    document.getElementById('timer-tobt').textContent =
-        `${String(TOBT.getHours()).padStart(2,'0')}:${String(TOBT.getMinutes()).padStart(2,'0')}`;
+    if(TOBT<SOBT) TOBT=SOBT;
+    document.getElementById('timer-tobt').textContent=`${String(TOBT.getHours()).padStart(2,'0')}:${String(TOBT.getMinutes()).padStart(2,'0')}`;
 }
 
-function updateDLCode() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    if (!cie || !sibttxt || !aibttxt) return;
-    const [sH,sM] = sibttxt.split(':').map(Number);
-    const [aH,aM] = aibttxt.split(':').map(Number);
-    const SIBT = new Date(); SIBT.setHours(sH,sM);
-    const AIBT = new Date(); AIBT.setHours(aH,aM);
-    if (AIBT > SIBT) {
-        if (cie === 'FR') document.getElementById('DLcode1').value = '93';
-        else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
-        else document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = Math.round((AIBT - SIBT)/60000);
+function updateDLCode(){
+    const cie=document.getElementById('Cie').value;
+    const sibttxt=document.getElementById('SIBT').value;
+    const aibttxt=document.getElementById('AIBT').value;
+    if(!cie||!sibttxt||!aibttxt) return;
+    const [sH,sM]=sibttxt.split(':').map(Number);
+    const [aH,aM]=aibttxt.split(':').map(Number);
+    const SIBT=new Date();SIBT.setHours(sH,sM);
+    const AIBT=new Date();AIBT.setHours(aH,aM);
+    if(AIBT>SIBT){
+        if(cie==='FR') document.getElementById('DLcode1').value='93';
+        else if(cie==='W4'||cie==='W6') document.getElementById('DLcode1').value='93A';
+        else document.getElementById('DLcode1').value='';
+        document.getElementById('DLduree1').value=Math.round((AIBT-SIBT)/60000);
     } else {
-        document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = '';
+        document.getElementById('DLcode1').value='';
+        document.getElementById('DLduree1').value='';
     }
 }
 
-/* DL Durée 2 = (AOBT - SOBT) - DL Durée 1 */
-function updateDLDuree2() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-
-        const diff = Math.round((AOBT - SOBT) / 60000) - dlduree1;
-        document.getElementById('DLduree2').value = diff >= 0 ? diff : 0;
+function updateDLDuree2(){
+    const sobt=document.getElementById('SOBT').value;
+    const aobt=document.getElementById('AOBT').value;
+    const dlduree1=parseInt(document.getElementById('DLduree1').value)||0;
+    if(sobt&&aobt){
+        const [soH,soM]=sobt.split(':').map(Number);
+        const [aoH,aoM]=aobt.split(':').map(Number);
+        const SOBT=new Date();SOBT.setHours(soH,soM);
+        const AOBT=new Date();AOBT.setHours(aoH,aoM);
+        const diff=Math.round((AOBT-SOBT)/60000)-dlduree1;
+        document.getElementById('DLduree2').value=diff>=0?diff:0;
         updateDLDuree3();
     } else {
-        document.getElementById('DLduree2').value = '';
+        document.getElementById('DLduree2').value='';
     }
 }
 
-/* Si on modifie DL Durée 2, recalculer DL Durée 3 */
-function updateDLDuree3() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-    const dlduree2 = parseInt(document.getElementById('DLduree2').value) || 0;
-
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-
-        const total = Math.round((AOBT - SOBT) / 60000);
-        const reste = total - dlduree1 - dlduree2;
-        document.getElementById('DLduree3').value = reste >= 0 ? reste : 0;
+function updateDLDuree3(){
+    const sobt=document.getElementById('SOBT').value;
+    const aobt=document.getElementById('AOBT').value;
+    const dlduree1=parseInt(document.getElementById('DLduree1').value)||0;
+    const dlduree2=parseInt(document.getElementById('DLduree2').value)||0;
+    if(sobt&&aobt){
+        const [soH,soM]=sobt.split(':').map(Number);
+        const [aoH,aoM]=aobt.split(':').map(Number);
+        const SOBT=new Date();SOBT.setHours(soH,soM);
+        const AOBT=new Date();AOBT.setHours(aoH,aoM);
+        const total=Math.round((AOBT-SOBT)/60000);
+        const reste=total-dlduree1-dlduree2;
+        document.getElementById('DLduree3').value=reste>=0?reste:0;
     }
 }
 
-function validateForm() {
-    const required = ['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
-    for (let id of required) {
-        if (!document.getElementById(id).value) {
+/* ---------------- UTILS ---------------- */
+function setNow(fieldId){
+    const now=new Date();
+    const hh=isUTC?now.getUTCHours():now.getHours();
+    const mm=isUTC?now.getUTCMinutes():now.getMinutes();
+    document.getElementById(fieldId).value=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+
+function adjustTime(fieldId,delta){
+    const input=document.getElementById(fieldId);
+    if(!input.value) return;
+    let [hh,mm]=input.value.split(':').map(Number);
+    let total=hh*60+mm+delta;
+    if(total<0) total+=1440;
+    if(total>=1440) total-=1440;
+    hh=Math.floor(total/60);
+    mm=total%60;
+    input.value=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+
+function toggleDarkMode(){
+    document.body.classList.toggle('dark');
+    localStorage.setItem('modeDark',document.body.classList.contains('dark')?'1':'0');
+}
+
+function toggleTimeMode(){
+    const inputs=document.querySelectorAll('input[type="time"]');
+    inputs.forEach(input=>{
+        if(!input.value) return;
+        let [hh,mm]=input.value.split(':').map(Number);
+        hh=isUTC?hh+2:hh-2;
+        if(hh<0) hh+=24;
+        if(hh>=24) hh-=24;
+        input.value=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+    });
+    isUTC=!isUTC;
+    localStorage.setItem('modeUTC',isUTC?'1':'0');
+    updateAllCalculations();
+}
+
+function validateForm(){
+    const required=['Date','Cie','Parking','NVol','From','To','Immat','RZA'];
+    for(let id of required){
+        if(!document.getElementById(id).value){
             alert("Veuillez remplir tous les champs obligatoires.");
             return;
         }
@@ -801,49 +752,16 @@ function validateForm() {
     alert("Formulaire valide et prêt à être envoyé !");
 }
 
-/* Utilitaires */
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
+function manualSave(){
     saveCurrentTabData();
+    alert("Données sauvegardées !");
 }
 
-function toggleTimeMode() {
-    const inputs = document.querySelectorAll('input[type="time"]');
-    inputs.forEach(input => {
-        if (!input.value) return;
-        let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2;
-        if (hh < 0) hh += 24;
-        if (hh >= 24) hh -= 24;
-        input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-    });
-    isUTC = !isUTC;
-    saveCurrentTabData();
-    updateAllCalculations();
-}
-
-function setNow(fieldId) {
-    const now = new Date();
-    const hh = isUTC ? now.getUTCHours() : now.getHours();
-    const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-}
-
-function adjustTime(fieldId, delta) {
-    const input = document.getElementById(fieldId);
-    if (!input.value) return;
-    let [hh, mm] = input.value.split(':').map(Number);
-    let total = hh * 60 + mm + delta;
-    if (total < 0) total += 1440;
-    if (total >= 1440) total -= 1440;
-    hh = Math.floor(total / 60);
-    mm = total % 60;
-    input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-}
-
-function clearAutoSave() {
-    localStorage.clear();
-    location.reload();
+function clearAutoSave(){
+    if(confirm("Tout réinitialiser ?")){
+        localStorage.clear();
+        location.reload();
+    }
 }
 </script>
 
