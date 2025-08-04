@@ -200,7 +200,7 @@ button.plus  { background: #555; color: white; }
     <div class="form-grid">
         <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
         <div class="form-group"><label>Cie
-            <select id="Cie" onchange="updateAllCalculations()">
+            <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
                 <option value="">--</option>
                 <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
                 <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
@@ -336,6 +336,12 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
+<!-- CHARGEMENT -->
+<section>
+    <h2>CHARGEMENT</h2>
+    <div id="chargement-container" class="form-grid"></div>
+</section>
+
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
@@ -351,6 +357,7 @@ let currentTabId = null;
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
     generateTimingFields();
+    generateChargementFields();
     enableAutoSave();
     setInterval(() => { updateAllCalculations(); saveCurrentTabData(); }, 60000);
 }
@@ -379,12 +386,10 @@ function renderTabs() {
         const data = JSON.parse(localStorage.getItem(`flightData_${id}`) || '{}');
         let label = '';
 
-        // Si Destination ou Parking existent → afficher DESTINATION_PARKING en majuscule
         if ((data['To'] && data['Parking']) && (data['To'] !== '' || data['Parking'] !== '')) {
             label = `${(data['To'] || '').toUpperCase()}_${(data['Parking'] || '').toUpperCase()}`;
         } else {
-            // Sinon afficher Vol + numéro (basé sur index)
-            label = `Vol ${index + 1}`;
+            label = `VOL ${index + 1}`;
         }
 
         const btn = document.createElement('button');
@@ -444,6 +449,7 @@ function loadTabData(id) {
     if (data['timer-tobt']) document.getElementById('timer-tobt').textContent = data['timer-tobt'];
 
     updateAllCalculations();
+    generateChargementFields();
 }
 
 function saveCurrentTabData() {
@@ -493,6 +499,89 @@ document.getElementById('To').addEventListener('input', renderTabs);
 document.getElementById('Parking').addEventListener('change', renderTabs);
 
 window.addEventListener('load', initTabs);
+
+/* === Fonctions CHARGEMENT === */
+function generateChargementFields() {
+    const cie = document.getElementById('Cie').value;
+    const container = document.getElementById('chargement-container');
+    container.innerHTML = '';
+
+    if (cie === 'FR' || cie === 'RK') {
+        container.innerHTML += `
+            <div class="form-group-3col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
+            <div class="form-group-3col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
+            <div class="form-group-3col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+        `;
+    } else {
+        container.innerHTML += `
+            <div class="form-group-3col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
+            <div class="form-group-3col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
+            <div class="form-group-3col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
+            <div class="form-group-3col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+        `;
+    }
+
+    container.innerHTML += `
+        <div class="form-group" style="flex:1 1 100%;">
+            <label>TOB (calcul auto)<input type="text" id="TOB" readonly></label>
+        </div>
+    `;
+
+    container.innerHTML += `
+        <div class="form-group-3col"><label>OA<input type="number" id="OA"></label></div>
+        <div class="form-group-3col"><label>OB<input type="number" id="OB"></label></div>
+        <div class="form-group-3col"><label>OC<input type="number" id="OC"></label></div>
+        <div class="form-group-3col"><label>OD<input type="number" id="OD"></label></div>
+    `;
+
+    if (cie === 'FR' || cie === 'RK') {
+        container.innerHTML += `
+            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+            <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
+            <div class="form-group-3col"><label>H1<input type="number" id="H1"></label></div>
+            <div class="form-group-3col"><label>H2<input type="number" id="H2"></label></div>
+            <div class="form-group-3col"><label>H3<input type="number" id="H3"></label></div>
+            <div class="form-group-3col"><label>H4<input type="number" id="H4"></label></div>
+        `;
+    } else {
+        container.innerHTML += `
+            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+            <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
+            <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
+            <div class="form-group-3col"><label>CP1<input type="number" id="CP1"></label></div>
+            <div class="form-group-3col"><label>CP2<input type="number" id="CP2"></label></div>
+            <div class="form-group-3col"><label>CP3<input type="number" id="CP3"></label></div>
+            <div class="form-group-3col"><label>CP4<input type="number" id="CP4"></label></div>
+            <div class="form-group-3col"><label>CP5<input type="number" id="CP5"></label></div>
+        `;
+    }
+
+    enableAutoSave();
+}
+
+function updateTOB() {
+    const cie = document.getElementById('Cie').value;
+
+    let tob1 = 0; 
+    let tob2 = 0; 
+
+    if (cie === 'FR' || cie === 'RK') {
+        const adult = parseInt(document.getElementById('ADULT')?.value) || 0;
+        const child = parseInt(document.getElementById('CHILD')?.value) || 0;
+        const infant = parseInt(document.getElementById('INFANT')?.value) || 0;
+        tob1 = adult + child;
+        tob2 = infant;
+    } else {
+        const male = parseInt(document.getElementById('MALE')?.value) || 0;
+        const female = parseInt(document.getElementById('FEMALE')?.value) || 0;
+        const child = parseInt(document.getElementById('CHILD')?.value) || 0;
+        const infant = parseInt(document.getElementById('INFANT')?.value) || 0;
+        tob1 = male + female + child;
+        tob2 = infant;
+    }
+
+    document.getElementById('TOB').value = `${tob1} + ${tob2}`;
+}
 
 /* === Fonctions d'origine (timers, calculs, etc.) === */
 function generateTimingFields() {
@@ -586,11 +675,11 @@ function updateSOBTDefault() {
     const sibt = document.getElementById('SIBT').value;
     const arrPNT = document.getElementById('ArrPNT')?.value;
     const arrPNC = document.getElementById('ArrPNC')?.value;
-    if (cie !== 'FR' || !sibt) return;
+    if ((cie !== 'FR' && cie !== 'RK' && cie !== 'W4' && cie !== 'W6') || !sibt) return;
     let [sH, sM] = sibt.split(':').map(Number);
     const base = new Date();
     base.setHours(sH, sM);
-    const add = (arrPNT || arrPNC) ? 35 : 25;
+    const add = (cie === 'W4' || cie === 'W6') ? 35 : (arrPNT || arrPNC) ? 35 : 25;
     const sobtCalc = new Date(base.getTime() + add * 60000);
     document.getElementById('SOBT').value =
         `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
