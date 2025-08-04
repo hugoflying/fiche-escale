@@ -374,9 +374,18 @@ function renderTabs() {
     tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:5px 10px;">+ Ajouter vol</button>';
 
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs.forEach(id => {
+
+    tabs.forEach((id, index) => {
         const data = JSON.parse(localStorage.getItem(`flightData_${id}`) || '{}');
-        let label = (data['To'] || '--') + '_' + (data['Parking'] || '--');
+        let label = '';
+
+        // Si Destination ou Parking existent → afficher DESTINATION_PARKING en majuscule
+        if ((data['To'] && data['Parking']) && (data['To'] !== '' || data['Parking'] !== '')) {
+            label = `${(data['To'] || '').toUpperCase()}_${(data['Parking'] || '').toUpperCase()}`;
+        } else {
+            // Sinon afficher Vol + numéro (basé sur index)
+            label = `Vol ${index + 1}`;
+        }
 
         const btn = document.createElement('button');
         btn.textContent = label;
