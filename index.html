@@ -184,7 +184,7 @@ button.plus  { background: #555; color: white; }
         <div class="form-group"><label>Cie
             <select id="Cie" onchange="updateAllCalculations()">
                 <option value="">--</option>
-                <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
+                <option>RYR</option><option>FR</option><option>RK</option><option>W4</option><option>W6</option>
                 <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
                 <option>V7</option><option>Autre</option>
             </select>
@@ -269,9 +269,9 @@ button.plus  { background: #555; color: white; }
     <h2>RETARDS (Départ)</h2>
     <div class="form-grid">
         <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
-        <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1"></label></div>
+        <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" oninput="updateDLDuree2()"></label></div>
         <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
-        <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2"></label></div>
+        <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" oninput="updateDLDuree3()"></label></div>
         <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
         <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3"></label></div>
     </div>
@@ -342,7 +342,7 @@ function generateTimingFields() {
         "PortePremierEmbarque","PorteDernierEmbarque",
         "ArriveeFuel","DepartFuel",
         "ArriveeLift","DepartLift",
-        "FermeturePorteAvion"
+        "RemiseLID","FermeturePorteAvion"
     ];
     const labels = [
         "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
@@ -350,7 +350,7 @@ function generateTimingFields() {
         "Porte : Premier embarqué","Porte : Dernier embarqué",
         "Arrivée Fuel","Départ Fuel",
         "Arrivée Lift","Départ Lift",
-        "Fermeture porte avion"
+        "Remise LID/LDS","Fermeture porte avion"
     ];
     const container = document.getElementById('timing-grid');
     container.innerHTML = "";
@@ -454,7 +454,8 @@ function updateAllCalculations() {
     updateSOBTDefault();
     updateTOBT();
     updateDLCode();
-    updateDLDuree2(); // ajout du calcul DL Durée 2
+    updateDLDuree2();
+    updateLID();
 }
 
 function updateTimers() {
@@ -472,7 +473,21 @@ function updateTimers() {
     const h8 = new Date(base.getTime() - 8*60000);
     document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2,'0')}:${String(h40.getMinutes()).padStart(2,'0')}`;
     document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2,'0')}:${String(h15.getMinutes()).padStart(2,'0')}`;
-    document.getElementById('timer-h8').textContent = `${String(h8.getHours()).padStart(2,'0')}:${String(h8.getMinutes()).padStart(2,'0')}`;
+}
+
+function updateLID() {
+    const cie = document.getElementById('Cie').value;
+    const tobt = document.getElementById('timer-tobt').textContent;
+    if (cie === "RYR" && tobt !== "--:--") {
+        let [hh, mm] = tobt.split(':').map(Number);
+        const d = new Date();
+        d.setHours(hh);
+        d.setMinutes(mm - 8);
+        document.getElementById('timer-h8').textContent =
+            `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    } else {
+        document.getElementById('timer-h8').textContent = "--:--";
+    }
 }
 
 function updateSOBTDefault() {
@@ -549,7 +564,7 @@ function updateDLCode() {
     }
 }
 
-/* Nouveau calcul DL Durée 2 = (AOBT - SOBT) - DL Durée 1 */
+/* DL Durée 2 = (AOBT - SOBT) - DL Durée 1 */
 function updateDLDuree2() {
     const sobt = document.getElementById('SOBT').value;
     const aobt = document.getElementById('AOBT').value;
@@ -564,8 +579,29 @@ function updateDLDuree2() {
 
         const diff = Math.round((AOBT - SOBT) / 60000) - dlduree1;
         document.getElementById('DLduree2').value = diff >= 0 ? diff : 0;
+        updateDLDuree3();
     } else {
         document.getElementById('DLduree2').value = '';
+    }
+}
+
+/* Si on modifie DL Durée 2, recalculer DL Durée 3 */
+function updateDLDuree3() {
+    const sobt = document.getElementById('SOBT').value;
+    const aobt = document.getElementById('AOBT').value;
+    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
+    const dlduree2 = parseInt(document.getElementById('DLduree2').value) || 0;
+
+    if (sobt && aobt) {
+        const [soH, soM] = sobt.split(':').map(Number);
+        const [aoH, aoM] = aobt.split(':').map(Number);
+
+        const SOBT = new Date(); SOBT.setHours(soH, soM);
+        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
+
+        const total = Math.round((AOBT - SOBT) / 60000);
+        const reste = total - dlduree1 - dlduree2;
+        document.getElementById('DLduree3').value = reste >= 0 ? reste : 0;
     }
 }
 
