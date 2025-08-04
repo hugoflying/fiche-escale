@@ -200,6 +200,7 @@ button.plus  { background: #555; color: white; }
     <div class="form-grid">
         <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
         <div class="form-group"><label>Cie
+            <select id="Cie" onchange="updateAllCalculations()">
             <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
                 <option value="">--</option>
                 <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
@@ -386,9 +387,12 @@ function renderTabs() {
         const data = JSON.parse(localStorage.getItem(`flightData_${id}`) || '{}');
         let label = '';
 
+        // Si Destination ou Parking existent → afficher DESTINATION_PARKING en majuscule
         if ((data['To'] && data['Parking']) && (data['To'] !== '' || data['Parking'] !== '')) {
             label = `${(data['To'] || '').toUpperCase()}_${(data['Parking'] || '').toUpperCase()}`;
         } else {
+            // Sinon afficher Vol + numéro (basé sur index)
+            label = `Vol ${index + 1}`;
             label = `VOL ${index + 1}`;
         }
 
@@ -675,10 +679,12 @@ function updateSOBTDefault() {
     const sibt = document.getElementById('SIBT').value;
     const arrPNT = document.getElementById('ArrPNT')?.value;
     const arrPNC = document.getElementById('ArrPNC')?.value;
+    if (cie !== 'FR' || !sibt) return;
     if ((cie !== 'FR' && cie !== 'RK' && cie !== 'W4' && cie !== 'W6') || !sibt) return;
     let [sH, sM] = sibt.split(':').map(Number);
     const base = new Date();
     base.setHours(sH, sM);
+    const add = (arrPNT || arrPNC) ? 35 : 25;
     const add = (cie === 'W4' || cie === 'W6') ? 35 : (arrPNT || arrPNC) ? 35 : 25;
     const sobtCalc = new Date(base.getTime() + add * 60000);
     document.getElementById('SOBT').value =
