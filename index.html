@@ -17,6 +17,39 @@ body.dark { background: #121212; color: #f8f9fa; }
 
 h1 { text-align: center; margin: 10px 0 15px; }
 
+/* Onglets fixes */
+#tab-bar {
+    display: flex;
+    gap: 5px;
+    background: #e0e0e0;
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.tab {
+    padding: 5px 10px;
+    background: #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.tab.active {
+    background: #2196f3;
+    color: white;
+}
+#add-tab {
+    background: #4caf50;
+    color: white;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
 /* Sections */
 section {
     background: #fff;
@@ -73,15 +106,13 @@ textarea {
     overflow: auto;
 }
 
-/* Champ horaire + boutons : alignement parfait */
+/* Champ horaire + boutons */
 .form-group input[type="time"] {
     width: 100%;
     box-sizing: border-box;
     text-align: center;
     display: block;
 }
-
-/* Boutons horaires */
 .btn-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -158,17 +189,22 @@ button.plus  { background: #555; color: white; }
 }
 </style>
 </head>
-<body onload="initForm()">
+<body onload="initTabs()">
 
-<!-- Modes -->
-<div class="toggle-container">
-    <button onclick="toggleDarkMode()">🌙 / ☀️</button>
-    <button onclick="toggleTimeMode()">Local / UTC</button>
+<!-- BARRE D'ONGLETS -->
+<div id="tab-bar">
+    <div id="add-tab">+</div>
 </div>
 
 <h1>SUIVI PERFORMANCE</h1>
 
-<!-- Timers -->
+<!-- CONTENU DU FORMULAIRE -->
+<div id="form-container"></div>
+
+<!-- TEMPLATE FORMULAIRE COMPLET -->
+<script type="text/template" id="form-template">
+
+<!-- ======= Timers ======= -->
 <div class="timer-box">
     <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
     <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
@@ -176,7 +212,7 @@ button.plus  { background: #555; color: white; }
     <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
 </div>
 
-<!-- INFO VOL -->
+<!-- ======= INFO VOL ======= -->
 <section>
     <h2>INFO VOL</h2>
     <div class="form-grid">
@@ -213,7 +249,7 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- HORAIRES -->
+<!-- ======= HORAIRES ======= -->
 <section>
     <h2>HORAIRES</h2>
     <div class="form-grid">
@@ -252,19 +288,19 @@ button.plus  { background: #555; color: white; }
     </div>
 </section>
 
-<!-- SAUVEGARDER après HORAIRES -->
+<!-- SAUVEGARDER -->
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 
-<!-- TIMING -->
+<!-- ======= TIMING ======= -->
 <section>
     <h2>TIMING</h2>
     <div class="form-grid" id="timing-grid"></div>
 </section>
 
-<!-- SAUVEGARDER après TIMING -->
+<!-- SAUVEGARDER -->
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 
-<!-- RETARDS -->
+<!-- ======= RETARDS ======= -->
 <section>
     <h2>RETARDS (Départ)</h2>
     <div class="form-grid">
@@ -323,9 +359,89 @@ button.plus  { background: #555; color: white; }
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER</button>
 
+</script>
+
 <script>
+/* =====================
+   LOGIQUE MULTI-ONGLETS
+===================== */
+let currentTab = null;
+let tabs = [];
+
+// Ajout d'un nouvel onglet
+function addTab() {
+    const tabId = 'VOL_' + (tabs.length + 1);
+    tabs.push(tabId);
+    renderTabs();
+    createForm(tabId);
+    switchTab(tabId);
+}
+
+// Suppression d'un onglet
+function removeTab(tabId) {
+    if (confirm("Supprimer cet onglet ?")) {
+        for (let key in localStorage) {
+            if (key.startsWith(tabId + "_")) {
+                localStorage.removeItem(key);
+            }
+        }
+        tabs = tabs.filter(t => t !== tabId);
+        renderTabs();
+        if (tabs.length > 0) {
+            switchTab(tabs[tabs.length - 1]);
+        } else {
+            addTab();
+        }
+    }
+}
+
+// Affichage des onglets
+function renderTabs() {
+    const bar = document.getElementById('tab-bar');
+    bar.innerHTML = '';
+    tabs.forEach(tabId => {
+        const btn = document.createElement('div');
+        btn.className = 'tab' + (tabId === currentTab ? ' active' : '');
+        btn.textContent = tabId;
+        btn.onclick = () => switchTab(tabId);
+        btn.ondblclick = () => removeTab(tabId);
+        bar.appendChild(btn);
+    });
+    const addBtn = document.createElement('div');
+    addBtn.id = 'add-tab';
+    addBtn.textContent = '+';
+    addBtn.onclick = addTab;
+    bar.appendChild(addBtn);
+}
+
+// Changement d’onglet
+function switchTab(tabId) {
+    currentTab = tabId;
+    renderTabs();
+    createForm(tabId);
+}
+
+/* =====================
+   FORMULAIRE UNIQUE
+===================== */
+function createForm(tabId) {
+    if (!document.body.getAttribute('data-form-template')) {
+        document.body.setAttribute('data-form-template', document.getElementById('form-template').innerHTML);
+    }
+    document.getElementById('form-container').innerHTML = document.body.getAttribute('data-form-template');
+    initForm();
+}
+
+/* =====================
+   SCRIPTS EXISTANTS ADAPTÉS
+===================== */
+
 let isUTC = false;
 let manualSOBT = false;
+
+function initTabs() {
+    addTab(); // démarre avec 1 onglet
+}
 
 function initForm() {
     document.getElementById('Date').valueAsDate = new Date();
@@ -370,85 +486,52 @@ function generateTimingFields() {
     enableAutoSave();
 }
 
+/* --- SAUVEGARDE PAR ONGLET --- */
 function enableAutoSave() {
     const fields = document.querySelectorAll('input, select, textarea');
     fields.forEach(field => {
-        const savedValue = localStorage.getItem(field.id);
+        const savedValue = localStorage.getItem(currentTab + "_" + field.id);
         if (savedValue !== null) field.value = savedValue;
-        field.addEventListener('input', () => localStorage.setItem(field.id, field.value));
-        field.addEventListener('change', () => localStorage.setItem(field.id, field.value));
+        field.addEventListener('input', () => localStorage.setItem(currentTab + "_" + field.id, field.value));
+        field.addEventListener('change', () => localStorage.setItem(currentTab + "_" + field.id, field.value));
     });
 }
 
 function manualSave() {
     const fields = document.querySelectorAll('input, select, textarea');
-    fields.forEach(field => localStorage.setItem(field.id, field.value));
-    localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
-    localStorage.setItem('modeUTC', isUTC ? '1' : '0');
+    fields.forEach(field => localStorage.setItem(currentTab + "_" + field.id, field.value));
+    localStorage.setItem(currentTab + "_modeDark", document.body.classList.contains('dark') ? '1' : '0');
+    localStorage.setItem(currentTab + "_modeUTC", isUTC ? '1' : '0');
     manualSaveTimers();
     alert("Données sauvegardées !");
 }
 
 function manualSaveTimers() {
-    localStorage.setItem('timer-h40', document.getElementById('timer-h40').textContent);
-    localStorage.setItem('timer-h15', document.getElementById('timer-h15').textContent);
-    localStorage.setItem('timer-h8', document.getElementById('timer-h8').textContent);
-    localStorage.setItem('timer-tobt', document.getElementById('timer-tobt').textContent);
+    localStorage.setItem(currentTab + '_timer-h40', document.getElementById('timer-h40').textContent);
+    localStorage.setItem(currentTab + '_timer-h15', document.getElementById('timer-h15').textContent);
+    localStorage.setItem(currentTab + '_timer-h8', document.getElementById('timer-h8').textContent);
+    localStorage.setItem(currentTab + '_timer-tobt', document.getElementById('timer-tobt').textContent);
 }
 
 function restoreSettings() {
-    if (localStorage.getItem('modeDark') === '1') document.body.classList.add('dark');
-    if (localStorage.getItem('modeUTC') === '1') isUTC = true;
-    if (localStorage.getItem('timer-h40')) document.getElementById('timer-h40').textContent = localStorage.getItem('timer-h40');
-    if (localStorage.getItem('timer-h15')) document.getElementById('timer-h15').textContent = localStorage.getItem('timer-h15');
-    if (localStorage.getItem('timer-h8')) document.getElementById('timer-h8').textContent = localStorage.getItem('timer-h8');
-    if (localStorage.getItem('timer-tobt')) document.getElementById('timer-tobt').textContent = localStorage.getItem('timer-tobt');
+    if (localStorage.getItem(currentTab + '_modeDark') === '1') document.body.classList.add('dark');
+    if (localStorage.getItem(currentTab + '_modeUTC') === '1') isUTC = true;
+    if (localStorage.getItem(currentTab + '_timer-h40')) document.getElementById('timer-h40').textContent = localStorage.getItem(currentTab + '_timer-h40');
+    if (localStorage.getItem(currentTab + '_timer-h15')) document.getElementById('timer-h15').textContent = localStorage.getItem(currentTab + '_timer-h15');
+    if (localStorage.getItem(currentTab + '_timer-h8')) document.getElementById('timer-h8').textContent = localStorage.getItem(currentTab + '_timer-h8');
+    if (localStorage.getItem(currentTab + '_timer-tobt')) document.getElementById('timer-tobt').textContent = localStorage.getItem(currentTab + '_timer-tobt');
 }
 
 function clearAutoSave() {
-    localStorage.clear();
+    for (let key in localStorage) {
+        if (key.startsWith(currentTab + "_")) {
+            localStorage.removeItem(key);
+        }
+    }
     location.reload();
 }
 
-function setNow(fieldId) {
-    const now = new Date();
-    const hh = isUTC ? now.getUTCHours() : now.getHours();
-    const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-}
-
-function adjustTime(fieldId, delta) {
-    const input = document.getElementById(fieldId);
-    if (!input.value) return;
-    let [hh, mm] = input.value.split(':').map(Number);
-    let total = hh * 60 + mm + delta;
-    if (total < 0) total += 1440;
-    if (total >= 1440) total -= 1440;
-    hh = Math.floor(total / 60);
-    mm = total % 60;
-    input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
-}
-
-function toggleTimeMode() {
-    const inputs = document.querySelectorAll('input[type="time"]');
-    inputs.forEach(input => {
-        if (!input.value) return;
-        let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2;
-        if (hh < 0) hh += 24;
-        if (hh >= 24) hh -= 24;
-        input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-    });
-    isUTC = !isUTC;
-    localStorage.setItem('modeUTC', isUTC ? '1' : '0');
-    updateAllCalculations();
-}
-
+/* --- Fonctions calculs (updateTimers, updateLID, updateTOBT, updateDLDuree2/3) --- */
 function updateAllCalculations() {
     updateTimers();
     updateSOBTDefault();
@@ -487,80 +570,6 @@ function updateLID() {
             `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     } else {
         document.getElementById('timer-h8').textContent = "--:--";
-    }
-}
-
-function updateSOBTDefault() {
-    if (manualSOBT) return;
-    const cie = document.getElementById('Cie').value;
-    const sibt = document.getElementById('SIBT').value;
-    const arrPNT = document.getElementById('ArrPNT')?.value;
-    const arrPNC = document.getElementById('ArrPNC')?.value;
-    if (cie !== 'FR' || !sibt) return;
-    let [sH, sM] = sibt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(sH, sM);
-    const add = (arrPNT || arrPNC) ? 35 : 25;
-    const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value =
-        `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
-}
-
-function updateTOBT() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    const sobttxt = document.getElementById('SOBT').value;
-    if (!cie || !sibttxt) {
-        document.getElementById('timer-tobt').textContent = '--:--';
-        return;
-    }
-    const [sH,sM] = sibttxt.split(':').map(Number);
-    const [aH,aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH,sM];
-    const [soH,soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH,sM];
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-    const SOBT = new Date(); SOBT.setHours(soH, soM);
-    let TOBT = new Date(SIBT);
-    if (cie === 'FR') {
-        if (AIBT > SIBT) {
-            const arrPNT = document.getElementById('ArrPNT').value;
-            const arrPNC = document.getElementById('ArrPNC').value;
-            const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT = new Date(AIBT.getTime() + add*60000);
-        } else {
-            TOBT = new Date(SIBT);
-        }
-    } else {
-        if (AIBT > SIBT) {
-            const diff = (SOBT - SIBT) / 60000;
-            TOBT = new Date(AIBT.getTime() + diff*60000);
-        } else {
-            TOBT = new Date(SIBT);
-        }
-    }
-    if (TOBT < SOBT) TOBT = SOBT;
-    document.getElementById('timer-tobt').textContent =
-        `${String(TOBT.getHours()).padStart(2,'0')}:${String(TOBT.getMinutes()).padStart(2,'0')}`;
-}
-
-function updateDLCode() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    if (!cie || !sibttxt || !aibttxt) return;
-    const [sH,sM] = sibttxt.split(':').map(Number);
-    const [aH,aM] = aibttxt.split(':').map(Number);
-    const SIBT = new Date(); SIBT.setHours(sH,sM);
-    const AIBT = new Date(); AIBT.setHours(aH,aM);
-    if (AIBT > SIBT) {
-        if (cie === 'FR') document.getElementById('DLcode1').value = '93';
-        else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
-        else document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = Math.round((AIBT - SIBT)/60000);
-    } else {
-        document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = '';
     }
 }
 
