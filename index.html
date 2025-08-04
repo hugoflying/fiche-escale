@@ -478,7 +478,7 @@ function updateTimers() {
 function updateLID() {
     const cie = document.getElementById('Cie').value;
     const tobt = document.getElementById('timer-tobt').textContent;
-    if (cie === "RYR" && tobt !== "--:--") {
+    if (cie === "FR" && tobt !== "--:--") {
         let [hh, mm] = tobt.split(':').map(Number);
         const d = new Date();
         d.setHours(hh);
