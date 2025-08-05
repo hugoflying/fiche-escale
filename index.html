@@ -901,6 +901,67 @@ function toggleTimeMode() {
     updateAllCalculations();
 }
 
+/* === POPUP === */
+function showPopup(message, color = "#2196f3", duration = 2000) {
+    const popup = document.createElement('div');
+    popup.textContent = message;
+    popup.style.position = "fixed";
+    popup.style.top = "60px";  // Sous la barre fixe
+    popup.style.left = "50%";
+    popup.style.transform = "translateX(-50%)";
+    popup.style.background = color;
+    popup.style.color = "#fff";
+    popup.style.padding = "10px 20px";
+    popup.style.borderRadius = "6px";
+    popup.style.fontSize = "1rem";
+    popup.style.zIndex = "1000";
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), duration);
+}
+
+/* === CONFIG AIRTABLE === */
+const AIRTABLE_API_KEY = "patmjcQua1Od3Romx.f6f9b0defe694b311c5657cf81179309efc05a1122250a31eedd2f58355189f6";
+const AIRTABLE_BASE_ID = "appq3lFOIsAUOiU8J";
+const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
+
+/* === ENVOI VERS AIRTABLE === */
+async function sendToAirtable() {
+    // Récupération des champs requis
+    const record = {
+        "Date": document.getElementById('Date').value,
+        "Immat": document.getElementById('Immat').value,
+        "Parking": document.getElementById('Parking').value,
+        "Cie": document.getElementById('Cie').value,
+        "N° Vol": document.getElementById('NVol').value,
+        "From": document.getElementById('From').value,
+        "To": document.getElementById('To').value,
+        "SIBT": document.getElementById('SIBT').value,
+        "AIBT": document.getElementById('AIBT').value,
+        "SOBT": document.getElementById('SOBT').value,
+        "AOBT": document.getElementById('AOBT').value
+    };
+
+    try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ records: [{ fields: record }] })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur API : ${response.statusText}`);
+        }
+
+        showPopup("Données envoyées à Airtable !", "#4caf50", 3000);
+    } catch (err) {
+        console.error("Erreur Airtable :", err);
+        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
+    }
+}
+
 /* === VALIDATION === */
 function validateForm() {
     const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
@@ -914,9 +975,13 @@ function validateForm() {
     if (missing) {
         showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
     } else {
-        showPopup("Vol terminé !", "#4caf50", 2000);
+        // Envoi des données vers Airtable
+        sendToAirtable();
 
-        // Supprimer l’onglet actuel après un léger délai pour laisser voir le popup
+        // Affiche popup confirmation
+        showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
+
+        // Supprimer ou réinitialiser l’onglet
         setTimeout(() => {
             let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
             tabs = tabs.filter(t => t !== currentTabId);
@@ -944,24 +1009,6 @@ function clearAutoSave() {
         localStorage.clear();
         location.reload();
     }
-}
-
-/* === POPUP === */
-function showPopup(message, color = "#2196f3", duration = 2000) {
-    const popup = document.createElement('div');
-    popup.textContent = message;
-    popup.style.position = "fixed";
-    popup.style.top = "60px";  // <-- Position sous la barre d’onglets
-    popup.style.left = "50%";
-    popup.style.transform = "translateX(-50%)";
-    popup.style.background = color;
-    popup.style.color = "#fff";
-    popup.style.padding = "10px 20px";
-    popup.style.borderRadius = "6px";
-    popup.style.fontSize = "1rem";
-    popup.style.zIndex = "1000";
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), duration);
 }
 </script>
 </body>
