@@ -145,15 +145,71 @@ button.plus  { background: #555; color: white; }
 #timer-tobt { background: #2e7d32; }
 #timer-h8 { background: orange; }
 
-/* Toggles */
+/* Toggles container */
 .toggle-container {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
+    gap: 20px;
 }
-.toggle-container button {
-    padding: 5px 10px;
-    font-size: 0.9rem;
+
+/* Style générique switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 70px;
+  height: 30px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "Local"; /* Valeur par défaut pour Local/UTC */
+  height: 26px;
+  width: 32px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  text-align: center;
+  font-size: 0.7rem;
+  line-height: 26px;
+  border-radius: 34px;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(36px);
+  content: "UTC"; /* Quand coché -> affiche UTC */
+}
+
+/* Switch spécifique pour jour/nuit */
+.slider-night:before {
+  content: "Jour"; /* Valeur par défaut pour Jour/Nuit */
+}
+
+input:checked + .slider-night:before {
+  content: "Nuit"; /* Quand coché -> affiche Nuit */
 }
 
 /* Majuscules pour INFO VOL */
