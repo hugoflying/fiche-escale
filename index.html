@@ -926,15 +926,21 @@ const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
 
 /* === ENVOI VERS AIRTABLE === */
 async function sendToAirtable() {
+    // Mise en majuscule des champs INFO VOL
+    function upper(id) {
+        return document.getElementById(id).value.toUpperCase();
+    }
+
     const record = {
         // Champs INFO VOL
-        "RZA": document.getElementById('RZA').value,
-        "Immat": document.getElementById('Immat').value,
-        "Parking": document.getElementById('Parking').value,
-        "Cie": document.getElementById('Cie').value,
-        "N° Vol": document.getElementById('NVol').value,
-        "Provenance": document.getElementById('From').value,
-        "Destination": document.getElementById('To').value,
+        "Date": document.getElementById('Date').value,
+        "RZA": upper('RZA'),
+        "Immat": upper('Immat'),
+        "Parking": upper('Parking'),
+        "Cie": upper('Cie'),
+        "N° Vol": upper('NVol'),
+        "Provenance": upper('From'),
+        "Destination": upper('To'),
         "SIBT": document.getElementById('SIBT').value,
         "AIBT": document.getElementById('AIBT').value,
         "SOBT": document.getElementById('SOBT').value,
@@ -985,6 +991,27 @@ async function sendToAirtable() {
         "Push-Pull": document.getElementById('PushPull').value,
         "Flux par le RZA": document.getElementById('FluxRZA').value
     };
+
+    try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ records: [{ fields: record }] })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur API : ${response.statusText}`);
+        }
+
+        showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
+    } catch (err) {
+        console.error("Erreur Airtable :", err);
+        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
+    }
+}
 
     try {
         const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
