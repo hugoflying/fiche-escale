@@ -395,100 +395,92 @@ body.dark #tab-bar {
 <script>
 /* === CODE JS COMPLET === */
 
-/* === VARIABLES === */
-/* Variables */
+/* === VARIABLES GLOBALES === */
 let isUTC = false;
 let manualSOBT = false;
 let currentTabId = null;
 const circledNums = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫"];
-const circledNums = ["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 
-/* === INIT === */
+/* === INITIALISATION === */
 function initForm() {
-/* INIT */
-function initForm(){
     renderTabs();
+
     let lastTab = localStorage.getItem('lastTabId');
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    if (tabs.length === 0) createNewTab();
-    else if (lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
-    if(tabs.length === 0) createNewTab();
-    else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
-    else switchTab(tabs[0]);
+
+    if (tabs.length === 0) {
+        createNewTab();
+    } else if (lastTab && tabs.includes(parseInt(lastTab))) {
+        switchTab(parseInt(lastTab));
+    } else {
+        switchTab(tabs[0]);
+    }
 
     generateTimingFields();
     generateChargementFields();
 
-    // MAJ continue
+    // Auto-save toutes les 60 sec
     setInterval(() => {
         updateAllCalculations();
         saveCurrentTabData();
     }, 60000);
-    // Auto-save toutes les 60 sec
-    setInterval(()=>{updateAllCalculations();saveCurrentTabData();},60000);
 
-    // Toggle collapse sections
-    // Collapse/Expand sections
+    // Gestion collapse sections
     document.querySelectorAll("section h2").forEach(h2 => {
-        h2.onclick = () => h2.parentElement.classList.toggle("collapsed");
         h2.addEventListener("click", () => {
             h2.parentElement.classList.toggle("collapsed");
         });
     });
 
-    // Ajout listeners instantanés pour mise à jour des onglets
-    ['To', 'Parking'].forEach(id => {
-        document.getElementById(id).addEventListener('input', renderTabs);
-    });
-    // Mise à jour instantanée du titre onglet quand Parking ou Destination changent
+    // Mise à jour titre onglets
     document.getElementById("Parking").addEventListener("change", renderTabs);
     document.getElementById("To").addEventListener("input", renderTabs);
 }
 
-/* Expand/collapse all */
-function expandAllSections(){
+/* === EXPAND / COLLAPSE === */
+function expandAllSections() {
     document.querySelectorAll("section").forEach(sec => sec.classList.remove("collapsed"));
 }
-function collapseAllSections(){
+function collapseAllSections() {
     document.querySelectorAll("section").forEach(sec => sec.classList.add("collapsed"));
 }
 
-/* === TABS === */
+/* === ONGLET : AFFICHAGE / CHANGEMENT === */
 function renderTabs() {
-/* Tabs */
-function renderTabs(){
     const tabBar = document.getElementById('tab-bar');
     tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
+
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs.forEach((id) => {
-    tabs.forEach((id,index) => {
+    tabs.forEach(id => {
         const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
         let label = data.To ? data.To.toUpperCase() : "VOL";
         let parking = data.Parking ? circledNums[parseInt(data.Parking)] : "";
+
         const btn = document.createElement('button');
         btn.textContent = label + " " + parking;
         btn.style.fontWeight = id === currentTabId ? 'bold' : 'normal';
         btn.onclick = () => switchTab(id);
         btn.ondblclick = () => deleteTab(id);
+
         tabBar.appendChild(btn);
     });
 }
 
 function createNewTab() {
-function createNewTab(){
     const newId = Date.now();
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs.push(newId);
     localStorage.setItem('flightTabs', JSON.stringify(tabs));
+
     clearFormFields();
     currentTabId = newId;
     localStorage.setItem('lastTabId', newId);
+
     saveCurrentTabData();
     renderTabs();
 }
 
 function switchTab(id) {
-function switchTab(id){
     saveCurrentTabData();
     currentTabId = id;
     localStorage.setItem('lastTabId', id);
@@ -498,24 +490,24 @@ function switchTab(id){
 
 function deleteTab(id) {
     if (!confirm("Supprimer cet onglet ?")) return;
-function deleteTab(id){
-    if(!confirm("Supprimer cet onglet ?")) return;
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs = tabs.filter(t => t !== id);
     localStorage.setItem('flightTabs', JSON.stringify(tabs));
     localStorage.removeItem('tab-' + id);
-    if (tabs.length > 0) switchTab(tabs[0]);
-    if(tabs.length > 0) switchTab(tabs[0]);
-    else createNewTab();
+
+    if (tabs.length > 0) {
+        switchTab(tabs[0]);
+    } else {
+        createNewTab();
+    }
     renderTabs();
 }
 
-function saveCurrentTabData() {
-    if (!currentTabId) return;
-function clearFormFields(){
+/* === GESTION FORMULAIRE === */
+function clearFormFields() {
     document.querySelectorAll('input, select, textarea').forEach(el => {
-        if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
-        else if(el.tagName === 'SELECT') el.selectedIndex = 0;
+        if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+        else if (el.tagName === 'SELECT') el.selectedIndex = 0;
         else el.value = '';
     });
     document.getElementById('Date').valueAsDate = new Date();
@@ -523,47 +515,51 @@ function clearFormFields(){
     updateAllCalculations();
 }
 
-function saveCurrentTabData(){
-    if(!currentTabId) return;
+function saveCurrentTabData() {
+    if (!currentTabId) return;
     let data = {};
     document.querySelectorAll('input, select, textarea').forEach(el => data[el.id] = el.value);
+
     data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
     data.modeUTC = isUTC ? '1' : '0';
     data.timer_h40 = document.getElementById('timer-h40').textContent;
     data.timer_h15 = document.getElementById('timer-h15').textContent;
     data.timer_h8 = document.getElementById('timer-h8').textContent;
     data.timer_tobt = document.getElementById('timer-tobt').textContent;
+
     localStorage.setItem('tab-' + currentTabId, JSON.stringify(data));
     localStorage.setItem('lastTabId', currentTabId);
     renderTabs();
 }
 
 function loadTabData(id) {
-function loadTabData(id){
     const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
+
     document.querySelectorAll('input, select, textarea').forEach(el => {
         if (data[el.id] !== undefined) el.value = data[el.id];
-        if(data[el.id] !== undefined) el.value = data[el.id];
     });
+
     if (data.modeDark === '1') document.body.classList.add('dark');
-    if(data.modeDark === '1') document.body.classList.add('dark');
     else document.body.classList.remove('dark');
+
     isUTC = data.modeUTC === '1';
     document.getElementById('timer-h40').textContent = data.timer_h40 || '--:--';
     document.getElementById('timer-h15').textContent = data.timer_h15 || '--:--';
     document.getElementById('timer-h8').textContent = data.timer_h8 || '--:--';
     document.getElementById('timer-tobt').textContent = data.timer_tobt || '--:--';
+
     generateChargementFields();
     updateAllCalculations();
 }
 
-/* === CHARGEMENT TOB === */
+/* === CHARGEMENT / TOB === */
 function generateChargementFields() {
     const cie = document.getElementById('Cie').value;
     const container = document.getElementById('chargement-container');
     container.innerHTML = "";
 
     let html = "";
+
     if (cie === "FR" || cie === "RK") {
         html += `
             <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
@@ -602,26 +598,36 @@ function generateChargementFields() {
 
 function updateTOB() {
     const cie = document.getElementById('Cie').value;
+    let mainTotal = 0;
     let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
-    let totalMain = 0;
 
     if (cie === "FR" || cie === "RK") {
-        totalMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
+        mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) +
                     (parseInt(document.getElementById('CHILD')?.value) || 0);
     } else {
-        totalMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
+        mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
                     (parseInt(document.getElementById('FEMALE')?.value) || 0) +
                     (parseInt(document.getElementById('CHILD')?.value) || 0);
     }
 
-    document.getElementById('TOB').value = `${totalMain} + ${infants}`;
+    let tobText = "";
+    if (mainTotal === 0 && infants === 0) {
+        tobText = "";
+    } else if (infants > 0) {
+        tobText = `${mainTotal} + ${infants}`;
+    } else {
+        tobText = `${mainTotal}`;
+    }
+
+    document.getElementById('TOB').value = tobText;
     checkTOBCoherence();
 }
 
-/* Cohérence TOB */
+/* === COHÉRENCE TOB === */
 function checkTOBCoherence() {
     const cie = document.getElementById('Cie').value;
     let tobMain = 0;
+
     if (cie === "FR" || cie === "RK") {
         tobMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
                   (parseInt(document.getElementById('CHILD')?.value) || 0);
@@ -695,7 +701,7 @@ function updateLID() {
     }
 }
 
-/* === SOBT DEFAULT === */
+/* === SOBT PAR DÉFAUT === */
 function updateSOBTDefault() {
     if (manualSOBT) return;
     const cie = document.getElementById('Cie').value;
@@ -713,15 +719,13 @@ function updateSOBTDefault() {
     let add = 35;
     if (cie === "FR" || cie === "RK") {
         add = (arrPNT || arrPNC) ? 35 : 25;
-    } else {
-        add = 35;
     }
 
     const sobtCalc = new Date(base.getTime() + add * 60000);
     document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === TOBT === */
+/* === TOBT CALCUL === */
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
@@ -766,7 +770,7 @@ function updateTOBT() {
     document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === DL CODE === */
+/* === DL CODES === */
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
@@ -789,7 +793,7 @@ function updateDLCode() {
     }
 }
 
-/* === DL DURÉE 2 et 3 === */
+/* === DL DURÉES 2 & 3 === */
 function updateDLDuree2() {
     const sobt = document.getElementById('SOBT').value;
     const aobt = document.getElementById('AOBT').value;
@@ -826,7 +830,7 @@ function updateDLDuree3() {
     }
 }
 
-/* === PRESTATIONS AUTO BVA === */
+/* === PRESTATIONS AUTO === */
 function applyPrestationsDefaults() {
     const from = document.getElementById('From').value.toUpperCase();
     const to = document.getElementById('To').value.toUpperCase();
@@ -843,31 +847,14 @@ function applyPrestationsDefaults() {
     }
 }
 
-/* === POPUPS === */
-function showPopup(message, color = "#2196f3", duration = 2000) {
-    const popup = document.createElement('div');
-    popup.textContent = message;
-    popup.style.position = "fixed";
-    popup.style.bottom = "20px";
-    popup.style.left = "50%";
-    popup.style.transform = "translateX(-50%)";
-    popup.style.background = color;
-    popup.style.color = "#fff";
-    popup.style.padding = "10px 20px";
-    popup.style.borderRadius = "6px";
-    popup.style.fontSize = "1rem";
-    popup.style.zIndex = "1000";
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), duration);
-}
-
-/* === UTILS === */
+/* === UTILITAIRES === */
 function setNow(fieldId) {
     const now = new Date();
     const hh = isUTC ? now.getUTCHours() : now.getHours();
     const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
     document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
+
 function adjustTime(fieldId, delta) {
     const input = document.getElementById(fieldId);
     if (!input.value) return;
@@ -879,10 +866,12 @@ function adjustTime(fieldId, delta) {
     mm = total % 60;
     input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
+
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
 }
+
 function toggleTimeMode() {
     const inputs = document.querySelectorAll('input[type="time"]');
     inputs.forEach(input => {
@@ -926,6 +915,24 @@ function clearAutoSave() {
         localStorage.clear();
         location.reload();
     }
+}
+
+/* === POPUP === */
+function showPopup(message, color = "#2196f3", duration = 2000) {
+    const popup = document.createElement('div');
+    popup.textContent = message;
+    popup.style.position = "fixed";
+    popup.style.bottom = "20px";
+    popup.style.left = "50%";
+    popup.style.transform = "translateX(-50%)";
+    popup.style.background = color;
+    popup.style.color = "#fff";
+    popup.style.padding = "10px 20px";
+    popup.style.borderRadius = "6px";
+    popup.style.fontSize = "1rem";
+    popup.style.zIndex = "1000";
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), duration);
 }
 </script>
 </body>
