@@ -177,8 +177,11 @@ button.plus  { background: #555; color: white; }
     position: sticky;
     top: 0;
     background: #f8f9fa;
-    z-index: 10;
     padding: 5px 0;
+    z-index: 999;
+}
+body.dark #tab-bar {
+    background: #121212; /* fond adapté mode nuit */
 }
 #tab-bar button:first-child {
     font-weight: bold;
@@ -391,47 +394,53 @@ button.plus  { background: #555; color: white; }
 <script>
 /* === CODE JS COMPLET === */
 
-/* === VARIABLES === */
+/* Variables */
 let isUTC = false;
 let manualSOBT = false;
 let currentTabId = null;
-const circledNums = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫"];
+const circledNums = ["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 
-/* === INIT === */
-function initForm() {
+/* INIT */
+function initForm(){
     renderTabs();
     let lastTab = localStorage.getItem('lastTabId');
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    if (tabs.length === 0) createNewTab();
-    else if (lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
+    if(tabs.length === 0) createNewTab();
+    else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
     generateTimingFields();
     generateChargementFields();
 
-    // MAJ continue
-    setInterval(() => {
-        updateAllCalculations();
-        saveCurrentTabData();
-    }, 60000);
+    // Auto-save toutes les 60 sec
+    setInterval(()=>{updateAllCalculations();saveCurrentTabData();},60000);
 
-    // Toggle collapse sections
+    // Collapse/Expand sections
     document.querySelectorAll("section h2").forEach(h2 => {
-        h2.onclick = () => h2.parentElement.classList.toggle("collapsed");
+        h2.addEventListener("click", () => {
+            h2.parentElement.classList.toggle("collapsed");
+        });
     });
 
-    // Ajout listeners instantanés pour mise à jour des onglets
-    ['To', 'Parking'].forEach(id => {
-        document.getElementById(id).addEventListener('input', renderTabs);
-    });
+    // Mise à jour instantanée du titre onglet quand Parking ou Destination changent
+    document.getElementById("Parking").addEventListener("change", renderTabs);
+    document.getElementById("To").addEventListener("input", renderTabs);
 }
 
-/* === TABS === */
-function renderTabs() {
+/* Expand/collapse all */
+function expandAllSections(){
+    document.querySelectorAll("section").forEach(sec => sec.classList.remove("collapsed"));
+}
+function collapseAllSections(){
+    document.querySelectorAll("section").forEach(sec => sec.classList.add("collapsed"));
+}
+
+/* Tabs */
+function renderTabs(){
     const tabBar = document.getElementById('tab-bar');
     tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs.forEach((id) => {
+    tabs.forEach((id,index) => {
         const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
         let label = data.To ? data.To.toUpperCase() : "VOL";
         let parking = data.Parking ? circledNums[parseInt(data.Parking)] : "";
@@ -444,7 +453,7 @@ function renderTabs() {
     });
 }
 
-function createNewTab() {
+function createNewTab(){
     const newId = Date.now();
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs.push(newId);
@@ -456,7 +465,7 @@ function createNewTab() {
     renderTabs();
 }
 
-function switchTab(id) {
+function switchTab(id){
     saveCurrentTabData();
     currentTabId = id;
     localStorage.setItem('lastTabId', id);
@@ -464,19 +473,30 @@ function switchTab(id) {
     renderTabs();
 }
 
-function deleteTab(id) {
-    if (!confirm("Supprimer cet onglet ?")) return;
+function deleteTab(id){
+    if(!confirm("Supprimer cet onglet ?")) return;
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs = tabs.filter(t => t !== id);
     localStorage.setItem('flightTabs', JSON.stringify(tabs));
     localStorage.removeItem('tab-' + id);
-    if (tabs.length > 0) switchTab(tabs[0]);
+    if(tabs.length > 0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
 }
 
-function saveCurrentTabData() {
-    if (!currentTabId) return;
+function clearFormFields(){
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+        else if(el.tagName === 'SELECT') el.selectedIndex = 0;
+        else el.value = '';
+    });
+    document.getElementById('Date').valueAsDate = new Date();
+    document.getElementById('FNC').value = 'N';
+    updateAllCalculations();
+}
+
+function saveCurrentTabData(){
+    if(!currentTabId) return;
     let data = {};
     document.querySelectorAll('input, select, textarea').forEach(el => data[el.id] = el.value);
     data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
@@ -490,12 +510,12 @@ function saveCurrentTabData() {
     renderTabs();
 }
 
-function loadTabData(id) {
+function loadTabData(id){
     const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
     document.querySelectorAll('input, select, textarea').forEach(el => {
-        if (data[el.id] !== undefined) el.value = data[el.id];
+        if(data[el.id] !== undefined) el.value = data[el.id];
     });
-    if (data.modeDark === '1') document.body.classList.add('dark');
+    if(data.modeDark === '1') document.body.classList.add('dark');
     else document.body.classList.remove('dark');
     isUTC = data.modeUTC === '1';
     document.getElementById('timer-h40').textContent = data.timer_h40 || '--:--';
