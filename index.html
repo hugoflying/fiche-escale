@@ -391,6 +391,12 @@ function initForm(){
     document.querySelectorAll("section h2").forEach(h2=>{
         h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
+
+    // Mise à jour instantanée des onglets
+    document.getElementById('Parking').onchange = updateTabLabelInstant;
+    document.getElementById('To').oninput = updateTabLabelInstant;
+    document.getElementById('From').oninput = applyPrestationsDefaults;
+    document.getElementById('To').oninput = applyPrestationsDefaults;
 }
 
 /* Expand/collapse all */
@@ -492,6 +498,12 @@ function loadTabData(id){
     updateAllCalculations();
 }
 
+/* Mise à jour instantanée label onglet */
+function updateTabLabelInstant(){
+    saveCurrentTabData();
+    renderTabs();
+}
+
 /* TIMING FIELDS */
 function generateTimingFields(){
     const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque","AvionPremierEmbarque","AvionDernierEmbarque","PortePremierEmbarque","PorteDernierEmbarque","ArriveeFuel","DepartFuel","ArriveeLift","DepartLift","RemiseLID","FermeturePorteAvion"];
@@ -501,8 +513,8 @@ function generateTimingFields(){
     timings.forEach((id,i)=>{
         const div=document.createElement('div');
         div.className='form-group';
-        div.innerHTML=`
-            <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
+        div.innerHTML=
+            `<label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
             <div class="btn-actions">
                 <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
                 <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
@@ -520,35 +532,35 @@ function generateChargementFields(){
 
     let html="";
     if(cie==="FR"||cie==="RK"){
-        html+=`
-        <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
+        html+=
+        `<div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
         <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
         <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>`;
-        html+=`
-        <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
+        html+=
+        `<div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
         <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
         <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>`;
-        html+=`
-        <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+        html+=
+        `<div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
         <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>`;
     } else {
-        html+=`
-        <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
+        html+=
+        `<div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
         <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
         <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
         <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>`;
-        html+=`
-        <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
+        html+=
+        `<div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
         <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
         <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
         <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>`;
-        html+=`
-        <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+        html+=
+        `<div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
         <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
         <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>`;
     }
-    html+=`
-    <div class="form-group" style="flex:1 1 100%;">
+    html+=
+    `<div class="form-group" style="flex:1 1 100%;">
         <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
     </div>`;
     container.innerHTML=html;
@@ -566,7 +578,7 @@ function updateTOB(){
         totalMain=(parseInt(document.getElementById('MALE')?.value)||0)+(parseInt(document.getElementById('FEMALE')?.value)||0)+(parseInt(document.getElementById('CHILD')?.value)||0);
     }
 
-    document.getElementById('TOB').value=`${totalMain} + ${infants}`;
+    document.getElementById('TOB').value=`${totalMain + infants}`;
     checkTOBCoherence();
 }
 
@@ -630,8 +642,8 @@ function updateSOBTDefault(){
     if(manualSOBT) return;
     const cie=document.getElementById('Cie').value;
     const sibt=document.getElementById('SIBT').value;
-    const arrPNT=document.getElementById('ArrPNT').value;
-    const arrPNC=document.getElementById('ArrPNC').value;
+    const arrPNT=document.getElementById('ArrPNT')?.value;
+    const arrPNC=document.getElementById('ArrPNC')?.value;
     if(!sibt || !["FR","RK","W4","W6"].includes(cie)) {
         document.getElementById('SOBT').value='';
         return;
@@ -724,6 +736,7 @@ function updateDLDuree2(){
         updateDLDuree3();
     }
 }
+
 function updateDLDuree3(){
     const sobt=document.getElementById('SOBT').value;
     const aobt=document.getElementById('AOBT').value;
@@ -748,6 +761,7 @@ function applyPrestationsDefaults(){
     if(from==="BVA"){
         document.getElementById('Ordures').value="N";
         document.getElementById('EauPotable').value="Y";
+        document.getElementById('MenageAssist').value="N";
     }
     if(to==="BVA"){
         document.getElementById('Ordures').value="Y";
@@ -820,12 +834,6 @@ function clearAutoSave(){
         location.reload();
     }
 }
-    function updateTabLabelInstant() {
-    saveCurrentTabData();
-    renderTabs();
-}
-
 </script>
-
 </body>
 </html>
