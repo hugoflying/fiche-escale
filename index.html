@@ -910,10 +910,25 @@ function validateForm() {
             missing = true;
         }
     }
+
     if (missing) {
         showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
     } else {
         showPopup("Vol terminé !", "#4caf50", 2000);
+
+        // Supprimer l’onglet actuel après un léger délai pour laisser voir le popup
+        setTimeout(() => {
+            let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+            tabs = tabs.filter(t => t !== currentTabId);
+            localStorage.setItem('flightTabs', JSON.stringify(tabs));
+            localStorage.removeItem('tab-' + currentTabId);
+
+            if (tabs.length > 0) {
+                switchTab(tabs[0]); // Passer au premier onglet restant
+            } else {
+                createNewTab(); // Réinitialiser si aucun onglet restant
+            }
+        }, 1000);
     }
 }
 
