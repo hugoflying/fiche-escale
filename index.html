@@ -569,21 +569,33 @@ function generateChargementFields() {
     updateTOB();
 }
 
-function updateTOB() {
+function updateTOB(){
     const cie = document.getElementById('Cie').value;
+    let mainTotal = 0;
     let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
-    let totalMain = 0;
 
-    if (cie === "FR" || cie === "RK") {
-        totalMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
+    // Calcul du total principal
+    if(cie === "FR" || cie === "RK"){
+        mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) + 
                     (parseInt(document.getElementById('CHILD')?.value) || 0);
     } else {
-        totalMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
+        mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
                     (parseInt(document.getElementById('FEMALE')?.value) || 0) +
                     (parseInt(document.getElementById('CHILD')?.value) || 0);
     }
 
-    document.getElementById('TOB').value = `${totalMain} + ${infants}`;
+    let tobText = "";
+
+    // Si tout est à zéro → vide
+    if(mainTotal === 0 && infants === 0){
+        tobText = "";
+    } else if(infants > 0){
+        tobText = `${mainTotal} + ${infants}`;
+    } else {
+        tobText = `${mainTotal}`;
+    }
+
+    document.getElementById('TOB').value = tobText;
     checkTOBCoherence();
 }
 
