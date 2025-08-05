@@ -450,53 +450,64 @@ body.dark #tab-bar {
 <script>
 /* === CODE JS COMPLET === */
 
-/* Variables */
+/* === VARIABLES === */
 let isUTC = false;
 let manualSOBT = false;
 let currentTabId = null;
-const circledNums = ["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
+const circledNums = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫"];
 
-/* INIT */
-function initForm(){
+/* === INIT FORM === */
+function initForm() {
     renderTabs();
     let lastTab = localStorage.getItem('lastTabId');
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    if(tabs.length === 0) createNewTab();
-    else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
+    if (tabs.length === 0) createNewTab();
+    else if (lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
     generateTimingFields();
     generateChargementFields();
+    setInterval(() => { updateAllCalculations(); saveCurrentTabData(); }, 60000);
 
-    // Auto-save toutes les 60 sec
-    setInterval(()=>{updateAllCalculations();saveCurrentTabData();},60000);
-
-    // Collapse/Expand sections
+    // Collapse/expand individual
     document.querySelectorAll("section h2").forEach(h2 => {
         h2.addEventListener("click", () => {
             h2.parentElement.classList.toggle("collapsed");
         });
     });
-
-    // Mise à jour instantanée du titre onglet quand Parking ou Destination changent
-    document.getElementById("Parking").addEventListener("change", renderTabs);
-    document.getElementById("To").addEventListener("input", renderTabs);
 }
 
-/* Expand/collapse all */
-function expandAllSections(){
+/* === RENDU ONGLET FIXE === */
+window.addEventListener('scroll', () => {
+    const tabBar = document.getElementById('tab-bar');
+    if (window.scrollY > 0) {
+        tabBar.style.position = "fixed";
+        tabBar.style.top = "0";
+        tabBar.style.left = "0";
+        tabBar.style.right = "0";
+        tabBar.style.zIndex = "1000";
+        tabBar.style.background = document.body.classList.contains('dark') ? "#1e1e1e" : "#f8f9fa";
+        tabBar.style.padding = "5px";
+    } else {
+        tabBar.style.position = "static";
+        tabBar.style.background = "transparent";
+    }
+});
+
+/* === EXPAND / COLLAPSE GLOBAL === */
+function expandAllSections() {
     document.querySelectorAll("section").forEach(sec => sec.classList.remove("collapsed"));
 }
-function collapseAllSections(){
+function collapseAllSections() {
     document.querySelectorAll("section").forEach(sec => sec.classList.add("collapsed"));
 }
 
-/* Tabs */
-function renderTabs(){
+/* === TABS === */
+function renderTabs() {
     const tabBar = document.getElementById('tab-bar');
     tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs.forEach((id,index) => {
+    tabs.forEach((id) => {
         const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
         let label = data.To ? data.To.toUpperCase() : "VOL";
         let parking = data.Parking ? circledNums[parseInt(data.Parking)] : "";
@@ -509,7 +520,7 @@ function renderTabs(){
     });
 }
 
-function createNewTab(){
+function createNewTab() {
     const newId = Date.now();
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs.push(newId);
@@ -521,7 +532,7 @@ function createNewTab(){
     renderTabs();
 }
 
-function switchTab(id){
+function switchTab(id) {
     saveCurrentTabData();
     currentTabId = id;
     localStorage.setItem('lastTabId', id);
@@ -529,21 +540,22 @@ function switchTab(id){
     renderTabs();
 }
 
-function deleteTab(id){
-    if(!confirm("Supprimer cet onglet ?")) return;
+function deleteTab(id) {
+    if (!confirm("Supprimer cet onglet ?")) return;
     let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs = tabs.filter(t => t !== id);
     localStorage.setItem('flightTabs', JSON.stringify(tabs));
     localStorage.removeItem('tab-' + id);
-    if(tabs.length > 0) switchTab(tabs[0]);
+    if (tabs.length > 0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
 }
 
-function clearFormFields(){
+/* === CHAMPS / DONNÉES === */
+function clearFormFields() {
     document.querySelectorAll('input, select, textarea').forEach(el => {
-        if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
-        else if(el.tagName === 'SELECT') el.selectedIndex = 0;
+        if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+        else if (el.tagName === 'SELECT') el.selectedIndex = 0;
         else el.value = '';
     });
     document.getElementById('Date').valueAsDate = new Date();
@@ -551,8 +563,8 @@ function clearFormFields(){
     updateAllCalculations();
 }
 
-function saveCurrentTabData(){
-    if(!currentTabId) return;
+function saveCurrentTabData() {
+    if (!currentTabId) return;
     let data = {};
     document.querySelectorAll('input, select, textarea').forEach(el => data[el.id] = el.value);
     data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
@@ -566,12 +578,12 @@ function saveCurrentTabData(){
     renderTabs();
 }
 
-function loadTabData(id){
+function loadTabData(id) {
     const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
     document.querySelectorAll('input, select, textarea').forEach(el => {
-        if(data[el.id] !== undefined) el.value = data[el.id];
+        if (data[el.id] !== undefined) el.value = data[el.id];
     });
-    if(data.modeDark === '1') document.body.classList.add('dark');
+    if (data.modeDark === '1') document.body.classList.add('dark');
     else document.body.classList.remove('dark');
     isUTC = data.modeUTC === '1';
     document.getElementById('timer-h40').textContent = data.timer_h40 || '--:--';
@@ -582,112 +594,9 @@ function loadTabData(id){
     updateAllCalculations();
 }
 
-/* === CHARGEMENT TOB === */
-function generateChargementFields() {
-    const cie = document.getElementById('Cie').value;
-    const container = document.getElementById('chargement-container');
-    container.innerHTML = "";
-
-    let html = "";
-    if (cie === "FR" || cie === "RK") {
-        html += `
-            <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
-        `;
-    } else {
-        html += `
-            <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
-            <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
-        `;
-    }
-
-    html += `
-        <div class="form-group" style="flex:1 1 100%;">
-            <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
-        </div>
-    `;
-    container.innerHTML = html;
-    updateTOB();
-}
-
-function updateTOB(){
-    const cie = document.getElementById('Cie').value;
-    let mainTotal = 0;
-    let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
-
-    // Calcul du total principal
-    if(cie === "FR" || cie === "RK"){
-        mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) + 
-                    (parseInt(document.getElementById('CHILD')?.value) || 0);
-    } else {
-        mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                    (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                    (parseInt(document.getElementById('CHILD')?.value) || 0);
-    }
-
-    let tobText = "";
-
-    // Si tout est à zéro → vide
-    if(mainTotal === 0 && infants === 0){
-        tobText = "";
-    } else if(infants > 0){
-        tobText = `${mainTotal} + ${infants}`;
-    } else {
-        tobText = `${mainTotal}`;
-    }
-
-    document.getElementById('TOB').value = tobText;
-    checkTOBCoherence();
-}
-
-/* Cohérence TOB */
-function checkTOBCoherence() {
-    const cie = document.getElementById('Cie').value;
-    let tobMain = 0;
-    if (cie === "FR" || cie === "RK") {
-        tobMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-                  (parseInt(document.getElementById('CHILD')?.value) || 0);
-        const sum = (parseInt(document.getElementById('FWD')?.value) || 0) +
-                    (parseInt(document.getElementById('MID')?.value) || 0) +
-                    (parseInt(document.getElementById('AFT')?.value) || 0);
-        styleTOB(sum === tobMain);
-    } else {
-        tobMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                  (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                  (parseInt(document.getElementById('CHILD')?.value) || 0);
-        const sum = (parseInt(document.getElementById('OA')?.value) || 0) +
-                    (parseInt(document.getElementById('OB')?.value) || 0) +
-                    (parseInt(document.getElementById('OC')?.value) || 0) +
-                    (parseInt(document.getElementById('OD')?.value) || 0);
-        styleTOB(sum === tobMain);
-    }
-}
-
-function styleTOB(valid) {
-    const tobField = document.getElementById('TOB');
-    if (valid) {
-        tobField.style.border = "1px solid #ccc";
-        tobField.style.color = "#000";
-    } else {
-        tobField.style.border = "2px solid red";
-        tobField.style.color = "red";
-    }
-}
+/* === MISE À JOUR ONGLET EN TEMPS RÉEL === */
+document.getElementById('To').addEventListener('input', () => renderTabs());
+document.getElementById('Parking').addEventListener('change', () => renderTabs());
 
 /* === CALCULS === */
 function updateAllCalculations() {
@@ -700,7 +609,7 @@ function updateAllCalculations() {
     applyPrestationsDefaults();
 }
 
-/* === TIMERS === */
+/* Timers */
 function updateTimers() {
     const sobt = document.getElementById('SOBT').value;
     if (!sobt) {
@@ -709,180 +618,81 @@ function updateTimers() {
     }
     const [hh, mm] = sobt.split(':').map(Number);
     const base = new Date();
-    base.setHours(hh);
-    base.setMinutes(mm);
+    base.setHours(hh); base.setMinutes(mm);
     const h40 = new Date(base.getTime() - 40 * 60000);
     const h15 = new Date(base.getTime() - 15 * 60000);
-    document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
-    document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('timer-h40').textContent =
+        `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('timer-h15').textContent =
+        `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === LID === */
+/* LID */
 function updateLID() {
     const cie = document.getElementById('Cie').value;
     const tobt = document.getElementById('timer-tobt').textContent;
     if ((cie === "FR" || cie === "RK") && tobt !== "--:--") {
         let [hh, mm] = tobt.split(':').map(Number);
-        const d = new Date();
-        d.setHours(hh);
-        d.setMinutes(mm - 8);
-        document.getElementById('timer-h8').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const d = new Date(); d.setHours(hh); d.setMinutes(mm - 8);
+        document.getElementById('timer-h8').textContent =
+            `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     } else {
         document.getElementById('timer-h8').textContent = "--:--";
     }
 }
 
-/* === SOBT DEFAULT === */
+/* SOBT AUTO */
 function updateSOBTDefault() {
     if (manualSOBT) return;
     const cie = document.getElementById('Cie').value;
     const sibt = document.getElementById('SIBT').value;
+    if (!cie || !sibt) return;
     const arrPNT = document.getElementById('ArrPNT')?.value;
     const arrPNC = document.getElementById('ArrPNC')?.value;
-    if (!sibt) return;
-
-    if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
-
     let [sH, sM] = sibt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(sH, sM);
+    const base = new Date(); base.setHours(sH, sM);
 
     let add = 35;
-    if (cie === "FR" || cie === "RK") {
-        add = (arrPNT || arrPNC) ? 35 : 25;
-    } else {
-        add = 35;
-    }
-
+    if (cie === "FR" || cie === "RK") add = (arrPNT || arrPNC) ? 35 : 25;
     const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('SOBT').value =
+        `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === TOBT === */
-function updateTOBT() {
+/* TOB CALCUL */
+function updateTOB() {
     const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    const sobttxt = document.getElementById('SOBT').value;
+    let totalMain = 0;
+    let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
 
-    if (!cie || !sibttxt) {
-        document.getElementById('timer-tobt').textContent = '--:--';
-        return;
-    }
-
-    const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
-    const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
-
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-    const SOBT = new Date(); SOBT.setHours(soH, soM);
-
-    let TOBT = new Date(SIBT);
-
-    if (cie === 'FR' || cie === 'RK' || cie === 'W4' || cie === 'W6') {
-        if (AIBT > SIBT) {
-            const arrPNT = document.getElementById('ArrPNT').value;
-            const arrPNC = document.getElementById('ArrPNC').value;
-            const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT = new Date(AIBT.getTime() + add * 60000);
-        } else {
-            TOBT = new Date(SIBT);
-        }
+    if (cie === "FR" || cie === "RK") {
+        totalMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
+                    (parseInt(document.getElementById('CHILD')?.value) || 0);
     } else {
-        if (AIBT > SIBT) {
-            const diff = (SOBT - SIBT) / 60000;
-            TOBT = new Date(AIBT.getTime() + diff * 60000);
-        } else {
-            TOBT = new Date(SIBT);
-        }
+        totalMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
+                    (parseInt(document.getElementById('FEMALE')?.value) || 0) +
+                    (parseInt(document.getElementById('CHILD')?.value) || 0);
     }
 
-    if (TOBT < SOBT) TOBT = SOBT;
-
-    document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
-}
-
-/* === DL CODE === */
-function updateDLCode() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    if (!cie || !sibttxt || !aibttxt) return;
-
-    const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt.split(':').map(Number);
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-
-    if (AIBT > SIBT) {
-        if (cie === 'FR') document.getElementById('DLcode1').value = '93';
-        else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
-        else document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = Math.round((AIBT - SIBT) / 60000) || '';
+    if (totalMain === 0 && infants === 0) {
+        document.getElementById('TOB').value = "";
     } else {
-        document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = '';
+        document.getElementById('TOB').value = infants > 0
+            ? `${totalMain} + ${infants}`
+            : `${totalMain}`;
     }
+    checkTOBCoherence();
 }
 
-/* === DL DURÉE 2 et 3 === */
-function updateDLDuree2() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-
-        let diff = Math.round((AOBT - SOBT) / 60000) - dlduree1;
-        document.getElementById('DLduree2').value = diff > 0 ? diff : '';
-        updateDLDuree3();
-    } else {
-        document.getElementById('DLduree2').value = '';
-    }
+/* DL Durée = pas afficher 0 */
+function cleanZero(id) {
+    const el = document.getElementById(id);
+    if (el && el.value === "0") el.value = "";
 }
 
-function updateDLDuree3() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-    const dlduree2 = parseInt(document.getElementById('DLduree2').value) || 0;
-
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-        const total = Math.round((AOBT - SOBT) / 60000);
-        const reste = total - dlduree1 - dlduree2;
-        document.getElementById('DLduree3').value = reste > 0 ? reste : '';
-    }
-}
-
-/* === PRESTATIONS AUTO BVA === */
-function applyPrestationsDefaults() {
-    const from = document.getElementById('From').value.toUpperCase();
-    const to = document.getElementById('To').value.toUpperCase();
-
-    if (from === "BVA") {
-        document.getElementById('Ordures').value = "N";
-        document.getElementById('EauPotable').value = "Y";
-        document.getElementById('MenageAssist').value = "N";
-    }
-    if (to === "BVA") {
-        document.getElementById('Ordures').value = "Y";
-        document.getElementById('Vidange').value = "Y";
-        document.getElementById('MenageAtalian').value = "T";
-    }
-}
-
-/* === POPUPS === */
-function showPopup(message, color = "#2196f3", duration = 2000) {
-    const popup = document.createElement('div');
+/* === POPUP === */
+function showPopup(message, color = "green", duration = 2000) {
+    const popup = document.createElement("div");
     popup.textContent = message;
     popup.style.position = "fixed";
     popup.style.bottom = "20px";
@@ -891,70 +701,29 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     popup.style.background = color;
     popup.style.color = "#fff";
     popup.style.padding = "10px 20px";
-    popup.style.borderRadius = "6px";
+    popup.style.borderRadius = "5px";
     popup.style.fontSize = "1rem";
-    popup.style.zIndex = "1000";
+    popup.style.zIndex = "2000";
     document.body.appendChild(popup);
     setTimeout(() => popup.remove(), duration);
-}
-
-/* === UTILS === */
-function setNow(fieldId) {
-    const now = new Date();
-    const hh = isUTC ? now.getUTCHours() : now.getHours();
-    const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
-function adjustTime(fieldId, delta) {
-    const input = document.getElementById(fieldId);
-    if (!input.value) return;
-    let [hh, mm] = input.value.split(':').map(Number);
-    let total = hh * 60 + mm + delta;
-    if (total < 0) total += 1440;
-    if (total >= 1440) total -= 1440;
-    hh = Math.floor(total / 60);
-    mm = total % 60;
-    input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
-}
-function toggleTimeMode() {
-    const inputs = document.querySelectorAll('input[type="time"]');
-    inputs.forEach(input => {
-        if (!input.value) return;
-        let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2;
-        if (hh < 0) hh += 24;
-        if (hh >= 24) hh -= 24;
-        input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-    });
-    isUTC = !isUTC;
-    localStorage.setItem('modeUTC', isUTC ? '1' : '0');
-    updateAllCalculations();
 }
 
 /* === VALIDATION === */
 function validateForm() {
     const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-    let missing = false;
     for (let id of required) {
         if (!document.getElementById(id).value) {
-            missing = true;
+            showPopup("Vérifiez les informations manquantes !", "red", 4000);
+            return;
         }
     }
-    if (missing) {
-        showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-    } else {
-        showPopup("Vol terminé !", "#4caf50", 2000);
-    }
+    showPopup("Vol terminé !", "green", 2000);
 }
 
-/* === SAUVEGARDE MANUELLE === */
+/* === SAUVEGARDE === */
 function manualSave() {
     saveCurrentTabData();
-    showPopup("Enregistrement réussi", "#2196f3", 2000);
+    showPopup("Enregistrement réussi", "green", 2000);
 }
 
 /* === RESET === */
