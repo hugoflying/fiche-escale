@@ -630,19 +630,19 @@ function updateSOBTDefault(){
     if(manualSOBT) return;
     const cie=document.getElementById('Cie').value;
     const sibt=document.getElementById('SIBT').value;
-    const arrPNT=document.getElementById('ArrPNT')?.value;
-    const arrPNC=document.getElementById('ArrPNC')?.value;
-    if(!sibt) return;
+    const arrPNT=document.getElementById('ArrPNT').value;
+    const arrPNC=document.getElementById('ArrPNC').value;
+    if(!sibt || !["FR","RK","W4","W6"].includes(cie)) {
+        document.getElementById('SOBT').value='';
+        return;
+    }
     let [sH,sM]=sibt.split(':').map(Number);
     const base=new Date(); base.setHours(sH,sM);
 
     let add=35;
     if(cie==="FR"||cie==="RK"){
         add=(arrPNT||arrPNC)?35:25;
-    } else {
-        add=35;
     }
-
     const sobtCalc=new Date(base.getTime()+add*60000);
     document.getElementById('SOBT').value=`${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
 }
@@ -704,20 +704,26 @@ function updateDLCode(){
 function updateDLDuree2(){
     const sobt=document.getElementById('SOBT').value;
     const aobt=document.getElementById('AOBT').value;
-    const dlduree1=parseInt(document.getElementById('DLduree1').value)||0;
+    let dlduree1=parseInt(document.getElementById('DLduree1').value)||0;
     if(sobt&&aobt){
         const [soH,soM]=sobt.split(':').map(Number);
         const [aoH,aoM]=aobt.split(':').map(Number);
         const SOBT=new Date();SOBT.setHours(soH,soM);
         const AOBT=new Date();AOBT.setHours(aoH,aoM);
-        const diff=Math.round((AOBT-SOBT)/60000)-dlduree1;
-        document.getElementById('DLduree2').value=diff>=0?diff:0;
+        const total=Math.round((AOBT-SOBT)/60000);
+
+        if(!dlduree1) {
+            document.getElementById('DLduree1').value=total;
+            document.getElementById('DLduree2').value='';
+            document.getElementById('DLduree3').value='';
+            return;
+        }
+
+        const diff=total-dlduree1;
+        document.getElementById('DLduree2').value=diff>0?diff:0;
         updateDLDuree3();
-    } else {
-        document.getElementById('DLduree2').value='';
     }
 }
-
 function updateDLDuree3(){
     const sobt=document.getElementById('SOBT').value;
     const aobt=document.getElementById('AOBT').value;
@@ -798,7 +804,15 @@ function validateForm(){
 }
 function manualSave(){
     saveCurrentTabData();
-    alert("Données sauvegardées !");
+    let popup = document.createElement('div');
+    popup.innerHTML = "Enregistrement réussi ✅";
+    popup.style.cssText = `
+        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+        background: #4caf50; color: white; padding: 10px 15px; 
+        border-radius: 6px; z-index:9999; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    `;
+    document.body.appendChild(popup);
+    setTimeout(()=>popup.remove(), 2000);
 }
 function clearAutoSave(){
     if(confirm("Tout réinitialiser ?")){
@@ -806,6 +820,11 @@ function clearAutoSave(){
         location.reload();
     }
 }
+    function updateTabLabelInstant() {
+    saveCurrentTabData();
+    renderTabs();
+}
+
 </script>
 
 </body>
