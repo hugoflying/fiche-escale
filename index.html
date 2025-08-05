@@ -533,17 +533,30 @@ function updateTabLabelInstant(){
 
 /* TIMING FIELDS */
 function generateTimingFields(){
-    const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque","AvionPremierEmbarque","AvionDernierEmbarque","PortePremierEmbarque","PorteDernierEmbarque","ArriveeFuel","DepartFuel","ArriveeLift","DepartLift","RemiseLID","FermeturePorteAvion"];
-    const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué","Avion : Premier embarqué","Avion : Dernier embarqué","Porte : Premier embarqué","Porte : Dernier embarqué","Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift","Remise LID/LDS","Fermeture porte avion"];
+    const timings=[
+        "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
+        "AvionPremierEmbarque","AvionDernierEmbarque",
+        "PortePremierEmbarque","PorteDernierEmbarque",
+        "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
+        "RemiseLID","FermeturePorteAvion"
+    ];
+
+    const labels=[
+        "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
+        "Avion : Premier embarqué","Avion : Dernier embarqué",
+        "Porte : Premier embarqué","Porte : Dernier embarqué",
+        "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
+        "Remise LID/LDS","Fermeture porte avion"
+    ];
+
     const container=document.getElementById('timing-grid');
     container.innerHTML="";
+
     timings.forEach((id,i)=>{
         const div=document.createElement('div');
         div.className='form-group';
         div.innerHTML=`
             <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
-        div.innerHTML=
-            `<label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
             <div class="btn-actions">
                 <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
                 <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
