@@ -933,8 +933,8 @@ async function sendToAirtable() {
         "Parking": document.getElementById('Parking').value,
         "Cie": document.getElementById('Cie').value,
         "N° Vol": document.getElementById('NVol').value,
-        "From": document.getElementById('From').value,
-        "To": document.getElementById('To').value,
+        "Provenance": document.getElementById('From').value,
+        "Destination": document.getElementById('To').value,
         "SIBT": document.getElementById('SIBT').value,
         "AIBT": document.getElementById('AIBT').value,
         "SOBT": document.getElementById('SOBT').value,
@@ -951,20 +951,21 @@ async function sendToAirtable() {
             body: JSON.stringify({ records: [{ fields: record }] })
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            throw new Error(`Erreur API : ${response.statusText}`);
+            throw new Error(data.error?.message || `Erreur API : ${response.statusText}`);
         }
 
         showPopup("Données envoyées à Airtable !", "#4caf50", 3000);
     } catch (err) {
         console.error("Erreur Airtable :", err);
-        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
+        showPopup("Erreur lors de l'envoi vers Airtable : " + err.message, "#d32f2f", 3000);
     }
 }
 
 /* === VALIDATION === */
 function validateForm() {
-    const required = ['Date', 'Cie', 'Parking', 'N° Vol', 'Provenance', 'Destination', 'Immat', 'RZA'];
+    const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
     let missing = false;
     for (let id of required) {
         if (!document.getElementById(id).value) {
