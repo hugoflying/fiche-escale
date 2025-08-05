@@ -926,9 +926,9 @@ const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
 
 /* === ENVOI VERS AIRTABLE === */
 async function sendToAirtable() {
-    // Récupération des champs requis
     const record = {
-        "Date": document.getElementById('Date').value,
+        // Champs INFO VOL
+        "RZA": document.getElementById('RZA').value,
         "Immat": document.getElementById('Immat').value,
         "Parking": document.getElementById('Parking').value,
         "Cie": document.getElementById('Cie').value,
@@ -938,7 +938,52 @@ async function sendToAirtable() {
         "SIBT": document.getElementById('SIBT').value,
         "AIBT": document.getElementById('AIBT').value,
         "SOBT": document.getElementById('SOBT').value,
-        "AOBT": document.getElementById('AOBT').value
+        "AOBT": document.getElementById('AOBT').value,
+
+        // Champs RETARDS
+        "Retard (min)": document.getElementById('DLduree1').value,
+        "DL Code 1": document.getElementById('DLcode1').value,
+        "DL Durée 1 (min)": document.getElementById('DLduree1').value,
+        "DL Code 2": document.getElementById('DLcode2').value,
+        "DL Durée 2 (min)": document.getElementById('DLduree2').value,
+        "DL Code 3": document.getElementById('DLcode3').value,
+        "DL Durée 3 (min)": document.getElementById('DLduree3').value,
+        "DL JUSTIFICATIONS": document.getElementById('DLJustif').value,
+
+        // Champs TIMING
+        "Arrivée PNT avion": document.getElementById('ArrPNT').value,
+        "Arrivée PNC avion": document.getElementById('ArrPNC').value,
+        "Premier débarqué": document.getElementById('PremierDebarque').value,
+        "Dernier débarqué": document.getElementById('DernierDebarque').value,
+        "Avion : Premier embarqué": document.getElementById('AvionPremierEmbarque').value,
+        "Avion : Dernier embarqué": document.getElementById('AvionDernierEmbarque').value,
+        "Porte : Premier embarqué": document.getElementById('PortePremierEmbarque').value,
+        "Porte : Dernier embarqué": document.getElementById('PorteDernierEmbarque').value,
+        "Arrivée Fuel": document.getElementById('ArriveeFuel').value,
+        "Départ Fuel": document.getElementById('DepartFuel').value,
+        "Arrivée Lift": document.getElementById('ArriveeLift').value,
+        "Départ Lift": document.getElementById('DepartLift').value,
+        "Remise LID/LDS": document.getElementById('RemiseLID').value,
+        "Fermeture porte avion": document.getElementById('FermeturePorteAvion').value,
+
+        // Champs ASSISTANCES
+        "WCHC": document.getElementById('WCHC').value,
+        "WCHS": document.getElementById('WCHS').value,
+        "WCHR": document.getElementById('WCHR').value,
+        "Autre": document.getElementById('AutreAssist').value,
+
+        // Champs PRESTATIONS
+        "ASU": document.getElementById('ASU').value,
+        "Vidange toilettes": document.getElementById('Vidange').value,
+        "Eau potable": document.getElementById('EauPotable').value,
+        "Echelle supplémentaire": document.getElementById('Echelle').value,
+        "Collecte d'ordures": document.getElementById('Ordures').value,
+        "Ménage Assist'Air": document.getElementById('MenageAssist').value,
+        "Ménage Atalian": document.getElementById('MenageAtalian').value,
+        "Dégivrage": document.getElementById('Degivrage').value,
+        "Toilet Kit": document.getElementById('ToiletKit').value,
+        "Push-Pull": document.getElementById('PushPull').value,
+        "Flux par le RZA": document.getElementById('FluxRZA').value
     };
 
     try {
@@ -951,15 +996,14 @@ async function sendToAirtable() {
             body: JSON.stringify({ records: [{ fields: record }] })
         });
 
-        const data = await response.json();
         if (!response.ok) {
-            throw new Error(data.error?.message || `Erreur API : ${response.statusText}`);
+            throw new Error(`Erreur API : ${response.statusText}`);
         }
 
-        showPopup("Données envoyées à Airtable !", "#4caf50", 3000);
+        showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
     } catch (err) {
         console.error("Erreur Airtable :", err);
-        showPopup("Erreur lors de l'envoi vers Airtable : " + err.message, "#d32f2f", 3000);
+        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
     }
 }
 
