@@ -395,161 +395,162 @@ body.dark #tab-bar {
 <script>
 /* === CODE JS COMPLET === */
 
-/* === VARIABLES GLOBALES === */
-let isUTC = false;
-let manualSOBT = false;
-let currentTabId = null;
-const circledNums = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫"];
+/* Variables */
+let isUTC=false;
+let manualSOBT=false;
+let currentTabId=null;
+const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 
-/* === INITIALISATION === */
-function initForm() {
+/* INIT */
+function initForm(){
     renderTabs();
-
-    let lastTab = localStorage.getItem('lastTabId');
-    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-
-    if (tabs.length === 0) {
-        createNewTab();
-    } else if (lastTab && tabs.includes(parseInt(lastTab))) {
-        switchTab(parseInt(lastTab));
-    } else {
-        switchTab(tabs[0]);
-    }
+    let lastTab=localStorage.getItem('lastTabId');
+    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+    if(tabs.length===0) createNewTab();
+    else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
+    else switchTab(tabs[0]);
 
     generateTimingFields();
     generateChargementFields();
+    setInterval(()=>{updateAllCalculations();saveCurrentTabData();},60000);
 
-    // Auto-save toutes les 60 sec
-    setInterval(() => {
-        updateAllCalculations();
-        saveCurrentTabData();
-    }, 60000);
-
-    // Gestion collapse sections
-    document.querySelectorAll("section h2").forEach(h2 => {
-        h2.addEventListener("click", () => {
-            h2.parentElement.classList.toggle("collapsed");
-        });
+    // collapse/expand toggle for sections
+    document.querySelectorAll("section h2").forEach(h2=>{
+        h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
 
-    // Mise à jour titre onglets
-    document.getElementById("Parking").addEventListener("change", renderTabs);
-    document.getElementById("To").addEventListener("input", renderTabs);
+    // Mise à jour instantanée des onglets
+    document.getElementById('Parking').onchange = updateTabLabelInstant;
+    document.getElementById('To').oninput = updateTabLabelInstant;
+    document.getElementById('From').oninput = applyPrestationsDefaults;
+    document.getElementById('To').oninput = applyPrestationsDefaults;
 }
 
-/* === EXPAND / COLLAPSE === */
-function expandAllSections() {
-    document.querySelectorAll("section").forEach(sec => sec.classList.remove("collapsed"));
+/* Expand/collapse all */
+function expandAllSections(){
+    document.querySelectorAll("section").forEach(sec=>sec.classList.remove("collapsed"));
 }
-function collapseAllSections() {
-    document.querySelectorAll("section").forEach(sec => sec.classList.add("collapsed"));
+function collapseAllSections(){
+    document.querySelectorAll("section").forEach(sec=>sec.classList.add("collapsed"));
 }
 
-/* === ONGLET : AFFICHAGE / CHANGEMENT === */
-function renderTabs() {
-    const tabBar = document.getElementById('tab-bar');
-    tabBar.innerHTML = '<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
-
-    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs.forEach(id => {
-        const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
-        let label = data.To ? data.To.toUpperCase() : "VOL";
-        let parking = data.Parking ? circledNums[parseInt(data.Parking)] : "";
-
-        const btn = document.createElement('button');
-        btn.textContent = label + " " + parking;
-        btn.style.fontWeight = id === currentTabId ? 'bold' : 'normal';
-        btn.onclick = () => switchTab(id);
-        btn.ondblclick = () => deleteTab(id);
-
+/* Tabs */
+function renderTabs(){
+    const tabBar=document.getElementById('tab-bar');
+    tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
+    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+    tabs.forEach((id,index)=>{
+        const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+        let label=data.To?data.To.toUpperCase():"VOL";
+        let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
+        const btn=document.createElement('button');
+        btn.textContent=label+" "+parking;
+        btn.style.fontWeight=id===currentTabId?'bold':'normal';
+        btn.onclick=()=>switchTab(id);
+        btn.ondblclick=()=>deleteTab(id);
         tabBar.appendChild(btn);
     });
 }
 
-function createNewTab() {
-    const newId = Date.now();
-    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+function createNewTab(){
+    const newId=Date.now();
+    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
     tabs.push(newId);
-    localStorage.setItem('flightTabs', JSON.stringify(tabs));
-
+    localStorage.setItem('flightTabs',JSON.stringify(tabs));
     clearFormFields();
-    currentTabId = newId;
-    localStorage.setItem('lastTabId', newId);
-
+    currentTabId=newId;
+    localStorage.setItem('lastTabId',newId);
     saveCurrentTabData();
     renderTabs();
 }
 
-function switchTab(id) {
+function switchTab(id){
     saveCurrentTabData();
-    currentTabId = id;
-    localStorage.setItem('lastTabId', id);
+    currentTabId=id;
+    localStorage.setItem('lastTabId',id);
     loadTabData(id);
     renderTabs();
 }
 
-function deleteTab(id) {
-    if (!confirm("Supprimer cet onglet ?")) return;
-    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-    tabs = tabs.filter(t => t !== id);
-    localStorage.setItem('flightTabs', JSON.stringify(tabs));
-    localStorage.removeItem('tab-' + id);
-
-    if (tabs.length > 0) {
-        switchTab(tabs[0]);
-    } else {
-        createNewTab();
-    }
+function deleteTab(id){
+    if(!confirm("Supprimer cet onglet ?")) return;
+    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+    tabs=tabs.filter(t=>t!==id);
+    localStorage.setItem('flightTabs',JSON.stringify(tabs));
+    localStorage.removeItem('tab-'+id);
+    if(tabs.length>0) switchTab(tabs[0]);
+    else createNewTab();
     renderTabs();
 }
 
-/* === GESTION FORMULAIRE === */
-function clearFormFields() {
-    document.querySelectorAll('input, select, textarea').forEach(el => {
-        if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
-        else if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        else el.value = '';
+function clearFormFields(){
+    document.querySelectorAll('input, select, textarea').forEach(el=>{
+        if(el.type==='checkbox'||el.type==='radio') el.checked=false;
+        else if(el.tagName==='SELECT') el.selectedIndex=0;
+        else el.value='';
     });
-    document.getElementById('Date').valueAsDate = new Date();
-    document.getElementById('FNC').value = 'N';
+    document.getElementById('Date').valueAsDate=new Date();
+    document.getElementById('FNC').value='N';
     updateAllCalculations();
 }
 
-function saveCurrentTabData() {
-    if (!currentTabId) return;
-    let data = {};
-    document.querySelectorAll('input, select, textarea').forEach(el => data[el.id] = el.value);
-
-    data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
-    data.modeUTC = isUTC ? '1' : '0';
-    data.timer_h40 = document.getElementById('timer-h40').textContent;
-    data.timer_h15 = document.getElementById('timer-h15').textContent;
-    data.timer_h8 = document.getElementById('timer-h8').textContent;
-    data.timer_tobt = document.getElementById('timer-tobt').textContent;
-
-    localStorage.setItem('tab-' + currentTabId, JSON.stringify(data));
-    localStorage.setItem('lastTabId', currentTabId);
+function saveCurrentTabData(){
+    if(!currentTabId) return;
+    let data={};
+    document.querySelectorAll('input, select, textarea').forEach(el=>data[el.id]=el.value);
+    data.modeDark=document.body.classList.contains('dark')?'1':'0';
+    data.modeUTC=isUTC?'1':'0';
+    data.timer_h40=document.getElementById('timer-h40').textContent;
+    data.timer_h15=document.getElementById('timer-h15').textContent;
+    data.timer_h8=document.getElementById('timer-h8').textContent;
+    data.timer_tobt=document.getElementById('timer-tobt').textContent;
+    localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
+    localStorage.setItem('lastTabId',currentTabId);
     renderTabs();
 }
 
-function loadTabData(id) {
-    const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
-
-    document.querySelectorAll('input, select, textarea').forEach(el => {
-        if (data[el.id] !== undefined) el.value = data[el.id];
+function loadTabData(id){
+    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+    document.querySelectorAll('input, select, textarea').forEach(el=>{
+        if(data[el.id]!==undefined) el.value=data[el.id];
     });
-
-    if (data.modeDark === '1') document.body.classList.add('dark');
+    if(data.modeDark==='1') document.body.classList.add('dark');
     else document.body.classList.remove('dark');
-
-    isUTC = data.modeUTC === '1';
-    document.getElementById('timer-h40').textContent = data.timer_h40 || '--:--';
-    document.getElementById('timer-h15').textContent = data.timer_h15 || '--:--';
-    document.getElementById('timer-h8').textContent = data.timer_h8 || '--:--';
-    document.getElementById('timer-tobt').textContent = data.timer_tobt || '--:--';
-
+    isUTC=data.modeUTC==='1';
+    document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
+    document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
+    document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
+    document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
     generateChargementFields();
     updateAllCalculations();
+}
+
+/* Mise à jour instantanée label onglet */
+function updateTabLabelInstant(){
+    saveCurrentTabData();
+    renderTabs();
+}
+
+/* TIMING FIELDS */
+function generateTimingFields(){
+    const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque","AvionPremierEmbarque","AvionDernierEmbarque","PortePremierEmbarque","PorteDernierEmbarque","ArriveeFuel","DepartFuel","ArriveeLift","DepartLift","RemiseLID","FermeturePorteAvion"];
+    const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué","Avion : Premier embarqué","Avion : Dernier embarqué","Porte : Premier embarqué","Porte : Dernier embarqué","Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift","Remise LID/LDS","Fermeture porte avion"];
+    const container=document.getElementById('timing-grid');
+    container.innerHTML="";
+    timings.forEach((id,i)=>{
+        const div=document.createElement('div');
+        div.className='form-group';
+        div.innerHTML=`
+            <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
+        div.innerHTML=
+            `<label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
+            <div class="btn-actions">
+                <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+                <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+                <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+            </div>`;
+        container.appendChild(div);
+    });
 }
 
 /* === CHARGEMENT / TOB === */
