@@ -964,7 +964,7 @@ async function sendToAirtable() {
 
 /* === VALIDATION === */
 function validateForm() {
-    const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
+    const required = ['Date', 'Cie', 'Parking', 'N° Vol', 'Provenance', 'Destination', 'Immat', 'RZA'];
     let missing = false;
     for (let id of required) {
         if (!document.getElementById(id).value) {
