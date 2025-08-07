@@ -1,1016 +1,395 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SUIVI PERFORMANCE</title>
-<style>
-/* RESET & BASE */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    font-family: Arial, sans-serif;
-    background: #f8f9fa;
-    color: #222;
-    padding: 10px;
-}
-body.dark { background: #121212; color: #f8f9fa; }
+    <meta charset="UTF-8">
+    <title>Fiche Escale</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* === STYLES DE BASE === */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0 0 80px;
+        }
 
-h1 { text-align: center; margin: 10px 0 15px; }
+        .dark {
+            background: #1e1e1e;
+            color: white;
+        }
 
-/* Sections */
-section {
-    background: #fff;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-body.dark section { background: #1e1e1e; }
+        #tab-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 10px;
+            background: #333;
+            padding: 8px;
+            z-index: 100;
+        }
 
-h2 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 5px;
-    text-align: center;
-    cursor: pointer;
-}
+        #tab-bar button {
+            padding: 6px 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            background-color: #555;
+        }
 
-/* Collapse */
-section.collapsed > *:not(h2) { display: none; }
+        #tab-bar button:hover {
+            background-color: #777;
+        }
 
-/* Grilles */
-.form-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
-.form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
-.form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
+        section {
+            padding: 12px;
+            border-bottom: 1px solid #ccc;
+        }
 
-/* Labels en gras */
-.form-group label,
-.form-group-3col label,
-.form-group-4col label {
-    font-size: 0.9rem;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 3px;
-    text-align: center;
-}
+        section.collapsed .section-content {
+            display: none;
+        }
 
-/* Champs */
-input, select {
-    width: 100%;
-    padding: 6px;
-    font-size: 0.95rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    text-align: center;
-}
-textarea {
-    width: 100%;
-    padding: 6px;
-    font-size: 0.95rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    resize: both;
-    min-height: 60px;
-    text-align: left;
-    overflow: auto;
-}
+        section h2 {
+            cursor: pointer;
+            background-color: #f0f0f0;
+            padding: 6px;
+            border-radius: 5px;
+        }
 
-/* Champ horaire + boutons : alignement parfait */
-.form-group input[type="time"] {
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-    display: block;
-}
+        .dark section h2 {
+            background-color: #444;
+        }
 
-/* Boutons horaires */
-.btn-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    width: 100%;
-    gap: 5px;
-    margin-top: 5px;
-}
-button.action {
-    width: 100%;
-    padding: 10px;
-    font-size: 0.95rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-button.minus { background: #555; color: white; }
-button.now   { background: #1976d2; color: white; }
-button.plus  { background: #555; color: white; }
+        .form-group {
+            margin: 10px 0;
+        }
 
-/* Boutons principaux */
-#validate, #save, #reset {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 6px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-#validate { background: #4caf50; color: white; }
-#save { background: #2196f3; color: white; margin: 15px 0; }
-#reset { background: #d32f2f; color: white; }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 6px;
+            margin-top: 4px;
+            box-sizing: border-box;
+        }
 
-/* Timers */
-.timer-box {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
-}
-.timer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-.timer-label { font-weight: bold; font-size: 1rem; }
-.timer-value {
-    background: #d32f2f;
-    color: #fff;
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-}
-#timer-tobt { background: #2e7d32; }
-#timer-h8 { background: orange; }
+        textarea#Justifications, textarea#FaitsS {
+            font-family: 'Calibri', sans-serif;
+            font-size: 7pt;
+        }
 
-/* Toggles */
-.toggle-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-.toggle-container button {
-    padding: 5px 10px;
-    font-size: 0.9rem;
-}
+        #save-button {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            padding: 12px 18px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 100;
+        }
 
-/* Majuscules pour INFO VOL */
-#Date, #Cie, #NVol, #From, #To, #Immat, #RZA, #Parking, #FNC {
-    text-transform: uppercase;
-}
-
-/* Onglets */
-#tab-bar button {
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 1.1rem;
-    padding: 10px 18px;
-}
-#tab-bar {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    background: #f8f9fa;
-    z-index: 10;
-    padding: 5px 0;
-    z-index: 999;
-}
-body.dark #tab-bar {
-    background: #121212; /* fond adapté mode nuit */
-}
-#tab-bar button:first-child {
-    font-weight: bold;
-    font-size: 1.2rem;
-    background: #4caf50;
-    color: #fff;
-}
-
-/* Popup notifications */
-#popup {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 1rem;
-    color: #fff;
-    display: none;
-    z-index: 1000;
-}
-#popup.success { background: #4caf50; }
-#popup.error { background: #d32f2f; }
-#popup.info { background: #2196f3; }
-}
-</style>
+        /* Zone de dessin manuscrite */
+        #drawingCanvas {
+            border: 1px solid #ccc;
+            width: 100%;
+            height: 200px;
+            touch-action: none;
+            background: white;
+        }
+    </style>
 </head>
-<body onload="initForm()">
-
-<!-- Modes -->
-<div class="toggle-container">
-    <button onclick="toggleDarkMode()">🌙 / ☀️</button>
-    <button onclick="toggleTimeMode()">Local / UTC</button>
-</div>
-
-<!-- Barre d’onglets -->
-<div id="tab-bar">
-    <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
-</div>
-
-<h1>SUIVI PERFORMANCE</h1>
-
-<!-- Boutons Expand / Collapse -->
-<div style="text-align:center; margin-bottom:10px;">
-    <button onclick="expandAllSections()">Tout Déplier</button>
-    <button onclick="collapseAllSections()">Tout Replier</button>
-</div>
-
-<!-- Timers -->
-<div class="timer-box">
-    <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
-</div>
-
-<!-- INFO VOL -->
-<section>
-    <h2>INFO VOL</h2>
-    <div class="form-grid">
-        <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
-        <div class="form-group"><label>Cie
-            <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
-                <option value="">--</option>
-                <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
-                <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
-                <option>V7</option><option>Autre</option>
-            </select>
-        </label></div>
-        <div class="form-group"><label>N° Vol<input type="text" id="NVol"></label></div>
-
-        <div class="form-group"><label>Provenance<input type="text" id="From" maxlength="3"></label></div>
-        <div class="form-group"><label>Destination<input type="text" id="To" maxlength="3"></label></div>
-
-        <div class="form-group"><label>Immat<input type="text" id="Immat" maxlength="5"></label></div>
-        <div class="form-group"><label>Parking
-            <select id="Parking">
-                <option value="">--</option>
-                <option>1</option><option>2</option><option>3</option><option>4</option>
-                <option>5</option><option>6</option><option>7</option><option>8</option>
-                <option>9</option><option>10</option><option>11</option><option>12</option>
-            </select>
-        </label></div>
-
-        <div class="form-group"><label>RZA<input type="text" id="RZA" maxlength="3"></label></div>
-        <div class="form-group"><label>FNC
-            <select id="FNC">
-                <option>Y</option><option selected>N</option>
-            </select>
-        </label></div>
+<body>
+    <div id="tab-bar">
+        <!-- Onglets ajoutés dynamiquement ici -->
     </div>
-</section>
 
-<!-- HORAIRES -->
-<section>
-    <h2>HORAIRES</h2>
-    <div class="form-grid">
-        <div class="form-group">
-            <label>SIBT<input type="time" id="SIBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
+    <main style="margin-top: 60px; padding: 10px;">
+        <!-- === INFO VOL === -->
+        <section id="info-vol">
+            <h2>INFO VOL</h2>
+            <div class="section-content">
+                <div class="form-group">
+                    <label for="Date">Date :</label>
+                    <input type="date" id="Date">
+                </div>
+                <div class="form-group">
+                    <label for="Cie">Cie :</label>
+                    <select id="Cie">
+                        <option value="">Choisir</option>
+                        <option value="FR">Ryanair (FR)</option>
+                        <option value="RK">Ryanair UK (RK)</option>
+                        <option value="W6">Wizz Air (W6)</option>
+                        <option value="W4">Wizz Air Malta (W4)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="NVol">N° Vol :</label>
+                    <input type="text" id="NVol">
+                </div>
+                <div class="form-group">
+                    <label for="From">Provenance :</label>
+                    <input type="text" id="From">
+                </div>
+                <div class="form-group">
+                    <label for="To">Destination :</label>
+                    <input type="text" id="To">
+                </div>
+                <div class="form-group">
+                    <label for="Parking">Parking :</label>
+                    <select id="Parking">
+                        <option value="">Choisir</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="Immat">Immatriculation :</label>
+                    <input type="text" id="Immat">
+                </div>
+                <div class="form-group">
+                    <label for="RZA">RZA :</label>
+                    <input type="text" id="RZA">
+                </div>
+                <div class="form-group">
+                    <label for="SIBT">SIBT :</label>
+                    <input type="time" id="SIBT">
+                </div>
+                <div class="form-group">
+                    <label for="AIBT">AIBT :</label>
+                    <input type="time" id="AIBT">
+                </div>
+                <div class="form-group">
+                    <label for="SOBT">SOBT :</label>
+                    <input type="time" id="SOBT">
+                </div>
+                <div class="form-group">
+                    <label for="AOBT">AOBT :</label>
+                    <input type="time" id="AOBT">
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label>AIBT<input type="time" id="AIBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
+        </section>
+
+        <!-- === REMARQUES (Dessin à main levée) === -->
+        <section id="remarques">
+            <h2>Remarques (écriture libre)</h2>
+            <div class="section-content">
+                <canvas id="drawingCanvas"></canvas>
             </div>
-        </div>
-        <div class="form-group">
-            <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
+        </section>
+
+        <!-- === JUSTIFICATIONS === -->
+        <section id="justifications">
+            <h2>DL JUSTIFICATIONS</h2>
+            <div class="section-content">
+                <textarea id="Justifications" rows="5"></textarea>
             </div>
-        </div>
-        <div class="form-group">
-            <label>AOBT<input type="time" id="AOBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
+        </section>
+
+        <!-- === FAITS SAILLANTS === -->
+        <section id="faits">
+            <h2>FAITS SAILLANTS</h2>
+            <div class="section-content">
+                <textarea id="FaitsS" rows="5"></textarea>
             </div>
-        </div>
-    </div>
-</section>
+        </section>
 
-<!-- SAUVEGARDER après HORAIRES -->
-<button id="save" onclick="manualSave()">SAUVEGARDER</button>
+        <!-- === BOUTON SAUVEGARDE MANUELLE === -->
+        <button id="save-button" onclick="manualSave()">SAUVEGARDER</button>
+    </main>
 
-<!-- TIMING -->
-<section>
-    <h2>TIMING</h2>
-    <div class="form-grid" id="timing-grid"></div>
-</section>
-
-<!-- SAUVEGARDER après TIMING -->
-<button id="save" onclick="manualSave()">SAUVEGARDER</button>
-
-<!-- CHARGEMENT -->
-<section>
-    <h2>CHARGEMENT</h2>
-    <div id="chargement-container" class="form-grid"></div>
-</section>
-
-<!-- RETARDS -->
-<section>
-    <h2>RETARDS (Départ)</h2>
-    <div class="form-grid">
-        <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
-        <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" oninput="updateDLDuree2()"></label></div>
-        <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
-        <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" oninput="updateDLDuree3()"></label></div>
-        <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
-        <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3"></label></div>
-    </div>
-</section>
-
-<!-- DL JUSTIFICATION -->
-<section>
-    <h2>DL JUSTIFICATIONS</h2>
-    <textarea id="DLJustif"></textarea>
-</section>
-
-<!-- FAITS SAILLANTS -->
-<section>
-    <h2>FAITS SAILLANTS</h2>
-    <textarea id="FaitsSaillants"></textarea>
-</section>
-
-<!-- ASSISTANCES -->
-<section>
-    <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
-    <div class="form-grid">
-        <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC"></label></div>
-        <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS"></label></div>
-        <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR"></label></div>
-        <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
-    </div>
-</section>
-
-<!-- PRESTATIONS -->
-<section>
-    <h2>PRESTATIONS</h2>
-    <div class="form-grid">
-        <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
-        <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
-        <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
-    </div>
-</section>
-
-<!-- Boutons finaux -->
-<button id="validate" onclick="validateForm()">VALIDER</button>
-<button id="save" onclick="manualSave()">SAUVEGARDER</button>
-<button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
-
-<script>
+    <script>
+        
 /* === CODE JS COMPLET === */
 
-/* Variables */
-let isUTC=false;
-let manualSOBT=false;
-let currentTabId=null;
-const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
+/* === VARIABLES === */
+let isUTC = false;
+let manualSOBT = false;
+let currentTabId = null;
+const circledNums = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫"];
 
-/* INIT */
-function initForm(){
+/* === INIT FORMULAIRE === */
+function initForm() {
     renderTabs();
-    let lastTab=localStorage.getItem('lastTabId');
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    if(tabs.length===0) createNewTab();
-    else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
+    let lastTab = localStorage.getItem('lastTabId');
+    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+    if (tabs.length === 0) createNewTab();
+    else if (lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
     generateTimingFields();
     generateChargementFields();
-    setInterval(()=>{updateAllCalculations();saveCurrentTabData();},60000);
 
-    // collapse/expand toggle for sections
-    document.querySelectorAll("section h2").forEach(h2=>{
-        h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
-    });
+    setInterval(() => {
+        updateAllCalculations();
+        saveCurrentTabData();
+    }, 60000);
 
-    // Mise à jour instantanée des onglets
     document.getElementById('Parking').onchange = updateTabLabelInstant;
     document.getElementById('To').oninput = updateTabLabelInstant;
     document.getElementById('From').oninput = applyPrestationsDefaults;
     document.getElementById('To').oninput = applyPrestationsDefaults;
 }
 
-/* Expand/collapse all */
-function expandAllSections(){
-    document.querySelectorAll("section").forEach(sec=>sec.classList.remove("collapsed"));
-}
-function collapseAllSections(){
-    document.querySelectorAll("section").forEach(sec=>sec.classList.add("collapsed"));
-}
-
-/* Tabs */
-function renderTabs(){
-    const tabBar=document.getElementById('tab-bar');
-    tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    tabs.forEach((id,index)=>{
-        const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
-        let label=data.To?data.To.toUpperCase():"VOL";
-        let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
-        const btn=document.createElement('button');
-        btn.textContent=label+" "+parking;
-        btn.style.fontWeight=id===currentTabId?'bold':'normal';
-        btn.onclick=()=>switchTab(id);
-        btn.ondblclick=()=>deleteTab(id);
+/* === TABS === */
+function renderTabs() {
+    const tabBar = document.getElementById('tab-bar');
+    tabBar.innerHTML = '<button onclick="createNewTab()">+ Ajouter vol</button>';
+    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+    tabs.forEach((id, index) => {
+        const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
+        let label = data.To ? data.To.toUpperCase() : "VOL";
+        let parking = data.Parking ? circledNums[parseInt(data.Parking)] : "";
+        const btn = document.createElement('button');
+        btn.textContent = label + " " + parking;
+        btn.style.fontWeight = id === currentTabId ? 'bold' : 'normal';
+        btn.onclick = () => switchTab(id);
+        btn.ondblclick = () => deleteTab(id);
         tabBar.appendChild(btn);
     });
 }
 
-function createNewTab(){
-    const newId=Date.now();
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+function createNewTab() {
+    const newId = Date.now();
+    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
     tabs.push(newId);
-    localStorage.setItem('flightTabs',JSON.stringify(tabs));
+    localStorage.setItem('flightTabs', JSON.stringify(tabs));
     clearFormFields();
-    currentTabId=newId;
-    localStorage.setItem('lastTabId',newId);
+    currentTabId = newId;
+    localStorage.setItem('lastTabId', newId);
     saveCurrentTabData();
     renderTabs();
 }
 
-function switchTab(id){
+function switchTab(id) {
     saveCurrentTabData();
-    currentTabId=id;
-    localStorage.setItem('lastTabId',id);
+    currentTabId = id;
+    localStorage.setItem('lastTabId', id);
     loadTabData(id);
     renderTabs();
 }
 
-function deleteTab(id){
-    if(!confirm("Supprimer cet onglet ?")) return;
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    tabs=tabs.filter(t=>t!==id);
-    localStorage.setItem('flightTabs',JSON.stringify(tabs));
-    localStorage.removeItem('tab-'+id);
-    if(tabs.length>0) switchTab(tabs[0]);
+function deleteTab(id) {
+    if (!confirm("Supprimer cet onglet ?")) return;
+    let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+    tabs = tabs.filter(t => t !== id);
+    localStorage.setItem('flightTabs', JSON.stringify(tabs));
+    localStorage.removeItem('tab-' + id);
+    if (tabs.length > 0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
 }
 
-function clearFormFields(){
-    document.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(el.type==='checkbox'||el.type==='radio') el.checked=false;
-        else if(el.tagName==='SELECT') el.selectedIndex=0;
-        else el.value='';
-    });
-    document.getElementById('Date').valueAsDate=new Date();
-    document.getElementById('FNC').value='N';
-    updateAllCalculations();
-}
-
-function saveCurrentTabData(){
-    if(!currentTabId) return;
-    let data={};
-    document.querySelectorAll('input, select, textarea').forEach(el=>data[el.id]=el.value);
-    data.modeDark=document.body.classList.contains('dark')?'1':'0';
-    data.modeUTC=isUTC?'1':'0';
-    data.timer_h40=document.getElementById('timer-h40').textContent;
-    data.timer_h15=document.getElementById('timer-h15').textContent;
-    data.timer_h8=document.getElementById('timer-h8').textContent;
-    data.timer_tobt=document.getElementById('timer-tobt').textContent;
-    localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
-    localStorage.setItem('lastTabId',currentTabId);
-    renderTabs();
-}
-
-function loadTabData(id){
-    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
-    document.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(data[el.id]!==undefined) el.value=data[el.id];
-    });
-    if(data.modeDark==='1') document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
-    isUTC=data.modeUTC==='1';
-    document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
-    document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
-    document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
-    document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
-    generateChargementFields();
-    updateAllCalculations();
-}
-
-/* Mise à jour instantanée label onglet */
-function updateTabLabelInstant(){
+/* === FORMULAIRE === */
+function updateTabLabelInstant() {
     saveCurrentTabData();
     renderTabs();
 }
 
-/* TIMING FIELDS */
-function generateTimingFields(){
-    const timings=[
-        "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
-        "AvionPremierEmbarque","AvionDernierEmbarque",
-        "PortePremierEmbarque","PorteDernierEmbarque",
-        "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
-        "RemiseLID","FermeturePorteAvion"
-    ];
+function clearFormFields() {
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+        else if (el.tagName === 'SELECT') el.selectedIndex = 0;
+        else el.value = '';
+    });
+    document.getElementById('Date').valueAsDate = new Date();
+    document.getElementById('FNC').value = 'N';
+    updateAllCalculations();
+}
 
-    const labels=[
-        "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
-        "Avion : Premier embarqué","Avion : Dernier embarqué",
-        "Porte : Premier embarqué","Porte : Dernier embarqué",
-        "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
-        "Remise LID/LDS","Fermeture porte avion"
-    ];
+function saveCurrentTabData() {
+    if (!currentTabId) return;
+    let data = {};
+    document.querySelectorAll('input, select, textarea').forEach(el => data[el.id] = el.value);
+    data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
+    data.modeUTC = isUTC ? '1' : '0';
+    data.timer_h40 = document.getElementById('timer-h40').textContent;
+    data.timer_h15 = document.getElementById('timer-h15').textContent;
+    data.timer_h8 = document.getElementById('timer-h8').textContent;
+    data.timer_tobt = document.getElementById('timer-tobt').textContent;
+    localStorage.setItem('tab-' + currentTabId, JSON.stringify(data));
+    localStorage.setItem('lastTabId', currentTabId);
+    renderTabs();
+}
 
-    const container=document.getElementById('timing-grid');
-    container.innerHTML="";
+function loadTabData(id) {
+    const data = JSON.parse(localStorage.getItem('tab-' + id) || '{}');
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+        if (data[el.id] !== undefined) el.value = data[el.id];
+    });
+    if (data.modeDark === '1') document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+    isUTC = data.modeUTC === '1';
+    document.getElementById('toggle-utc').textContent = isUTC ? 'Mode : UTC' : 'Mode : LOCAL';
+    document.getElementById('timer-h40').textContent = data.timer_h40 || '--:--';
+    document.getElementById('timer-h15').textContent = data.timer_h15 || '--:--';
+    document.getElementById('timer-h8').textContent = data.timer_h8 || '--:--';
+    document.getElementById('timer-tobt').textContent = data.timer_tobt || '--:--';
+    generateChargementFields();
+    generateTimingFields();
+    updateAllCalculations();
+}
 
-    timings.forEach((id,i)=>{
-        const div=document.createElement('div');
-        div.className='form-group';
-        div.innerHTML=`
-            <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
+/* === TIMING === */
+function generateTimingFields() {
+    const timings = ["ArrPNT", "ArrPNC", "PremierDebarque", "DernierDebarque", "AvionPremierEmbarque", "AvionDernierEmbarque", "PortePremierEmbarque", "PorteDernierEmbarque", "ArriveeFuel", "DepartFuel", "ArriveeLift", "DepartLift", "RemiseLID", "FermeturePorteAvion"];
+    const labels = ["Arrivée PNT avion", "Arrivée PNC avion", "Premier débarqué", "Dernier débarqué", "Avion : Premier embarqué", "Avion : Dernier embarqué", "Porte : Premier embarqué", "Porte : Dernier embarqué", "Arrivée Fuel", "Départ Fuel", "Arrivée Lift", "Départ Lift", "Remise LID/LDS", "Fermeture porte avion"];
+    const container = document.getElementById('timing-grid');
+    container.innerHTML = "";
+    timings.forEach((id, i) => {
+        const div = document.createElement('div');
+        div.className = 'form-group';
+        div.innerHTML = `
+            <label>${labels[i]}
+                <input type="time" id="${id}" onchange="updateAllCalculations()">
+            </label>
             <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+                <button class="action minus" onclick="adjustTime('${id}', -1); updateAllCalculations()">-1</button>
+                <button class="action now" onclick="setNow('${id}'); updateAllCalculations()">Now</button>
+                <button class="action plus" onclick="adjustTime('${id}', 1); updateAllCalculations()">+1</button>
             </div>`;
         container.appendChild(div);
     });
 }
 
-/* === CHARGEMENT / TOB === */
-function generateChargementFields() {
-    const cie = document.getElementById('Cie').value;
-    const container = document.getElementById('chargement-container');
-    container.innerHTML = "";
-
-    let html = "";
-
-    if (cie === "FR" || cie === "RK") {
-        html += `
-            <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
-        `;
-    } else {
-        html += `
-            <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
-            <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
-        `;
-    }
-
-    html += `
-        <div class="form-group" style="flex:1 1 100%;">
-            <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
-        </div>
-    `;
-    container.innerHTML = html;
-    updateTOB();
-}
-
-function updateTOB() {
-    const cie = document.getElementById('Cie').value;
-    let mainTotal = 0;
-    let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
-
-    if (cie === "FR" || cie === "RK") {
-        mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-                    (parseInt(document.getElementById('CHILD')?.value) || 0);
-    } else {
-        mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                    (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                    (parseInt(document.getElementById('CHILD')?.value) || 0);
-    }
-
-    let tobText = "";
-    if (mainTotal === 0 && infants === 0) {
-        tobText = "";
-    } else if (infants > 0) {
-        tobText = `${mainTotal} + ${infants}`;
-    } else {
-        tobText = `${mainTotal}`;
-    }
-
-    document.getElementById('TOB').value = tobText;
-    checkTOBCoherence();
-}
-
-/* === COHÉRENCE TOB === */
-function checkTOBCoherence() {
-    const cie = document.getElementById('Cie').value;
-    let tobMain = 0;
-
-    if (cie === "FR" || cie === "RK") {
-        tobMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-                  (parseInt(document.getElementById('CHILD')?.value) || 0);
-        const sum = (parseInt(document.getElementById('FWD')?.value) || 0) +
-                    (parseInt(document.getElementById('MID')?.value) || 0) +
-                    (parseInt(document.getElementById('AFT')?.value) || 0);
-        styleTOB(sum === tobMain);
-    } else {
-        tobMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                  (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                  (parseInt(document.getElementById('CHILD')?.value) || 0);
-        const sum = (parseInt(document.getElementById('OA')?.value) || 0) +
-                    (parseInt(document.getElementById('OB')?.value) || 0) +
-                    (parseInt(document.getElementById('OC')?.value) || 0) +
-                    (parseInt(document.getElementById('OD')?.value) || 0);
-        styleTOB(sum === tobMain);
-    }
-}
-
-function styleTOB(valid) {
-    const tobField = document.getElementById('TOB');
-    if (valid) {
-        tobField.style.border = "1px solid #ccc";
-        tobField.style.color = "#000";
-    } else {
-        tobField.style.border = "2px solid red";
-        tobField.style.color = "red";
-    }
-}
-
-/* === CALCULS === */
-function updateAllCalculations() {
-    updateTimers();
-    updateSOBTDefault();
-    updateTOBT();
-    updateDLCode();
-    updateDLDuree2();
-    updateLID();
-    applyPrestationsDefaults();
-}
-
-/* === TIMERS === */
-function updateTimers() {
-    const sobt = document.getElementById('SOBT').value;
-    if (!sobt) {
-        ['timer-h40', 'timer-h15', 'timer-h8'].forEach(id => document.getElementById(id).textContent = '--:--');
-        return;
-    }
-    const [hh, mm] = sobt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(hh);
-    base.setMinutes(mm);
-    const h40 = new Date(base.getTime() - 40 * 60000);
-    const h15 = new Date(base.getTime() - 15 * 60000);
-    document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
-    document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
-}
-
-/* === LID === */
-function updateLID() {
-    const cie = document.getElementById('Cie').value;
-    const tobt = document.getElementById('timer-tobt').textContent;
-    if ((cie === "FR" || cie === "RK") && tobt !== "--:--") {
-        let [hh, mm] = tobt.split(':').map(Number);
-        const d = new Date();
-        d.setHours(hh);
-        d.setMinutes(mm - 8);
-        document.getElementById('timer-h8').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    } else {
-        document.getElementById('timer-h8').textContent = "--:--";
-    }
-}
-
-/* === SOBT PAR DÉFAUT === */
-function updateSOBTDefault() {
-    if (manualSOBT) return;
-    const cie = document.getElementById('Cie').value;
-    const sibt = document.getElementById('SIBT').value;
-    const arrPNT = document.getElementById('ArrPNT')?.value;
-    const arrPNC = document.getElementById('ArrPNC')?.value;
-    if (!sibt) return;
-
-    if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
-
-    let [sH, sM] = sibt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(sH, sM);
-
-    let add = 35;
-    if (cie === "FR" || cie === "RK") {
-        add = (arrPNT || arrPNC) ? 35 : 25;
-    }
-
-    const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
-}
-
-/* === TOBT CALCUL === */
-function updateTOBT() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    const sobttxt = document.getElementById('SOBT').value;
-
-    if (!cie || !sibttxt) {
-        document.getElementById('timer-tobt').textContent = '--:--';
-        return;
-    }
-
-    const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
-    const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
-
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-    const SOBT = new Date(); SOBT.setHours(soH, soM);
-
-    let TOBT = new Date(SIBT);
-
-    if (cie === 'FR' || cie === 'RK' || cie === 'W4' || cie === 'W6') {
-        if (AIBT > SIBT) {
-            const arrPNT = document.getElementById('ArrPNT').value;
-            const arrPNC = document.getElementById('ArrPNC').value;
-            const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT = new Date(AIBT.getTime() + add * 60000);
-        } else {
-            TOBT = new Date(SIBT);
-        }
-    } else {
-        if (AIBT > SIBT) {
-            const diff = (SOBT - SIBT) / 60000;
-            TOBT = new Date(AIBT.getTime() + diff * 60000);
-        } else {
-            TOBT = new Date(SIBT);
-        }
-    }
-
-    if (TOBT < SOBT) TOBT = SOBT;
-
-    document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
-}
-
-/* === DL CODES === */
-function updateDLCode() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    if (!cie || !sibttxt || !aibttxt) return;
-
-    const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt.split(':').map(Number);
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-
-    if (AIBT > SIBT) {
-        if (cie === 'FR') document.getElementById('DLcode1').value = '93';
-        else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
-        else document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = Math.round((AIBT - SIBT) / 60000) || '';
-    } else {
-        document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = '';
-    }
-}
-
-/* === DL DURÉES 2 & 3 === */
-function updateDLDuree2() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-
-        let diff = Math.round((AOBT - SOBT) / 60000) - dlduree1;
-        document.getElementById('DLduree2').value = diff > 0 ? diff : '';
-        updateDLDuree3();
-    } else {
-        document.getElementById('DLduree2').value = '';
-    }
-}
-
-function updateDLDuree3() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-    const dlduree2 = parseInt(document.getElementById('DLduree2').value) || 0;
-
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-        const total = Math.round((AOBT - SOBT) / 60000);
-        const reste = total - dlduree1 - dlduree2;
-        document.getElementById('DLduree3').value = reste > 0 ? reste : '';
-    }
-}
-
-/* === PRESTATIONS AUTO === */
-function applyPrestationsDefaults() {
-    const from = document.getElementById('From').value.toUpperCase();
-    const to = document.getElementById('To').value.toUpperCase();
-
-    if (from === "BVA") {
-        document.getElementById('Ordures').value = "N";
-        document.getElementById('EauPotable').value = "Y";
-        document.getElementById('MenageAssist').value = "N";
-    }
-    if (to === "BVA") {
-        document.getElementById('Ordures').value = "Y";
-        document.getElementById('Vidange').value = "Y";
-        document.getElementById('MenageAtalian').value = "T";
-    }
-}
-
-/* === UTILITAIRES === */
-function setNow(fieldId) {
-    const now = new Date();
-    const hh = isUTC ? now.getUTCHours() : now.getHours();
-    const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
-
-function adjustTime(fieldId, delta) {
-    const input = document.getElementById(fieldId);
-    if (!input.value) return;
-    let [hh, mm] = input.value.split(':').map(Number);
-    let total = hh * 60 + mm + delta;
-    if (total < 0) total += 1440;
-    if (total >= 1440) total -= 1440;
-    hh = Math.floor(total / 60);
-    mm = total % 60;
-    input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
-}
-
-function toggleTimeMode() {
-    const inputs = document.querySelectorAll('input[type="time"]');
-    inputs.forEach(input => {
-        if (!input.value) return;
-        let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2;
-        if (hh < 0) hh += 24;
-        if (hh >= 24) hh -= 24;
-        input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-    });
+/* === TOGGLE UTC === */
+function toggleUTC() {
     isUTC = !isUTC;
-    localStorage.setItem('modeUTC', isUTC ? '1' : '0');
+    document.getElementById('toggle-utc').textContent = isUTC ? 'Mode : UTC' : 'Mode : LOCAL';
     updateAllCalculations();
 }
 
-/* === POPUP === */
-function showPopup(message, color = "#2196f3", duration = 2000) {
-    const popup = document.createElement('div');
-    popup.textContent = message;
-    popup.style.position = "fixed";
-    popup.style.top = "60px";  // Sous la barre fixe
-    popup.style.left = "50%";
-    popup.style.transform = "translateX(-50%)";
-    popup.style.background = color;
-    popup.style.color = "#fff";
-    popup.style.padding = "10px 20px";
-    popup.style.borderRadius = "6px";
-    popup.style.fontSize = "1rem";
-    popup.style.zIndex = "1000";
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), duration);
+/* === CANVAS DESSIN === */
+function clearCanvas() {
+    const canvas = document.getElementById('canvasNotes');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
-
-/* === CONFIG AIRTABLE === */
-const AIRTABLE_API_KEY = "patmjcQua1Od3Romx.f6f9b0defe694b311c5657cf81179309efc05a1122250a31eedd2f58355189f6";
-const AIRTABLE_BASE_ID = "appq3lFOIsAUOiU8J";
-const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
-
-/* === ENVOI VERS AIRTABLE === */
-async function sendToAirtable() {
-    // Mise en majuscule des champs INFO VOL
-    function upper(id) {
-        return document.getElementById(id).value.toUpperCase();
-    }
-
-    const record = {
-        // Champs INFO VOL
-        "Date": document.getElementById('Date').value,
-        "RZA": upper('RZA'),
-        "Immat": upper('Immat'),
-        "Parking": upper('Parking'),
-        "Cie": upper('Cie'),
-        "N° Vol": upper('NVol'),
-        "Provenance": upper('From'),
-        "Destination": upper('To'),
-        "SIBT": document.getElementById('SIBT').value,
-        "AIBT": document.getElementById('AIBT').value,
-        "SOBT": document.getElementById('SOBT').value,
-        "AOBT": document.getElementById('AOBT').value,
-
-        // Champs RETARDS
-        "Retard (min)": document.getElementById('DLduree1').value,
-        "DL Code 1": document.getElementById('DLcode1').value,
-        "DL Durée 1 (min)": document.getElementById('DLduree1').value,
-        "DL Code 2": document.getElementById('DLcode2').value,
-        "DL Durée 2 (min)": document.getElementById('DLduree2').value,
-        "DL Code 3": document.getElementById('DLcode3').value,
-        "DL Durée 3 (min)": document.getElementById('DLduree3').value,
-        "DL JUSTIFICATIONS": document.getElementById('DLJustif').value,
-
-        // Champs TIMING
-        "Arrivée PNT avion": document.getElementById('ArrPNT').value,
-        "Arrivée PNC avion": document.getElementById('ArrPNC').value,
-        "Premier débarqué": document.getElementById('PremierDebarque').value,
-        "Dernier débarqué": document.getElementById('DernierDebarque').value,
-        "Avion : Premier embarqué": document.getElementById('AvionPremierEmbarque').value,
-        "Avion : Dernier embarqué": document.getElementById('AvionDernierEmbarque').value,
-        "Porte : Premier embarqué": document.getElementById('PortePremierEmbarque').value,
-        "Porte : Dernier embarqué": document.getElementById('PorteDernierEmbarque').value,
-        "Arrivée Fuel": document.getElementById('ArriveeFuel').value,
-        "Départ Fuel": document.getElementById('DepartFuel').value,
-        "Arrivée Lift": document.getElementById('ArriveeLift').value,
-        "Départ Lift": document.getElementById('DepartLift').value,
-        "Remise LID/LDS": document.getElementById('RemiseLID').value,
-        "Fermeture porte avion": document.getElementById('FermeturePorteAvion').value,
-
-        // Champs ASSISTANCES
-        "WCHC": document.getElementById('WCHC').value,
-        "WCHS": document.getElementById('WCHS').value,
-        "WCHR": document.getElementById('WCHR').value,
-        "Autre": document.getElementById('AutreAssist').value,
-
-        // Champs PRESTATIONS
-        "ASU": document.getElementById('ASU').value,
-        "Vidange toilettes": document.getElementById('Vidange').value,
-        "Eau potable": document.getElementById('EauPotable').value,
-        "Echelle supplémentaire": document.getElementById('Echelle').value,
-        "Collecte d'ordures": document.getElementById('Ordures').value,
-        "Ménage Assist'Air": document.getElementById('MenageAssist').value,
-        "Ménage Atalian": document.getElementById('MenageAtalian').value,
-        "Dégivrage": document.getElementById('Degivrage').value,
-        "Toilet Kit": document.getElementById('ToiletKit').value,
-        "Push-Pull": document.getElementById('PushPull').value,
-        "Flux par le RZA": document.getElementById('FluxRZA').value
+function initCanvas() {
+    const canvas = document.getElementById('canvasNotes');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    canvas.onmousedown = (e) => {
+        drawing = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
     };
-
-    try {
-        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ records: [{ fields: record }] })
-        });
-
-        if (!response.ok) {
-            throw new Error(`Erreur API : ${response.statusText}`);
-        }
-
-        showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
-    } catch (err) {
-        console.error("Erreur Airtable :", err);
-        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
-    }
+    canvas.onmousemove = (e) => {
+        if (!drawing) return;
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+    };
+    canvas.onmouseup = () => drawing = false;
+    canvas.onmouseleave = () => drawing = false;
 }
 
 /* === VALIDATION === */
@@ -1022,28 +401,18 @@ function validateForm() {
             missing = true;
         }
     }
-
     if (missing) {
         showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
     } else {
-        // Envoi des données vers Airtable
         sendToAirtable();
-
-        // Affiche popup confirmation
         showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
-
-        // Supprimer ou réinitialiser l’onglet
         setTimeout(() => {
             let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
             tabs = tabs.filter(t => t !== currentTabId);
             localStorage.setItem('flightTabs', JSON.stringify(tabs));
             localStorage.removeItem('tab-' + currentTabId);
-
-            if (tabs.length > 0) {
-                switchTab(tabs[0]); // Passer au premier onglet restant
-            } else {
-                createNewTab(); // Réinitialiser si aucun onglet restant
-            }
+            if (tabs.length > 0) switchTab(tabs[0]);
+            else createNewTab();
         }, 1000);
     }
 }
@@ -1061,6 +430,69 @@ function clearAutoSave() {
         location.reload();
     }
 }
+
+/* === POPUP === */
+function showPopup(message, color = "#2196f3", duration = 2000) {
+    const popup = document.createElement('div');
+    popup.textContent = message;
+    popup.style.position = "fixed";
+    popup.style.top = "60px";
+    popup.style.left = "50%";
+    popup.style.transform = "translateX(-50%)";
+    popup.style.background = color;
+    popup.style.color = "#fff";
+    popup.style.padding = "10px 20px";
+    popup.style.borderRadius = "6px";
+    popup.style.fontSize = "1rem";
+    popup.style.zIndex = "1000";
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), duration);
+}
+
+/* === AIRTABLE CONFIGURATION === */
+const AIRTABLE_API_KEY = "ta_clé_api";
+const AIRTABLE_BASE_ID = "ton_base_id";
+const AIRTABLE_TABLE_NAME = "nom_table";
+
+/* === ENVOI AIRTABLE === */
+async function sendToAirtable() {
+    const record = {
+        "Date": document.getElementById('Date').value,
+        "Immat": document.getElementById('Immat').value.toUpperCase(),
+        "Parking": document.getElementById('Parking').value.toUpperCase(),
+        "Cie": document.getElementById('Cie').value.toUpperCase(),
+        "N° Vol": document.getElementById('NVol').value.toUpperCase(),
+        "From": document.getElementById('From').value.toUpperCase(),
+        "To": document.getElementById('To').value.toUpperCase(),
+        "SIBT": document.getElementById('SIBT').value,
+        "AIBT": document.getElementById('AIBT').value,
+        "SOBT": document.getElementById('SOBT').value,
+        "AOBT": document.getElementById('AOBT').value
+    };
+
+    try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ records: [{ fields: record }] })
+        });
+
+        if (!response.ok) throw new Error(`Erreur API : ${response.statusText}`);
+        showPopup("Données envoyées à Airtable !", "#4caf50", 3000);
+    } catch (err) {
+        console.error("Erreur Airtable :", err);
+        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
+    }
+}
+
+/* === LANCEMENT === */
+window.onload = () => {
+    initForm();
+    initCanvas();
+};
 </script>
 </body>
 </html>
