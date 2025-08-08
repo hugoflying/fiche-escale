@@ -148,14 +148,19 @@ button.plus  { background: #555; color: white; }
 /* Toggles */
 .toggle-container {
     display: flex;
-    justify-content: flex-start; /* Les éléments restent côte à côte */
     align-items: center;
-    gap: 8px; /* Petit espace entre les boutons et l’étiquette */
+    gap: 8px;
     margin-bottom: 10px;
 }
 .toggle-container button {
     padding: 5px 10px;
     font-size: 0.9rem;
+    min-width: 90px; /* même largeur pour les deux boutons */
+}
+#timeModeLabel {
+    margin-left: auto; /* pousse le texte tout à droite */
+    font-weight: bold;
+    color: #1976d2;
 }
 
 /* Majuscules pour INFO VOL */
@@ -218,7 +223,7 @@ body.dark #tab-bar {
 <div class="toggle-container">
     <button onclick="toggleDarkMode()">🌙 / ☀️</button>
     <button onclick="toggleTimeMode()">Local / UTC</button>
-    <span id="timeModeLabel" style="font-weight:bold;color:#1976d2;">Mode : Local</span>
+    <span id="timeModeLabel">Mode : Local</span>
 </div>
     
 <!-- Barre d’onglets -->
