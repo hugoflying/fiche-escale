@@ -9,7 +9,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: Arial, sans-serif;
-    background: #e0e0e0; /* fond de page plus sombre pour détacher les blocs */
+    background: #ffffff; /* fond de page blanc (comme avant) */
     color: #222;
     padding: 10px;
 }
@@ -19,7 +19,7 @@ h1 { text-align: center; margin: 10px 0 15px; }
 
 /* Sections (blocs) */
 section {
-    background: #f5f5f5;                   /* gris clair au lieu de blanc */
+    background: #f5f5f5;                   /* gris clair pour les blocs */
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 22px;                   /* espace entre sections */
@@ -230,7 +230,7 @@ button.plus  { background: #555; color: white; }
     flex-wrap: wrap;
     position: sticky;
     top: 0;
-    background: #e0e0e0; /* harmonisé avec le fond de page */
+    background: #ffffff; /* harmonisé avec le fond de page blanc */
     z-index: 999;
     padding: 5px 0;
 }
@@ -934,7 +934,7 @@ function updateCTOTDisplay(){
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-    the aibttxt = document.getElementById('AIBT').value;
+    const aibttxt = document.getElementById('AIBT').value;  // corrigé
     if (!cie || !sibttxt || !aibttxt) return;
 
     const [sH, sM] = sibttxt.split(':').map(Number);
@@ -1027,7 +1027,7 @@ function adjustTime(fieldId, delta) {
     input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-/* === Switches Jour/Nuit & Local/UTC === */
+/* === Switches Jour/Nuit & Local/UTC (offset dynamique) === */
 function setDarkMode(enable, fromInit=false){
     const currentlyDark = document.body.classList.contains('dark');
     if (enable && !currentlyDark) document.body.classList.add('dark');
@@ -1037,16 +1037,23 @@ function setDarkMode(enable, fromInit=false){
 }
 
 function setTimeModeUTC(enable, fromInit=false){
+    // offset local en heures (1 en hiver, 2 en été pour la France)
+    const offsetHours = -new Date().getTimezoneOffset() / 60;
+
     if (!fromInit && enable !== isUTC) {
-        // convertir toutes les heures de +/-2h selon le sens
         const inputs = document.querySelectorAll('input[type="time"]');
         inputs.forEach(input => {
             if (!input.value) return;
             let [hh, mm] = input.value.split(':').map(Number);
-            hh = enable ? hh - 2 : hh + 2; // Local->UTC : -2h / UTC->Local : +2h
-            if (hh < 0) hh += 24;
-            if (hh >= 24) hh -= 24;
-            input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+            // Local -> UTC : -offset ; UTC -> Local : +offset
+            let newH = enable ? hh - offsetHours : hh + offsetHours;
+
+            // normalisation en minutes pour gérer offset potentiellement décimal
+            let totalMin = Math.round(newH * 60 + mm);
+            totalMin = ((totalMin % 1440) + 1440) % 1440; // wrap 0..1439
+            const outH = Math.floor(totalMin / 60);
+            const outM = totalMin % 60;
+            input.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
         });
     }
     isUTC = enable;
