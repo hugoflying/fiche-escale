@@ -145,27 +145,60 @@ button.plus  { background: #555; color: white; }
 #timer-tobt { background: #2e7d32; }
 #timer-h8 { background: orange; }
 
-/* Toggles */
+/* Toggles (barre du haut) */
 .toggle-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     margin-bottom: 10px;
 }
-.toggle-container button {
-    padding: 5px 10px;
-    font-size: 0.9rem;
-    min-width: 90px; /* même largeur pour les deux boutons */
-}
-#timeModeLabel {
-    margin-left: auto; /* pousse le texte tout à droite */
-    font-weight: bold;
-    color: #1976d2;
+.toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Majuscules pour INFO VOL */
-#Date, #Cie, #NVol, #From, #To, #Immat, #RZA, #Parking, #FNC {
-    text-transform: uppercase;
+/* Interrupteurs */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;   /* même taille pour les deux */
+    height: 28px;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #cfd4da;
+    transition: .2s;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px; width: 22px;
+    left: 3px; top: 3px;
+    background: #fff;
+    transition: .2s;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,.3);
+}
+.switch input:checked + .slider { background: #1976d2; }
+.switch input:checked + .slider:before { transform: translateX(32px); }
+
+/* Légendes des interrupteurs */
+.toggle-caption {
+    font-size: .9rem;
+    user-select: none;
+}
+
+/* Indicateur de mode à droite */
+#timeModeLabel {
+    margin-left: auto;              /* pousse complètement à droite */
+    font-weight: bold;
+    color: #1976d2;
 }
 
 /* Onglets */
@@ -221,11 +254,28 @@ body.dark #tab-bar {
 
 <!-- Modes -->
 <div class="toggle-container">
-    <button onclick="toggleDarkMode()">🌙 / ☀️</button>
-    <button onclick="toggleTimeMode()">Local / UTC</button>
+    <!-- Switch Jour/Nuit -->
+    <div class="toggle-group">
+        <span class="toggle-caption">🌙 / ☀️</span>
+        <label class="switch" title="Basculer Jour/Nuit">
+            <input type="checkbox" id="darkToggle" onchange="setDarkMode(this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <!-- Switch Local / UTC -->
+    <div class="toggle-group">
+        <span class="toggle-caption">Local / UTC</span>
+        <label class="switch" title="Basculer Local/UTC">
+            <input type="checkbox" id="utcToggle" onchange="setTimeModeUTC(this.checked)">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <!-- Indicateur aligné à droite -->
     <span id="timeModeLabel">Mode : Local</span>
 </div>
-    
+
 <!-- Barre d’onglets -->
 <div id="tab-bar">
     <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
@@ -432,15 +482,19 @@ function initForm(){
     document.getElementById('To').oninput = updateTabLabelInstant;
     document.getElementById('From').oninput = applyPrestationsDefaults;
     document.getElementById('To').oninput = applyPrestationsDefaults;
+
+    // Appliquer états des switches au chargement
+    const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
+    const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
+    setDarkMode(storedDark, /*fromInit*/true);
+    setTimeModeUTC(storedUTC, /*fromInit*/true);
+
+    updateTimeModeLabel();
 }
 
 /* Expand/collapse all */
-function expandAllSections(){
-    document.querySelectorAll("section").forEach(sec=>sec.classList.remove("collapsed"));
-}
-function collapseAllSections(){
-    document.querySelectorAll("section").forEach(sec=>sec.classList.add("collapsed"));
-}
+function expandAllSections(){ document.querySelectorAll("section").forEach(sec=>sec.classList.remove("collapsed")); }
+function collapseAllSections(){ document.querySelectorAll("section").forEach(sec=>sec.classList.add("collapsed")); }
 
 /* Tabs */
 function renderTabs(){
@@ -522,22 +576,25 @@ function loadTabData(id){
     document.querySelectorAll('input, select, textarea').forEach(el=>{
         if(data[el.id]!==undefined) el.value=data[el.id];
     });
-    if(data.modeDark==='1') document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
+    // Appliquer modes stockés dans l'onglet si présents, sinon garder état global
+    if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
     isUTC=data.modeUTC==='1';
     document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
     document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
     document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
     document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
+
+    // Synchroniser positions des switches avec l'état courant
+    document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
+    document.getElementById('utcToggle').checked  = isUTC;
+
     generateChargementFields();
+    updateTimeModeLabel();
     updateAllCalculations();
 }
 
 /* Mise à jour instantanée label onglet */
-function updateTabLabelInstant(){
-    saveCurrentTabData();
-    renderTabs();
-}
+function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS */
 function generateTimingFields(){
@@ -889,31 +946,45 @@ function adjustTime(fieldId, delta) {
     input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-function toggleDarkMode() {
-    document.body.classList.toggle('dark');
-    localStorage.setItem('modeDark', document.body.classList.contains('dark') ? '1' : '0');
+/* === Switches Jour/Nuit & Local/UTC === */
+function setDarkMode(enable, fromInit=false){
+    const currentlyDark = document.body.classList.contains('dark');
+    if (enable && !currentlyDark) document.body.classList.add('dark');
+    if (!enable && currentlyDark) document.body.classList.remove('dark');
+    document.getElementById('darkToggle').checked = enable;
+    localStorage.setItem('modeDark', enable ? '1' : '0');
 }
 
-function toggleTimeMode() {
-    const inputs = document.querySelectorAll('input[type="time"]');
-    inputs.forEach(input => {
-        if (!input.value) return;
-        let [hh, mm] = input.value.split(':').map(Number);
-        hh = isUTC ? hh + 2 : hh - 2;
-        if (hh < 0) hh += 24;
-        if (hh >= 24) hh -= 24;
-        input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-    });
-    isUTC = !isUTC;
-    localStorage.setItem('modeUTC', isUTC ? '1' : '0');
-    updateTimeModeLabel(); // <<< ICI
+function setTimeModeUTC(enable, fromInit=false){
+    // Si on appelle au chargement, on veut juste "régler" l'état sans reconvertir les champs.
+    if (!fromInit && enable !== isUTC) {
+        // convertir toutes les heures de +/-2h selon le sens
+        const inputs = document.querySelectorAll('input[type="time"]');
+        inputs.forEach(input => {
+            if (!input.value) return;
+            let [hh, mm] = input.value.split(':').map(Number);
+            hh = enable ? hh - 2 : hh + 2; // passage Local->UTC = -2h ; UTC->Local = +2h
+            if (hh < 0) hh += 24;
+            if (hh >= 24) hh -= 24;
+            input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+        });
+    }
+    isUTC = enable;
+    document.getElementById('utcToggle').checked = enable;
+    localStorage.setItem('modeUTC', enable ? '1' : '0');
+    updateTimeModeLabel();
     updateAllCalculations();
 }
 
+/* Ancienne bascule (laisse au cas où d'autres appels existent) */
+function toggleDarkMode(){ setDarkMode(!document.body.classList.contains('dark')); }
+function toggleTimeMode(){ setTimeModeUTC(!isUTC); }
+
+/* Indicateur de mode */
 function updateTimeModeLabel() {
     document.getElementById('timeModeLabel').textContent = "Mode : " + (isUTC ? "UTC" : "Local");
 }
-    
+
 /* === POPUP === */
 function showPopup(message, color = "#2196f3", duration = 2000) {
     const popup = document.createElement('div');
