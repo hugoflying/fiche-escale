@@ -994,13 +994,13 @@ function generateTimingFields(){
     timings.forEach((id,i)=>{
         const div=document.createElement('div');
         div.className='form-group';
-        div.innerHTML=`
+        div.innerHTML=
             <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
             <div class="btn-actions">
                 <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
                 <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
                 <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-            </div>`;
+            </div>;
         container.appendChild(div);
     });
 }
@@ -1014,7 +1014,7 @@ function generateChargementFields() {
     let html = "";
 
     if (cie === "FR" || cie === "RK") {
-        html += `
+        html += 
             <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
@@ -1023,9 +1023,9 @@ function generateChargementFields() {
             <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
             <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
             <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
-        `;
+        ;
     } else {
-        html += `
+        html += 
             <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
@@ -1037,14 +1037,14 @@ function generateChargementFields() {
             <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
             <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
             <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
-        `;
+        ;
     }
 
-    html += `
+    html += 
         <div class="form-group" style="flex:1 1 100%;">
             <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
         </div>
-    `;
+    ;
     container.innerHTML = html;
     updateTOB();
 }
@@ -1067,9 +1067,9 @@ function updateTOB() {
     if (mainTotal === 0 && infants === 0) {
         tobText = "";
     } else if (infants > 0) {
-        tobText = `${mainTotal} + ${infants}`;
+        tobText = ${mainTotal} + ${infants};
     } else {
-        tobText = `${mainTotal}`;
+        tobText = ${mainTotal};
     }
 
     document.getElementById('TOB').value = tobText;
@@ -1135,8 +1135,8 @@ function updateTimers() {
     base.setMinutes(mm);
     const h40 = new Date(base.getTime() - 40 * 60000);
     const h15 = new Date(base.getTime() - 15 * 60000);
-    document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
-    document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('timer-h40').textContent = ${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')};
+    document.getElementById('timer-h15').textContent = ${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')};
 }
 
 /* === LID === */
@@ -1148,7 +1148,7 @@ function updateLID() {
         const d = new Date();
         d.setHours(hh);
         d.setMinutes(mm - 8);
-        document.getElementById('timer-h8').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('timer-h8').textContent = ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')};
     } else {
         document.getElementById('timer-h8').textContent = "--:--";
     }
@@ -1175,22 +1175,20 @@ function updateSOBTDefault() {
     }
 
     const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('SOBT').value = ${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')};
 }
 
 /* === TOBT CALCUL === */
 function updateTOBT() {
-    const aibtTxt = document.getElementById('AIBT').value;
-    const aibtDate = new Date(`1970-01-01T${aibtTxt}:00`);
+    const cie = document.getElementById('Cie').value;
+    const sibttxt = document.getElementById('SIBT').value;
+    the_aibttxt = document.getElementById('AIBT').value;
+    const sobttxt = document.getElementById('SOBT').value;
 
-    if (!isNaN(aibtDate.getTime())) {
-        // +10 min
-        const tobtDate = new Date(aibtDate.getTime() + 10 * 60000);
-        const tobtHours = String(tobtDate.getHours()).padStart(2, '0');
-        const tobtMinutes = String(tobtDate.getMinutes()).padStart(2, '0');
-        document.getElementById('TOBT').value = `${tobtHours}:${tobtMinutes}`;
+    if (!cie || !sibttxt) {
+        document.getElementById('timer-tobt').textContent = '--:--';
+        return;
     }
-}
 
     const [sH, sM] = sibttxt.split(':').map(Number);
     const [aH, aM] = the_aibttxt ? the_aibttxt.split(':').map(Number) : [sH, sM];
@@ -1222,7 +1220,7 @@ function updateTOBT() {
 
     if (TOBT < SOBT) TOBT = SOBT;
 
-    document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('timer-tobt').textContent = ${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')};
 }
 
 /* === DL CODES === */
@@ -1307,7 +1305,7 @@ function setNow(fieldId) {
     const now = new Date();
     const hh = isUTC ? now.getUTCHours() : now.getHours();
     const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    document.getElementById(fieldId).value = ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')};
 }
 
 function adjustTime(fieldId, delta) {
@@ -1319,7 +1317,7 @@ function adjustTime(fieldId, delta) {
     if (total >= 1440) total -= 1440;
     hh = Math.floor(total / 60);
     mm = total % 60;
-    input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    input.value = ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')};
 }
 
 /* === Switches Jour/Nuit & Local/UTC === */
@@ -1341,7 +1339,7 @@ function setTimeModeUTC(enable, fromInit=false){
             hh = enable ? hh - 2 : hh + 2; // Local->UTC : -2h / UTC->Local : +2h
             if (hh < 0) hh += 24;
             if (hh >= 24) hh -= 24;
-            input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+            input.value = ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')};
         });
     }
     isUTC = enable;
