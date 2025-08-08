@@ -148,7 +148,9 @@ button.plus  { background: #555; color: white; }
 /* Toggles */
 .toggle-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start; /* Les éléments restent côte à côte */
+    align-items: center;
+    gap: 8px; /* Petit espace entre les boutons et l’étiquette */
     margin-bottom: 10px;
 }
 .toggle-container button {
@@ -213,7 +215,7 @@ body.dark #tab-bar {
 <body onload="initForm()">
 
 <!-- Modes -->
-<div class="toggle-container" style="align-items: center; gap: 8px;">
+<div class="toggle-container">
     <button onclick="toggleDarkMode()">🌙 / ☀️</button>
     <button onclick="toggleTimeMode()">Local / UTC</button>
     <span id="timeModeLabel" style="font-weight:bold;color:#1976d2;">Mode : Local</span>
