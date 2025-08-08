@@ -27,13 +27,25 @@ section {
 }
 body.dark section { background: #1e1e1e; }
 
+/* Titres de sections, mieux démarqués jour/nuit */
 h2 {
     font-size: 1.2rem;
-    margin-bottom: 10px;
+    margin: -12px -12px 10px -12px;     /* le fond va bord à bord */
+    padding: 8px 12px;
     border-bottom: 1px solid #ccc;
-    padding-bottom: 5px;
     text-align: center;
     cursor: pointer;
+    background: #e8f0fe;                /* jour */
+    color: #123;
+    border-left: 6px solid #1976d2;     /* liseré accent */
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+body.dark h2 {
+    background: #242424;                /* nuit */
+    color: #f5f5f5;
+    border-left: 6px solid #90caf9;
+    border-bottom-color: #3a3a3a;
 }
 
 /* Collapse */
@@ -123,9 +135,14 @@ button.plus  { background: #555; color: white; }
 .timer-box {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 40px;               /* espace entre les 2 groupes */
     margin-bottom: 15px;
     flex-wrap: wrap;
+}
+.timer-group {
+    display: flex;
+    gap: 20px;               /* espace au sein d’un groupe */
+    align-items: center;
 }
 .timer {
     display: flex;
@@ -143,7 +160,8 @@ button.plus  { background: #555; color: white; }
     font-size: 1.1rem;
 }
 #timer-tobt { background: #2e7d32; }
-#timer-h8 { background: orange; }
+#timer-h8   { background: orange; }
+#timer-ctot { background: #455a64; }   /* CTOT différencié */
 
 /* Toggles (barre du haut) */
 .toggle-container {
@@ -162,7 +180,7 @@ button.plus  { background: #555; color: white; }
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;   /* même taille pour les deux */
+    width: 60px;
     height: 28px;
 }
 .switch input { opacity: 0; width: 0; height: 0; }
@@ -192,13 +210,6 @@ button.plus  { background: #555; color: white; }
 .toggle-caption {
     font-size: .9rem;
     user-select: none;
-}
-
-/* Indicateur de mode à droite */
-#timeModeLabel {
-    margin-left: auto;              /* pousse complètement à droite */
-    font-weight: bold;
-    color: #1976d2;
 }
 
 /* Onglets */
@@ -245,7 +256,6 @@ body.dark #tab-bar { background: #121212; }
 #popup.success { background: #4caf50; }
 #popup.error { background: #d32f2f; }
 #popup.info { background: #2196f3; }
-}
 </style>
 </head>
 <body onload="initForm()">
@@ -269,9 +279,6 @@ body.dark #tab-bar { background: #121212; }
             <span class="slider"></span>
         </label>
     </div>
-
-    <!-- Indicateur aligné à droite -->
-    <span id="timeModeLabel">Mode : Local</span>
 </div>
 
 <!-- Barre d’onglets -->
@@ -281,12 +288,20 @@ body.dark #tab-bar { background: #121212; }
 
 <h1>SUIVI PERFORMANCE</h1>
 
-<!-- Timers -->
+<!-- Timers (2 groupes) -->
 <div class="timer-box">
-    <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
+    <!-- Groupe 1 : H-40, H-15, LID -->
+    <div class="timer-group">
+        <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
+        <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
+        <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
+    </div>
+
+    <!-- Groupe 2 : TOBT, CTOT -->
+    <div class="timer-group">
+        <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
+        <div class="timer"><div class="timer-label">CTOT</div><div id="timer-ctot" class="timer-value">--:--</div></div>
+    </div>
 </div>
 
 <!-- INFO VOL -->
@@ -360,6 +375,16 @@ body.dark #tab-bar { background: #121212; }
                 <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
                 <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
                 <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
+            </div>
+        </div>
+
+        <!-- NOUVEAU : CTOT -->
+        <div class="form-group">
+            <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
+            <div class="btn-actions">
+                <button class="action minus" onclick="adjustTime('CTOT',-1);updateAllCalculations()">-1</button>
+                <button class="action now" onclick="setNow('CTOT');updateAllCalculations()">Now</button>
+                <button class="action plus" onclick="adjustTime('CTOT',1);updateAllCalculations()">+1</button>
             </div>
         </div>
     </div>
@@ -477,7 +502,6 @@ function initForm(){
     setDarkMode(storedDark, /*fromInit*/true);
     setTimeModeUTC(storedUTC, /*fromInit*/true);
 
-    updateTimeModeLabel();
     // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
 }
@@ -567,6 +591,7 @@ function saveCurrentTabData(){
     data.timer_h15=document.getElementById('timer-h15').textContent;
     data.timer_h8=document.getElementById('timer-h8').textContent;
     data.timer_tobt=document.getElementById('timer-tobt').textContent;
+    data.timer_ctot=document.getElementById('timer-ctot').textContent;
     localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
     localStorage.setItem('lastTabId',currentTabId);
     renderTabs();
@@ -591,13 +616,13 @@ function loadTabData(id){
     document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
     document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
     document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
+    document.getElementById('timer-ctot').textContent=data.timer_ctot||'--:--';
 
     // synchro UI switches
     document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
     document.getElementById('utcToggle').checked  = isUTC;
 
     generateChargementFields(); // dépend de Cie
-    updateTimeModeLabel();
     updateAllCalculations();
 }
 
@@ -756,6 +781,7 @@ function updateAllCalculations() {
     updateDLCode();
     updateDLDuree2();
     updateLID();
+    updateCTOTDisplay();
     applyPrestationsDefaults();
 }
 
@@ -858,6 +884,12 @@ function updateTOBT() {
     if (TOBT < SOBT) TOBT = SOBT;
 
     document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
+}
+
+/* === CTOT (affichage à partir du champ HORAIRES) === */
+function updateCTOTDisplay(){
+    const ctot = document.getElementById('CTOT').value;
+    document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
 /* === DL CODES === */
@@ -982,18 +1014,12 @@ function setTimeModeUTC(enable, fromInit=false){
     isUTC = enable;
     document.getElementById('utcToggle').checked = enable;
     localStorage.setItem('modeUTC', enable ? '1' : '0');
-    updateTimeModeLabel();
     updateAllCalculations();
 }
 
 /* Compat anciens appels */
 function toggleDarkMode(){ setDarkMode(!document.body.classList.contains('dark')); }
 function toggleTimeMode(){ setTimeModeUTC(!isUTC); }
-
-/* Indicateur de mode */
-function updateTimeModeLabel() {
-    document.getElementById('timeModeLabel').textContent = "Mode : " + (isUTC ? "UTC" : "Local");
-}
 
 /* === POPUP === */
 function showPopup(message, color = "#2196f3", duration = 2000) {
@@ -1013,90 +1039,7 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     setTimeout(() => popup.remove(), duration);
 }
 
-/* === CONFIG AIRTABLE === */
-const AIRTABLE_API_KEY = "patmjcQua1Od3Romx.f6f9b0defe694b311c5657cf81179309efc05a1122250a31eedd2f58355189f6";
-const AIRTABLE_BASE_ID = "appq3lFOIsAUOiU8J";
-const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
-
-/* === ENVOI VERS AIRTABLE === */
-async function sendToAirtable() {
-    function upper(id) { return document.getElementById(id).value.toUpperCase(); }
-
-    const record = {
-        "Date": document.getElementById('Date').value,
-        "RZA": upper('RZA'),
-        "Immat": upper('Immat'),
-        "Parking": upper('Parking'),
-        "Cie": upper('Cie'),
-        "N° Vol": upper('NVol'),
-        "Provenance": upper('From'),
-        "Destination": upper('To'),
-        "SIBT": document.getElementById('SIBT').value,
-        "AIBT": document.getElementById('AIBT').value,
-        "SOBT": document.getElementById('SOBT').value,
-        "AOBT": document.getElementById('AOBT').value,
-
-        "Retard (min)": document.getElementById('DLduree1').value,
-        "DL Code 1": document.getElementById('DLcode1').value,
-        "DL Durée 1 (min)": document.getElementById('DLduree1').value,
-        "DL Code 2": document.getElementById('DLcode2').value,
-        "DL Durée 2 (min)": document.getElementById('DLduree2').value,
-        "DL Code 3": document.getElementById('DLcode3').value,
-        "DL Durée 3 (min)": document.getElementById('DLduree3').value,
-        "DL JUSTIFICATIONS": document.getElementById('DLJustif').value,
-
-        "Arrivée PNT avion": document.getElementById('ArrPNT').value,
-        "Arrivée PNC avion": document.getElementById('ArrPNC').value,
-        "Premier débarqué": document.getElementById('PremierDebarque').value,
-        "Dernier débarqué": document.getElementById('DernierDebarque').value,
-        "Avion : Premier embarqué": document.getElementById('AvionPremierEmbarque').value,
-        "Avion : Dernier embarqué": document.getElementById('AvionDernierEmbarque').value,
-        "Porte : Premier embarqué": document.getElementById('PortePremierEmbarque').value,
-        "Porte : Dernier embarqué": document.getElementById('PorteDernierEmbarque').value,
-        "Arrivée Fuel": document.getElementById('ArriveeFuel').value,
-        "Départ Fuel": document.getElementById('DepartFuel').value,
-        "Arrivée Lift": document.getElementById('ArriveeLift').value,
-        "Départ Lift": document.getElementById('DepartLift').value,
-        "Remise LID/LDS": document.getElementById('RemiseLID').value,
-        "Fermeture porte avion": document.getElementById('FermeturePorteAvion').value,
-
-        "WCHC": document.getElementById('WCHC').value,
-        "WCHS": document.getElementById('WCHS').value,
-        "WCHR": document.getElementById('WCHR').value,
-        "Autre": document.getElementById('AutreAssist').value,
-
-        "ASU": document.getElementById('ASU').value,
-        "Vidange toilettes": document.getElementById('Vidange').value,
-        "Eau potable": document.getElementById('EauPotable').value,
-        "Echelle supplémentaire": document.getElementById('Echelle').value,
-        "Collecte d'ordures": document.getElementById('Ordures').value,
-        "Ménage Assist'Air": document.getElementById('MenageAssist').value,
-        "Ménage Atalian": document.getElementById('MenageAtalian').value,
-        "Dégivrage": document.getElementById('Degivrage').value,
-        "Toilet Kit": document.getElementById('ToiletKit').value,
-        "Push-Pull": document.getElementById('PushPull').value,
-        "Flux par le RZA": document.getElementById('FluxRZA').value
-    };
-
-    try {
-        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ records: [{ fields: record }] })
-        });
-
-        if (!response.ok) throw new Error(`Erreur API : ${response.statusText}`);
-        showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
-    } catch (err) {
-        console.error("Erreur Airtable :", err);
-        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
-    }
-}
-
-/* === VALIDATION === */
+/* === VALIDATION (Sans Airtable) === */
 function validateForm() {
     const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
     let missing = false;
@@ -1105,21 +1048,8 @@ function validateForm() {
     if (missing) {
         showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
     } else {
-        sendToAirtable();
-        showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
-
-        setTimeout(() => {
-            let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-            tabs = tabs.filter(t => t !== currentTabId);
-            localStorage.setItem('flightTabs', JSON.stringify(tabs));
-            localStorage.removeItem('tab-' + currentTabId);
-
-            if (tabs.length > 0) {
-                switchTab(tabs[0]);
-            } else {
-                createNewTab();
-            }
-        }, 1000);
+        // Bouton inactif (pas d'envoi) — simple confirmation
+        showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
     }
 }
 
