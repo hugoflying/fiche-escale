@@ -106,7 +106,7 @@ button.now   { background: #1976d2; color: white; }
 button.plus  { background: #555; color: white; }
 
 /* Boutons principaux */
-#validate, #save, #reset {
+#save {
     width: 100%;
     padding: 12px;
     font-size: 1.2rem;
@@ -114,10 +114,8 @@ button.plus  { background: #555; color: white; }
     border-radius: 6px;
     margin-top: 10px;
     cursor: pointer;
+    background: #2196f3; color: white; margin: 15px 0;
 }
-#validate { background: #4caf50; color: white; }
-#save { background: #2196f3; color: white; margin: 15px 0; }
-#reset { background: #d32f2f; color: white; }
 
 /* Timers */
 .timer-box {
@@ -245,7 +243,8 @@ body.dark #tab-bar { background: #121212; }
 #popup.success { background: #4caf50; }
 #popup.error { background: #d32f2f; }
 #popup.info { background: #2196f3; }
-}
+
+/* (CSS du bloc-notes et du seating max arrivera en Partie 2) */
 </style>
 </head>
 <body onload="initForm()">
@@ -294,6 +293,7 @@ body.dark #tab-bar { background: #121212; }
     <h2>INFO VOL</h2>
     <div class="form-grid">
         <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
+
         <div class="form-group"><label>Cie
             <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
                 <option value="">--</option>
@@ -307,7 +307,16 @@ body.dark #tab-bar { background: #121212; }
         <div class="form-group"><label>Provenance<input type="text" id="From" maxlength="3"></label></div>
         <div class="form-group"><label>Destination<input type="text" id="To" maxlength="3"></label></div>
 
+        <!-- LIGNE 1 : Immat + Type Avion -->
         <div class="form-group"><label>Immat<input type="text" id="Immat" maxlength="5"></label></div>
+        <div class="form-group"><label>Type Avion
+            <select id="TypeAvion">
+                <!-- Rempli dynamiquement selon Cie (Partie 3 JS) -->
+                <option value="">--</option>
+            </select>
+        </label></div>
+
+        <!-- LIGNE 2 : Parking + RZA -->
         <div class="form-group"><label>Parking
             <select id="Parking">
                 <option value="">--</option>
@@ -316,11 +325,19 @@ body.dark #tab-bar { background: #121212; }
                 <option>9</option><option>10</option><option>11</option><option>12</option>
             </select>
         </label></div>
-
         <div class="form-group"><label>RZA<input type="text" id="RZA" maxlength="3"></label></div>
+
+        <!-- LIGNE 3 : FNC + Smartsheet -->
         <div class="form-group"><label>FNC
             <select id="FNC">
-                <option>Y</option><option selected>N</option>
+                <option value="N" selected>N</option>
+                <option value="Y">Y</option>
+            </select>
+        </label></div>
+        <div class="form-group"><label>Smartsheet
+            <select id="Smartsheet">
+                <option value="N" selected>N</option>
+                <option value="Y">Y</option>
             </select>
         </label></div>
     </div>
@@ -431,10 +448,23 @@ body.dark #tab-bar { background: #121212; }
     </div>
 </section>
 
-<!-- Boutons finaux -->
-<button id="validate" onclick="validateForm()">VALIDER</button>
+<!-- Bouton final unique -->
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
-<button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
+
+<!-- Icône flottante pour le bloc-notes stylet -->
+<div id="noteIcon" title="Bloc-notes">🖊️</div>
+
+<!-- Bloc-notes (canvas de dessin) -->
+<div id="notePad" aria-hidden="true">
+  <div class="note-header">
+    <span>Bloc‑notes</span>
+    <div class="note-tools">
+      <button type="button" id="noteClearBtn">Effacer</button>
+      <button type="button" id="noteCloseBtn">Fermer</button>
+    </div>
+  </div>
+  <canvas id="noteCanvas"></canvas>
+</div>
 
 <script>
 /* === CODE JS COMPLET === */
@@ -480,6 +510,8 @@ function initForm(){
     updateTimeModeLabel();
     // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
+
+    /* (La logique Type Avion, seating max, bloc-notes viendra en Partie 3) */
 }
 
 /* Autosave sur modification (déclenché avec un petit debounce) */
@@ -549,6 +581,7 @@ function clearFormFields(){
     });
     document.getElementById('Date').valueAsDate=new Date();
     document.getElementById('FNC').value='N';
+    document.getElementById('Smartsheet').value='N';
     updateAllCalculations();
 }
 
@@ -1093,33 +1126,6 @@ async function sendToAirtable() {
     } catch (err) {
         console.error("Erreur Airtable :", err);
         showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
-    }
-}
-
-/* === VALIDATION === */
-function validateForm() {
-    const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-    let missing = false;
-    for (let id of required) if (!document.getElementById(id).value) missing = true;
-
-    if (missing) {
-        showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-    } else {
-        sendToAirtable();
-        showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
-
-        setTimeout(() => {
-            let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
-            tabs = tabs.filter(t => t !== currentTabId);
-            localStorage.setItem('flightTabs', JSON.stringify(tabs));
-            localStorage.removeItem('tab-' + currentTabId);
-
-            if (tabs.length > 0) {
-                switchTab(tabs[0]);
-            } else {
-                createNewTab();
-            }
-        }, 1000);
     }
 }
 
