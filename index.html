@@ -1252,6 +1252,9 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
 }
 
 /* === TIMELINE helpers (5-min grid, jalons auto) === */
+let showTimeLabels = true;          // coche "Heure sur étiquettes"
+let timelineUserScrolled = false;   // pour ne pas recentrer après interaction
+
 function parseHHMM(str){
   if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
   const [h,m] = str.split(':').map(Number);
@@ -1272,136 +1275,144 @@ function labelFromInputEl(input){
   return input.id || 'Horaire';
 }
 
-/* Calcule la plage de timeline basée sur SOBT - SIBT avec marge ±5 min.
-   Si indisponible, on retombe sur l'ancien calcul (min/max des points). */
+/* Fenêtre basée sur HLE-5 -> AOBT+5 si dispo, sinon SOBT-SIBT ±5, sinon fallback auto */
 function computeTimelineWindow(allTimes){
+  const hle = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
+  if(hle != null && aobt != null){
+    let min = hle - 5;
+    let max = aobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'HLE-AOBT'};
+  }
   const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
   const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
   if(sibt != null && sobt != null){
     let min = sibt - 5;
     let max = sobt + 5;
-    if (max - min < 30) { min -= 10; max += 10; } // largeur mini
-    return {min, max};
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'SIBT-SOBT'};
   }
   if(allTimes.length){
     let min = Math.min(...allTimes) - 10;
     let max = Math.max(...allTimes) + 10;
     if (max - min < 30){ min -= 10; max += 10; }
-    return {min, max};
+    return {min, max, basis:'data'};
   }
-  return {min:0, max:60};
+  return {min:0, max:60, basis:'default'};
 }
 
-/* Paire utilitaire : renvoie [tA,tB] (mins) si les deux existent, sinon null */
-function getPairTimes(idA,idB){
+/* utilitaire paires : [min,max] si deux heures trouvées */
+function getPairWindow(idA,idB){
   const a = parseHHMM(document.getElementById(idA)?.value || '');
   const b = parseHHMM(document.getElementById(idB)?.value || '');
   if(a==null || b==null) return null;
   return [Math.min(a,b), Math.max(a,b)];
 }
 
+/* Construit données pour rendu vertical (durées par lignes + points) */
 function collectTimelineData(){
-  // === 1) Points fixes (au-dessus) ===
   const fixedPoints = [];
 
-  // Section HORAIRES (au-dessus)
-  ['SIBT','AIBT','SOBT','AOBT'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    const mm = parseHHMM(el.value);
-    if(mm==null) return;
-    fixedPoints.push({type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--std'});
+  // Points fixes (HORAIRES + timers utiles)
+  const addPoint = (label, t, cls='tl--std')=>{
+    if(t==null) return;
+    fixedPoints.push({label, t, cls});
+  };
+
+  const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
+  const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
+  const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+  const CTOT = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
+  const HLE  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--','')); // H-15 = HLE
+
+  addPoint('SIBT', SIBT, 'tl--std');
+  addPoint('AIBT', AIBT, 'tl--std');
+  addPoint('SOBT', SOBT, 'tl--std');
+  addPoint('AOBT', AOBT, 'tl--std');
+  addPoint('TOBT', TOBT, 'tl--tobt');
+  addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('HLE',  HLE,  'tl--turn'); // point pour HLE (demandé)
+
+  // Points “opérations ponctuelles”
+  const singles = [
+    ['ArrPNT','Arrivée PNT avion'],
+    ['ArrPNC','Arrivée PNC avion'],
+    ['RemiseLID','Remise LID/LDS'],
+    ['FermeturePorteAvion','Fermeture porte avion'],
+  ];
+  singles.forEach(([id,label])=>{
+    const t = parseHHMM(document.getElementById(id)?.value || '');
+    if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  // H-15, TOBT (affiché), CTOT (timer) — H-40 volontairement ignoré
-  const h15 = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
-  if(h15!=null) fixedPoints.push({type:'point', label:'H-15', t:h15, cls:'tl--turn'});
-  const tobt = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
-  if(tobt!=null) fixedPoints.push({type:'point', label:'TOBT', t:tobt, cls:'tl--tobt'});
-  const ctot = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
-  if(ctot!=null) fixedPoints.push({type:'point', label:'CTOT', t:ctot, cls:'tl--ctot'});
-
-  // === 2) Paires variables avec NIVEAU FORCÉ (même ligne pour début/fin) ===
-  // Niveaux (doivent exister dans le CSS) :
-  // 0: Débarquement, 1: Embarquement avion, 2: Embarquement porte, 3: (Fuel/Lift si dispo)
-  const pairDefs = [
-    { a:'PremierDebarque', b:'DernierDebarque',   labelA:'Premier débarqué', labelB:'Dernier débarqué', level:0, range:'red' },
-    { a:'AvionPremierEmbarque', b:'AvionDernierEmbarque', labelA:'Avion : Premier embarqué', labelB:'Avion : Dernier embarqué', level:1, range:'blue' },
-    { a:'PortePremierEmbarque', b:'PorteDernierEmbarque', labelA:'Porte : Premier embarqué', labelB:'Porte : Dernier embarqué', level:2, range:null },
-    { a:'ArriveeFuel', b:'DepartFuel',             labelA:'Arrivée Fuel', labelB:'Départ Fuel', level:3, range:null },
-    { a:'ArriveeLift', b:'DepartLift',             labelA:'Arrivée Lift', labelB:'Départ Lift', level:3, range:null }, // partage éventuel du niveau 3
+  // Durées à afficher (lignes empilées, couleurs distinctes)
+  // ORDRE VISUEL (haut -> bas) :
+  // 0: Débarquement (rouge)
+  // 1: Embarquement avion (bleu)
+  // 2: Embarquement porte (gris)
+  // 3: Fuel (vert)
+  // 4: Lift (orange)
+  const rows = [
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'), cls:'tl--turn'},
+    {key:'embAv',  label:'Embarquement avion', pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops'},
+    {key:'embPor', label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std'},
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'), cls:'tl--tobt'},
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'), cls:'tl--svc'},
   ];
 
-  const variablePoints = [];
-  const ranges = [];
+  const durations = rows
+    .filter(r=>r.pair!=null)
+    .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls}));
 
-  pairDefs.forEach(def=>{
-    const times = getPairTimes(def.a, def.b);
-    if(!times) return;
-    const [ta, tb] = times;
-
-    // Ajoute les deux points sur le même niveau forcé
-    variablePoints.push({type:'point', label:def.labelA, t:ta, cls:'tl--std', levelHint:def.level});
-    variablePoints.push({type:'point', label:def.labelB, t:tb, cls:'tl--std', levelHint:def.level});
-
-    // Intervalles remplis seulement pour Débarquement (rouge) et Embarquement avion (bleu)
-    if(def.range === 'red'){
-      ranges.push({type:'range', label:'Débarquement', a:ta, b:tb, cls:'tl--turn'});
-    } else if(def.range === 'blue'){
-      ranges.push({type:'range', label:'Embarquement avion', a:ta, b:tb, cls:'tl--ops'});
-    }
-  });
-
-  // === 3) Autres points variables “orphelins” (sans paire) ===
-  const maybeSingles = [
-    'ArrPNT','ArrPNC','RemiseLID','FermeturePorteAvion'
-  ];
-  maybeSingles.forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el || !el.value) return;
-    const mm = parseHHMM(el.value);
-    if(mm==null) return;
-    variablePoints.push({type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--std'});
-  });
-
-  // === 4) Fenêtre min/max : basée sur SOBT-SIBT ±5 ===
+  // fenêtre
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
-    ...variablePoints.map(p=>p.t),
-    ...ranges.flatMap(r=>[r.a,r.b])
+    ...durations.flatMap(d=>[d.a,d.b])
   ];
-  const {min, max} = computeTimelineWindow(allTimes);
+  const windowInfo = computeTimelineWindow(allTimes);
 
-  return {fixedPoints, variablePoints, ranges, min, max};
+  return {fixedPoints, durations, windowInfo};
 }
 
+/* Rendu timeline verticale empilée */
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
   if(!scroller || !canvas) return;
 
-  canvas.innerHTML = '<div class="timeline-track"></div>';
+  canvas.innerHTML = ''; // on repart propre
 
-  const {fixedPoints, variablePoints, ranges, min, max} = collectTimelineData();
+  const {fixedPoints, durations, windowInfo} = collectTimelineData();
+  const {min, max, basis} = windowInfo;
   if(min === undefined) return;
 
   window._timelineCurrentRange = {min, max};
 
-  // élargir selon le zoom
+  // Élément piste centrale (non utilisé désormais, mais on garde une fine ligne au centre pour repère)
+  const midLine = document.createElement('div');
+  midLine.className = 'timeline-track';
+  canvas.appendChild(midLine);
+
+  // Largeur selon zoom
   canvas.style.width = `${100 * timelineZoom}%`;
 
-  // Ticks toutes les 5 min, labels 15
+  const total = Math.max(1, max - min);
+
+  // --- Grille verticale toutes les 5 minutes (lignes sur toute la hauteur utile)
   const step = 5;
   for(let t = Math.ceil(min/step)*step; t <= Math.floor(max/step)*step; t += step){
-    const x = (t-min)/(max-min);
+    const x = (t-min)/total;
     const leftPct = 6 + x*88;
 
-    const tick = document.createElement('div');
-    tick.className = 'timeline-tick';
-    tick.style.left = `calc(${leftPct}% - 0.5px)`;
-    tick.style.height = (t % 15 === 0) ? '16px' : '10px';
-    tick.style.top = (t % 15 === 0) ? 'calc(50% - 8px)' : 'calc(50% - 5px)';
-    canvas.appendChild(tick);
+    const vline = document.createElement('div');
+    vline.className = 'timeline-tick';
+    vline.style.left = `calc(${leftPct}% - 0.5px)`;
+    vline.style.top = '12%';         // part de hauteur au-dessus
+    vline.style.height = '78%';      // couvre toutes les lignes de durées + zone points bas
+    canvas.appendChild(vline);
 
     if(t % 15 === 0){
       const lbl = document.createElement('div');
@@ -1412,71 +1423,81 @@ function renderTimeline(){
     }
   }
 
-  // Ranges (uniquement débarquement / embarquement avion)
-  ranges.forEach(r=>{
-    const leftPct = 6 + ((r.a-min)/(max-min))*88;
-    const widthPct = ((r.b-r.a)/(max-min))*88;
-    const el = document.createElement('div');
-    el.className = `tl-range ${r.cls}`;
-    el.style.left = `${leftPct}%`;
-    el.style.width = `${widthPct}%`;
-    canvas.appendChild(el);
+  // --- Rendu des DURÉES sur lignes empilées (5 rangées)
+  const rowTops = [56, 66, 76, 86, 96]; // % vertical (haut -> bas)
+  durations.forEach(d=>{
+    const leftPct  = 6 + ((d.a-min)/total)*88;
+    const widthPct = ((d.b-d.a)/total)*88;
+
+    const bar = document.createElement('div');
+    bar.className = `tl-range ${d.cls}`;
+    bar.style.left = `${leftPct}%`;
+    bar.style.width = `${widthPct}%`;
+    bar.style.top = `${rowTops[d.rowIndex]}%`; // on place la barre sur la ligne dédiée
+    canvas.appendChild(bar);
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    lab.textContent = r.label;
-    el.appendChild(lab);
+    lab.textContent = showTimeLabels ? `${d.label} ${fmtHHMM(d.a)}–${fmtHHMM(d.b)}` : d.label;
+    bar.appendChild(lab);
   });
 
-  // Points FIXES (au-dessus)
-  fixedPoints.sort((a,b)=>a.t-b.t).forEach((p)=>{
-    const leftPct = 6 + ((p.t-min)/(max-min))*88;
+  // --- Points (au-dessus de tout)
+  // On les affiche légèrement au-dessus de la zone des barres (28% comme avant)
+  fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
+    const leftPct = 6 + ((p.t-min)/total)*88;
     const el = document.createElement('div');
-    el.className = `tl-event ${p.cls} tl-pos-fixed`;
+    el.className = `tl-event ${p.cls}`;
     el.style.left = `${leftPct}%`;
+    el.style.top  = '28%';
 
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
-    label.textContent = `${p.label} ${fmtHHMM(p.t)}`;
+    label.textContent = showTimeLabels ? `${p.label} ${fmtHHMM(p.t)}` : p.label;
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
   });
 
-  // Points VARIABLES (en dessous)
-  // - on force le niveau pour les points avec levelHint
-  // - sinon on fait un placement “anti-collision”
-  const THRESH = 8; // minutes d'écart mini sur un même niveau
-  const levelLastTime = [null,null,null,null]; // pour tl-pos-var-0..3
-
-  const sorted = variablePoints.slice().sort((a,b)=>a.t-b.t);
-  sorted.forEach(p=>{
-    let level = (typeof p.levelHint === 'number') ? p.levelHint : null;
-
-    if(level == null){
-      // chercher un niveau libre (0..3) en respectant le seuil
-      for(let l=0; l<levelLastTime.length; l++){
-        if(levelLastTime[l]==null || (p.t - levelLastTime[l]) >= THRESH){
-          level = l; break;
-        }
-      }
-      if(level == null) level = levelLastTime.length-1; // force dernier si saturé
+  // --- Centrage par défaut (SIBT/SOBT) lorsqu’on est à 100% et pas encore manipulé
+  if(!timelineUserScrolled && Math.abs(timelineZoom - 1) < 1e-6){
+    const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+    const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
+    if(sibt!=null && sobt!=null){
+      const mid = (sibt + sobt) / 2;
+      const midX = (mid - min) / total; // 0..1 dans la fenêtre
+      const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth/2;
+      scroller.scrollLeft = Math.max(0, centerLeft);
     }
-
-    // mémorise dernier temps sur le niveau
-    levelLastTime[level] = p.t;
-
-    const leftPct = 6 + ((p.t-min)/(max-min))*88;
-    const el = document.createElement('div');
-    el.className = `tl-event ${p.cls} tl-pos-var-${level}`;
-    el.style.left = `${leftPct}%`;
-
-    const dot = document.createElement('div'); dot.className = 'tl-dot';
-    const label = document.createElement('div'); label.className='tl-label';
-    label.textContent = `${p.label} ${fmtHHMM(p.t)}`;
-    el.appendChild(dot); el.appendChild(label);
-    canvas.appendChild(el);
-  });
+  }
 }
+
+/* === Ajout de la coche "Heures sur étiquettes" dans la toolbar (au chargement) === */
+(function injectShowHoursToggle(){
+  const bar = document.querySelector('.timeline-toolbar');
+  if(!bar || document.getElementById('showTimesToggle')) return;
+  const wrap = document.createElement('label');
+  wrap.style.display = 'inline-flex';
+  wrap.style.alignItems = 'center';
+  wrap.style.gap = '6px';
+  wrap.style.marginLeft = '8px';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.id = 'showTimesToggle';
+  cb.checked = showTimeLabels;
+  cb.addEventListener('change', ()=>{ showTimeLabels = cb.checked; renderTimeline(); });
+  const span = document.createElement('span');
+  span.textContent = 'Heure sur étiquettes';
+  wrap.appendChild(cb); wrap.appendChild(span);
+  bar.appendChild(wrap);
+
+  // Marquer scroll manuel si l’utilisateur interagit
+  const scroller = document.getElementById('timelineScroll');
+  if(scroller){
+    ['wheel','mousedown','touchstart','keydown'].forEach(ev=>{
+      scroller.addEventListener(ev, ()=>{ timelineUserScrolled = true; }, {passive:true});
+    });
+  }
+})();
 
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
