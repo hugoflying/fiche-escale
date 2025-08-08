@@ -296,9 +296,8 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 .tl--std  { --c:#607d8b; }
 .tl--tobt { --c:#2e7d32; }
 .tl--ctot { --c:#455a64; }
-.tl--ops  { --c:#1976d2; }
-.tl--turn { --c:#d32f2f; }
-.tl--svc  { --c:#ff9800; }
+.tl--ops  { --c:#1976d2; }  /* bleu : embarquement avion */
+.tl--turn { --c:#d32f2f; }  /* rouge : débarquement */
 .tl-event .tl-dot { background: var(--c); }
 .tl-range {
   top:50%; height:8px;
@@ -333,12 +332,21 @@ body.dark .tl-sep{ background:#3a3a3a; }
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 
+/* Augmente la hauteur pour les niveaux variables */
 .timeline-canvas{
   position:relative;
-  height:140px;
+  height:180px;              /* + haut pour empiler les variables */
   min-width:600px;
   width:100%;   /* ajusté par le zoom côté JS */
 }
+
+/* Positions verticales dédiées */
+.tl-pos-fixed   { top: 28%; }  /* au-dessus de la ligne */
+.tl-pos-var-0   { top: 64%; }  /* en dessous de la ligne, niveaux anti-chevauchement */
+.tl-pos-var-1   { top: 74%; }
+.tl-pos-var-2   { top: 84%; }
+.tl-pos-var-3   { top: 94%; }
+
 </style>
 </head>
 <body onload="initForm()">
@@ -589,6 +597,9 @@ const TL_ZOOM_MIN = 0.5;
 const TL_ZOOM_MAX = 4;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
+
+/* TOBT brut (hors CTOT) stocké en minutes depuis 00:00 pour LID */
+window._tobtRawMins = null;
 
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
@@ -954,7 +965,7 @@ function updateAllCalculations() {
     updateTOBT();
     updateDLCode();
     updateDLDuree2();
-    updateLID();
+    updateLID();             // LID = TOBT (hors CTOT) - 8
     updateCTOTDisplay();
     applyPrestationsDefaults();
     renderTimeline(); // timeline live
@@ -977,19 +988,16 @@ function updateTimers() {
     document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === LID = TOBT - 8 (FR/RK) === */
+/* === LID = TOBT - 8 (HORS CTOT) === */
 function updateLID() {
-    const cie = document.getElementById('Cie').value;
-    const tobt = document.getElementById('timer-tobt').textContent;
-    if ((cie === "FR" || cie === "RK") && tobt !== "--:--") {
-        let [hh, mm] = tobt.split(':').map(Number);
-        const d = new Date();
-        d.setHours(hh);
-        d.setMinutes(mm - 8);
-        document.getElementById('timer-h8').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    } else {
+    const tobtRawMins = window._tobtRawMins; // minutes depuis 00:00
+    if (tobtRawMins == null) {
         document.getElementById('timer-h8').textContent = "--:--";
+        return;
     }
+    const lid = tobtRawMins - 8;
+    const out = fmtHHMM(lid);
+    document.getElementById('timer-h8').textContent = out;
 }
 
 /* === SOBT PAR DÉFAUT === */
@@ -1016,7 +1024,7 @@ function updateSOBTDefault() {
     document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === TOBT CALCUL + règle CTOT === */
+/* === TOBT CALCUL + règle CTOT (stocke TOBT brut pour LID) === */
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
@@ -1026,6 +1034,7 @@ function updateTOBT() {
 
     if (!cie || !sibttxt) {
         document.getElementById('timer-tobt').textContent = '--:--';
+        window._tobtRawMins = null;
         return;
     }
 
@@ -1037,40 +1046,46 @@ function updateTOBT() {
     const AIBT = new Date(); AIBT.setHours(aH, aM, 0, 0);
     const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
 
-    let TOBT = new Date(SIBT);
+    let TOBT_raw = new Date(SIBT);
 
     if (cie === 'FR' || cie === 'RK' || cie === 'W4' || cie === 'W6') {
         if (AIBT > SIBT) {
-            const arrPNT = document.getElementById('ArrPNT').value;
-            const arrPNC = document.getElementById('ArrPNC').value;
+            const arrPNT = document.getElementById('ArrPNT')?.value;
+            const arrPNC = document.getElementById('ArrPNC')?.value;
             const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT = new Date(AIBT.getTime() + add * 60000);
+            TOBT_raw = new Date(AIBT.getTime() + add * 60000);
         } else {
-            TOBT = new Date(SIBT);
+            TOBT_raw = new Date(SIBT);
         }
     } else {
         if (AIBT > SIBT) {
             const diff = (SOBT - SIBT) / 60000;
-            TOBT = new Date(AIBT.getTime() + diff * 60000);
+            TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
         } else {
-            TOBT = new Date(SIBT);
+            TOBT_raw = new Date(SIBT);
         }
     }
 
-    if (TOBT < SOBT) TOBT = new Date(SOBT);
+    // TOBT brut doit être >= SOBT
+    if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
 
+    // Mémorise TOBT brut (sans CTOT) en minutes pour LID
+    window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
+
+    // Applique ensuite la règle CTOT pour l'affichage de TOBT (timer)
+    let TOBT_adj = new Date(TOBT_raw);
     if (ctottxt) {
         const [cH, cM] = ctottxt.split(':').map(Number);
         const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
-        const tobtPlus15 = new Date(TOBT.getTime() + 15*60000);
+        const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
         if (CTOT > tobtPlus15) {
-            TOBT = new Date(CTOT.getTime() - 15*60000);
+            TOBT_adj = new Date(CTOT.getTime() - 15*60000);
         }
-        if (TOBT < SOBT) TOBT = new Date(SOBT);
+        if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
     }
 
     document.getElementById('timer-tobt').textContent =
-        `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
+        `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
 }
 
 /* === CTOT (affichage) === */
@@ -1248,62 +1263,97 @@ function labelFromInputEl(input){
   }
   return input.id || 'Horaire';
 }
+
+/* Calcule la plage de timeline basée sur SOBT - SIBT avec marge ±5 min.
+   Si indisponible, on retombe sur l'ancien calcul (min/max des points). */
+function computeTimelineWindow(allTimes){
+  const sibttxt = document.getElementById('SIBT')?.value || '';
+  const sobttxt = document.getElementById('SOBT')?.value || '';
+  const sibt = parseHHMM(sibttxt);
+  const sobt = parseHHMM(sobttxt);
+  if(sibt != null && sobt != null){
+    let min = sibt - 5;
+    let max = sobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; } // mini largeur sympa
+    return {min, max};
+  }
+  // fallback sur données présentes
+  if(allTimes.length){
+    let min = Math.min(...allTimes) - 10;
+    let max = Math.max(...allTimes) + 10;
+    if (max - min < 30){ min -= 10; max += 10; }
+    return {min, max};
+  }
+  return {min:0, max:60};
+}
+
 function collectTimelineData(){
-  // 1) Points : tous les input[type=time] remplis => jalons
-  const inputs = Array.from(document.querySelectorAll('input[type="time"]'));
-  const inputPoints = inputs.map(el=>{
+  // === 1) Points fixes (au-dessus) ===
+  const fixedPoints = [];
+
+  // Section HORAIRES
+  ['SIBT','AIBT','SOBT','AOBT'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
     const mm = parseHHMM(el.value);
-    if(mm==null) return null;
-    return {type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--ops'};
-  }).filter(Boolean);
+    if(mm==null) return;
+    fixedPoints.push({type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--std'});
+  });
 
-  // 2) Points “timers” dérivés
-  const timerDefs = [
-    { id:'timer-tobt', label:'TOBT', cls:'tl--tobt' },
-    { id:'timer-ctot', label:'CTOT', cls:'tl--ctot' },
-    { id:'timer-h40',  label:'H-40', cls:'tl--turn' },
-    { id:'timer-h15',  label:'H-15', cls:'tl--turn' },
-    { id:'timer-h8',   label:'LID',  cls:'tl--turn' },
+  // H-15, TOBT (affiché), CTOT (timer)
+  const h15 = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  if(h15!=null) fixedPoints.push({type:'point', label:'H-15', t:h15, cls:'tl--turn'});
+  const tobt = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+  if(tobt!=null) fixedPoints.push({type:'point', label:'TOBT', t:tobt, cls:'tl--tobt'});
+  const ctot = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
+  if(ctot!=null) fixedPoints.push({type:'point', label:'CTOT', t:ctot, cls:'tl--ctot'});
+
+  // === 2) Points variables (en dessous, multi-niveaux) ===
+  // IDs de la section TIMING (reprend la génération)
+  const timingIds = [
+    'ArrPNT','ArrPNC','PremierDebarque','DernierDebarque',
+    'AvionPremierEmbarque','AvionDernierEmbarque',
+    'PortePremierEmbarque','PorteDernierEmbarque',
+    'ArriveeFuel','DepartFuel','ArriveeLift','DepartLift',
+    'RemiseLID','FermeturePorteAvion'
   ];
-  const timerPoints = timerDefs.map(p=>{
-    const txt = (document.getElementById(p.id)?.textContent || '').trim();
-    const mm = parseHHMM(txt==='--:--' ? '' : txt);
-    return mm==null ? null : {type:'point', label:p.label, t:mm, cls:p.cls};
-  }).filter(Boolean);
+  const variablePoints = [];
+  timingIds.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el || !el.value) return;
+    const mm = parseHHMM(el.value);
+    if(mm==null) return;
+    variablePoints.push({type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--std'});
+  });
 
-  // 3) Intervalles (début/fin)
-  const rangesRaw = [
-    ['PremierDebarque','DernierDebarque','Débarquement','tl--turn'],
-    ['PortePremierEmbarque','PorteDernierEmbarque','Boarding (porte)','tl--ops'],
-    ['AvionPremierEmbarque','AvionDernierEmbarque','Boarding (avion)','tl--ops'],
-    ['ArriveeFuel','DepartFuel','Fuel','tl--svc'],
-    ['ArriveeLift','DepartLift','Lift','tl--svc'],
-  ];
-  const ranges = rangesRaw.map(([a,b,lab,cls])=>{
-    const ta = parseHHMM(document.getElementById(a)?.value || '');
-    const tb = parseHHMM(document.getElementById(b)?.value || '');
-    if(ta==null || tb==null) return null;
-    const start = Math.min(ta,tb), end = Math.max(ta,tb);
-    return {type:'range', label:lab, a:start, b:end, cls};
-  }).filter(Boolean);
+  // === 3) Intervalles remplis (uniquement 2) ===
+  const ranges = [];
+  // Rouge = Débarquement
+  const tDebA = parseHHMM(document.getElementById('PremierDebarque')?.value || '');
+  const tDebB = parseHHMM(document.getElementById('DernierDebarque')?.value || '');
+  if(tDebA!=null && tDebB!=null){
+    const a = Math.min(tDebA,tDebB), b = Math.max(tDebA,tDebB);
+    ranges.push({type:'range', label:'Débarquement', a, b, cls:'tl--turn'});
+  }
+  // Bleu = Embarquement avion
+  const tEmbA = parseHHMM(document.getElementById('AvionPremierEmbarque')?.value || '');
+  const tEmbB = parseHHMM(document.getElementById('AvionDernierEmbarque')?.value || '');
+  if(tEmbA!=null && tEmbB!=null){
+    const a = Math.min(tEmbA,tEmbB), b = Math.max(tEmbA,tEmbB);
+    ranges.push({type:'range', label:'Embarquement avion', a, b, cls:'tl--ops'});
+  }
 
-  const points = [...inputPoints, ...timerPoints];
-
+  // === 4) Détermination fenêtre min/max : basé sur SOBT-SIBT ±5 ===
   const allTimes = [
-    ...points.map(p=>p.t),
+    ...fixedPoints.map(p=>p.t),
+    ...variablePoints.map(p=>p.t),
     ...ranges.flatMap(r=>[r.a,r.b])
   ];
-  if(allTimes.length===0) return {points:[], ranges:[], min:0, max:60};
+  const {min, max} = computeTimelineWindow(allTimes);
 
-  let min = Math.min(...allTimes);
-  let max = Math.max(...allTimes);
-
-  // marges
-  min -= 10; max += 10;
-  if(max - min < 30) { min -= 10; max += 10; }
-
-  return {points, ranges, min, max};
+  return {fixedPoints, variablePoints, ranges, min, max};
 }
+
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -1311,7 +1361,7 @@ function renderTimeline(){
 
   canvas.innerHTML = '<div class="timeline-track"></div>';
 
-  const {points, ranges, min, max} = collectTimelineData();
+  const {fixedPoints, variablePoints, ranges, min, max} = collectTimelineData();
   if(min === undefined) return;
 
   window._timelineCurrentRange = {min, max};
@@ -1341,7 +1391,7 @@ function renderTimeline(){
     }
   }
 
-  // Ranges
+  // Ranges (uniquement débarquement / embarquement avion)
   ranges.forEach(r=>{
     const leftPct = 6 + ((r.a-min)/(max-min))*88;
     const widthPct = ((r.b-r.a)/(max-min))*88;
@@ -1357,13 +1407,37 @@ function renderTimeline(){
     el.appendChild(lab);
   });
 
-  // Points
-  points.sort((a,b)=>a.t-b.t).forEach((p,i)=>{
+  // Points FIXES (au-dessus)
+  fixedPoints.sort((a,b)=>a.t-b.t).forEach((p)=>{
     const leftPct = 6 + ((p.t-min)/(max-min))*88;
     const el = document.createElement('div');
-    el.className = `tl-event ${p.cls}`;
+    el.className = `tl-event ${p.cls} tl-pos-fixed`;
     el.style.left = `${leftPct}%`;
-    el.style.top  = (i%2===0) ? '28%' : '72%';
+
+    const dot = document.createElement('div'); dot.className = 'tl-dot';
+    const label = document.createElement('div'); label.className='tl-label';
+    label.textContent = `${p.label} ${fmtHHMM(p.t)}`;
+    el.appendChild(dot); el.appendChild(label);
+    canvas.appendChild(el);
+  });
+
+  // Points VARIABLES (en dessous) avec empilement sur plusieurs niveaux
+  // règle simple : si un point est trop proche (< 8 min) d’un point du même niveau, on passe au niveau suivant (0..3)
+  const levels = [[],[],[],[]]; // minutes des derniers points par niveau
+  const THRESH = 8; // minutes
+  variablePoints.sort((a,b)=>a.t-b.t).forEach(p=>{
+    let lvl = 0;
+    for(; lvl < levels.length; lvl++){
+      const last = levels[lvl].length ? levels[lvl][levels[lvl].length-1] : null;
+      if(last == null || (p.t - last) >= THRESH) break;
+    }
+    if(lvl >= levels.length) lvl = levels.length-1; // au pire on force sur le dernier
+    levels[lvl].push(p.t);
+
+    const leftPct = 6 + ((p.t-min)/(max-min))*88;
+    const el = document.createElement('div');
+    el.className = `tl-event ${p.cls} tl-pos-var-${lvl}`;
+    el.style.left = `${leftPct}%`;
 
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
