@@ -246,123 +246,6 @@ body.dark #tab-bar { background: #121212; }
 #popup.error { background: #d32f2f; }
 #popup.info { background: #2196f3; }
 }
-
-/* === BLOC-NOTE FLOTTANT (fenêtre dédiée) === */
-#penFab {
-    position: fixed;
-    bottom: 18px;
-    right: 18px;
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-    background: #ffffff;
-    color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 22px rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.15) inset;
-    cursor: grab;
-    z-index: 2000;
-    user-select: none;
-}
-#penFab.hidden { display:none; }
-#penFab:active { cursor: grabbing; }
-#penFab svg { width: 36px; height: 36px; }
-
-/* Fenêtre du bloc-note */
-#noteWindow {
-    position: fixed;
-    left: 50%;
-    top: 12%;
-    transform: translateX(-50%);
-    width: min(92vw, 900px);
-    height: min(70vh, 640px);
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(2px);
-    border-radius: 18px;
-    box-shadow: 0 18px 40px rgba(0,0,0,.35);
-    display: none; /* masqué par défaut */
-    z-index: 2100;
-    overflow: hidden;
-}
-
-/* Barre de titre/drag */
-#noteHeader {
-    height: 52px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: rgba(240,240,240,0.95);
-    border-bottom: 1px solid rgba(0,0,0,.08);
-    cursor: move; /* zone draggable */
-}
-
-/* Boutons header */
-.noteBtn {
-    border: none;
-    background: #fff;
-    border-radius: 10px;
-    padding: 6px 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.15);
-    cursor: pointer;
-    font-weight: 600;
-}
-.noteBtn:hover { opacity: .95; }
-.noteBtn.danger { background: #ffebee; }
-.noteBtn.primary { background: #e3f2fd; }
-
-/* Outils */
-#tools {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-}
-#tools label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: .9rem;
-}
-#tools input[type="range"] { width: 110px; }
-
-/* Zone canvas */
-#noteBody {
-    position: absolute;
-    inset: 52px 0 0 0;
-    display: flex;
-    flex-direction: column;
-    padding: 8px;
-}
-#noteCanvas {
-    flex: 1;
-    border-radius: 12px;
-    background: repeating-linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.02),
-        rgba(0,0,0,0.02) 32px,
-        rgba(0,0,0,0.06) 33px
-    );
-    box-shadow: inset 0 1px 3px rgba(0,0,0,.15);
-    touch-action: none; /* indispensable pour stylet */
-}
-
-/* petite bulle d’aide positionnée à côté du fab quand réactivé */
-#fabHint {
-    position: fixed;
-    bottom: 92px;
-    right: 18px;
-    background: #333;
-    color: #fff;
-    font-size: .85rem;
-    padding: 6px 8px;
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.35);
-    display: none;
-    z-index: 2001;
-}
-#fabHint.show { display:block; }
 </style>
 </head>
 <body onload="initForm()">
@@ -553,46 +436,6 @@ body.dark #tab-bar { background: #121212; }
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
-<!-- === BLOC-NOTE FLOTTANT === -->
-<div id="penFab" title="Bloc-note (stylet)" role="button">
-    <!-- Icône style bloc-note (SVG) -->
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-        <rect x="6" y="6" rx="14" ry="14" width="52" height="52" fill="#ffffff" />
-        <rect x="16" y="16" rx="10" ry="10" width="32" height="12" fill="#ffe38a"/>
-        <rect x="16" y="34" width="32" height="3" rx="2" fill="#c9c9c9"/>
-        <rect x="16" y="40" width="26" height="3" rx="2" fill="#c9c9c9"/>
-        <rect x="16" y="46" width="20" height="3" rx="2" fill="#c9c9c9"/>
-        <rect x="6" y="6" rx="14" ry="14" width="52" height="52" fill="none" stroke="rgba(0,0,0,.1)"/>
-    </svg>
-</div>
-<div id="fabHint">Touchez pour ouvrir le bloc-note</div>
-
-<!-- Fenêtre du bloc-note -->
-<div id="noteWindow" aria-hidden="true">
-    <div id="noteHeader">
-        <span style="font-weight:700; padding:0 6px;">Bloc-note</span>
-        <button id="closeNote" class="noteBtn">Replier</button>
-        <button id="toggleFab" class="noteBtn primary" title="Afficher/Masquer le bouton flottant">Bouton flottant</button>
-        <button id="clearNote" class="noteBtn danger" title="Effacer toutes les notes">Effacer</button>
-
-        <div id="tools">
-            <label>Couleur <input type="color" id="penColor" value="#ffcc00"></label>
-            <label>Épaisseur
-                <input type="range" id="penSize" min="1" max="20" value="4">
-                <span id="penSizeVal">4</span>
-            </label>
-            <button id="eraserToggle" class="noteBtn">Gomme</button>
-            <label>Taille gomme
-                <input type="range" id="eraserSize" min="5" max="40" value="18">
-                <span id="eraserSizeVal">18</span>
-            </label>
-        </div>
-    </div>
-    <div id="noteBody">
-        <canvas id="noteCanvas"></canvas>
-    </div>
-</div>
-
 <script>
 /* === CODE JS COMPLET === */
 
@@ -602,375 +445,6 @@ let manualSOBT=false;
 let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
-
-/* ========== BLOC-NOTE (fenêtre dédiée, pas sur la page) ========== */
-let fabEnabled = true;                 // visibilité du bouton flottant
-let fabPos = { bottom: 18, right: 18 };// position du bouton
-let winPos = { left: null, top: null };// position fenêtre si déplacée
-let winSize = { w: null, h: null };    // taille fenêtre si redimensionnée (optionnel)
-let strokes = [];                      // [{color,size,erase,eSize,points:[{x,y,p}]}]
-let drawing = false;
-let erasing = false;
-let currentStroke = null;
-let canvas, ctx, noteWindow, noteHeader;
-let dpr = Math.max(1, window.devicePixelRatio || 1);
-
-function initNotebook(){
-    canvas = document.getElementById('noteCanvas');
-    ctx = canvas.getContext('2d');
-    noteWindow = document.getElementById('noteWindow');
-    noteHeader = document.getElementById('noteHeader');
-    resizeCanvasToWindow();
-
-    // UI refs
-    const fab = document.getElementById('penFab');
-    const penColor = document.getElementById('penColor');
-    const penSize = document.getElementById('penSize');
-    const penSizeVal = document.getElementById('penSizeVal');
-    const eraserToggle = document.getElementById('eraserToggle');
-    const eraserSize = document.getElementById('eraserSize');
-    const eraserSizeVal = document.getElementById('eraserSizeVal');
-    const clearBtn = document.getElementById('clearNote');
-    const closeBtn = document.getElementById('closeNote');
-    const toggleFab = document.getElementById('toggleFab');
-
-    penSize.addEventListener('input', ()=> penSizeVal.textContent = penSize.value);
-    eraserSize.addEventListener('input', ()=> eraserSizeVal.textContent = eraserSize.value);
-
-    // Ouvrir fenêtre
-    fab.addEventListener('click', openNotebook);
-
-    // Drag FAB
-    makeFabDraggable(fab);
-
-    // Header drag (déplacer la fenêtre)
-    makeWindowDraggable(noteWindow, noteHeader);
-
-    // Replier fenêtre
-    closeBtn.addEventListener('click', closeNotebook);
-
-    // Afficher/Masquer le fab
-    toggleFab.addEventListener('click', ()=>{
-        fabEnabled = !fabEnabled;
-        updateFabVisibility();
-        if (fabEnabled) showFabHint();
-        saveNotebookState();
-    });
-
-    // Gomme
-    eraserToggle.addEventListener('click', ()=>{
-        erasing = !erasing;
-        eraserToggle.classList.toggle('primary', erasing);
-    });
-
-    // Effacer tout
-    clearBtn.addEventListener('click', ()=>{
-        if (!strokes.length) return;
-        if (!confirm('Effacer toutes les notes ?')) return;
-        strokes = [];
-        redrawAll();
-        persistStrokes();
-    });
-
-    // Canvas events
-    canvas.addEventListener('pointerdown', onPointerDown, {passive:false});
-    canvas.addEventListener('pointermove', onPointerMove, {passive:false});
-    canvas.addEventListener('pointerup', onPointerUp, {passive:false});
-    canvas.addEventListener('pointercancel', onPointerUp, {passive:false});
-    canvas.addEventListener('pointerleave', onPointerUp, {passive:false});
-
-    // Resize
-    window.addEventListener('resize', ()=>{ resizeCanvasToWindow(); redrawAll(); });
-
-    // Charger état global FAB + fenêtre
-    const globalFab = JSON.parse(localStorage.getItem('notesFabState') || '{}');
-    if (globalFab && typeof globalFab.enabled === 'boolean') fabEnabled = globalFab.enabled;
-    if (globalFab && globalFab.pos){ fabPos = globalFab.pos; applyFabPosition(); }
-    if (globalFab && globalFab.win){
-        if (typeof globalFab.win.left === 'number') { winPos.left = globalFab.win.left; }
-        if (typeof globalFab.win.top === 'number')  { winPos.top  = globalFab.win.top; }
-        if (typeof globalFab.win.w === 'number')    { winSize.w   = globalFab.win.w; }
-        if (typeof globalFab.win.h === 'number')    { winSize.h   = globalFab.win.h; }
-        applyWindowGeometry();
-    }
-    updateFabVisibility();
-}
-
-function makeFabDraggable(fab){
-    let dragging = false;
-    let startX=0, startY=0, startLeft=0, startTop=0;
-
-    const onPointerDown = (e)=>{
-        dragging = true;
-        fab.setPointerCapture(e.pointerId);
-        const rect = fab.getBoundingClientRect();
-        startX = e.clientX;
-        startY = e.clientY;
-        startLeft = rect.left;
-        startTop = rect.top;
-        e.preventDefault();
-    };
-    const onPointerMove = (e)=>{
-        if(!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        let newLeft = startLeft + dx;
-        let newTop  = startTop + dy;
-
-        // Contrainte dans la fenêtre
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const w = fab.offsetWidth, h = fab.offsetHeight;
-        newLeft = Math.min(Math.max(0, newLeft), vw - w);
-        newTop  = Math.min(Math.max(0, newTop), vh - h);
-
-        // Appliquer via left/top (on neutralise bottom/right)
-        fab.style.left = newLeft + 'px';
-        fab.style.top  = newTop  + 'px';
-        fab.style.right = 'auto';
-        fab.style.bottom = 'auto';
-    };
-    const onPointerUp = (e)=>{
-        if(!dragging) return;
-        dragging = false;
-        fab.releasePointerCapture(e.pointerId);
-        const rect = fab.getBoundingClientRect();
-        const br = {
-            right: Math.max(0, window.innerWidth - rect.right),
-            bottom: Math.max(0, window.innerHeight - rect.bottom)
-        };
-        fabPos = br;
-        saveNotebookState();
-    };
-
-    fab.addEventListener('pointerdown', onPointerDown);
-    fab.addEventListener('pointermove', onPointerMove);
-    fab.addEventListener('pointerup', onPointerUp);
-    fab.addEventListener('pointercancel', onPointerUp);
-}
-
-function openNotebook(){
-    noteWindow.style.display = 'block';
-    noteWindow.setAttribute('aria-hidden','false');
-    resizeCanvasToWindow();
-    redrawAll();
-}
-
-function closeNotebook(){
-    noteWindow.style.display = 'none';
-    noteWindow.setAttribute('aria-hidden','true');
-}
-
-function applyWindowGeometry(){
-    if (winSize.w) noteWindow.style.width  = winSize.w + 'px';
-    if (winSize.h) noteWindow.style.height = winSize.h + 'px';
-    if (typeof winPos.left === 'number' && typeof winPos.top === 'number'){
-        noteWindow.style.left = winPos.left + 'px';
-        noteWindow.style.top  = winPos.top + 'px';
-        noteWindow.style.transform = 'none';
-    }
-    setTimeout(resizeCanvasToWindow, 0);
-}
-
-function makeWindowDraggable(win, handle){
-    let dragging=false, sx=0, sy=0, sl=0, st=0;
-
-    const onDown = (e)=>{
-        dragging = true;
-        handle.setPointerCapture(e.pointerId);
-        const rect = win.getBoundingClientRect();
-        sx = e.clientX; sy = e.clientY;
-        sl = rect.left; st = rect.top;
-        e.preventDefault();
-    };
-    const onMove = (e)=>{
-        if(!dragging) return;
-        let nl = sl + (e.clientX - sx);
-        let nt = st + (e.clientY - sy);
-        // bornes
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const w = win.offsetWidth, h = win.offsetHeight;
-        nl = Math.min(Math.max(0, nl), vw - w);
-        nt = Math.min(Math.max(0, nt), vh - h);
-        win.style.left = nl + 'px';
-        win.style.top  = nt + 'px';
-        win.style.transform = 'none';
-    };
-    const onUp = (e)=>{
-        if(!dragging) return;
-        dragging=false;
-        handle.releasePointerCapture(e.pointerId);
-        const rect = win.getBoundingClientRect();
-        winPos.left = rect.left;
-        winPos.top  = rect.top;
-        saveNotebookState();
-    };
-
-    handle.addEventListener('pointerdown', onDown);
-    handle.addEventListener('pointermove', onMove);
-    handle.addEventListener('pointerup', onUp);
-    handle.addEventListener('pointercancel', onUp);
-}
-
-function applyFabPosition(){
-    const fab = document.getElementById('penFab');
-    fab.style.right = fabPos.right + 'px';
-    fab.style.bottom = fabPos.bottom + 'px';
-    fab.style.left = 'auto';
-    fab.style.top  = 'auto';
-}
-
-function updateFabVisibility(){
-    const fab = document.getElementById('penFab');
-    fab.classList.toggle('hidden', !fabEnabled);
-}
-
-function showFabHint(){
-    const hint = document.getElementById('fabHint');
-    hint.classList.add('show');
-    setTimeout(()=> hint.classList.remove('show'), 2200);
-}
-
-function resizeCanvasToWindow(){
-    const body = document.getElementById('noteBody');
-    const w = body.clientWidth;
-    const h = body.clientHeight;
-    const wasTransform = ctx.getTransform ? ctx.getTransform() : null;
-
-    canvas.width  = Math.max(1, Math.floor(w * dpr));
-    canvas.height = Math.max(1, Math.floor(h * dpr));
-    canvas.style.width  = w + 'px';
-    canvas.style.height = h + 'px';
-
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-}
-
-function getCurrentTool(){
-    const color = document.getElementById('penColor').value;
-    const size = parseInt(document.getElementById('penSize').value, 10);
-    const eSize = parseInt(document.getElementById('eraserSize').value, 10);
-    return { color, size, eSize, erase: erasing };
-}
-
-function onPointerDown(e){
-    if (e.button !== 0) return;
-    drawing = true;
-    const tool = getCurrentTool();
-    currentStroke = { color: tool.color, size: tool.size, erase: tool.erase, eSize: tool.eSize, points: [] };
-    const pt = canvasPoint(e);
-    currentStroke.points.push(pt);
-    drawSegment(currentStroke);
-    e.preventDefault();
-}
-
-function onPointerMove(e){
-    if (!drawing) return;
-    const pt = canvasPoint(e);
-    currentStroke.points.push(pt);
-    drawSegment(currentStroke, true);
-    e.preventDefault();
-}
-
-function onPointerUp(e){
-    if (!drawing) return;
-    drawing = false;
-    if (currentStroke && currentStroke.points.length > 0) {
-        strokes.push(currentStroke);
-        persistStrokes();
-    }
-    currentStroke = null;
-    e.preventDefault();
-}
-
-function canvasPoint(e){
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left);
-    const y = (e.clientY - rect.top);
-    const p = (typeof e.pressure === 'number' && e.pressure > 0) ? e.pressure : 1;
-    return { x, y, p };
-}
-
-function drawSegment(stroke){
-    const toolSize = stroke.erase ? stroke.eSize : stroke.size;
-    ctx.globalCompositeOperation = stroke.erase ? 'destination-out' : 'source-over';
-    ctx.strokeStyle = stroke.color;
-    ctx.lineWidth = toolSize;
-
-    const pts = stroke.points;
-    const n = pts.length;
-    if (n < 2) {
-        ctx.beginPath();
-        ctx.arc(pts[0].x, pts[0].y, toolSize/2, 0, Math.PI*2);
-        if (stroke.erase) {
-            const prev = ctx.globalCompositeOperation;
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fill();
-            ctx.globalCompositeOperation = prev;
-        } else {
-            ctx.fillStyle = stroke.color;
-            ctx.fill();
-        }
-        return;
-    }
-    ctx.beginPath();
-    const a = pts[n-2], b = pts[n-1];
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.stroke();
-}
-
-function redrawAll(){
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    for (const s of strokes) {
-        if (!s.points || s.points.length === 0) continue;
-        for (let i=1;i<s.points.length;i++){
-            const seg = { ...s, points:[s.points[i-1], s.points[i]] };
-            drawSegment(seg, true);
-        }
-    }
-}
-
-/* Persistance des traits par onglet */
-function notesKey(){
-    return currentTabId ? `notes-${currentTabId}` : 'notes-0';
-}
-function persistStrokes(){
-    try {
-        localStorage.setItem(notesKey(), JSON.stringify(strokes));
-    } catch (e) {
-        console.warn('Sauvegarde notes échouée', e);
-    }
-}
-function loadStrokesForTab(){
-    try {
-        const raw = localStorage.getItem(notesKey());
-        strokes = raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        strokes = [];
-    }
-    redrawAll();
-}
-
-/* Sauvegarde état global (fab + fenêtre) */
-function saveNotebookState(){
-    const rect = noteWindow.getBoundingClientRect();
-    const state = {
-        enabled: fabEnabled,
-        pos: fabPos,
-        win: {
-            left: (noteWindow.style.display==='block' || rect.left)? rect.left : winPos.left,
-            top:  (noteWindow.style.display==='block' || rect.top)?  rect.top  : winPos.top,
-            w: rect.width,
-            h: rect.height
-        }
-    };
-    localStorage.setItem('notesFabState', JSON.stringify(state));
-}
 
 /* INIT */
 function initForm(){
@@ -1004,14 +478,8 @@ function initForm(){
     setTimeModeUTC(storedUTC, /*fromInit*/true);
 
     updateTimeModeLabel();
-
-    // Bloc-note
-    initNotebook();
-
     // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
-
-    if (fabEnabled) showFabHint();
 }
 
 /* Autosave sur modification (déclenché avec un petit debounce) */
@@ -1052,7 +520,6 @@ function createNewTab(){
     localStorage.setItem('lastTabId',newId);
     saveCurrentTabData();
     renderTabs();
-    loadStrokesForTab(); // notes vierges pour le nouvel onglet
 }
 
 function switchTab(id){
@@ -1061,8 +528,6 @@ function switchTab(id){
     localStorage.setItem('lastTabId',id);
     loadTabData(id);
     renderTabs();
-    // Charger notes de cet onglet
-    loadStrokesForTab();
 }
 
 function deleteTab(id){
@@ -1071,7 +536,6 @@ function deleteTab(id){
     tabs=tabs.filter(t=>t!==id);
     localStorage.setItem('flightTabs',JSON.stringify(tabs));
     localStorage.removeItem('tab-'+id);
-    localStorage.removeItem('notes-'+id); // supprimer aussi les notes associées
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
@@ -1106,9 +570,6 @@ function saveCurrentTabData(){
     localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
     localStorage.setItem('lastTabId',currentTabId);
     renderTabs();
-
-    // Sauver état du bloc-note
-    saveNotebookState();
 }
 
 function loadTabData(id){
@@ -1138,9 +599,6 @@ function loadTabData(id){
     generateChargementFields(); // dépend de Cie
     updateTimeModeLabel();
     updateAllCalculations();
-
-    // Charger notes de l'onglet courant
-    loadStrokesForTab();
 }
 
 /* Mise à jour instantanée label onglet */
@@ -1550,24 +1008,124 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     popup.style.padding = "10px 20px";
     popup.style.borderRadius = "6px";
     popup.style.fontSize = "1rem";
-    popup.style.zIndex = "3000";
+    popup.style.zIndex = "1000";
     document.body.appendChild(popup);
     setTimeout(() => popup.remove(), duration);
 }
 
-/* === ENVOI EXTERNE SUPPRIMÉ ===
-   (Airtable retiré ; le bouton VALIDER est maintenu mais inactif) */
+/* === CONFIG AIRTABLE === */
+const AIRTABLE_API_KEY = "patmjcQua1Od3Romx.f6f9b0defe694b311c5657cf81179309efc05a1122250a31eedd2f58355189f6";
+const AIRTABLE_BASE_ID = "appq3lFOIsAUOiU8J";
+const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
+
+/* === ENVOI VERS AIRTABLE === */
+async function sendToAirtable() {
+    function upper(id) { return document.getElementById(id).value.toUpperCase(); }
+
+    const record = {
+        "Date": document.getElementById('Date').value,
+        "RZA": upper('RZA'),
+        "Immat": upper('Immat'),
+        "Parking": upper('Parking'),
+        "Cie": upper('Cie'),
+        "N° Vol": upper('NVol'),
+        "Provenance": upper('From'),
+        "Destination": upper('To'),
+        "SIBT": document.getElementById('SIBT').value,
+        "AIBT": document.getElementById('AIBT').value,
+        "SOBT": document.getElementById('SOBT').value,
+        "AOBT": document.getElementById('AOBT').value,
+
+        "Retard (min)": document.getElementById('DLduree1').value,
+        "DL Code 1": document.getElementById('DLcode1').value,
+        "DL Durée 1 (min)": document.getElementById('DLduree1').value,
+        "DL Code 2": document.getElementById('DLcode2').value,
+        "DL Durée 2 (min)": document.getElementById('DLduree2').value,
+        "DL Code 3": document.getElementById('DLcode3').value,
+        "DL Durée 3 (min)": document.getElementById('DLduree3').value,
+        "DL JUSTIFICATIONS": document.getElementById('DLJustif').value,
+
+        "Arrivée PNT avion": document.getElementById('ArrPNT').value,
+        "Arrivée PNC avion": document.getElementById('ArrPNC').value,
+        "Premier débarqué": document.getElementById('PremierDebarque').value,
+        "Dernier débarqué": document.getElementById('DernierDebarque').value,
+        "Avion : Premier embarqué": document.getElementById('AvionPremierEmbarque').value,
+        "Avion : Dernier embarqué": document.getElementById('AvionDernierEmbarque').value,
+        "Porte : Premier embarqué": document.getElementById('PortePremierEmbarque').value,
+        "Porte : Dernier embarqué": document.getElementById('PorteDernierEmbarque').value,
+        "Arrivée Fuel": document.getElementById('ArriveeFuel').value,
+        "Départ Fuel": document.getElementById('DepartFuel').value,
+        "Arrivée Lift": document.getElementById('ArriveeLift').value,
+        "Départ Lift": document.getElementById('DepartLift').value,
+        "Remise LID/LDS": document.getElementById('RemiseLID').value,
+        "Fermeture porte avion": document.getElementById('FermeturePorteAvion').value,
+
+        "WCHC": document.getElementById('WCHC').value,
+        "WCHS": document.getElementById('WCHS').value,
+        "WCHR": document.getElementById('WCHR').value,
+        "Autre": document.getElementById('AutreAssist').value,
+
+        "ASU": document.getElementById('ASU').value,
+        "Vidange toilettes": document.getElementById('Vidange').value,
+        "Eau potable": document.getElementById('EauPotable').value,
+        "Echelle supplémentaire": document.getElementById('Echelle').value,
+        "Collecte d'ordures": document.getElementById('Ordures').value,
+        "Ménage Assist'Air": document.getElementById('MenageAssist').value,
+        "Ménage Atalian": document.getElementById('MenageAtalian').value,
+        "Dégivrage": document.getElementById('Degivrage').value,
+        "Toilet Kit": document.getElementById('ToiletKit').value,
+        "Push-Pull": document.getElementById('PushPull').value,
+        "Flux par le RZA": document.getElementById('FluxRZA').value
+    };
+
+    try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ records: [{ fields: record }] })
+        });
+
+        if (!response.ok) throw new Error(`Erreur API : ${response.statusText}`);
+        showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
+    } catch (err) {
+        console.error("Erreur Airtable :", err);
+        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
+    }
+}
 
 /* === VALIDATION === */
 function validateForm() {
-    showPopup("Le bouton VALIDER est inactif pour le moment.", "#ff9800", 2500);
-    // Rien d'autre pour l'instant
+    const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
+    let missing = false;
+    for (let id of required) if (!document.getElementById(id).value) missing = true;
+
+    if (missing) {
+        showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
+    } else {
+        sendToAirtable();
+        showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
+
+        setTimeout(() => {
+            let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+            tabs = tabs.filter(t => t !== currentTabId);
+            localStorage.setItem('flightTabs', JSON.stringify(tabs));
+            localStorage.removeItem('tab-' + currentTabId);
+
+            if (tabs.length > 0) {
+                switchTab(tabs[0]);
+            } else {
+                createNewTab();
+            }
+        }, 1000);
+    }
 }
 
 /* === SAUVEGARDE MANUELLE === */
 function manualSave() {
     saveCurrentTabData();
-    persistStrokes(); // on force la persistance des notes
     showPopup("Enregistrement réussi", "#2196f3", 2000);
 }
 
