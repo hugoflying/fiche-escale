@@ -9,7 +9,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: Arial, sans-serif;
-    background: #ffffff; /* fond de page blanc (comme avant) */
+    background: #ffffff; /* fond de page blanc */
     color: #222;
     padding: 10px;
 }
@@ -27,17 +27,17 @@ section {
 }
 body.dark section { background: #1e1e1e; }
 
-/* Titres de sections, mieux démarqués jour/nuit */
+/* Titres de sections */
 h2 {
     font-size: 1.2rem;
-    margin: -12px -12px 10px -12px;     /* le fond va bord à bord */
+    margin: -12px -12px 10px -12px;
     padding: 8px 12px;
     border-bottom: 1px solid #ccc;
     text-align: center;
     cursor: pointer;
     background: #e8f0fe;                /* jour */
     color: #123;
-    border-left: 6px solid #1976d2;     /* liseré accent */
+    border-left: 6px solid #1976d2;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
@@ -134,17 +134,17 @@ button.plus  { background: #555; color: white; }
 #save { background: #2196f3; color: white; margin: 15px 0; }
 #reset { background: #d32f2f; color: white; }
 
-/* Timers */
+/* Timers (2 groupes) */
 .timer-box {
     display: flex;
     justify-content: center;
-    gap: 40px;               /* espace entre les 2 groupes */
-    margin-bottom: 32px;     /* ↑ plus d'espace avant INFO VOL */
+    gap: 40px;
+    margin-bottom: 32px;
     flex-wrap: wrap;
 }
 .timer-group {
     display: flex;
-    gap: 20px;               /* espace au sein d’un groupe */
+    gap: 20px;
     align-items: center;
 }
 .timer {
@@ -164,7 +164,7 @@ button.plus  { background: #555; color: white; }
 }
 #timer-tobt { background: #2e7d32; }
 #timer-h8   { background: orange; }
-#timer-ctot { background: #455a64; }   /* CTOT différencié */
+#timer-ctot { background: #455a64; }
 
 /* Toggles (barre du haut) */
 .toggle-container {
@@ -230,7 +230,7 @@ button.plus  { background: #555; color: white; }
     flex-wrap: wrap;
     position: sticky;
     top: 0;
-    background: #ffffff; /* harmonisé avec le fond de page blanc */
+    background: #ffffff;
     z-index: 999;
     padding: 5px 0;
 }
@@ -258,6 +258,87 @@ body.dark #tab-bar { background: #121212; }
 #popup.success { background: #4caf50; }
 #popup.error { background: #d32f2f; }
 #popup.info { background: #2196f3; }
+
+/* === TIMELINE (base) === */
+.timeline-wrap { padding: 8px 4px 2px; }
+.timeline-track {
+  position: absolute; left:6%; right:6%; top:50%;
+  height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
+}
+body.dark .timeline-track{ background:#2e2e2e; }
+
+.timeline-tick {
+  position: absolute; width:1px; background:#b0b6bd;
+}
+.timeline-tick-label {
+  position: absolute; top: calc(50% + 10px);
+  transform: translateX(-50%); font-size:12px; color:#555;
+}
+body.dark .timeline-tick-label { color:#cfd4da; }
+
+.tl-event, .tl-range {
+  position: absolute; transform: translate(-50%, -50%);
+  white-space: nowrap; font-size: 12px; line-height:1;
+}
+.tl-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+  margin: 0 auto 4px;
+}
+.tl-label {
+  padding: 2px 6px; border-radius: 999px;
+  background: #f1f3f5; color:#111;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+}
+body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.07); }
+
+/* couleurs */
+.tl--std  { --c:#607d8b; }
+.tl--tobt { --c:#2e7d32; }
+.tl--ctot { --c:#455a64; }
+.tl--ops  { --c:#1976d2; }
+.tl--turn { --c:#d32f2f; }
+.tl--svc  { --c:#ff9800; }
+.tl-event .tl-dot { background: var(--c); }
+.tl-range {
+  top:50%; height:8px;
+  background: color-mix(in srgb, var(--c) 35%, transparent);
+  border: 1px solid var(--c); border-radius: 6px;
+}
+.tl-range-label {
+  position:absolute; top: -18px; left:50%;
+  transform: translateX(-50%); font-size:12px;
+  background: rgba(255,255,255,.8); padding:0 6px; border-radius:6px;
+}
+body.dark .tl-range-label { background: rgba(0,0,0,.35); color:#fff; }
+
+/* --- Toolbar timeline --- */
+.timeline-toolbar{
+  display:flex; align-items:center; gap:8px;
+  margin: 4px 0 8px;
+}
+.tl-btn{
+  padding:6px 10px; border:0; border-radius:6px; cursor:pointer;
+  background:#e7ebf0; font-weight:600;
+}
+body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
+.tl-sep{ width:1px; height:22px; background:#cfd4da; }
+body.dark .tl-sep{ background:#3a3a3a; }
+
+/* --- zone scrollable + canvas --- */
+.timeline-scroll{
+  overflow-x:auto; overflow-y:hidden;  /* scroll uniquement horizontal */
+  border-radius:8px; background:#ffffff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+}
+body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+
+.timeline-canvas{
+  position:relative;
+  height:140px;
+  min-width:600px;
+  width:100%;   /* ajusté par le zoom côté JS */
+}
 </style>
 </head>
 <body onload="initForm()">
@@ -398,6 +479,35 @@ body.dark #tab-bar { background: #121212; }
     <div class="form-grid" id="timing-grid"></div>
 </section>
 
+<!-- TIMELINE -->
+<section>
+  <h2>TIMELINE</h2>
+
+  <!-- barre d’outils -->
+  <div class="timeline-toolbar">
+    <button type="button" class="tl-btn" onclick="timelineZoomOut()">−</button>
+    <span id="timelineZoomLabel">100%</span>
+    <button type="button" class="tl-btn" onclick="timelineZoomIn()">+</button>
+
+    <div class="tl-sep"></div>
+
+    <button type="button" class="tl-btn" onclick="timelineScroll(-15)">◀ 15 min</button>
+    <button type="button" class="tl-btn" onclick="timelineScroll(15)">15 min ▶</button>
+
+    <div class="tl-sep"></div>
+
+    <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
+  </div>
+
+  <!-- zone scrollable -->
+  <div class="timeline-scroll" id="timelineScroll">
+    <div id="timelineCanvas" class="timeline-canvas">
+      <div class="timeline-track"></div>
+      <!-- rendu dynamique -->
+    </div>
+  </div>
+</section>
+
 <!-- CHIFFRES PORTE -->
 <section>
     <h2>CHIFFRES PORTE</h2>
@@ -449,7 +559,7 @@ body.dark #tab-bar { background: #121212; }
         <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
+        <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>T</option><option>F</option></select></label></div>
         <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
         <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
         <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
@@ -473,6 +583,35 @@ let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
 
+/* === TIMELINE – zoom & scroll === */
+let timelineZoom = 1;       // 1 = 100%
+const TL_ZOOM_MIN = 0.5;
+const TL_ZOOM_MAX = 4;
+const TL_ZOOM_STEP = 0.25;
+window._timelineCurrentRange = null;
+
+function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
+function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
+function timelineZoomReset(){ timelineSetZoom(1); }
+function timelineSetZoom(z){
+  const scroller = document.getElementById('timelineScroll');
+  const canvas   = document.getElementById('timelineCanvas');
+  if(!scroller || !canvas) return;
+  const prevCenterRatio = (scroller.scrollLeft + scroller.clientWidth/2) / Math.max(1, scroller.scrollWidth);
+  timelineZoom = Math.max(TL_ZOOM_MIN, Math.min(TL_ZOOM_MAX, z));
+  const lbl = document.getElementById('timelineZoomLabel');
+  if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
+  renderTimeline();
+  scroller.scrollLeft = prevCenterRatio * scroller.scrollWidth - scroller.clientWidth/2;
+}
+function timelineScroll(deltaMinutes){
+  const scroller = document.getElementById('timelineScroll');
+  if(!scroller || !_timelineCurrentRange) return;
+  const totalMin = _timelineCurrentRange.max - _timelineCurrentRange.min;
+  const pxPerMin = (scroller.scrollWidth) / Math.max(1,totalMin);
+  scroller.scrollLeft += deltaMinutes * pxPerMin;
+}
+
 /* INIT */
 function initForm(){
     renderTabs();
@@ -482,12 +621,12 @@ function initForm(){
     else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
-    generateTimingFields();         // crée les champs TIMING
+    generateTimingFields();
     generateChargementFields();
-    attachAutoSave();               // autosave sur chaque modification
+    attachAutoSave();
     window.addEventListener('beforeunload', saveCurrentTabData);
 
-    // collapse/expand toggle pour chaque section via clic sur h2
+    // collapse/expand
     document.querySelectorAll("section h2").forEach(h2=>{
         h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
@@ -498,7 +637,7 @@ function initForm(){
     document.getElementById('From').oninput = applyPrestationsDefaults;
     document.getElementById('To').oninput = applyPrestationsDefaults;
 
-    // Forcer MAJUSCULE en saisie
+    // Forcer MAJUSCULE
     setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
     // Appliquer états des switches au chargement
@@ -507,8 +646,26 @@ function initForm(){
     setDarkMode(storedDark, /*fromInit*/true);
     setTimeModeUTC(storedUTC, /*fromInit*/true);
 
-    // Recharger les données du dernier onglet après génération des champs
+    // Drag to scroll (timeline only)
+    const scroller = document.getElementById('timelineScroll');
+    if(scroller){
+      let isDown=false, startX=0, startLeft=0;
+      scroller.addEventListener('mousedown', e=>{ isDown=true; startX=e.clientX; startLeft=scroller.scrollLeft; });
+      scroller.addEventListener('mouseleave', ()=>{ isDown=false; });
+      scroller.addEventListener('mouseup', ()=>{ isDown=false; });
+      scroller.addEventListener('mousemove', e=>{
+        if(!isDown) return;
+        const dx = e.clientX - startX;
+        scroller.scrollLeft = startLeft - dx;
+        e.preventDefault();
+      });
+    }
+
+    const lbl = document.getElementById('timelineZoomLabel');
+    if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
+
     if (currentTabId) loadTabData(currentTabId);
+    renderTimeline();
 }
 
 /* Forcer MAJUSCULE */
@@ -527,11 +684,11 @@ function sanitizePositiveInt(inputEl){
     inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
-/* Autosave sur modification (déclenché avec un petit debounce) */
+/* Autosave */
 function attachAutoSave(){
     const handler=()=>{
         clearTimeout(saveTimer);
-        saveTimer=setTimeout(saveCurrentTabData, 300);
+        saveTimer=setTimeout(()=>{ saveCurrentTabData(); renderTimeline(); }, 300);
     };
     document.addEventListener('input', handler, true);
     document.addEventListener('change', handler, true);
@@ -573,6 +730,7 @@ function switchTab(id){
     localStorage.setItem('lastTabId',id);
     loadTabData(id);
     renderTabs();
+    renderTimeline();
 }
 
 function deleteTab(id){
@@ -584,6 +742,7 @@ function deleteTab(id){
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
+    renderTimeline();
 }
 
 function clearFormFields(){
@@ -605,7 +764,6 @@ function saveCurrentTabData(){
         if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
         else data[el.id]=el.value;
     });
-    // états globaux utiles à la reprise
     data.modeDark=document.body.classList.contains('dark')?'1':'0';
     data.modeUTC=isUTC?'1':'0';
     data.timer_h40=document.getElementById('timer-h40').textContent;
@@ -621,29 +779,25 @@ function saveCurrentTabData(){
 function loadTabData(id){
     const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
 
-    // Remettre toutes les valeurs
     document.querySelectorAll('input, select, textarea').forEach(el=>{
         if(!el.id || data[el.id]===undefined) return;
         if(el.type==='checkbox') el.checked = data[el.id]==='1';
         else el.value = data[el.id];
     });
 
-    // appliquer modes stockés
     if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
     isUTC=data.modeUTC==='1';
 
-    // timers affichés
     document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
     document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
     document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
     document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
     document.getElementById('timer-ctot').textContent=data.timer_ctot||'--:--';
 
-    // synchro UI switches
     document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
     document.getElementById('utcToggle').checked  = isUTC;
 
-    generateChargementFields(); // dépend de Cie
+    generateChargementFields();
     updateAllCalculations();
 }
 
@@ -782,7 +936,6 @@ function checkTOBCoherence() {
         styleTOB(sum === tobMain);
     }
 }
-
 function styleTOB(valid) {
     const tobField = document.getElementById('TOB');
     if (valid) {
@@ -804,6 +957,7 @@ function updateAllCalculations() {
     updateLID();
     updateCTOTDisplay();
     applyPrestationsDefaults();
+    renderTimeline(); // timeline live
 }
 
 /* === TIMERS H-40/H-15 === */
@@ -823,7 +977,7 @@ function updateTimers() {
     document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === LID = TOBT - 8 (pour FR/RK) === */
+/* === LID = TOBT - 8 (FR/RK) === */
 function updateLID() {
     const cie = document.getElementById('Cie').value;
     const tobt = document.getElementById('timer-tobt').textContent;
@@ -903,20 +1057,15 @@ function updateTOBT() {
         }
     }
 
-    /* TOBT ne peut pas être avant SOBT */
     if (TOBT < SOBT) TOBT = new Date(SOBT);
 
-    /* RÈGLE CTOT : si CTOT > TOBT + 15 => TOBT = CTOT - 15 */
     if (ctottxt) {
         const [cH, cM] = ctottxt.split(':').map(Number);
         const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
-
         const tobtPlus15 = new Date(TOBT.getTime() + 15*60000);
         if (CTOT > tobtPlus15) {
             TOBT = new Date(CTOT.getTime() - 15*60000);
         }
-
-        /* Garde-fou : TOBT >= SOBT */
         if (TOBT < SOBT) TOBT = new Date(SOBT);
     }
 
@@ -924,7 +1073,7 @@ function updateTOBT() {
         `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === CTOT (affichage à partir du champ HORAIRES) === */
+/* === CTOT (affichage) === */
 function updateCTOTDisplay(){
     const ctot = document.getElementById('CTOT').value;
     document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
@@ -934,7 +1083,7 @@ function updateCTOTDisplay(){
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;  // corrigé
+    const aibttxt = document.getElementById('AIBT').value;
     if (!cie || !sibttxt || !aibttxt) return;
 
     const [sH, sM] = sibttxt.split(':').map(Number);
@@ -972,7 +1121,6 @@ function updateDLDuree2() {
         document.getElementById('DLduree2').value = '';
     }
 }
-
 function updateDLDuree3() {
     const sobt = document.getElementById('SOBT').value;
     const aobt = document.getElementById('AOBT').value;
@@ -1037,7 +1185,6 @@ function setDarkMode(enable, fromInit=false){
 }
 
 function setTimeModeUTC(enable, fromInit=false){
-    // offset local en heures (1 en hiver, 2 en été pour la France)
     const offsetHours = -new Date().getTimezoneOffset() / 60;
 
     if (!fromInit && enable !== isUTC) {
@@ -1045,12 +1192,9 @@ function setTimeModeUTC(enable, fromInit=false){
         inputs.forEach(input => {
             if (!input.value) return;
             let [hh, mm] = input.value.split(':').map(Number);
-            // Local -> UTC : -offset ; UTC -> Local : +offset
             let newH = enable ? hh - offsetHours : hh + offsetHours;
-
-            // normalisation en minutes pour gérer offset potentiellement décimal
             let totalMin = Math.round(newH * 60 + mm);
-            totalMin = ((totalMin % 1440) + 1440) % 1440; // wrap 0..1439
+            totalMin = ((totalMin % 1440) + 1440) % 1440;
             const outH = Math.floor(totalMin / 60);
             const outM = totalMin % 60;
             input.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
@@ -1071,7 +1215,7 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     const popup = document.createElement('div');
     popup.textContent = message;
     popup.style.position = "fixed";
-    popup.style.top = "60px";  // Sous la barre fixe
+    popup.style.top = "60px";
     popup.style.left = "50%";
     popup.style.transform = "translateX(-50%)";
     popup.style.background = color;
@@ -1084,16 +1228,159 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     setTimeout(() => popup.remove(), duration);
 }
 
+/* === TIMELINE helpers (5-min grid, jalons auto) === */
+function parseHHMM(str){
+  if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
+  const [h,m] = str.split(':').map(Number);
+  return h*60 + m;
+}
+function fmtHHMM(mins){
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function labelFromInputEl(input){
+  const lab = input.closest('label');
+  if(lab){
+    const firstTextNode = Array.from(lab.childNodes).find(n=>n.nodeType===3);
+    const t = (firstTextNode?.textContent || "").trim();
+    if(t) return t.replace(/\s*[:：]?\s*$/,'');
+  }
+  return input.id || 'Horaire';
+}
+function collectTimelineData(){
+  // 1) Points : tous les input[type=time] remplis => jalons
+  const inputs = Array.from(document.querySelectorAll('input[type="time"]'));
+  const inputPoints = inputs.map(el=>{
+    const mm = parseHHMM(el.value);
+    if(mm==null) return null;
+    return {type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--ops'};
+  }).filter(Boolean);
+
+  // 2) Points “timers” dérivés
+  const timerDefs = [
+    { id:'timer-tobt', label:'TOBT', cls:'tl--tobt' },
+    { id:'timer-ctot', label:'CTOT', cls:'tl--ctot' },
+    { id:'timer-h40',  label:'H-40', cls:'tl--turn' },
+    { id:'timer-h15',  label:'H-15', cls:'tl--turn' },
+    { id:'timer-h8',   label:'LID',  cls:'tl--turn' },
+  ];
+  const timerPoints = timerDefs.map(p=>{
+    const txt = (document.getElementById(p.id)?.textContent || '').trim();
+    const mm = parseHHMM(txt==='--:--' ? '' : txt);
+    return mm==null ? null : {type:'point', label:p.label, t:mm, cls:p.cls};
+  }).filter(Boolean);
+
+  // 3) Intervalles (début/fin)
+  const rangesRaw = [
+    ['PremierDebarque','DernierDebarque','Débarquement','tl--turn'],
+    ['PortePremierEmbarque','PorteDernierEmbarque','Boarding (porte)','tl--ops'],
+    ['AvionPremierEmbarque','AvionDernierEmbarque','Boarding (avion)','tl--ops'],
+    ['ArriveeFuel','DepartFuel','Fuel','tl--svc'],
+    ['ArriveeLift','DepartLift','Lift','tl--svc'],
+  ];
+  const ranges = rangesRaw.map(([a,b,lab,cls])=>{
+    const ta = parseHHMM(document.getElementById(a)?.value || '');
+    const tb = parseHHMM(document.getElementById(b)?.value || '');
+    if(ta==null || tb==null) return null;
+    const start = Math.min(ta,tb), end = Math.max(ta,tb);
+    return {type:'range', label:lab, a:start, b:end, cls};
+  }).filter(Boolean);
+
+  const points = [...inputPoints, ...timerPoints];
+
+  const allTimes = [
+    ...points.map(p=>p.t),
+    ...ranges.flatMap(r=>[r.a,r.b])
+  ];
+  if(allTimes.length===0) return {points:[], ranges:[], min:0, max:60};
+
+  let min = Math.min(...allTimes);
+  let max = Math.max(...allTimes);
+
+  // marges
+  min -= 10; max += 10;
+  if(max - min < 30) { min -= 10; max += 10; }
+
+  return {points, ranges, min, max};
+}
+function renderTimeline(){
+  const scroller = document.getElementById('timelineScroll');
+  const canvas   = document.getElementById('timelineCanvas');
+  if(!scroller || !canvas) return;
+
+  canvas.innerHTML = '<div class="timeline-track"></div>';
+
+  const {points, ranges, min, max} = collectTimelineData();
+  if(min === undefined) return;
+
+  window._timelineCurrentRange = {min, max};
+
+  // élargir selon le zoom
+  canvas.style.width = `${100 * timelineZoom}%`;
+
+  // Ticks toutes les 5 min, labels 15
+  const step = 5;
+  for(let t = Math.ceil(min/step)*step; t <= Math.floor(max/step)*step; t += step){
+    const x = (t-min)/(max-min);
+    const leftPct = 6 + x*88;
+
+    const tick = document.createElement('div');
+    tick.className = 'timeline-tick';
+    tick.style.left = `calc(${leftPct}% - 0.5px)`;
+    tick.style.height = (t % 15 === 0) ? '16px' : '10px';
+    tick.style.top = (t % 15 === 0) ? 'calc(50% - 8px)' : 'calc(50% - 5px)';
+    canvas.appendChild(tick);
+
+    if(t % 15 === 0){
+      const lbl = document.createElement('div');
+      lbl.className = 'timeline-tick-label';
+      lbl.textContent = fmtHHMM(t);
+      lbl.style.left = `${leftPct}%`;
+      canvas.appendChild(lbl);
+    }
+  }
+
+  // Ranges
+  ranges.forEach(r=>{
+    const leftPct = 6 + ((r.a-min)/(max-min))*88;
+    const widthPct = ((r.b-r.a)/(max-min))*88;
+    const el = document.createElement('div');
+    el.className = `tl-range ${r.cls}`;
+    el.style.left = `${leftPct}%`;
+    el.style.width = `${widthPct}%`;
+    canvas.appendChild(el);
+
+    const lab = document.createElement('div');
+    lab.className = 'tl-range-label';
+    lab.textContent = r.label;
+    el.appendChild(lab);
+  });
+
+  // Points
+  points.sort((a,b)=>a.t-b.t).forEach((p,i)=>{
+    const leftPct = 6 + ((p.t-min)/(max-min))*88;
+    const el = document.createElement('div');
+    el.className = `tl-event ${p.cls}`;
+    el.style.left = `${leftPct}%`;
+    el.style.top  = (i%2===0) ? '28%' : '72%';
+
+    const dot = document.createElement('div'); dot.className = 'tl-dot';
+    const label = document.createElement('div'); label.className='tl-label';
+    label.textContent = `${p.label} ${fmtHHMM(p.t)}`;
+    el.appendChild(dot); el.appendChild(label);
+    canvas.appendChild(el);
+  });
+}
+
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
     const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-    let missing = false;
-    for (let id of required) if (!document.getElementById(id).value) missing = true;
+    let missing = required.some(id => !document.getElementById(id).value);
 
     if (missing) {
         showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
     } else {
-        // Bouton inactif (pas d'envoi) — simple confirmation
         showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
     }
 }
