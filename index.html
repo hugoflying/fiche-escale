@@ -162,7 +162,7 @@ button.plus  { background: #555; color: white; }
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
+    width: 60px;   /* même taille pour les deux */
     height: 28px;
 }
 .switch input { opacity: 0; width: 0; height: 0; }
@@ -196,7 +196,7 @@ button.plus  { background: #555; color: white; }
 
 /* Indicateur de mode à droite */
 #timeModeLabel {
-    margin-left: auto;
+    margin-left: auto;              /* pousse complètement à droite */
     font-weight: bold;
     color: #1976d2;
 }
@@ -217,8 +217,9 @@ button.plus  { background: #555; color: white; }
     position: sticky;
     top: 0;
     background: #f8f9fa;
-    z-index: 999;
+    z-index: 10;
     padding: 5px 0;
+    z-index: 999;
 }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
@@ -244,82 +245,7 @@ body.dark #tab-bar { background: #121212; }
 #popup.success { background: #4caf50; }
 #popup.error { background: #d32f2f; }
 #popup.info { background: #2196f3; }
-
-/* === ICÔNE FLOTTANTE BLOC-NOTE === */
-#floating-note-btn {
-    position: fixed;
-    width: 64px;
-    height: 64px;
-    bottom: 20px;
-    right: 20px;
-    border-radius: 16px;
-    cursor: grab;
-    z-index: 2000;
-    backdrop-filter: blur(2px);
-    /* Style "Notes" blanc semi-transp. avec tête jaune et lignes */
-    background:
-      linear-gradient(to bottom, rgba(255,204,0,0.9) 0 22%, rgba(255,204,0,0.85) 22% 26%, rgba(255,255,255,0) 26% 100%),
-      repeating-linear-gradient(to bottom, rgba(0,0,0,0.08) 0 1px, rgba(0,0,0,0.08) 1px 22px, transparent 22px 44px),
-      rgba(255,255,255,0.65);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(0,0,0,0.06);
-    border: 1px solid rgba(0,0,0,0.08);
 }
-#floating-note-btn:active { cursor: grabbing; }
-
-/* === PANNEAU BLOC-NOTE === */
-#handnote-panel {
-    position: fixed;
-    left: 50%;
-    top: 10%;
-    transform: translateX(-50%);
-    width: min(900px, 92vw);
-    height: 60vh;
-    z-index: 1999;
-    border-radius: 12px;
-    border: 1px solid rgba(0,0,0,0.15);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
-    display: none;
-    overflow: hidden;
-    background: rgba(255,255,255,0.9);
-}
-body.dark #handnote-panel { background: rgba(30,30,30,0.9); border-color: rgba(255,255,255,0.12); }
-
-#handnote-header {
-    display:flex; align-items:center; gap:8px;
-    padding: 8px 10px;
-    background: rgba(0,0,0,0.05);
-    border-bottom: 1px solid rgba(0,0,0,0.1);
-}
-body.dark #handnote-header {
-    background: rgba(255,255,255,0.06);
-    border-bottom-color: rgba(255,255,255,0.12);
-}
-#handnote-title { font-weight: bold; font-size: .95rem; }
-#handnote-tools { margin-left:auto; display:flex; gap:8px; flex-wrap: wrap; }
-
-.handnote-btn {
-    padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.15);
-    background: #fff; cursor:pointer; font-size:.9rem;
-}
-body.dark .handnote-btn { background:#2a2a2a; color:#f8f9fa; border-color: rgba(255,255,255,0.15); }
-
-#handnote-canvas-wrap { position: relative; width: 100%; height: calc(100% - 46px); }
-#handnote-canvas {
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    touch-action: none; /* indispensable pour stylet/gestes */
-    background:
-      repeating-linear-gradient(to bottom, rgba(0,0,0,.05) 0 1px, transparent 1px 34px),
-      rgba(255,255,255,0.6);
-}
-body.dark #handnote-canvas {
-    background:
-      repeating-linear-gradient(to bottom, rgba(255,255,255,.12) 0 1px, transparent 1px 34px),
-      rgba(20,20,20,0.6);
-}
-/* Outils */
-#handnote-tools .handnote-btn input[type="range"] { accent-color: #1976d2; }
-#handnote-eraser.active { outline: 2px solid #1976d2; }
 </style>
 </head>
 <body onload="initForm()">
@@ -510,37 +436,6 @@ body.dark #handnote-canvas {
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
-<!-- Icône flottante Bloc-Note -->
-<div id="floating-note-btn" title="Bloc-note (écriture à main levée)"></div>
-
-<!-- Panneau Bloc-Note -->
-<div id="handnote-panel" aria-hidden="true">
-  <div id="handnote-header">
-    <span id="handnote-title">Bloc-note (stylet / doigt)</span>
-    <div id="handnote-tools">
-      <label class="handnote-btn" style="display:flex;align-items:center;gap:6px;">
-        Couleur
-        <input type="color" id="handnote-color" value="#111111" style="width:32px;height:28px;padding:0;border:none;background:transparent;">
-      </label>
-      <label class="handnote-btn" style="display:flex;align-items:center;gap:6px;">
-        Épaisseur
-        <input type="range" id="handnote-width" min="1" max="12" step="0.5" value="2.5" style="width:110px;">
-      </label>
-      <button class="handnote-btn" id="handnote-eraser" title="Activer la gomme">Gomme</button>
-      <label class="handnote-btn" style="display:flex;align-items:center;gap:6px;">
-        Taille gomme
-        <input type="range" id="handnote-eraser-width" min="6" max="40" step="1" value="16" style="width:110px;">
-      </label>
-      <button class="handnote-btn" id="handnote-undo" title="Annuler dernier trait">Annuler</button>
-      <button class="handnote-btn" id="handnote-clear" title="Effacer">Effacer</button>
-      <button class="handnote-btn" id="handnote-close" title="Fermer">Fermer</button>
-    </div>
-  </div>
-  <div id="handnote-canvas-wrap">
-    <canvas id="handnote-canvas"></canvas>
-  </div>
-</div>
-
 <script>
 /* === CODE JS COMPLET === */
 
@@ -551,244 +446,6 @@ let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
 
-/* ====== BLOC-NOTE (dessin à main levée) ====== */
-let noteCtx, noteCanvas, noteIsDrawing=false;
-let noteHistory=[]; // pour Annuler
-let penColor='#111111', penWidth=2.5, isErasing=false, eraserWidth=16;
-const NOTE_ICON_POS_KEY = 'floatingNoteIconPos'; // position globale
-
-function initHandnote(){
-    noteCanvas = document.getElementById('handnote-canvas');
-    noteCtx = noteCanvas.getContext('2d');
-    attachNoteEvents();
-
-    // Restaurer position icône (globale)
-    const pos = JSON.parse(localStorage.getItem(NOTE_ICON_POS_KEY) || 'null');
-    if (pos) {
-        const btn = document.getElementById('floating-note-btn');
-        btn.style.left = pos.x + 'px';
-        btn.style.top  = pos.y + 'px';
-        btn.style.right = 'auto';
-        btn.style.bottom = 'auto';
-    }
-    makeNoteButtonDraggable();
-
-    // Clic icône = toggle (ouvrable/fermable)
-    document.getElementById('floating-note-btn').addEventListener('click', ()=>{
-        if (btnDrag.justDragged) { btnDrag.justDragged=false; return; }
-        const panel = document.getElementById('handnote-panel');
-        toggleHandnote(panel.style.display !== 'block');
-    });
-
-    // Outils
-    document.getElementById('handnote-close').onclick = ()=>toggleHandnote(false);
-    document.getElementById('handnote-clear').onclick = ()=>{
-        noteCtx.clearRect(0,0,noteCanvas.width,noteCanvas.height);
-        noteHistory.length = 0;
-        saveNoteToLocal();
-    };
-    document.getElementById('handnote-undo').onclick = ()=>{
-        if (noteHistory.length>0){
-            const img = noteHistory.pop();
-            noteCtx.clearRect(0,0,noteCanvas.width,noteCanvas.height);
-            if (img) noteCtx.drawImage(img,0,0);
-            saveNoteToLocal();
-        }
-    };
-
-    const colorInput = document.getElementById('handnote-color');
-    const widthInput = document.getElementById('handnote-width');
-    const eraserBtn  = document.getElementById('handnote-eraser');
-    const eraserSize = document.getElementById('handnote-eraser-width');
-
-    colorInput.oninput = (e)=>{ penColor = e.target.value; if(isErasing){ isErasing=false; eraserBtn.classList.remove('active'); } };
-    widthInput.oninput = (e)=>{ penWidth = parseFloat(e.target.value); };
-    eraserSize.oninput = (e)=>{ eraserWidth = parseFloat(e.target.value); };
-
-    eraserBtn.onclick = ()=>{
-        isErasing = !isErasing;
-        eraserBtn.classList.toggle('active', isErasing);
-    };
-
-    // dimensionnement → uniquement quand le panneau est visible (fait dans toggleHandnote)
-}
-
-function resizeNoteCanvas(){
-    const wrap = document.getElementById('handnote-canvas-wrap');
-    const cssW = wrap.clientWidth;
-    const cssH = wrap.clientHeight;
-    if (!cssW || !cssH) return; // si caché, on ne fait rien
-
-    const dpr = window.devicePixelRatio || 1;
-    // reset transform pour éviter accumulation de scale()
-    noteCtx.setTransform(1,0,0,1,0,0);
-
-    noteCanvas.width  = Math.max(1, Math.floor(cssW * dpr));
-    noteCanvas.height = Math.max(1, Math.floor(cssH * dpr));
-    noteCanvas.style.width  = cssW + 'px';
-    noteCanvas.style.height = cssH + 'px';
-
-    noteCtx.scale(dpr, dpr);
-    noteCtx.lineCap = 'round';
-    noteCtx.lineJoin = 'round';
-    noteCtx.strokeStyle = penColor;
-    noteCtx.lineWidth = penWidth;
-    noteCtx.globalCompositeOperation = 'source-over';
-}
-
-function attachNoteEvents(){
-    const c = noteCanvas;
-
-    const snapshotForUndo = ()=>{
-        const img = new Image();
-        img.src = c.toDataURL();
-        noteHistory.push(img);
-    };
-
-    const start = (x,y,pressure=0.5)=>{
-        noteIsDrawing = true;
-        snapshotForUndo();
-        noteCtx.beginPath();
-        noteCtx.moveTo(x,y);
-        if (isErasing){
-            noteCtx.globalCompositeOperation = 'destination-out';
-            noteCtx.lineWidth = eraserWidth;
-        } else {
-            noteCtx.globalCompositeOperation = 'source-over';
-            noteCtx.strokeStyle = penColor;
-            noteCtx.lineWidth = Math.max(1, penWidth * (0.6 + 0.8*(pressure ?? 0.5)));
-        }
-    };
-
-    const move = (x,y,pressure=0.5)=>{
-        if (!noteIsDrawing) return;
-        if (!isErasing){
-            noteCtx.lineWidth = Math.max(1, penWidth * (0.6 + 0.8*(pressure ?? 0.5)));
-            noteCtx.strokeStyle = penColor;
-        } else {
-            noteCtx.lineWidth = eraserWidth;
-        }
-        noteCtx.lineTo(x,y);
-        noteCtx.stroke();
-    };
-
-    const end = ()=>{
-        if (!noteIsDrawing) return;
-        noteIsDrawing = false;
-        noteCtx.closePath();
-        saveNoteToLocal();
-    };
-
-    const getXY = (e)=>{
-        const rect = c.getBoundingClientRect();
-        const x = (e.clientX ?? e.touches?.[0]?.clientX) - rect.left;
-        const y = (e.clientY ?? e.touches?.[0]?.clientY) - rect.top;
-        return {x, y, p: e.pressure ?? 0.5};
-    };
-
-    c.addEventListener('pointerdown', (e)=>{ c.setPointerCapture(e.pointerId); const {x,y,p}=getXY(e); start(x,y,p); e.preventDefault(); });
-    c.addEventListener('pointermove', (e)=>{ const {x,y,p}=getXY(e); move(x,y,p); e.preventDefault(); });
-    const finish = (e)=>{ end(); e && e.preventDefault(); };
-    c.addEventListener('pointerup', finish);
-    c.addEventListener('pointercancel', finish);
-    c.addEventListener('pointerleave', finish);
-
-    // Empêcher le scroll/zoom tactile sur le canvas
-    c.addEventListener('touchstart', (e)=>e.preventDefault(), {passive:false});
-    c.addEventListener('gesturestart', (e)=>e.preventDefault());
-}
-
-function toggleHandnote(show){
-    const panel = document.getElementById('handnote-panel');
-    if (show){
-        panel.style.display='block';
-        panel.setAttribute('aria-hidden','false');
-        // Dimensionner maintenant que c’est visible
-        resizeNoteCanvas();
-        // Charger le dessin de l'onglet courant (clé note-<tabId>)
-        loadNoteFromLocal();
-        window.addEventListener('resize', onNoteResize, {passive:true});
-    } else {
-        panel.style.display='none';
-        panel.setAttribute('aria-hidden','true');
-        saveNoteToLocal();
-        window.removeEventListener('resize', onNoteResize);
-    }
-}
-function onNoteResize(){ resizeNoteCanvas(); }
-
-function saveNoteToLocal(){
-    if(!currentTabId || !noteCanvas) return;
-    const key = 'note-' + currentTabId;
-    try {
-        const dataURL = noteCanvas.toDataURL('image/png');
-        localStorage.setItem(key, dataURL);
-        // Enregistre aussi dans la fiche de l’onglet
-        const data = JSON.parse(localStorage.getItem('tab-'+currentTabId)||'{}');
-        data.noteDataURL = dataURL;
-        localStorage.setItem('tab-'+currentTabId, JSON.stringify(data));
-    } catch(err){
-        console.warn('Sauvegarde note impossible (taille ?)', err);
-    }
-}
-
-function loadNoteFromLocal(){
-    if(!currentTabId || !noteCanvas) return;
-    const key = 'note-' + currentTabId;
-    const dataURL = localStorage.getItem(key);
-    noteCtx.clearRect(0,0,noteCanvas.width,noteCanvas.height);
-    if (dataURL){
-        const img = new Image();
-        img.onload = ()=> noteCtx.drawImage(img,0,0,noteCanvas.width,noteCanvas.height);
-        img.src = dataURL;
-    }
-}
-
-/* Drag icône flottante */
-const btnDrag = { dragging:false, dx:0, dy:0, justDragged:false, startX:0, startY:0 };
-function makeNoteButtonDraggable(){
-    const btn = document.getElementById('floating-note-btn');
-
-    const onDown = (e)=>{
-        btnDrag.dragging=true; btnDrag.justDragged=false;
-        const rect = btn.getBoundingClientRect();
-        const cx = (e.clientX ?? e.touches?.[0]?.clientX);
-        const cy = (e.clientY ?? e.touches?.[0]?.clientY);
-        btnDrag.dx = cx - rect.left;
-        btnDrag.dy = cy - rect.top;
-        btnDrag.startX = cx; btnDrag.startY = cy;
-        e.preventDefault();
-    };
-
-    const onMove = (e)=>{
-        if(!btnDrag.dragging) return;
-        const cx = (e.clientX ?? e.touches?.[0]?.clientX);
-        const cy = (e.clientY ?? e.touches?.[0]?.clientY);
-        if (Math.hypot(cx - btnDrag.startX, cy - btnDrag.startY) > 5) btnDrag.justDragged = true;
-
-        const x = cx - btnDrag.dx;
-        const y = cy - btnDrag.dy;
-        btn.style.left = Math.max(4, Math.min(window.innerWidth - btn.offsetWidth - 4, x)) + 'px';
-        btn.style.top  = Math.max(4, Math.min(window.innerHeight - btn.offsetHeight - 4, y)) + 'px';
-        btn.style.right = 'auto'; btn.style.bottom='auto';
-    };
-
-    const onUp = ()=>{
-        if(!btnDrag.dragging) return;
-        btnDrag.dragging=false;
-        const rect = btn.getBoundingClientRect();
-        localStorage.setItem(NOTE_ICON_POS_KEY, JSON.stringify({x: rect.left, y: rect.top}));
-        setTimeout(()=>{ btnDrag.justDragged=false; }, 50);
-    };
-
-    btn.addEventListener('mousedown', onDown);
-    btn.addEventListener('touchstart', onDown, {passive:false});
-    window.addEventListener('mousemove', onMove, {passive:false});
-    window.addEventListener('touchmove', onMove, {passive:false});
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchend', onUp);
-}
-
 /* INIT */
 function initForm(){
     renderTabs();
@@ -798,38 +455,34 @@ function initForm(){
     else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
-    generateTimingFields();
+    generateTimingFields();         // crée les champs TIMING
     generateChargementFields();
-    attachAutoSave();
+    attachAutoSave();               // autosave sur chaque modification
     window.addEventListener('beforeunload', saveCurrentTabData);
 
-    // collapse/expand sur clic h2
+    // collapse/expand toggle pour chaque section via clic sur h2
     document.querySelectorAll("section h2").forEach(h2=>{
         h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
 
-    // Onglets : label live
+    // Mise à jour instantanée des onglets
     document.getElementById('Parking').onchange = updateTabLabelInstant;
     document.getElementById('To').oninput = updateTabLabelInstant;
     document.getElementById('From').oninput = applyPrestationsDefaults;
     document.getElementById('To').oninput = applyPrestationsDefaults;
 
-    // Switches
+    // Appliquer états des switches au chargement
     const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
     const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
-    setDarkMode(storedDark, true);
-    setTimeModeUTC(storedUTC, true);
+    setDarkMode(storedDark, /*fromInit*/true);
+    setTimeModeUTC(storedUTC, /*fromInit*/true);
 
     updateTimeModeLabel();
-
-    // Recharger les données du dernier onglet
+    // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
-
-    // Init bloc-note (après loadTabData)
-    initHandnote();
 }
 
-/* Autosave */
+/* Autosave sur modification (déclenché avec un petit debounce) */
 function attachAutoSave(){
     const handler=()=>{
         clearTimeout(saveTimer);
@@ -883,7 +536,6 @@ function deleteTab(id){
     tabs=tabs.filter(t=>t!==id);
     localStorage.setItem('flightTabs',JSON.stringify(tabs));
     localStorage.removeItem('tab-'+id);
-    localStorage.removeItem('note-'+id); // supprime le dessin lié à l’onglet
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
@@ -908,22 +560,15 @@ function saveCurrentTabData(){
         if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
         else data[el.id]=el.value;
     });
-    // états globaux
+    // états globaux utiles à la reprise
     data.modeDark=document.body.classList.contains('dark')?'1':'0';
     data.modeUTC=isUTC?'1':'0';
     data.timer_h40=document.getElementById('timer-h40').textContent;
     data.timer_h15=document.getElementById('timer-h15').textContent;
     data.timer_h8=document.getElementById('timer-h8').textContent;
     data.timer_tobt=document.getElementById('timer-tobt').textContent;
-
-    // Sauvegarde image du bloc-note pour cet onglet
-    if (noteCanvas){
-        try { data.noteDataURL = noteCanvas.toDataURL('image/png'); } catch(e){}
-    }
-
     localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
     localStorage.setItem('lastTabId',currentTabId);
-    if (data.noteDataURL) localStorage.setItem('note-'+currentTabId, data.noteDataURL);
     renderTabs();
 }
 
@@ -954,14 +599,6 @@ function loadTabData(id){
     generateChargementFields(); // dépend de Cie
     updateTimeModeLabel();
     updateAllCalculations();
-
-    // Recharger le dessin de cet onglet au prochain affichage du panneau
-    setTimeout(loadNoteFromLocal, 0);
-
-    // Si le panneau est ouvert au switch, réajuster la taille
-    if (document.getElementById('handnote-panel').style.display === 'block') {
-        setTimeout(resizeNoteCanvas, 0);
-    }
 }
 
 /* Mise à jour instantanée label onglet */
@@ -994,13 +631,13 @@ function generateTimingFields(){
     timings.forEach((id,i)=>{
         const div=document.createElement('div');
         div.className='form-group';
-        div.innerHTML=
+        div.innerHTML=`
             <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
             <div class="btn-actions">
                 <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
                 <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
                 <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-            </div>;
+            </div>`;
         container.appendChild(div);
     });
 }
@@ -1014,7 +651,7 @@ function generateChargementFields() {
     let html = "";
 
     if (cie === "FR" || cie === "RK") {
-        html += 
+        html += `
             <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
@@ -1023,9 +660,9 @@ function generateChargementFields() {
             <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
             <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
             <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
-        ;
+        `;
     } else {
-        html += 
+        html += `
             <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
             <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
@@ -1037,14 +674,14 @@ function generateChargementFields() {
             <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
             <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
             <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
-        ;
+        `;
     }
 
-    html += 
+    html += `
         <div class="form-group" style="flex:1 1 100%;">
             <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
         </div>
-    ;
+    `;
     container.innerHTML = html;
     updateTOB();
 }
@@ -1067,9 +704,9 @@ function updateTOB() {
     if (mainTotal === 0 && infants === 0) {
         tobText = "";
     } else if (infants > 0) {
-        tobText = ${mainTotal} + ${infants};
+        tobText = `${mainTotal} + ${infants}`;
     } else {
-        tobText = ${mainTotal};
+        tobText = `${mainTotal}`;
     }
 
     document.getElementById('TOB').value = tobText;
@@ -1135,8 +772,8 @@ function updateTimers() {
     base.setMinutes(mm);
     const h40 = new Date(base.getTime() - 40 * 60000);
     const h15 = new Date(base.getTime() - 15 * 60000);
-    document.getElementById('timer-h40').textContent = ${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')};
-    document.getElementById('timer-h15').textContent = ${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')};
+    document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
+    document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
 /* === LID === */
@@ -1148,7 +785,7 @@ function updateLID() {
         const d = new Date();
         d.setHours(hh);
         d.setMinutes(mm - 8);
-        document.getElementById('timer-h8').textContent = ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')};
+        document.getElementById('timer-h8').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     } else {
         document.getElementById('timer-h8').textContent = "--:--";
     }
@@ -1175,14 +812,14 @@ function updateSOBTDefault() {
     }
 
     const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value = ${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')};
+    document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
 /* === TOBT CALCUL === */
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-    the_aibttxt = document.getElementById('AIBT').value;
+    const aibttxt = document.getElementById('AIBT').value;
     const sobttxt = document.getElementById('SOBT').value;
 
     if (!cie || !sibttxt) {
@@ -1191,7 +828,7 @@ function updateTOBT() {
     }
 
     const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = the_aibttxt ? the_aibttxt.split(':').map(Number) : [sH, sM];
+    const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
     const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
 
     const SIBT = new Date(); SIBT.setHours(sH, sM);
@@ -1220,7 +857,7 @@ function updateTOBT() {
 
     if (TOBT < SOBT) TOBT = SOBT;
 
-    document.getElementById('timer-tobt').textContent = ${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')};
+    document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
 }
 
 /* === DL CODES === */
@@ -1305,7 +942,7 @@ function setNow(fieldId) {
     const now = new Date();
     const hh = isUTC ? now.getUTCHours() : now.getHours();
     const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')};
+    document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
 function adjustTime(fieldId, delta) {
@@ -1317,7 +954,7 @@ function adjustTime(fieldId, delta) {
     if (total >= 1440) total -= 1440;
     hh = Math.floor(total / 60);
     mm = total % 60;
-    input.value = ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')};
+    input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
 /* === Switches Jour/Nuit & Local/UTC === */
@@ -1339,7 +976,7 @@ function setTimeModeUTC(enable, fromInit=false){
             hh = enable ? hh - 2 : hh + 2; // Local->UTC : -2h / UTC->Local : +2h
             if (hh < 0) hh += 24;
             if (hh >= 24) hh -= 24;
-            input.value = ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')};
+            input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
         });
     }
     isUTC = enable;
@@ -1371,14 +1008,119 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     popup.style.padding = "10px 20px";
     popup.style.borderRadius = "6px";
     popup.style.fontSize = "1rem";
-    popup.style.zIndex = "3000";
+    popup.style.zIndex = "1000";
     document.body.appendChild(popup);
     setTimeout(() => popup.remove(), duration);
 }
 
-/* === VALIDATION (Airtable supprimé, bouton inactif) === */
+/* === CONFIG AIRTABLE === */
+const AIRTABLE_API_KEY = "patmjcQua1Od3Romx.f6f9b0defe694b311c5657cf81179309efc05a1122250a31eedd2f58355189f6";
+const AIRTABLE_BASE_ID = "appq3lFOIsAUOiU8J";
+const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
+
+/* === ENVOI VERS AIRTABLE === */
+async function sendToAirtable() {
+    function upper(id) { return document.getElementById(id).value.toUpperCase(); }
+
+    const record = {
+        "Date": document.getElementById('Date').value,
+        "RZA": upper('RZA'),
+        "Immat": upper('Immat'),
+        "Parking": upper('Parking'),
+        "Cie": upper('Cie'),
+        "N° Vol": upper('NVol'),
+        "Provenance": upper('From'),
+        "Destination": upper('To'),
+        "SIBT": document.getElementById('SIBT').value,
+        "AIBT": document.getElementById('AIBT').value,
+        "SOBT": document.getElementById('SOBT').value,
+        "AOBT": document.getElementById('AOBT').value,
+
+        "Retard (min)": document.getElementById('DLduree1').value,
+        "DL Code 1": document.getElementById('DLcode1').value,
+        "DL Durée 1 (min)": document.getElementById('DLduree1').value,
+        "DL Code 2": document.getElementById('DLcode2').value,
+        "DL Durée 2 (min)": document.getElementById('DLduree2').value,
+        "DL Code 3": document.getElementById('DLcode3').value,
+        "DL Durée 3 (min)": document.getElementById('DLduree3').value,
+        "DL JUSTIFICATIONS": document.getElementById('DLJustif').value,
+
+        "Arrivée PNT avion": document.getElementById('ArrPNT').value,
+        "Arrivée PNC avion": document.getElementById('ArrPNC').value,
+        "Premier débarqué": document.getElementById('PremierDebarque').value,
+        "Dernier débarqué": document.getElementById('DernierDebarque').value,
+        "Avion : Premier embarqué": document.getElementById('AvionPremierEmbarque').value,
+        "Avion : Dernier embarqué": document.getElementById('AvionDernierEmbarque').value,
+        "Porte : Premier embarqué": document.getElementById('PortePremierEmbarque').value,
+        "Porte : Dernier embarqué": document.getElementById('PorteDernierEmbarque').value,
+        "Arrivée Fuel": document.getElementById('ArriveeFuel').value,
+        "Départ Fuel": document.getElementById('DepartFuel').value,
+        "Arrivée Lift": document.getElementById('ArriveeLift').value,
+        "Départ Lift": document.getElementById('DepartLift').value,
+        "Remise LID/LDS": document.getElementById('RemiseLID').value,
+        "Fermeture porte avion": document.getElementById('FermeturePorteAvion').value,
+
+        "WCHC": document.getElementById('WCHC').value,
+        "WCHS": document.getElementById('WCHS').value,
+        "WCHR": document.getElementById('WCHR').value,
+        "Autre": document.getElementById('AutreAssist').value,
+
+        "ASU": document.getElementById('ASU').value,
+        "Vidange toilettes": document.getElementById('Vidange').value,
+        "Eau potable": document.getElementById('EauPotable').value,
+        "Echelle supplémentaire": document.getElementById('Echelle').value,
+        "Collecte d'ordures": document.getElementById('Ordures').value,
+        "Ménage Assist'Air": document.getElementById('MenageAssist').value,
+        "Ménage Atalian": document.getElementById('MenageAtalian').value,
+        "Dégivrage": document.getElementById('Degivrage').value,
+        "Toilet Kit": document.getElementById('ToiletKit').value,
+        "Push-Pull": document.getElementById('PushPull').value,
+        "Flux par le RZA": document.getElementById('FluxRZA').value
+    };
+
+    try {
+        const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ records: [{ fields: record }] })
+        });
+
+        if (!response.ok) throw new Error(`Erreur API : ${response.statusText}`);
+        showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
+    } catch (err) {
+        console.error("Erreur Airtable :", err);
+        showPopup("Erreur lors de l'envoi vers Airtable", "#d32f2f", 3000);
+    }
+}
+
+/* === VALIDATION === */
 function validateForm() {
-    showPopup("Validation désactivée pour le moment.", "#777", 2500);
+    const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
+    let missing = false;
+    for (let id of required) if (!document.getElementById(id).value) missing = true;
+
+    if (missing) {
+        showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
+    } else {
+        sendToAirtable();
+        showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
+
+        setTimeout(() => {
+            let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
+            tabs = tabs.filter(t => t !== currentTabId);
+            localStorage.setItem('flightTabs', JSON.stringify(tabs));
+            localStorage.removeItem('tab-' + currentTabId);
+
+            if (tabs.length > 0) {
+                switchTab(tabs[0]);
+            } else {
+                createNewTab();
+            }
+        }, 1000);
+    }
 }
 
 /* === SAUVEGARDE MANUELLE === */
