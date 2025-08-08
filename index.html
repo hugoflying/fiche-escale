@@ -216,6 +216,7 @@ body.dark #tab-bar {
 <div class="toggle-container">
     <button onclick="toggleDarkMode()">🌙 / ☀️</button>
     <button onclick="toggleTimeMode()">Local / UTC</button>
+    <span id="timeModeLabel" style="margin-left:10px;font-weight:bold;color:#1976d2;">Mode : Local</span>
 </div>
 
 <!-- Barre d’onglets -->
@@ -898,9 +899,14 @@ function toggleTimeMode() {
     });
     isUTC = !isUTC;
     localStorage.setItem('modeUTC', isUTC ? '1' : '0');
+    updateTimeModeLabel(); // <<< ICI
     updateAllCalculations();
 }
 
+function updateTimeModeLabel() {
+    document.getElementById('timeModeLabel').textContent = "Mode : " + (isUTC ? "UTC" : "Local");
+}
+    
 /* === POPUP === */
 function showPopup(message, color = "#2196f3", duration = 2000) {
     const popup = document.createElement('div');
