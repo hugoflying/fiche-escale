@@ -213,12 +213,12 @@ body.dark #tab-bar {
 <body onload="initForm()">
 
 <!-- Modes -->
-<div class="toggle-container">
+<div class="toggle-container" style="align-items: center; gap: 8px;">
     <button onclick="toggleDarkMode()">🌙 / ☀️</button>
     <button onclick="toggleTimeMode()">Local / UTC</button>
-    <span id="timeModeLabel" style="margin-left:10px;font-weight:bold;color:#1976d2;">Mode : Local</span>
+    <span id="timeModeLabel" style="font-weight:bold;color:#1976d2;">Mode : Local</span>
 </div>
-
+    
 <!-- Barre d’onglets -->
 <div id="tab-bar">
     <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
