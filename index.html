@@ -22,7 +22,7 @@ section {
     background: #fff;
     border-radius: 8px;
     padding: 12px;
-    margin-bottom: 15px;
+    margin-bottom: 22px; /* + espace entre sections */
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 body.dark section { background: #1e1e1e; }
@@ -88,6 +88,9 @@ textarea {
     text-align: left;
     overflow: auto;
 }
+
+/* Affichage visuel en MAJ pour certains champs */
+input.uppercase { text-transform: uppercase; }
 
 /* Champ horaire + boutons : alignement parfait */
 .form-group input[type="time"] {
@@ -228,9 +231,8 @@ button.plus  { background: #555; color: white; }
     position: sticky;
     top: 0;
     background: #f8f9fa;
-    z-index: 10;
-    padding: 5px 0;
     z-index: 999;
+    padding: 5px 0;
 }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
@@ -317,12 +319,12 @@ body.dark #tab-bar { background: #121212; }
                 <option>V7</option><option>Autre</option>
             </select>
         </label></div>
-        <div class="form-group"><label>N° Vol<input type="text" id="NVol"></label></div>
 
-        <div class="form-group"><label>Provenance<input type="text" id="From" maxlength="3"></label></div>
-        <div class="form-group"><label>Destination<input type="text" id="To" maxlength="3"></label></div>
+        <div class="form-group"><label>N° VOL<input class="uppercase" type="text" id="NVol"></label></div>
+        <div class="form-group"><label>Provenance<input class="uppercase" type="text" id="From" maxlength="3"></label></div>
+        <div class="form-group"><label>Destination<input class="uppercase" type="text" id="To" maxlength="3"></label></div>
+        <div class="form-group"><label>Immat<input class="uppercase" type="text" id="Immat" maxlength="5"></label></div>
 
-        <div class="form-group"><label>Immat<input type="text" id="Immat" maxlength="5"></label></div>
         <div class="form-group"><label>Parking
             <select id="Parking">
                 <option value="">--</option>
@@ -332,7 +334,7 @@ body.dark #tab-bar { background: #121212; }
             </select>
         </label></div>
 
-        <div class="form-group"><label>RZA<input type="text" id="RZA" maxlength="3"></label></div>
+        <div class="form-group"><label>RZA<input class="uppercase" type="text" id="RZA" maxlength="3"></label></div>
         <div class="form-group"><label>FNC
             <select id="FNC">
                 <option>Y</option><option selected>N</option>
@@ -378,7 +380,7 @@ body.dark #tab-bar { background: #121212; }
             </div>
         </div>
 
-        <!-- NOUVEAU : CTOT -->
+        <!-- CTOT -->
         <div class="form-group">
             <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
             <div class="btn-actions">
@@ -396,9 +398,9 @@ body.dark #tab-bar { background: #121212; }
     <div class="form-grid" id="timing-grid"></div>
 </section>
 
-<!-- CHARGEMENT -->
+<!-- CHIFFRES PORTE -->
 <section>
-    <h2>CHARGEMENT</h2>
+    <h2>CHIFFRES PORTE</h2>
     <div id="chargement-container" class="form-grid"></div>
 </section>
 
@@ -431,9 +433,9 @@ body.dark #tab-bar { background: #121212; }
 <section>
     <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
     <div class="form-grid">
-        <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC"></label></div>
-        <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS"></label></div>
-        <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR"></label></div>
+        <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+        <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+        <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
         <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
     </div>
 </section>
@@ -490,11 +492,14 @@ function initForm(){
         h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
 
-    // Mise à jour instantanée des onglets
+    // MAJ onglets + presets prestations
     document.getElementById('Parking').onchange = updateTabLabelInstant;
     document.getElementById('To').oninput = updateTabLabelInstant;
     document.getElementById('From').oninput = applyPrestationsDefaults;
     document.getElementById('To').oninput = applyPrestationsDefaults;
+
+    // Forcer MAJUSCULE en saisie
+    setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
     // Appliquer états des switches au chargement
     const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
@@ -504,6 +509,22 @@ function initForm(){
 
     // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
+}
+
+/* Forcer MAJUSCULE */
+function setupUppercaseInputs(ids){
+    ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
+        el.addEventListener('input', toUpper);
+        el.addEventListener('blur', toUpper);
+    });
+}
+
+/* Empêcher négatifs / non-entiers sur WCH* */
+function sanitizePositiveInt(inputEl){
+    inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
 /* Autosave sur modification (déclenché avec un petit debounce) */
@@ -523,7 +544,7 @@ function renderTabs(){
     let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
     tabs.forEach((id)=>{
         const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
-        let label=data.To?data.To.toUpperCase():"VOL";
+        let label=data.To?String(data.To).toUpperCase():"VOL";
         let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
         const btn=document.createElement('button');
         btn.textContent=label+" "+parking;
@@ -667,7 +688,7 @@ function generateTimingFields(){
     });
 }
 
-/* === CHARGEMENT / TOB === */
+/* === CHARGEMENT / TOB (CHIFFRES PORTE) === */
 function generateChargementFields() {
     const cie = document.getElementById('Cie').value;
     const container = document.getElementById('chargement-container');
@@ -785,7 +806,7 @@ function updateAllCalculations() {
     applyPrestationsDefaults();
 }
 
-/* === TIMERS === */
+/* === TIMERS H-40/H-15 === */
 function updateTimers() {
     const sobt = document.getElementById('SOBT').value;
     if (!sobt) {
@@ -802,7 +823,7 @@ function updateTimers() {
     document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === LID === */
+/* === LID = TOBT - 8 (pour FR/RK) === */
 function updateLID() {
     const cie = document.getElementById('Cie').value;
     const tobt = document.getElementById('timer-tobt').textContent;
@@ -841,12 +862,13 @@ function updateSOBTDefault() {
     document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === TOBT CALCUL === */
+/* === TOBT CALCUL + règle CTOT === */
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
     const aibttxt = document.getElementById('AIBT').value;
     const sobttxt = document.getElementById('SOBT').value;
+    const ctottxt = document.getElementById('CTOT').value;
 
     if (!cie || !sibttxt) {
         document.getElementById('timer-tobt').textContent = '--:--';
@@ -857,9 +879,9 @@ function updateTOBT() {
     const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
     const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
 
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-    const SOBT = new Date(); SOBT.setHours(soH, soM);
+    const SIBT = new Date(); SIBT.setHours(sH, sM, 0, 0);
+    const AIBT = new Date(); AIBT.setHours(aH, aM, 0, 0);
+    const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
 
     let TOBT = new Date(SIBT);
 
@@ -881,9 +903,25 @@ function updateTOBT() {
         }
     }
 
-    if (TOBT < SOBT) TOBT = SOBT;
+    /* TOBT ne peut pas être avant SOBT */
+    if (TOBT < SOBT) TOBT = new Date(SOBT);
 
-    document.getElementById('timer-tobt').textContent = `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
+    /* RÈGLE CTOT : si CTOT > TOBT + 15 => TOBT = CTOT - 15 */
+    if (ctottxt) {
+        const [cH, cM] = ctottxt.split(':').map(Number);
+        const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
+
+        const tobtPlus15 = new Date(TOBT.getTime() + 15*60000);
+        if (CTOT > tobtPlus15) {
+            TOBT = new Date(CTOT.getTime() - 15*60000);
+        }
+
+        /* Garde-fou : TOBT >= SOBT */
+        if (TOBT < SOBT) TOBT = new Date(SOBT);
+    }
+
+    document.getElementById('timer-tobt').textContent =
+        `${String(TOBT.getHours()).padStart(2, '0')}:${String(TOBT.getMinutes()).padStart(2, '0')}`;
 }
 
 /* === CTOT (affichage à partir du champ HORAIRES) === */
