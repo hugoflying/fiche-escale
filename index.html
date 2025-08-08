@@ -221,9 +221,7 @@ button.plus  { background: #555; color: white; }
     padding: 5px 0;
     z-index: 999;
 }
-body.dark #tab-bar {
-    background: #121212; /* fond adapté mode nuit */
-}
+body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
     font-weight: bold;
     font-size: 1.2rem;
@@ -256,7 +254,7 @@ body.dark #tab-bar {
 <div class="toggle-container">
     <!-- Switch Jour/Nuit -->
     <div class="toggle-group">
-        <span class="toggle-caption">🌙 / ☀️</span>
+        <span class="toggle-caption">Jour / Nuit</span>
         <label class="switch" title="Basculer Jour/Nuit">
             <input type="checkbox" id="darkToggle" onchange="setDarkMode(this.checked)">
             <span class="slider"></span>
@@ -282,12 +280,6 @@ body.dark #tab-bar {
 </div>
 
 <h1>SUIVI PERFORMANCE</h1>
-
-<!-- Boutons Expand / Collapse -->
-<div style="text-align:center; margin-bottom:10px;">
-    <button onclick="expandAllSections()">Tout Déplier</button>
-    <button onclick="collapseAllSections()">Tout Replier</button>
-</div>
 
 <!-- Timers -->
 <div class="timer-box">
@@ -373,17 +365,11 @@ body.dark #tab-bar {
     </div>
 </section>
 
-<!-- SAUVEGARDER après HORAIRES -->
-<button id="save" onclick="manualSave()">SAUVEGARDER</button>
-
 <!-- TIMING -->
 <section>
     <h2>TIMING</h2>
     <div class="form-grid" id="timing-grid"></div>
 </section>
-
-<!-- SAUVEGARDER après TIMING -->
-<button id="save" onclick="manualSave()">SAUVEGARDER</button>
 
 <!-- CHARGEMENT -->
 <section>
@@ -458,6 +444,7 @@ let isUTC=false;
 let manualSOBT=false;
 let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
+let saveTimer=null;
 
 /* INIT */
 function initForm(){
@@ -468,11 +455,12 @@ function initForm(){
     else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
-    generateTimingFields();
+    generateTimingFields();         // crée les champs TIMING
     generateChargementFields();
-    setInterval(()=>{updateAllCalculations();saveCurrentTabData();},60000);
+    attachAutoSave();               // autosave sur chaque modification
+    window.addEventListener('beforeunload', saveCurrentTabData);
 
-    // collapse/expand toggle for sections
+    // collapse/expand toggle pour chaque section via clic sur h2
     document.querySelectorAll("section h2").forEach(h2=>{
         h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
@@ -490,18 +478,26 @@ function initForm(){
     setTimeModeUTC(storedUTC, /*fromInit*/true);
 
     updateTimeModeLabel();
+    // Recharger les données du dernier onglet après génération des champs
+    if (currentTabId) loadTabData(currentTabId);
 }
 
-/* Expand/collapse all */
-function expandAllSections(){ document.querySelectorAll("section").forEach(sec=>sec.classList.remove("collapsed")); }
-function collapseAllSections(){ document.querySelectorAll("section").forEach(sec=>sec.classList.add("collapsed")); }
+/* Autosave sur modification (déclenché avec un petit debounce) */
+function attachAutoSave(){
+    const handler=()=>{
+        clearTimeout(saveTimer);
+        saveTimer=setTimeout(saveCurrentTabData, 300);
+    };
+    document.addEventListener('input', handler, true);
+    document.addEventListener('change', handler, true);
+}
 
 /* Tabs */
 function renderTabs(){
     const tabBar=document.getElementById('tab-bar');
     tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
     let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    tabs.forEach((id,index)=>{
+    tabs.forEach((id)=>{
         const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
         let label=data.To?data.To.toUpperCase():"VOL";
         let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
@@ -559,7 +555,12 @@ function clearFormFields(){
 function saveCurrentTabData(){
     if(!currentTabId) return;
     let data={};
-    document.querySelectorAll('input, select, textarea').forEach(el=>data[el.id]=el.value);
+    document.querySelectorAll('input, select, textarea').forEach(el=>{
+        if(!el.id) return;
+        if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
+        else data[el.id]=el.value;
+    });
+    // états globaux utiles à la reprise
     data.modeDark=document.body.classList.contains('dark')?'1':'0';
     data.modeUTC=isUTC?'1':'0';
     data.timer_h40=document.getElementById('timer-h40').textContent;
@@ -573,28 +574,38 @@ function saveCurrentTabData(){
 
 function loadTabData(id){
     const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+
+    // Remettre toutes les valeurs
     document.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(data[el.id]!==undefined) el.value=data[el.id];
+        if(!el.id || data[el.id]===undefined) return;
+        if(el.type==='checkbox') el.checked = data[el.id]==='1';
+        else el.value = data[el.id];
     });
-    // Appliquer modes stockés dans l'onglet si présents, sinon garder état global
+
+    // appliquer modes stockés
     if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
     isUTC=data.modeUTC==='1';
+
+    // timers affichés
     document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
     document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
     document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
     document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
 
-    // Synchroniser positions des switches avec l'état courant
+    // synchro UI switches
     document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
     document.getElementById('utcToggle').checked  = isUTC;
 
-    generateChargementFields();
+    generateChargementFields(); // dépend de Cie
     updateTimeModeLabel();
     updateAllCalculations();
 }
 
 /* Mise à jour instantanée label onglet */
-function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
+function updateTabLabelInstant(){
+    saveCurrentTabData();
+    renderTabs();
+}
 
 /* TIMING FIELDS */
 function generateTimingFields(){
@@ -956,14 +967,13 @@ function setDarkMode(enable, fromInit=false){
 }
 
 function setTimeModeUTC(enable, fromInit=false){
-    // Si on appelle au chargement, on veut juste "régler" l'état sans reconvertir les champs.
     if (!fromInit && enable !== isUTC) {
         // convertir toutes les heures de +/-2h selon le sens
         const inputs = document.querySelectorAll('input[type="time"]');
         inputs.forEach(input => {
             if (!input.value) return;
             let [hh, mm] = input.value.split(':').map(Number);
-            hh = enable ? hh - 2 : hh + 2; // passage Local->UTC = -2h ; UTC->Local = +2h
+            hh = enable ? hh - 2 : hh + 2; // Local->UTC : -2h / UTC->Local : +2h
             if (hh < 0) hh += 24;
             if (hh >= 24) hh -= 24;
             input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
@@ -976,7 +986,7 @@ function setTimeModeUTC(enable, fromInit=false){
     updateAllCalculations();
 }
 
-/* Ancienne bascule (laisse au cas où d'autres appels existent) */
+/* Compat anciens appels */
 function toggleDarkMode(){ setDarkMode(!document.body.classList.contains('dark')); }
 function toggleTimeMode(){ setTimeModeUTC(!isUTC); }
 
@@ -1010,13 +1020,9 @@ const AIRTABLE_TABLE_NAME = "tblFWs07zjCYunab9";
 
 /* === ENVOI VERS AIRTABLE === */
 async function sendToAirtable() {
-    // Mise en majuscule des champs INFO VOL
-    function upper(id) {
-        return document.getElementById(id).value.toUpperCase();
-    }
+    function upper(id) { return document.getElementById(id).value.toUpperCase(); }
 
     const record = {
-        // Champs INFO VOL
         "Date": document.getElementById('Date').value,
         "RZA": upper('RZA'),
         "Immat": upper('Immat'),
@@ -1030,7 +1036,6 @@ async function sendToAirtable() {
         "SOBT": document.getElementById('SOBT').value,
         "AOBT": document.getElementById('AOBT').value,
 
-        // Champs RETARDS
         "Retard (min)": document.getElementById('DLduree1').value,
         "DL Code 1": document.getElementById('DLcode1').value,
         "DL Durée 1 (min)": document.getElementById('DLduree1').value,
@@ -1040,7 +1045,6 @@ async function sendToAirtable() {
         "DL Durée 3 (min)": document.getElementById('DLduree3').value,
         "DL JUSTIFICATIONS": document.getElementById('DLJustif').value,
 
-        // Champs TIMING
         "Arrivée PNT avion": document.getElementById('ArrPNT').value,
         "Arrivée PNC avion": document.getElementById('ArrPNC').value,
         "Premier débarqué": document.getElementById('PremierDebarque').value,
@@ -1056,13 +1060,11 @@ async function sendToAirtable() {
         "Remise LID/LDS": document.getElementById('RemiseLID').value,
         "Fermeture porte avion": document.getElementById('FermeturePorteAvion').value,
 
-        // Champs ASSISTANCES
         "WCHC": document.getElementById('WCHC').value,
         "WCHS": document.getElementById('WCHS').value,
         "WCHR": document.getElementById('WCHR').value,
         "Autre": document.getElementById('AutreAssist').value,
 
-        // Champs PRESTATIONS
         "ASU": document.getElementById('ASU').value,
         "Vidange toilettes": document.getElementById('Vidange').value,
         "Eau potable": document.getElementById('EauPotable').value,
@@ -1086,10 +1088,7 @@ async function sendToAirtable() {
             body: JSON.stringify({ records: [{ fields: record }] })
         });
 
-        if (!response.ok) {
-            throw new Error(`Erreur API : ${response.statusText}`);
-        }
-
+        if (!response.ok) throw new Error(`Erreur API : ${response.statusText}`);
         showPopup("Toutes les données envoyées à Airtable !", "#4caf50", 3000);
     } catch (err) {
         console.error("Erreur Airtable :", err);
@@ -1101,22 +1100,14 @@ async function sendToAirtable() {
 function validateForm() {
     const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
     let missing = false;
-    for (let id of required) {
-        if (!document.getElementById(id).value) {
-            missing = true;
-        }
-    }
+    for (let id of required) if (!document.getElementById(id).value) missing = true;
 
     if (missing) {
         showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
     } else {
-        // Envoi des données vers Airtable
         sendToAirtable();
-
-        // Affiche popup confirmation
         showPopup("Vol terminé et envoyé !", "#4caf50", 2000);
 
-        // Supprimer ou réinitialiser l’onglet
         setTimeout(() => {
             let tabs = JSON.parse(localStorage.getItem('flightTabs') || '[]');
             tabs = tabs.filter(t => t !== currentTabId);
@@ -1124,9 +1115,9 @@ function validateForm() {
             localStorage.removeItem('tab-' + currentTabId);
 
             if (tabs.length > 0) {
-                switchTab(tabs[0]); // Passer au premier onglet restant
+                switchTab(tabs[0]);
             } else {
-                createNewTab(); // Réinitialiser si aucun onglet restant
+                createNewTab();
             }
         }, 1000);
     }
