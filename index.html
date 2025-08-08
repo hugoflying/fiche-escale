@@ -245,7 +245,81 @@ body.dark #tab-bar { background: #121212; }
 #popup.success { background: #4caf50; }
 #popup.error { background: #d32f2f; }
 #popup.info { background: #2196f3; }
+
+/* === ICÔNE FLOTTANTE BLOC-NOTES === */
+#floating-note-icon {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 64px;
+    height: 64px;
+    z-index: 2000;
+    cursor: grab;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.7);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    display: grid;
+    place-items: center;
+    backdrop-filter: blur(2px);
+    touch-action: none; /* indispensable pour le drag sur tablette */
+    -webkit-user-select: none;
+    user-select: none;
 }
+#floating-note-icon:active { cursor: grabbing; }
+#floating-note-icon svg { width: 70%; height: 70%; opacity: .9; }
+
+/* === OVERLAY BLOC-NOTES === */
+#handnote-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;            /* affiché via JS */
+    z-index: 1999;
+    background: rgba(0,0,0,0.18); /* légère transparence */
+}
+#handnote-panel {
+    position: absolute;
+    inset: 5% 4% 6% 4%;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.88);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+body.dark #handnote-panel {
+    background: rgba(30,30,30,0.9);
+}
+
+/* Barre outils bloc-notes */
+#handnote-toolbar{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    border-bottom: 1px solid rgba(0,0,0,.1);
+}
+body.dark #handnote-toolbar{ border-bottom-color: rgba(255,255,255,.12); }
+#handnote-toolbar button{
+    border:none; border-radius:8px; padding:8px 12px; font-size:0.95rem; cursor:pointer;
+}
+#hn-close { background:#d32f2f; color:#fff; }
+#hn-clear { background:#555; color:#fff; }
+#hn-size { width:120px; }
+#hn-color { width:28px; height:28px; padding:0; border:1px solid #ccc; border-radius:6px; }
+
+/* Canvas pleine zone disponible */
+#handnote-canvas{
+    flex:1;
+    touch-action: none; /* autoriser dessin sans scroll */
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.03),
+        rgba(0,0,0,0.03) 24px,
+        transparent 24px,
+        transparent 48px
+    );
+}
+
+/* Amélioration accessibilité tactile pour boutons */
+button, input, select { touch-action: manipulation; }
 </style>
 </head>
 <body onload="initForm()">
@@ -436,6 +510,36 @@ body.dark #tab-bar { background: #121212; }
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
+<!-- === ICÔNE FLOTTANTE + OVERLAY BLOC-NOTES === -->
+<div id="floating-note-icon" title="Bloc-notes manuscrit (déplaçable)" onclick="toggleHandNote()">
+    <!-- Icône style Notes (SVG, blanc/translucide, visible derrière) -->
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+        <!-- fond arrondi blanc translucide -->
+        <rect x="8" y="8" rx="22" ry="22" width="84" height="84" fill="white" fill-opacity="0.0"></rect>
+        <!-- bande supérieure (jaune très légère) -->
+        <rect x="14" y="14" rx="14" ry="14" width="72" height="20" fill="#FFD54F" fill-opacity="0.55"></rect>
+        <!-- lignes -->
+        <g stroke="#000" stroke-opacity="0.18" stroke-width="2">
+            <line x1="18" y1="46" x2="82" y2="46"/>
+            <line x1="18" y1="62" x2="82" y2="62"/>
+            <line x1="18" y1="78" x2="64" y2="78"/>
+        </g>
+    </svg>
+</div>
+
+<div id="handnote-overlay" style="display:none;">
+    <div id="handnote-panel">
+        <div id="handnote-toolbar">
+            <button id="hn-close" onclick="closeHandNote(true)">Fermer</button>
+            <button id="hn-clear" onclick="clearHandNote()">Effacer</button>
+            <label>Épaisseur <input id="hn-size" type="range" min="1" max="12" step="0.5" value="3"></label>
+            <label>Couleur <input id="hn-color" type="color" value="#111111"></label>
+            <span style="margin-left:auto;font-size:.9rem;opacity:.8;">Bloc-notes manuscrit (sauvegarde auto par onglet)</span>
+        </div>
+        <canvas id="handnote-canvas"></canvas>
+    </div>
+</div>
+
 <script>
 /* === CODE JS COMPLET === */
 
@@ -445,6 +549,17 @@ let manualSOBT=false;
 let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
+
+/* === Variables Bloc-notes === */
+let hn = {
+    drawing:false,
+    ctx:null,
+    lastX:0, lastY:0,
+    size:3,
+    color:"#111111",
+    iconDrag:false,
+    iconOffset:{x:0,y:0}
+};
 
 /* INIT */
 function initForm(){
@@ -480,6 +595,9 @@ function initForm(){
     updateTimeModeLabel();
     // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
+
+    /* === Init bloc-notes === */
+    setupHandNote();
 }
 
 /* Autosave sur modification (déclenché avec un petit debounce) */
@@ -520,6 +638,7 @@ function createNewTab(){
     localStorage.setItem('lastTabId',newId);
     saveCurrentTabData();
     renderTabs();
+    restoreNoteIconPosition(); // position par défaut pour nouvel onglet
 }
 
 function switchTab(id){
@@ -528,6 +647,9 @@ function switchTab(id){
     localStorage.setItem('lastTabId',id);
     loadTabData(id);
     renderTabs();
+    restoreNoteIconPosition();
+    // cacher le bloc-notes quand on change d'onglet
+    document.getElementById('handnote-overlay').style.display='none';
 }
 
 function deleteTab(id){
@@ -536,6 +658,8 @@ function deleteTab(id){
     tabs=tabs.filter(t=>t!==id);
     localStorage.setItem('flightTabs',JSON.stringify(tabs));
     localStorage.removeItem('tab-'+id);
+    localStorage.removeItem('note-'+id);
+    localStorage.removeItem('noteIconPos-'+id);
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
@@ -567,6 +691,9 @@ function saveCurrentTabData(){
     data.timer_h15=document.getElementById('timer-h15').textContent;
     data.timer_h8=document.getElementById('timer-h8').textContent;
     data.timer_tobt=document.getElementById('timer-tobt').textContent;
+    // info de présence note (optionnel)
+    const noteKey='note-'+currentTabId;
+    data.noteSaved=localStorage.getItem(noteKey)?'1':'0';
     localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
     localStorage.setItem('lastTabId',currentTabId);
     renderTabs();
@@ -1113,6 +1240,8 @@ function validateForm() {
             tabs = tabs.filter(t => t !== currentTabId);
             localStorage.setItem('flightTabs', JSON.stringify(tabs));
             localStorage.removeItem('tab-' + currentTabId);
+            localStorage.removeItem('note-' + currentTabId);
+            localStorage.removeItem('noteIconPos-' + currentTabId);
 
             if (tabs.length > 0) {
                 switchTab(tabs[0]);
@@ -1136,6 +1265,55 @@ function clearAutoSave() {
         location.reload();
     }
 }
-</script>
-</body>
-</html>
+
+/* ===================================================================== */
+/* ======================== BLOC-NOTES MANUSCRIT ======================== */
+/* ===================================================================== */
+
+function setupHandNote(){
+    const canvas = document.getElementById('handnote-canvas');
+    const ctx = canvas.getContext('2d');
+    hn.ctx = ctx;
+    resizeHandNoteCanvas();
+
+    // outils
+    const sizeInput = document.getElementById('hn-size');
+    const colorInput = document.getElementById('hn-color');
+    sizeInput.oninput = ()=> hn.size = parseFloat(sizeInput.value);
+    colorInput.oninput = ()=> hn.color = colorInput.value;
+
+    // pointer events pour dessin
+    canvas.addEventListener('pointerdown', e=>{
+        canvas.setPointerCapture(e.pointerId);
+        hn.drawing=true;
+        const p=canvasPoint(e, canvas);
+        hn.lastX=p.x; hn.lastY=p.y;
+        drawPoint(p.x, p.y, true, e.pressure||1);
+    });
+    canvas.addEventListener('pointermove', e=>{
+        if(!hn.drawing) return;
+        const p=canvasPoint(e, canvas);
+        drawLine(hn.lastX, hn.lastY, p.x, p.y, e.pressure||1);
+        hn.lastX=p.x; hn.lastY=p.y;
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(ev=>{
+        canvas.addEventListener(ev, e=>{
+            if(!hn.drawing) return;
+            hn.drawing=false;
+            // autosave après chaque trait
+            saveHandNote();
+        });
+    });
+
+    // redimension sur rotation / resize
+    window.addEventListener('resize', ()=>{
+        const data = getHandNoteDataURL(); // garder le dessin
+        resizeHandNoteCanvas();
+        if (data) restoreHandNoteFromDataURL(data);
+    });
+
+    // drag de l’icône
+    const icon = document.getElementById('floating-note-icon');
+    icon.addEventListener('pointerdown', e=>{
+        // si l’overlay est ouvert, le clic sert à la bascule (géré par onclick), on n’active pas le drag
+        if(document.getElementBy
