@@ -1305,14 +1305,19 @@ function labelFromInputEl(input){
   return input.id || 'Horaire';
 }
 
+/* Fenêtre d’affichage :
+   - Priorité : [H-15 - 5 min, AOBT + 5 min] si H-15 et AOBT dispo
+   - Sinon : [SIBT - 5 min, SOBT + 5 min]
+   - Sinon : min/max des données
+*/
 function computeTimelineWindow(allTimes){
-  const hle = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const h15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-  if(hle != null && aobt != null){
-    let min = hle - 5;
+  if(h15 != null && aobt != null){
+    let min = h15 - 5;
     let max = aobt + 5;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'HLE-AOBT'};
+    return {min, max, basis:'H-15/AOBT'};
   }
   const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
   const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
@@ -1320,7 +1325,7 @@ function computeTimelineWindow(allTimes){
     let min = sibt - 5;
     let max = sobt + 5;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'SIBT-SOBT'};
+    return {min, max, basis:'SIBT/SOBT'};
   }
   if(allTimes.length){
     let min = Math.min(...allTimes) - 10;
@@ -1339,6 +1344,7 @@ function getPairWindow(idA,idB){
 }
 
 function collectTimelineData(){
+  /* Points fixes (haut/événements) */
   const fixedPoints = [];
   const addPoint = (label, t, cls='tl--std')=>{
     if(t==null) return;
@@ -1351,7 +1357,8 @@ function collectTimelineData(){
   const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
   const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
   const CTOT = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
-  const HLE  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
 
   addPoint('SIBT', SIBT, 'tl--std');
   addPoint('AIBT', AIBT, 'tl--std');
@@ -1359,8 +1366,10 @@ function collectTimelineData(){
   addPoint('AOBT', AOBT, 'tl--std');
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
-  addPoint('HLE',  HLE,  'tl--turn');
+  addPoint('H-15', H15,  'tl--turn');
+  addPoint('H-40', H40,  'tl--turn');
 
+  /* Événements unitaires (points) */
   const singles = [
     ['ArrPNT','Arrivée PNT avion'],
     ['ArrPNC','Arrivée PNC avion'],
@@ -1372,17 +1381,18 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
+  /* Lignes de durées empilées (barres) — alignées à gauche */
   const rows = [
-    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'), cls:'tl--turn'},
-    {key:'embAv',  label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops'},
-    {key:'embPor', label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std'},
-    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'), cls:'tl--tobt'},
-    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'), cls:'tl--svc'},
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'), cls:'tl--turn', color:null},
+    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
+    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),           cls:'tl--std',  color:'#ff9800'}, // orange
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),           cls:'tl--std',  color:'#2e7d32'}, // vert
   ];
 
   const durations = rows
     .filter(r=>r.pair!=null)
-    .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls}));
+    .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
@@ -1408,59 +1418,73 @@ function renderTimeline(){
   canvas.style.width = `${100 * timelineZoom}%`;
   const total = Math.max(1, max - min);
 
+  /* Grille verticale 5 min (lignes plus basses, heure en bas) */
   const step = 5;
   for(let t = Math.ceil(min/step)*step; t <= Math.floor(max/step)*step; t += step){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
+
     const vline = document.createElement('div');
-    vline.className = 'timeline-tick thick';
-    vline.style.left = `calc(${leftPct}% - 1px)`;
+    vline.className = 'timeline-tick';
+    vline.style.left = `${leftPct}%`;     // centre de la ligne
     vline.style.top = '12%';
     vline.style.height = '78%';
     canvas.appendChild(vline);
+
     if(t % 15 === 0){
       const lbl = document.createElement('div');
-      lbl.className = 'timeline-tick-label big';
+      lbl.className = 'timeline-tick-label';
       lbl.textContent = fmtHHMM(t);
       lbl.style.left = `${leftPct}%`;
+      lbl.style.top = 'calc(100% - 18px)';  // en bas
       canvas.appendChild(lbl);
     }
   }
 
+  /* Barres de durées (5 rangées, non superposées) */
   const rowTops = [56, 66, 76, 86, 96];
   durations.forEach(d=>{
-    const leftPct  = 6 + ((d.a-min)/total)*88;
-    const widthPct = ((d.b-d.a)/total)*88;
+    const leftStartPct  = 6 + ((d.a-min)/total)*88;
+    const widthPct      = ((d.b-d.a)/total)*88;
+
     const bar = document.createElement('div');
-    bar.className = `tl-range thick ${d.cls}`;
-    bar.style.left = `${leftPct}%`;
+    bar.className = `tl-range ${d.cls}`;
+    bar.style.left = `${leftStartPct}%`;    // ALIGNE SUR LE DÉBUT
     bar.style.width = `${widthPct}%`;
     bar.style.top = `${rowTops[d.rowIndex]}%`;
+    bar.style.transform = 'translateY(-50%)'; // plus de translateX, donc left = bord gauche
+    if(d.color){ bar.style.setProperty('--c', d.color); } // couleurs spécifiques Fuel/Lift
     canvas.appendChild(bar);
+
     const lab = document.createElement('div');
-    lab.className = 'tl-range-label big';
+    lab.className = 'tl-range-label';
     lab.textContent = showTimeLabels ? `${d.label} ${fmtHHMM(d.a)}–${fmtHHMM(d.b)}` : d.label;
     bar.appendChild(lab);
   });
 
+  /* Points fixes (au-dessus) */
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const leftPct = 6 + ((p.t-min)/total)*88;
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
     el.style.left = `${leftPct}%`;
     el.style.top  = '28%';
-    const dot = document.createElement('div'); dot.className = 'tl-dot thick';
-    const label = document.createElement('div'); label.className='tl-label big';
+    const dot = document.createElement('div'); dot.className = 'tl-dot';
+    const label = document.createElement('div'); label.className='tl-label';
     label.textContent = showTimeLabels ? `${p.label} ${fmtHHMM(p.t)}` : p.label;
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
   });
 
+  /* Centrage par défaut sur le milieu SIBT–AOBT (si présent, zoom 100% et pas d’interaction) */
   if(!timelineUserScrolled && Math.abs(timelineZoom - 1) < 1e-6){
     const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+    const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
     const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
-    if(sibt!=null && sobt!=null){
-      const mid = (sibt + sobt) / 2;
+    let mid = null;
+    if(sibt!=null && aobt!=null) mid = (sibt + aobt) / 2;
+    else if(sibt!=null && sobt!=null) mid = (sibt + sobt) / 2;
+    if(mid!=null){
       const midX = (mid - min) / total;
       const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth/2;
       scroller.scrollLeft = Math.max(0, centerLeft);
@@ -1468,23 +1492,25 @@ function renderTimeline(){
   }
 }
 
+/* Injecte la coche si absente (sécurité si HTML ne l’a pas) + marque interaction utilisateur */
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
-  if(!bar || document.getElementById('showTimesToggle')) return;
-  const wrap = document.createElement('label');
-  wrap.style.display = 'inline-flex';
-  wrap.style.alignItems = 'center';
-  wrap.style.gap = '6px';
-  wrap.style.marginLeft = '8px';
-  const cb = document.createElement('input');
-  cb.type = 'checkbox';
-  cb.id = 'showTimesToggle';
-  cb.checked = showTimeLabels;
-  cb.addEventListener('change', ()=>{ showTimeLabels = cb.checked; renderTimeline(); });
-  const span = document.createElement('span');
-  span.textContent = 'Heure sur étiquettes';
-  wrap.appendChild(cb); wrap.appendChild(span);
-  bar.appendChild(wrap);
+  if(bar && !document.getElementById('showTimesToggle')){
+    const wrap = document.createElement('label');
+    wrap.style.display = 'inline-flex';
+    wrap.style.alignItems = 'center';
+    wrap.style.gap = '6px';
+    wrap.style.marginLeft = '8px';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'showTimesToggle';
+    cb.checked = showTimeLabels;
+    cb.addEventListener('change', ()=>{ showTimeLabels = cb.checked; renderTimeline(); });
+    const span = document.createElement('span');
+    span.textContent = 'Heure sur étiquettes';
+    wrap.appendChild(cb); wrap.appendChild(span);
+    bar.appendChild(wrap);
+  }
   const scroller = document.getElementById('timelineScroll');
   if(scroller){
     ['wheel','mousedown','touchstart','keydown'].forEach(ev=>{
@@ -1492,7 +1518,7 @@ function renderTimeline(){
     });
   }
 })();
-
+    
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
