@@ -1180,15 +1180,17 @@ function updateSOBTDefault() {
 
 /* === TOBT CALCUL === */
 function updateTOBT() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    the_aibttxt = document.getElementById('AIBT').value;
-    const sobttxt = document.getElementById('SOBT').value;
+    const aibtTxt = document.getElementById('AIBT').value;
+    const aibtDate = new Date(`1970-01-01T${aibtTxt}:00`);
 
-    if (!cie || !sibttxt) {
-        document.getElementById('timer-tobt').textContent = '--:--';
-        return;
+    if (!isNaN(aibtDate.getTime())) {
+        // +10 min
+        const tobtDate = new Date(aibtDate.getTime() + 10 * 60000);
+        const tobtHours = String(tobtDate.getHours()).padStart(2, '0');
+        const tobtMinutes = String(tobtDate.getMinutes()).padStart(2, '0');
+        document.getElementById('TOBT').value = `${tobtHours}:${tobtMinutes}`;
     }
+}
 
     const [sH, sM] = sibttxt.split(':').map(Number);
     const [aH, aM] = the_aibttxt ? the_aibttxt.split(':').map(Number) : [sH, sM];
