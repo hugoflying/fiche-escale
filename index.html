@@ -162,7 +162,7 @@ button.plus  { background: #555; color: white; }
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;   /* même taille pour les deux */
+    width: 60px;
     height: 28px;
 }
 .switch input { opacity: 0; width: 0; height: 0; }
@@ -196,7 +196,7 @@ button.plus  { background: #555; color: white; }
 
 /* Indicateur de mode à droite */
 #timeModeLabel {
-    margin-left: auto;              /* pousse complètement à droite */
+    margin-left: auto;
     font-weight: bold;
     color: #1976d2;
 }
@@ -217,9 +217,8 @@ button.plus  { background: #555; color: white; }
     position: sticky;
     top: 0;
     background: #f8f9fa;
-    z-index: 10;
-    padding: 5px 0;
     z-index: 999;
+    padding: 5px 0;
 }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
@@ -296,7 +295,7 @@ body.dark #handnote-header {
     border-bottom-color: rgba(255,255,255,0.12);
 }
 #handnote-title { font-weight: bold; font-size: .95rem; }
-#handnote-tools { margin-left:auto; display:flex; gap:8px; }
+#handnote-tools { margin-left:auto; display:flex; gap:8px; flex-wrap: wrap; }
 
 .handnote-btn {
     padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.15);
@@ -318,6 +317,9 @@ body.dark #handnote-canvas {
       repeating-linear-gradient(to bottom, rgba(255,255,255,.12) 0 1px, transparent 1px 34px),
       rgba(20,20,20,0.6);
 }
+/* Outils */
+#handnote-tools .handnote-btn input[type="range"] { accent-color: #1976d2; }
+#handnote-eraser.active { outline: 2px solid #1976d2; }
 </style>
 </head>
 <body onload="initForm()">
@@ -516,6 +518,19 @@ body.dark #handnote-canvas {
   <div id="handnote-header">
     <span id="handnote-title">Bloc-note (stylet / doigt)</span>
     <div id="handnote-tools">
+      <label class="handnote-btn" style="display:flex;align-items:center;gap:6px;">
+        Couleur
+        <input type="color" id="handnote-color" value="#111111" style="width:32px;height:28px;padding:0;border:none;background:transparent;">
+      </label>
+      <label class="handnote-btn" style="display:flex;align-items:center;gap:6px;">
+        Épaisseur
+        <input type="range" id="handnote-width" min="1" max="12" step="0.5" value="2.5" style="width:110px;">
+      </label>
+      <button class="handnote-btn" id="handnote-eraser" title="Activer la gomme">Gomme</button>
+      <label class="handnote-btn" style="display:flex;align-items:center;gap:6px;">
+        Taille gomme
+        <input type="range" id="handnote-eraser-width" min="6" max="40" step="1" value="16" style="width:110px;">
+      </label>
       <button class="handnote-btn" id="handnote-undo" title="Annuler dernier trait">Annuler</button>
       <button class="handnote-btn" id="handnote-clear" title="Effacer">Effacer</button>
       <button class="handnote-btn" id="handnote-close" title="Fermer">Fermer</button>
@@ -537,16 +552,17 @@ const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩
 let saveTimer=null;
 
 /* ====== BLOC-NOTE (dessin à main levée) ====== */
-let noteCtx, noteCanvas, noteIsDrawing=false, noteStrokes=[];
+let noteCtx, noteCanvas, noteIsDrawing=false;
 let noteHistory=[]; // pour Annuler
+let penColor='#111111', penWidth=2.5, isErasing=false, eraserWidth=16;
 const NOTE_ICON_POS_KEY = 'floatingNoteIconPos'; // position globale
+
 function initHandnote(){
     noteCanvas = document.getElementById('handnote-canvas');
     noteCtx = noteCanvas.getContext('2d');
-    resizeNoteCanvas(); // initialise taille DPR
     attachNoteEvents();
 
-    // Restaurer position icône
+    // Restaurer position icône (globale)
     const pos = JSON.parse(localStorage.getItem(NOTE_ICON_POS_KEY) || 'null');
     if (pos) {
         const btn = document.getElementById('floating-note-btn');
@@ -556,17 +572,19 @@ function initHandnote(){
         btn.style.bottom = 'auto';
     }
     makeNoteButtonDraggable();
-    document.getElementById('floating-note-btn').addEventListener('click', (e)=>{
-        // Si on vient juste de drag, ignorer le click (petite astuce)
+
+    // Clic icône = toggle (ouvrable/fermable)
+    document.getElementById('floating-note-btn').addEventListener('click', ()=>{
         if (btnDrag.justDragged) { btnDrag.justDragged=false; return; }
-        toggleHandnote(true);
+        const panel = document.getElementById('handnote-panel');
+        toggleHandnote(panel.style.display !== 'block');
     });
 
     // Outils
     document.getElementById('handnote-close').onclick = ()=>toggleHandnote(false);
     document.getElementById('handnote-clear').onclick = ()=>{
         noteCtx.clearRect(0,0,noteCanvas.width,noteCanvas.height);
-        noteHistory=[]; noteStrokes=[];
+        noteHistory.length = 0;
         saveNoteToLocal();
     };
     document.getElementById('handnote-undo').onclick = ()=>{
@@ -578,58 +596,93 @@ function initHandnote(){
         }
     };
 
-    window.addEventListener('resize', ()=>{
-        const dataBefore = noteCanvas.toDataURL();
-        resizeNoteCanvas();
-        // Réafficher l'image précédente après resize
-        const img = new Image();
-        img.onload = ()=> noteCtx.drawImage(img,0,0,noteCanvas.width,noteCanvas.height);
-        img.src = dataBefore;
-    }, {passive:true});
+    const colorInput = document.getElementById('handnote-color');
+    const widthInput = document.getElementById('handnote-width');
+    const eraserBtn  = document.getElementById('handnote-eraser');
+    const eraserSize = document.getElementById('handnote-eraser-width');
+
+    colorInput.oninput = (e)=>{ penColor = e.target.value; if(isErasing){ isErasing=false; eraserBtn.classList.remove('active'); } };
+    widthInput.oninput = (e)=>{ penWidth = parseFloat(e.target.value); };
+    eraserSize.oninput = (e)=>{ eraserWidth = parseFloat(e.target.value); };
+
+    eraserBtn.onclick = ()=>{
+        isErasing = !isErasing;
+        eraserBtn.classList.toggle('active', isErasing);
+    };
+
+    // dimensionnement → uniquement quand le panneau est visible (fait dans toggleHandnote)
 }
 
 function resizeNoteCanvas(){
     const wrap = document.getElementById('handnote-canvas-wrap');
-    const dpr = window.devicePixelRatio || 1;
     const cssW = wrap.clientWidth;
     const cssH = wrap.clientHeight;
+    if (!cssW || !cssH) return; // si caché, on ne fait rien
+
+    const dpr = window.devicePixelRatio || 1;
+    // reset transform pour éviter accumulation de scale()
+    noteCtx.setTransform(1,0,0,1,0,0);
+
     noteCanvas.width  = Math.max(1, Math.floor(cssW * dpr));
     noteCanvas.height = Math.max(1, Math.floor(cssH * dpr));
+    noteCanvas.style.width  = cssW + 'px';
+    noteCanvas.style.height = cssH + 'px';
+
     noteCtx.scale(dpr, dpr);
-    // Style de trait par défaut
     noteCtx.lineCap = 'round';
     noteCtx.lineJoin = 'round';
-    noteCtx.strokeStyle = '#111';
-    noteCtx.lineWidth = 2.2;
+    noteCtx.strokeStyle = penColor;
+    noteCtx.lineWidth = penWidth;
+    noteCtx.globalCompositeOperation = 'source-over';
 }
 
 function attachNoteEvents(){
     const c = noteCanvas;
-    const start = (x,y,pressure=0.5)=>{ 
-        noteIsDrawing=true; 
-        noteCtx.beginPath(); noteCtx.moveTo(x,y);
-        noteCtx.lineWidth = 1.5 + 3.5*(pressure||0.5);
-        // snapshot pour Undo
+
+    const snapshotForUndo = ()=>{
         const img = new Image();
         img.src = c.toDataURL();
         noteHistory.push(img);
     };
-    const move = (x,y,pressure=0.5)=>{
-        if(!noteIsDrawing) return;
-        noteCtx.lineWidth = 1.5 + 3.5*(pressure||0.5);
-        noteCtx.lineTo(x,y); noteCtx.stroke();
+
+    const start = (x,y,pressure=0.5)=>{
+        noteIsDrawing = true;
+        snapshotForUndo();
+        noteCtx.beginPath();
+        noteCtx.moveTo(x,y);
+        if (isErasing){
+            noteCtx.globalCompositeOperation = 'destination-out';
+            noteCtx.lineWidth = eraserWidth;
+        } else {
+            noteCtx.globalCompositeOperation = 'source-over';
+            noteCtx.strokeStyle = penColor;
+            noteCtx.lineWidth = Math.max(1, penWidth * (0.6 + 0.8*(pressure ?? 0.5)));
+        }
     };
+
+    const move = (x,y,pressure=0.5)=>{
+        if (!noteIsDrawing) return;
+        if (!isErasing){
+            noteCtx.lineWidth = Math.max(1, penWidth * (0.6 + 0.8*(pressure ?? 0.5)));
+            noteCtx.strokeStyle = penColor;
+        } else {
+            noteCtx.lineWidth = eraserWidth;
+        }
+        noteCtx.lineTo(x,y);
+        noteCtx.stroke();
+    };
+
     const end = ()=>{
-        if(!noteIsDrawing) return;
-        noteIsDrawing=false; 
+        if (!noteIsDrawing) return;
+        noteIsDrawing = false;
         noteCtx.closePath();
         saveNoteToLocal();
     };
 
     const getXY = (e)=>{
         const rect = c.getBoundingClientRect();
-        const x = (e.clientX - rect.left);
-        const y = (e.clientY - rect.top);
+        const x = (e.clientX ?? e.touches?.[0]?.clientX) - rect.left;
+        const y = (e.clientY ?? e.touches?.[0]?.clientY) - rect.top;
         return {x, y, p: e.pressure ?? 0.5};
     };
 
@@ -639,7 +692,8 @@ function attachNoteEvents(){
     c.addEventListener('pointerup', finish);
     c.addEventListener('pointercancel', finish);
     c.addEventListener('pointerleave', finish);
-    // Désactiver scroll/zoom sur le canvas
+
+    // Empêcher le scroll/zoom tactile sur le canvas
     c.addEventListener('touchstart', (e)=>e.preventDefault(), {passive:false});
     c.addEventListener('gesturestart', (e)=>e.preventDefault());
 }
@@ -649,14 +703,19 @@ function toggleHandnote(show){
     if (show){
         panel.style.display='block';
         panel.setAttribute('aria-hidden','false');
-        // recharger l'image enregistrée pour l'onglet courant
+        // Dimensionner maintenant que c’est visible
+        resizeNoteCanvas();
+        // Charger le dessin de l'onglet courant (clé note-<tabId>)
         loadNoteFromLocal();
+        window.addEventListener('resize', onNoteResize, {passive:true});
     } else {
         panel.style.display='none';
         panel.setAttribute('aria-hidden','true');
         saveNoteToLocal();
+        window.removeEventListener('resize', onNoteResize);
     }
 }
+function onNoteResize(){ resizeNoteCanvas(); }
 
 function saveNoteToLocal(){
     if(!currentTabId || !noteCanvas) return;
@@ -664,7 +723,7 @@ function saveNoteToLocal(){
     try {
         const dataURL = noteCanvas.toDataURL('image/png');
         localStorage.setItem(key, dataURL);
-        // marquer dans la fiche onglet aussi (utile si besoin)
+        // Enregistre aussi dans la fiche de l’onglet
         const data = JSON.parse(localStorage.getItem('tab-'+currentTabId)||'{}');
         data.noteDataURL = dataURL;
         localStorage.setItem('tab-'+currentTabId, JSON.stringify(data));
@@ -686,33 +745,42 @@ function loadNoteFromLocal(){
 }
 
 /* Drag icône flottante */
-const btnDrag = { dragging:false, dx:0, dy:0, justDragged:false };
+const btnDrag = { dragging:false, dx:0, dy:0, justDragged:false, startX:0, startY:0 };
 function makeNoteButtonDraggable(){
     const btn = document.getElementById('floating-note-btn');
+
     const onDown = (e)=>{
         btnDrag.dragging=true; btnDrag.justDragged=false;
         const rect = btn.getBoundingClientRect();
-        btnDrag.dx = (e.clientX ?? e.touches?.[0]?.clientX) - rect.left;
-        btnDrag.dy = (e.clientY ?? e.touches?.[0]?.clientY) - rect.top;
+        const cx = (e.clientX ?? e.touches?.[0]?.clientX);
+        const cy = (e.clientY ?? e.touches?.[0]?.clientY);
+        btnDrag.dx = cx - rect.left;
+        btnDrag.dy = cy - rect.top;
+        btnDrag.startX = cx; btnDrag.startY = cy;
         e.preventDefault();
     };
+
     const onMove = (e)=>{
         if(!btnDrag.dragging) return;
-        const x = (e.clientX ?? e.touches?.[0]?.clientX) - btnDrag.dx;
-        const y = (e.clientY ?? e.touches?.[0]?.clientY) - btnDrag.dy;
+        const cx = (e.clientX ?? e.touches?.[0]?.clientX);
+        const cy = (e.clientY ?? e.touches?.[0]?.clientY);
+        if (Math.hypot(cx - btnDrag.startX, cy - btnDrag.startY) > 5) btnDrag.justDragged = true;
+
+        const x = cx - btnDrag.dx;
+        const y = cy - btnDrag.dy;
         btn.style.left = Math.max(4, Math.min(window.innerWidth - btn.offsetWidth - 4, x)) + 'px';
         btn.style.top  = Math.max(4, Math.min(window.innerHeight - btn.offsetHeight - 4, y)) + 'px';
         btn.style.right = 'auto'; btn.style.bottom='auto';
-        btnDrag.justDragged=true;
     };
+
     const onUp = ()=>{
         if(!btnDrag.dragging) return;
         btnDrag.dragging=false;
-        // sauvegarder position
         const rect = btn.getBoundingClientRect();
         localStorage.setItem(NOTE_ICON_POS_KEY, JSON.stringify({x: rect.left, y: rect.top}));
         setTimeout(()=>{ btnDrag.justDragged=false; }, 50);
     };
+
     btn.addEventListener('mousedown', onDown);
     btn.addEventListener('touchstart', onDown, {passive:false});
     window.addEventListener('mousemove', onMove, {passive:false});
@@ -730,37 +798,38 @@ function initForm(){
     else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
     else switchTab(tabs[0]);
 
-    generateTimingFields();         // crée les champs TIMING
+    generateTimingFields();
     generateChargementFields();
-    attachAutoSave();               // autosave sur chaque modification
+    attachAutoSave();
     window.addEventListener('beforeunload', saveCurrentTabData);
 
-    // collapse/expand toggle pour chaque section via clic sur h2
+    // collapse/expand sur clic h2
     document.querySelectorAll("section h2").forEach(h2=>{
         h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
     });
 
-    // Mise à jour instantanée des onglets
+    // Onglets : label live
     document.getElementById('Parking').onchange = updateTabLabelInstant;
     document.getElementById('To').oninput = updateTabLabelInstant;
     document.getElementById('From').oninput = applyPrestationsDefaults;
     document.getElementById('To').oninput = applyPrestationsDefaults;
 
-    // Appliquer états des switches au chargement
+    // Switches
     const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
     const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
-    setDarkMode(storedDark, /*fromInit*/true);
-    setTimeModeUTC(storedUTC, /*fromInit*/true);
+    setDarkMode(storedDark, true);
+    setTimeModeUTC(storedUTC, true);
 
     updateTimeModeLabel();
-    // Recharger les données du dernier onglet après génération des champs
+
+    // Recharger les données du dernier onglet
     if (currentTabId) loadTabData(currentTabId);
 
-    // Init bloc-note
+    // Init bloc-note (après loadTabData)
     initHandnote();
 }
 
-/* Autosave sur modification (déclenché avec un petit debounce) */
+/* Autosave */
 function attachAutoSave(){
     const handler=()=>{
         clearTimeout(saveTimer);
@@ -814,7 +883,7 @@ function deleteTab(id){
     tabs=tabs.filter(t=>t!==id);
     localStorage.setItem('flightTabs',JSON.stringify(tabs));
     localStorage.removeItem('tab-'+id);
-    localStorage.removeItem('note-'+id);
+    localStorage.removeItem('note-'+id); // supprime le dessin lié à l’onglet
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
@@ -839,7 +908,7 @@ function saveCurrentTabData(){
         if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
         else data[el.id]=el.value;
     });
-    // états globaux utiles à la reprise
+    // états globaux
     data.modeDark=document.body.classList.contains('dark')?'1':'0';
     data.modeUTC=isUTC?'1':'0';
     data.timer_h40=document.getElementById('timer-h40').textContent;
@@ -847,14 +916,13 @@ function saveCurrentTabData(){
     data.timer_h8=document.getElementById('timer-h8').textContent;
     data.timer_tobt=document.getElementById('timer-tobt').textContent;
 
-    // Enregistrer l'image du bloc-note pour cet onglet
+    // Sauvegarde image du bloc-note pour cet onglet
     if (noteCanvas){
         try { data.noteDataURL = noteCanvas.toDataURL('image/png'); } catch(e){}
     }
 
     localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
     localStorage.setItem('lastTabId',currentTabId);
-    // En double (clé dédiée) pour recharge rapide
     if (data.noteDataURL) localStorage.setItem('note-'+currentTabId, data.noteDataURL);
     renderTabs();
 }
@@ -887,8 +955,13 @@ function loadTabData(id){
     updateTimeModeLabel();
     updateAllCalculations();
 
-    // recharger dessin de l'onglet
+    // Recharger le dessin de cet onglet au prochain affichage du panneau
     setTimeout(loadNoteFromLocal, 0);
+
+    // Si le panneau est ouvert au switch, réajuster la taille
+    if (document.getElementById('handnote-panel').style.display === 'block') {
+        setTimeout(resizeNoteCanvas, 0);
+    }
 }
 
 /* Mise à jour instantanée label onglet */
@@ -1109,7 +1182,7 @@ function updateSOBTDefault() {
 function updateTOBT() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
+    the_aibttxt = document.getElementById('AIBT').value;
     const sobttxt = document.getElementById('SOBT').value;
 
     if (!cie || !sibttxt) {
@@ -1118,7 +1191,7 @@ function updateTOBT() {
     }
 
     const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
+    const [aH, aM] = the_aibttxt ? the_aibttxt.split(':').map(Number) : [sH, sM];
     const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
 
     const SIBT = new Date(); SIBT.setHours(sH, sM);
