@@ -1460,7 +1460,7 @@ function renderTimeline(){
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    lab.textContent = showTimeLabels ? `${d.label} ${fmtHHMM(d.a)}–${fmtHHMM(d.b)}` : d.label;
+    lab.textContent = showTimeLabels ? `${d.label} : ${fmtHHMM(d.a)}-${fmtHHMM(d.b)}` : d.label;
     bar.appendChild(lab);
   });
 
@@ -1473,7 +1473,7 @@ function renderTimeline(){
     el.style.top  = '28%';
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
-    label.textContent = showTimeLabels ? `${p.label} ${fmtHHMM(p.t)}` : p.label;
+    label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
   });
@@ -1502,26 +1502,54 @@ function renderTimeline(){
 /* Injecte la coche "Heure sur étiquettes" si absente + capte l'interaction pour ne pas recentrer */
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
-  if(bar && !document.getElementById('showTimesToggle')){
-    const wrap = document.createElement('label');
-    wrap.style.display = 'inline-flex';
-    wrap.style.alignItems = 'center';
-    wrap.style.gap = '6px';
-    wrap.style.marginLeft = '8px';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.id = 'showTimesToggle';
-    cb.checked = showTimeLabels;
-    cb.addEventListener('change', ()=>{ showTimeLabels = cb.checked; renderTimeline(); });
-    const span = document.createElement('span');
-    span.textContent = 'Heure sur étiquettes';
-    wrap.appendChild(cb); wrap.appendChild(span);
-    bar.appendChild(wrap);
+  if (bar) {
+    // Si la coche n'existe pas encore, on l'ajoute
+    if (!document.getElementById('showTimesToggle')) {
+      const wrap = document.createElement('label');
+      wrap.style.display = 'inline-flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '6px';
+      wrap.style.marginLeft = '8px';
+      wrap.style.whiteSpace = 'nowrap'; // ne pas revenir à la ligne
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'showTimesToggle';
+      cb.checked = true;          // coché par défaut
+      showTimeLabels = true;      // reflète l'état initial
+
+      cb.addEventListener('change', () => {
+        showTimeLabels = cb.checked;
+        renderTimeline();
+      });
+
+      const span = document.createElement('span');
+      span.textContent = 'Heure sur étiquettes';
+
+      wrap.appendChild(cb);
+      wrap.appendChild(span);
+      bar.appendChild(wrap);
+    } else {
+      // Si elle existe déjà, on force son état et le style "nowrap"
+      const cb = document.getElementById('showTimesToggle');
+      cb.checked = true;
+      showTimeLabels = true;
+      const wrap = cb.closest('label');
+      if (wrap) {
+        wrap.style.whiteSpace = 'nowrap';
+        wrap.style.display = 'inline-flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.gap = '6px';
+        wrap.style.marginLeft = '8px';
+      }
+    }
   }
+
+  // Marque qu'un scroll/interaction a eu lieu pour ne plus recentrer automatiquement
   const scroller = document.getElementById('timelineScroll');
-  if(scroller){
-    ['wheel','mousedown','touchstart','keydown'].forEach(ev=>{
-      scroller.addEventListener(ev, ()=>{ timelineUserScrolled = true; }, {passive:true});
+  if (scroller) {
+    ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
+      scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
     });
   }
 })();
