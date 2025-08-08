@@ -162,7 +162,7 @@ button.plus  { background: #555; color: white; }
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
+    width: 60px;   /* même taille pour les deux */
     height: 28px;
 }
 .switch input { opacity: 0; width: 0; height: 0; }
@@ -196,7 +196,7 @@ button.plus  { background: #555; color: white; }
 
 /* Indicateur de mode à droite */
 #timeModeLabel {
-    margin-left: auto;
+    margin-left: auto;              /* pousse complètement à droite */
     font-weight: bold;
     color: #1976d2;
 }
@@ -247,78 +247,111 @@ body.dark #tab-bar { background: #121212; }
 #popup.info { background: #2196f3; }
 }
 
-/* === BLOC-NOTE FLOTTANT (stylet) === */
+/* === BLOC-NOTE FLOTTANT (fenêtre dédiée) === */
 #penFab {
     position: fixed;
     bottom: 18px;
     right: 18px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #1976d2;
-    color: #fff;
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #333;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    box-shadow: 0 6px 12px rgba(0,0,0,.35);
+    box-shadow: 0 10px 22px rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.15) inset;
     cursor: grab;
     z-index: 2000;
     user-select: none;
 }
 #penFab.hidden { display:none; }
 #penFab:active { cursor: grabbing; }
+#penFab svg { width: 36px; height: 36px; }
 
-#noteOverlay {
+/* Fenêtre du bloc-note */
+#noteWindow {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.15);
-    backdrop-filter: blur(1px);
-    display: none;
-    z-index: 1999; /* sous le fab pour le fermer si besoin */
-}
-#noteOverlay.visible { display: block; }
-
-#noteToolbar {
-    position: absolute;
-    top: 10px; left: 50%;
+    left: 50%;
+    top: 12%;
     transform: translateX(-50%);
+    width: min(92vw, 900px);
+    height: min(70vh, 640px);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(2px);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    display: none; /* masqué par défaut */
+    z-index: 2100;
+    overflow: hidden;
+}
+
+/* Barre de titre/drag */
+#noteHeader {
+    height: 52px;
     display: flex;
+    align-items: center;
     gap: 8px;
-    background: rgba(30,30,30,0.85);
-    color: #fff;
     padding: 8px 10px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.4);
-    align-items: center;
+    background: rgba(240,240,240,0.95);
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    cursor: move; /* zone draggable */
 }
-#noteToolbar label {
-    font-size: .85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-#noteToolbar input[type="range"] { width: 100px; }
-#noteToolbar .toolBtn {
+
+/* Boutons header */
+.noteBtn {
     border: none;
-    border-radius: 6px;
+    background: #fff;
+    border-radius: 10px;
     padding: 6px 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
     cursor: pointer;
     font-weight: 600;
 }
-#noteToolbar .eraseToggle.active { background: #d32f2f; color: #fff; }
-#noteToolbar .toolBtn:hover { opacity: .9; }
+.noteBtn:hover { opacity: .95; }
+.noteBtn.danger { background: #ffebee; }
+.noteBtn.primary { background: #e3f2fd; }
 
-#noteCanvas {
+/* Outils */
+#tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+#tools label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .9rem;
+}
+#tools input[type="range"] { width: 110px; }
+
+/* Zone canvas */
+#noteBody {
     position: absolute;
-    inset: 0;
-    touch-action: none; /* indispensable pour stylet/gestes */
+    inset: 52px 0 0 0;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+}
+#noteCanvas {
+    flex: 1;
+    border-radius: 12px;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.02),
+        rgba(0,0,0,0.02) 32px,
+        rgba(0,0,0,0.06) 33px
+    );
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.15);
+    touch-action: none; /* indispensable pour stylet */
 }
 
 /* petite bulle d’aide positionnée à côté du fab quand réactivé */
 #fabHint {
     position: fixed;
-    bottom: 84px;
+    bottom: 92px;
     right: 18px;
     background: #333;
     color: #fff;
@@ -521,28 +554,42 @@ body.dark #tab-bar { background: #121212; }
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <!-- === BLOC-NOTE FLOTTANT === -->
-<div id="penFab" title="Bloc-note (stylet)" role="button">✎</div>
+<div id="penFab" title="Bloc-note (stylet)" role="button">
+    <!-- Icône style bloc-note (SVG) -->
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="6" y="6" rx="14" ry="14" width="52" height="52" fill="#ffffff" />
+        <rect x="16" y="16" rx="10" ry="10" width="32" height="12" fill="#ffe38a"/>
+        <rect x="16" y="34" width="32" height="3" rx="2" fill="#c9c9c9"/>
+        <rect x="16" y="40" width="26" height="3" rx="2" fill="#c9c9c9"/>
+        <rect x="16" y="46" width="20" height="3" rx="2" fill="#c9c9c9"/>
+        <rect x="6" y="6" rx="14" ry="14" width="52" height="52" fill="none" stroke="rgba(0,0,0,.1)"/>
+    </svg>
+</div>
 <div id="fabHint">Touchez pour ouvrir le bloc-note</div>
 
-<div id="noteOverlay" aria-hidden="true">
-    <canvas id="noteCanvas"></canvas>
-    <div id="noteToolbar">
-        <button id="closeNote" class="toolBtn" title="Replier (redevient flottant)">✕</button>
-        <button id="toggleFab" class="toolBtn" title="Activer/Désactiver le bouton flottant">⏻</button>
-        <span style="opacity:.7">|</span>
-        <label>Couleur
-            <input type="color" id="penColor" value="#ffcc00">
-        </label>
-        <label>Épaisseur
-            <input type="range" id="penSize" min="1" max="20" value="4">
-            <span id="penSizeVal" style="min-width:24px;text-align:center;">4</span>
-        </label>
-        <button id="eraserToggle" class="toolBtn eraseToggle" title="Gomme">Gomme</button>
-        <label>Taille gomme
-            <input type="range" id="eraserSize" min="5" max="40" value="18">
-            <span id="eraserSizeVal" style="min-width:24px;text-align:center;">18</span>
-        </label>
-        <button id="clearNote" class="toolBtn" title="Effacer tout">Effacer</button>
+<!-- Fenêtre du bloc-note -->
+<div id="noteWindow" aria-hidden="true">
+    <div id="noteHeader">
+        <span style="font-weight:700; padding:0 6px;">Bloc-note</span>
+        <button id="closeNote" class="noteBtn">Replier</button>
+        <button id="toggleFab" class="noteBtn primary" title="Afficher/Masquer le bouton flottant">Bouton flottant</button>
+        <button id="clearNote" class="noteBtn danger" title="Effacer toutes les notes">Effacer</button>
+
+        <div id="tools">
+            <label>Couleur <input type="color" id="penColor" value="#ffcc00"></label>
+            <label>Épaisseur
+                <input type="range" id="penSize" min="1" max="20" value="4">
+                <span id="penSizeVal">4</span>
+            </label>
+            <button id="eraserToggle" class="noteBtn">Gomme</button>
+            <label>Taille gomme
+                <input type="range" id="eraserSize" min="5" max="40" value="18">
+                <span id="eraserSizeVal">18</span>
+            </label>
+        </div>
+    </div>
+    <div id="noteBody">
+        <canvas id="noteCanvas"></canvas>
     </div>
 </div>
 
@@ -556,25 +603,27 @@ let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
 
-/* ========== BLOC-NOTE (stylet) ========== */
-let fabEnabled = true;          // visibilité du bouton flottant
-let fabPos = { bottom: 18, right: 18 }; // position du bouton
-let notesVisible = false;       // overlay visible
-let strokes = [];               // liste des traits [{color,size,erase,points:[{x,y,p}]}]
+/* ========== BLOC-NOTE (fenêtre dédiée, pas sur la page) ========== */
+let fabEnabled = true;                 // visibilité du bouton flottant
+let fabPos = { bottom: 18, right: 18 };// position du bouton
+let winPos = { left: null, top: null };// position fenêtre si déplacée
+let winSize = { w: null, h: null };    // taille fenêtre si redimensionnée (optionnel)
+let strokes = [];                      // [{color,size,erase,eSize,points:[{x,y,p}]}]
 let drawing = false;
 let erasing = false;
 let currentStroke = null;
-let canvas, ctx;
+let canvas, ctx, noteWindow, noteHeader;
 let dpr = Math.max(1, window.devicePixelRatio || 1);
 
 function initNotebook(){
     canvas = document.getElementById('noteCanvas');
     ctx = canvas.getContext('2d');
-    resizeCanvas();
+    noteWindow = document.getElementById('noteWindow');
+    noteHeader = document.getElementById('noteHeader');
+    resizeCanvasToWindow();
 
     // UI refs
     const fab = document.getElementById('penFab');
-    const overlay = document.getElementById('noteOverlay');
     const penColor = document.getElementById('penColor');
     const penSize = document.getElementById('penSize');
     const penSizeVal = document.getElementById('penSizeVal');
@@ -588,53 +637,62 @@ function initNotebook(){
     penSize.addEventListener('input', ()=> penSizeVal.textContent = penSize.value);
     eraserSize.addEventListener('input', ()=> eraserSizeVal.textContent = eraserSize.value);
 
-    // Open overlay
-    fab.addEventListener('click', ()=>{ if(!notesVisible) openNotebook(); });
+    // Ouvrir fenêtre
+    fab.addEventListener('click', openNotebook);
 
     // Drag FAB
     makeFabDraggable(fab);
 
-    // Close overlay -> replier
-    closeBtn.addEventListener('click', ()=> closeNotebook());
+    // Header drag (déplacer la fenêtre)
+    makeWindowDraggable(noteWindow, noteHeader);
 
-    // Enable/disable floating button
+    // Replier fenêtre
+    closeBtn.addEventListener('click', closeNotebook);
+
+    // Afficher/Masquer le fab
     toggleFab.addEventListener('click', ()=>{
         fabEnabled = !fabEnabled;
         updateFabVisibility();
-        if (fabEnabled) {
-            showFabHint();
-        }
+        if (fabEnabled) showFabHint();
         saveNotebookState();
     });
 
-    // Eraser toggle
+    // Gomme
     eraserToggle.addEventListener('click', ()=>{
         erasing = !erasing;
-        eraserToggle.classList.toggle('active', erasing);
+        eraserToggle.classList.toggle('primary', erasing);
     });
 
-    // Clear all
+    // Effacer tout
     clearBtn.addEventListener('click', ()=>{
         if (!strokes.length) return;
         if (!confirm('Effacer toutes les notes ?')) return;
         strokes = [];
         redrawAll();
-        persistStrokes(); // vide
+        persistStrokes();
     });
 
-    // Canvas events (pointer)
+    // Canvas events
     canvas.addEventListener('pointerdown', onPointerDown, {passive:false});
     canvas.addEventListener('pointermove', onPointerMove, {passive:false});
     canvas.addEventListener('pointerup', onPointerUp, {passive:false});
     canvas.addEventListener('pointercancel', onPointerUp, {passive:false});
     canvas.addEventListener('pointerleave', onPointerUp, {passive:false});
 
-    window.addEventListener('resize', ()=>{ resizeCanvas(); redrawAll(); });
+    // Resize
+    window.addEventListener('resize', ()=>{ resizeCanvasToWindow(); redrawAll(); });
 
-    // Charger état global FAB
+    // Charger état global FAB + fenêtre
     const globalFab = JSON.parse(localStorage.getItem('notesFabState') || '{}');
     if (globalFab && typeof globalFab.enabled === 'boolean') fabEnabled = globalFab.enabled;
     if (globalFab && globalFab.pos){ fabPos = globalFab.pos; applyFabPosition(); }
+    if (globalFab && globalFab.win){
+        if (typeof globalFab.win.left === 'number') { winPos.left = globalFab.win.left; }
+        if (typeof globalFab.win.top === 'number')  { winPos.top  = globalFab.win.top; }
+        if (typeof globalFab.win.w === 'number')    { winSize.w   = globalFab.win.w; }
+        if (typeof globalFab.win.h === 'number')    { winSize.h   = globalFab.win.h; }
+        applyWindowGeometry();
+    }
     updateFabVisibility();
 }
 
@@ -675,9 +733,8 @@ function makeFabDraggable(fab){
         if(!dragging) return;
         dragging = false;
         fab.releasePointerCapture(e.pointerId);
-        // Sauver position en pos absolue (converti en bottom/right pour persistance simple)
         const rect = fab.getBoundingClientRect();
-        const br = { 
+        const br = {
             right: Math.max(0, window.innerWidth - rect.right),
             bottom: Math.max(0, window.innerHeight - rect.bottom)
         };
@@ -689,6 +746,69 @@ function makeFabDraggable(fab){
     fab.addEventListener('pointermove', onPointerMove);
     fab.addEventListener('pointerup', onPointerUp);
     fab.addEventListener('pointercancel', onPointerUp);
+}
+
+function openNotebook(){
+    noteWindow.style.display = 'block';
+    noteWindow.setAttribute('aria-hidden','false');
+    resizeCanvasToWindow();
+    redrawAll();
+}
+
+function closeNotebook(){
+    noteWindow.style.display = 'none';
+    noteWindow.setAttribute('aria-hidden','true');
+}
+
+function applyWindowGeometry(){
+    if (winSize.w) noteWindow.style.width  = winSize.w + 'px';
+    if (winSize.h) noteWindow.style.height = winSize.h + 'px';
+    if (typeof winPos.left === 'number' && typeof winPos.top === 'number'){
+        noteWindow.style.left = winPos.left + 'px';
+        noteWindow.style.top  = winPos.top + 'px';
+        noteWindow.style.transform = 'none';
+    }
+    setTimeout(resizeCanvasToWindow, 0);
+}
+
+function makeWindowDraggable(win, handle){
+    let dragging=false, sx=0, sy=0, sl=0, st=0;
+
+    const onDown = (e)=>{
+        dragging = true;
+        handle.setPointerCapture(e.pointerId);
+        const rect = win.getBoundingClientRect();
+        sx = e.clientX; sy = e.clientY;
+        sl = rect.left; st = rect.top;
+        e.preventDefault();
+    };
+    const onMove = (e)=>{
+        if(!dragging) return;
+        let nl = sl + (e.clientX - sx);
+        let nt = st + (e.clientY - sy);
+        // bornes
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const w = win.offsetWidth, h = win.offsetHeight;
+        nl = Math.min(Math.max(0, nl), vw - w);
+        nt = Math.min(Math.max(0, nt), vh - h);
+        win.style.left = nl + 'px';
+        win.style.top  = nt + 'px';
+        win.style.transform = 'none';
+    };
+    const onUp = (e)=>{
+        if(!dragging) return;
+        dragging=false;
+        handle.releasePointerCapture(e.pointerId);
+        const rect = win.getBoundingClientRect();
+        winPos.left = rect.left;
+        winPos.top  = rect.top;
+        saveNotebookState();
+    };
+
+    handle.addEventListener('pointerdown', onDown);
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+    handle.addEventListener('pointercancel', onUp);
 }
 
 function applyFabPosition(){
@@ -710,27 +830,18 @@ function showFabHint(){
     setTimeout(()=> hint.classList.remove('show'), 2200);
 }
 
-function openNotebook(){
-    notesVisible = true;
-    document.getElementById('noteOverlay').classList.add('visible');
-    document.getElementById('noteOverlay').setAttribute('aria-hidden','false');
-    redrawAll();
-}
+function resizeCanvasToWindow(){
+    const body = document.getElementById('noteBody');
+    const w = body.clientWidth;
+    const h = body.clientHeight;
+    const wasTransform = ctx.getTransform ? ctx.getTransform() : null;
 
-function closeNotebook(){
-    notesVisible = false;
-    document.getElementById('noteOverlay').classList.remove('visible');
-    document.getElementById('noteOverlay').setAttribute('aria-hidden','true');
-}
-
-function resizeCanvas(){
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width  = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
+    canvas.width  = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
     canvas.style.width  = w + 'px';
     canvas.style.height = h + 'px';
-    ctx.scale(dpr, dpr);
+
+    ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 }
@@ -743,13 +854,13 @@ function getCurrentTool(){
 }
 
 function onPointerDown(e){
-    if (e.button !== 0) return; // stylet/left
+    if (e.button !== 0) return;
     drawing = true;
     const tool = getCurrentTool();
     currentStroke = { color: tool.color, size: tool.size, erase: tool.erase, eSize: tool.eSize, points: [] };
     const pt = canvasPoint(e);
     currentStroke.points.push(pt);
-    drawSegment(currentStroke, false);
+    drawSegment(currentStroke);
     e.preventDefault();
 }
 
@@ -766,7 +877,7 @@ function onPointerUp(e){
     drawing = false;
     if (currentStroke && currentStroke.points.length > 0) {
         strokes.push(currentStroke);
-        persistStrokes(); // sauvegarde stroke par stroke
+        persistStrokes();
     }
     currentStroke = null;
     e.preventDefault();
@@ -780,7 +891,7 @@ function canvasPoint(e){
     return { x, y, p };
 }
 
-function drawSegment(stroke, continuous){
+function drawSegment(stroke){
     const toolSize = stroke.erase ? stroke.eSize : stroke.size;
     ctx.globalCompositeOperation = stroke.erase ? 'destination-out' : 'source-over';
     ctx.strokeStyle = stroke.color;
@@ -789,21 +900,19 @@ function drawSegment(stroke, continuous){
     const pts = stroke.points;
     const n = pts.length;
     if (n < 2) {
-        // point
         ctx.beginPath();
         ctx.arc(pts[0].x, pts[0].y, toolSize/2, 0, Math.PI*2);
-        ctx.fillStyle = stroke.erase ? 'rgba(0,0,0,1)' : stroke.color;
         if (stroke.erase) {
             const prev = ctx.globalCompositeOperation;
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fill();
             ctx.globalCompositeOperation = prev;
         } else {
+            ctx.fillStyle = stroke.color;
             ctx.fill();
         }
         return;
     }
-    // ligne
     ctx.beginPath();
     const a = pts[n-2], b = pts[n-1];
     ctx.moveTo(a.x, a.y);
@@ -812,9 +921,7 @@ function drawSegment(stroke, continuous){
 }
 
 function redrawAll(){
-    // Nettoyer
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Comme ctx échelle par dpr à chaque resize, reconfig lineCap/Join :
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -832,7 +939,6 @@ function redrawAll(){
 function notesKey(){
     return currentTabId ? `notes-${currentTabId}` : 'notes-0';
 }
-
 function persistStrokes(){
     try {
         localStorage.setItem(notesKey(), JSON.stringify(strokes));
@@ -840,7 +946,6 @@ function persistStrokes(){
         console.warn('Sauvegarde notes échouée', e);
     }
 }
-
 function loadStrokesForTab(){
     try {
         const raw = localStorage.getItem(notesKey());
@@ -848,11 +953,22 @@ function loadStrokesForTab(){
     } catch (e) {
         strokes = [];
     }
-    if (notesVisible) redrawAll();
+    redrawAll();
 }
 
+/* Sauvegarde état global (fab + fenêtre) */
 function saveNotebookState(){
-    const state = { enabled: fabEnabled, pos: fabPos };
+    const rect = noteWindow.getBoundingClientRect();
+    const state = {
+        enabled: fabEnabled,
+        pos: fabPos,
+        win: {
+            left: (noteWindow.style.display==='block' || rect.left)? rect.left : winPos.left,
+            top:  (noteWindow.style.display==='block' || rect.top)?  rect.top  : winPos.top,
+            w: rect.width,
+            h: rect.height
+        }
+    };
     localStorage.setItem('notesFabState', JSON.stringify(state));
 }
 
@@ -895,7 +1011,6 @@ function initForm(){
     // Recharger les données du dernier onglet après génération des champs
     if (currentTabId) loadTabData(currentTabId);
 
-    // Afficher une aide si le fab vient d'être réactivé
     if (fabEnabled) showFabHint();
 }
 
@@ -992,7 +1107,7 @@ function saveCurrentTabData(){
     localStorage.setItem('lastTabId',currentTabId);
     renderTabs();
 
-    // Sauver aussi l'état du bloc-note global
+    // Sauver état du bloc-note
     saveNotebookState();
 }
 
