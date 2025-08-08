@@ -277,9 +277,10 @@ body.dark .timeline-track{ background:#2e2e2e; }
 body.dark .timeline-tick-label { color:#cfd4da; }
 
 .tl-event, .tl-range {
-  position: absolute; transform: translate(-50%, -50%);
+  position: absolute; 
   white-space: nowrap; font-size: 12px; line-height:1;
 }
+.tl-event { transform: translate(-50%, -50%); } /* points centrés */
 .tl-dot {
   width: 10px; height: 10px; border-radius: 50%;
   border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
@@ -303,6 +304,7 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
   top:50%; height:8px;
   background: color-mix(in srgb, var(--c) 35%, transparent);
   border: 1px solid var(--c); border-radius: 6px;
+  transform: translate(0, -50%);   /* IMPORTANT: left = bord gauche */
 }
 .tl-range-label {
   position:absolute; top: -18px; left:50%;
@@ -335,18 +337,24 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 /* Augmente la hauteur pour les niveaux variables */
 .timeline-canvas{
   position:relative;
-  height:180px;              /* + haut pour empiler les variables */
+  height:220px;              /* + haut pour 5 lignes + extras */
   min-width:600px;
   width:100%;   /* ajusté par le zoom côté JS */
 }
 
 /* Positions verticales dédiées */
 .tl-pos-fixed   { top: 28%; }  /* au-dessus de la ligne */
-.tl-pos-var-0   { top: 64%; }  /* en dessous de la ligne, niveaux anti-chevauchement */
-.tl-pos-var-1   { top: 74%; }
-.tl-pos-var-2   { top: 84%; }
-.tl-pos-var-3   { top: 94%; }
-
+/* rangées variables pairées (stables) */
+.tl-pos-row-0   { top: 64%; }  /* Débarquement */
+.tl-pos-row-1   { top: 74%; }  /* Embarquement avion */
+.tl-pos-row-2   { top: 84%; }  /* Embarquement porte */
+.tl-pos-row-3   { top: 94%; }  /* Lift */
+.tl-pos-row-4   { top: 104%; } /* Fuel */
+/* fallback auto-pile (si autres points) */
+.tl-pos-var-0   { top: 114%; }
+.tl-pos-var-1   { top: 124%; }
+.tl-pos-var-2   { top: 134%; }
+.tl-pos-var-3   { top: 144%; }
 </style>
 </head>
 <body onload="initForm()">
@@ -788,7 +796,7 @@ function saveCurrentTabData(){
 }
 
 function loadTabData(id){
-    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{ }');
 
     document.querySelectorAll('input, select, textarea').forEach(el=>{
         if(!el.id || data[el.id]===undefined) return;
@@ -1267,17 +1275,14 @@ function labelFromInputEl(input){
 /* Calcule la plage de timeline basée sur SOBT - SIBT avec marge ±5 min.
    Si indisponible, on retombe sur l'ancien calcul (min/max des points). */
 function computeTimelineWindow(allTimes){
-  const sibttxt = document.getElementById('SIBT')?.value || '';
-  const sobttxt = document.getElementById('SOBT')?.value || '';
-  const sibt = parseHHMM(sibttxt);
-  const sobt = parseHHMM(sobttxt);
+  const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
   if(sibt != null && sobt != null){
     let min = sibt - 5;
     let max = sobt + 5;
-    if (max - min < 30) { min -= 10; max += 10; } // mini largeur sympa
+    if (max - min < 30) { min -= 10; max += 10; } // largeur mini
     return {min, max};
   }
-  // fallback sur données présentes
   if(allTimes.length){
     let min = Math.min(...allTimes) - 10;
     let max = Math.max(...allTimes) + 10;
@@ -1287,11 +1292,19 @@ function computeTimelineWindow(allTimes){
   return {min:0, max:60};
 }
 
+/* Paire utilitaire : renvoie [tA,tB] (mins) si les deux existent, sinon null */
+function getPairTimes(idA,idB){
+  const a = parseHHMM(document.getElementById(idA)?.value || '');
+  const b = parseHHMM(document.getElementById(idB)?.value || '');
+  if(a==null || b==null) return null;
+  return [Math.min(a,b), Math.max(a,b)];
+}
+
 function collectTimelineData(){
   // === 1) Points fixes (au-dessus) ===
   const fixedPoints = [];
 
-  // Section HORAIRES
+  // Section HORAIRES (au-dessus)
   ['SIBT','AIBT','SOBT','AOBT'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -1300,7 +1313,7 @@ function collectTimelineData(){
     fixedPoints.push({type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--std'});
   });
 
-  // H-15, TOBT (affiché), CTOT (timer)
+  // H-15, TOBT (affiché), CTOT (timer) — H-40 volontairement ignoré
   const h15 = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   if(h15!=null) fixedPoints.push({type:'point', label:'H-15', t:h15, cls:'tl--turn'});
   const tobt = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
@@ -1308,17 +1321,42 @@ function collectTimelineData(){
   const ctot = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
   if(ctot!=null) fixedPoints.push({type:'point', label:'CTOT', t:ctot, cls:'tl--ctot'});
 
-  // === 2) Points variables (en dessous, multi-niveaux) ===
-  // IDs de la section TIMING (reprend la génération)
-  const timingIds = [
-    'ArrPNT','ArrPNC','PremierDebarque','DernierDebarque',
-    'AvionPremierEmbarque','AvionDernierEmbarque',
-    'PortePremierEmbarque','PorteDernierEmbarque',
-    'ArriveeFuel','DepartFuel','ArriveeLift','DepartLift',
-    'RemiseLID','FermeturePorteAvion'
+  // === 2) Paires variables avec NIVEAU FORCÉ (même ligne pour début/fin) ===
+  // Niveaux (doivent exister dans le CSS) :
+  // 0: Débarquement, 1: Embarquement avion, 2: Embarquement porte, 3: (Fuel/Lift si dispo)
+  const pairDefs = [
+    { a:'PremierDebarque', b:'DernierDebarque',   labelA:'Premier débarqué', labelB:'Dernier débarqué', level:0, range:'red' },
+    { a:'AvionPremierEmbarque', b:'AvionDernierEmbarque', labelA:'Avion : Premier embarqué', labelB:'Avion : Dernier embarqué', level:1, range:'blue' },
+    { a:'PortePremierEmbarque', b:'PorteDernierEmbarque', labelA:'Porte : Premier embarqué', labelB:'Porte : Dernier embarqué', level:2, range:null },
+    { a:'ArriveeFuel', b:'DepartFuel',             labelA:'Arrivée Fuel', labelB:'Départ Fuel', level:3, range:null },
+    { a:'ArriveeLift', b:'DepartLift',             labelA:'Arrivée Lift', labelB:'Départ Lift', level:3, range:null }, // partage éventuel du niveau 3
   ];
+
   const variablePoints = [];
-  timingIds.forEach(id=>{
+  const ranges = [];
+
+  pairDefs.forEach(def=>{
+    const times = getPairTimes(def.a, def.b);
+    if(!times) return;
+    const [ta, tb] = times;
+
+    // Ajoute les deux points sur le même niveau forcé
+    variablePoints.push({type:'point', label:def.labelA, t:ta, cls:'tl--std', levelHint:def.level});
+    variablePoints.push({type:'point', label:def.labelB, t:tb, cls:'tl--std', levelHint:def.level});
+
+    // Intervalles remplis seulement pour Débarquement (rouge) et Embarquement avion (bleu)
+    if(def.range === 'red'){
+      ranges.push({type:'range', label:'Débarquement', a:ta, b:tb, cls:'tl--turn'});
+    } else if(def.range === 'blue'){
+      ranges.push({type:'range', label:'Embarquement avion', a:ta, b:tb, cls:'tl--ops'});
+    }
+  });
+
+  // === 3) Autres points variables “orphelins” (sans paire) ===
+  const maybeSingles = [
+    'ArrPNT','ArrPNC','RemiseLID','FermeturePorteAvion'
+  ];
+  maybeSingles.forEach(id=>{
     const el = document.getElementById(id);
     if(!el || !el.value) return;
     const mm = parseHHMM(el.value);
@@ -1326,24 +1364,7 @@ function collectTimelineData(){
     variablePoints.push({type:'point', label: labelFromInputEl(el), t:mm, cls:'tl--std'});
   });
 
-  // === 3) Intervalles remplis (uniquement 2) ===
-  const ranges = [];
-  // Rouge = Débarquement
-  const tDebA = parseHHMM(document.getElementById('PremierDebarque')?.value || '');
-  const tDebB = parseHHMM(document.getElementById('DernierDebarque')?.value || '');
-  if(tDebA!=null && tDebB!=null){
-    const a = Math.min(tDebA,tDebB), b = Math.max(tDebA,tDebB);
-    ranges.push({type:'range', label:'Débarquement', a, b, cls:'tl--turn'});
-  }
-  // Bleu = Embarquement avion
-  const tEmbA = parseHHMM(document.getElementById('AvionPremierEmbarque')?.value || '');
-  const tEmbB = parseHHMM(document.getElementById('AvionDernierEmbarque')?.value || '');
-  if(tEmbA!=null && tEmbB!=null){
-    const a = Math.min(tEmbA,tEmbB), b = Math.max(tEmbA,tEmbB);
-    ranges.push({type:'range', label:'Embarquement avion', a, b, cls:'tl--ops'});
-  }
-
-  // === 4) Détermination fenêtre min/max : basé sur SOBT-SIBT ±5 ===
+  // === 4) Fenêtre min/max : basée sur SOBT-SIBT ±5 ===
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
     ...variablePoints.map(p=>p.t),
@@ -1421,22 +1442,32 @@ function renderTimeline(){
     canvas.appendChild(el);
   });
 
-  // Points VARIABLES (en dessous) avec empilement sur plusieurs niveaux
-  // règle simple : si un point est trop proche (< 8 min) d’un point du même niveau, on passe au niveau suivant (0..3)
-  const levels = [[],[],[],[]]; // minutes des derniers points par niveau
-  const THRESH = 8; // minutes
-  variablePoints.sort((a,b)=>a.t-b.t).forEach(p=>{
-    let lvl = 0;
-    for(; lvl < levels.length; lvl++){
-      const last = levels[lvl].length ? levels[lvl][levels[lvl].length-1] : null;
-      if(last == null || (p.t - last) >= THRESH) break;
+  // Points VARIABLES (en dessous)
+  // - on force le niveau pour les points avec levelHint
+  // - sinon on fait un placement “anti-collision”
+  const THRESH = 8; // minutes d'écart mini sur un même niveau
+  const levelLastTime = [null,null,null,null]; // pour tl-pos-var-0..3
+
+  const sorted = variablePoints.slice().sort((a,b)=>a.t-b.t);
+  sorted.forEach(p=>{
+    let level = (typeof p.levelHint === 'number') ? p.levelHint : null;
+
+    if(level == null){
+      // chercher un niveau libre (0..3) en respectant le seuil
+      for(let l=0; l<levelLastTime.length; l++){
+        if(levelLastTime[l]==null || (p.t - levelLastTime[l]) >= THRESH){
+          level = l; break;
+        }
+      }
+      if(level == null) level = levelLastTime.length-1; // force dernier si saturé
     }
-    if(lvl >= levels.length) lvl = levels.length-1; // au pire on force sur le dernier
-    levels[lvl].push(p.t);
+
+    // mémorise dernier temps sur le niveau
+    levelLastTime[level] = p.t;
 
     const leftPct = 6 + ((p.t-min)/(max-min))*88;
     const el = document.createElement('div');
-    el.className = `tl-event ${p.cls} tl-pos-var-${lvl}`;
+    el.className = `tl-event ${p.cls} tl-pos-var-${level}`;
     el.style.left = `${leftPct}%`;
 
     const dot = document.createElement('div'); dot.className = 'tl-dot';
@@ -1449,29 +1480,30 @@ function renderTimeline(){
 
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
-    const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-    let missing = required.some(id => !document.getElementById(id).value);
+  const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
+  let missing = required.some(id => !document.getElementById(id).value);
 
-    if (missing) {
-        showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-    } else {
-        showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
-    }
+  if (missing) {
+      showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
+  } else {
+      showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
+  }
 }
 
 /* === SAUVEGARDE MANUELLE === */
 function manualSave() {
-    saveCurrentTabData();
-    showPopup("Enregistrement réussi", "#2196f3", 2000);
+  saveCurrentTabData();
+  showPopup("Enregistrement réussi", "#2196f3", 2000);
 }
 
 /* === RESET === */
 function clearAutoSave() {
-    if (confirm("Tout réinitialiser ?")) {
-        localStorage.clear();
-        location.reload();
-    }
+  if (confirm("Tout réinitialiser ?")) {
+      localStorage.clear();
+      location.reload();
+  }
 }
+
 </script>
 </body>
 </html>
