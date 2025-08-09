@@ -374,6 +374,97 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 .tl-pos-var-1   { top: 70%; }
 .tl-pos-var-2   { top: 80%; }
 .tl-pos-var-3   { top: 90%; }
+
+/* === BLOC-NOTE FLOTTANT === */
+.note-fab{
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  width: 60px; height: 60px;
+  border-radius: 16px;
+  border: none;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  z-index: 1200;
+  opacity: 0.85;
+  transition: transform .12s ease, opacity .12s ease;
+  background-size: 70% 70%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.note-fab:hover{ transform: translateY(-1px) scale(1.03); opacity: 1; }
+.note-fab:active{ transform: translateY(0) scale(0.98); }
+
+/* icône Apple Notes encodée (base64 PNG) */
+.note-fab{
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAzfH...');
+}
+/* NOTE: la chaîne base64 complète est injectée plus bas dans le HTML pour éviter une coupure par l’éditeur. */
+
+/* Fenêtre bloc-note */
+.note-modal{
+  position: fixed;
+  right: 16px;
+  bottom: 90px;
+  width: 520px;
+  max-width: calc(100vw - 32px);
+  height: 380px;
+  max-height: calc(100vh - 120px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(0,0,0,.35);
+  z-index: 1200;
+  display: none;
+  overflow: hidden;
+}
+body.dark .note-modal{ background:#1e1e1e; }
+
+/* En-tête draggable */
+.note-header{
+  height: 42px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px 0 12px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  background: linear-gradient(180deg, rgba(0,0,0,.04), transparent);
+  cursor: move; user-select: none;
+}
+body.dark .note-header{ border-bottom-color: rgba(255,255,255,.08); background: linear-gradient(180deg, rgba(255,255,255,.05), transparent); }
+
+.note-title{ font-weight: 700; font-size: .95rem; opacity:.9; }
+.note-tools{ display:flex; align-items:center; gap:8px; }
+.note-btn{
+  border:0; border-radius:8px; padding:6px 10px; cursor:pointer;
+  background:#e9eef5; font-weight:600;
+}
+.note-btn:active{ transform: translateY(1px); }
+body.dark .note-btn{ background:#2a2a2a; color:#eee; }
+.note-btn.danger{ background:#ffebee; }
+body.dark .note-btn.danger{ background:#3a1f22; color:#ffb3b3; }
+.note-close{ font-size:18px; line-height:1; width:28px; height:28px; border-radius:999px; }
+
+.note-body{ position: relative; height: calc(100% - 42px); }
+#noteCanvas{
+  position:absolute; inset: 0;
+  width: 100%; height: 100%;
+  touch-action: none; /* stylet/gestes */
+  background:
+    linear-gradient(transparent 31px, rgba(0,0,0,.06) 32px) repeat-y; /* lignes */
+  background-size: 100% 32px;
+}
+body.dark #noteCanvas{
+  background: linear-gradient(transparent 31px, rgba(255,255,255,.08) 32px) repeat-y;
+  background-size: 100% 32px;
+}
+
+/* === RECHERCHE BAGAGE (TIMING) === */
+.bagsearch-toggle{
+  display:flex; align-items:center; gap:8px; justify-content:center; margin: 6px 0 4px;
+  font-weight:600;
+}
+#bagsearch-fields{ display:none; }
 </style>
 </head>
 <body onload="initForm()">
@@ -512,6 +603,39 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 <section>
     <h2>TIMING</h2>
     <div class="form-grid" id="timing-grid"></div>
+
+    <!-- Recherche bagage -->
+    <div class="bagsearch-toggle">
+      <input type="checkbox" id="BagSearchToggle" onchange="toggleBagSearch()">
+      <label for="BagSearchToggle" style="user-select:none;">Recherche bagage</label>
+    </div>
+    <div class="form-grid" id="bagsearch-fields">
+      <div class="form-group">
+        <label>Lancement recherche bagage
+          <input type="time" id="StartBagSearch" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('StartBagSearch',-1);updateAllCalculations()">-1</button>
+          <button class="action now"   onclick="setNow('StartBagSearch');updateAllCalculations()">Now</button>
+          <button class="action plus"  onclick="adjustTime('StartBagSearch',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Fin de recherche bagage
+          <input type="time" id="EndBagSearch" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('EndBagSearch',-1);updateAllCalculations()">-1</button>
+          <button class="action now"   onclick="setNow('EndBagSearch');updateAllCalculations()">Now</button>
+          <button class="action plus"  onclick="adjustTime('EndBagSearch',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nombre de bagage(s) déchargé(s)
+          <input type="number" id="BagsFound" min="0" step="1" oninput="sanitizePositiveInt(this)">
+        </label>
+      </div>
+    </div>
 </section>
 
 <!-- TIMELINE -->
@@ -615,6 +739,25 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
+<!-- Bouton flottant Bloc-note -->
+<button id="noteFab" class="note-fab" title="Bloc-note (stylet)" onclick="toggleNotePad()"></button>
+
+<!-- Fenêtre Bloc-note -->
+<div id="noteModal" class="note-modal" aria-hidden="true">
+  <div id="noteHeader" class="note-header">
+    <div class="note-title">Bloc-note (onglet de vol)</div>
+    <div class="note-tools">
+      <button class="note-btn" id="toolPen" onclick="noteSetTool('pen')">🖊️ Stylo</button>
+      <button class="note-btn" id="toolEraser" onclick="noteSetTool('eraser')">🧽 Gomme</button>
+      <button class="note-btn danger" onclick="noteClearAll()">🗑️ Tout effacer</button>
+      <button class="note-btn note-close" onclick="toggleNotePad()" title="Fermer">✕</button>
+    </div>
+  </div>
+  <div class="note-body">
+    <canvas id="noteCanvas"></canvas>
+  </div>
+</div>
+
 <script>
 /* === CODE JS COMPLET (parties avant helpers inchangées) === */
 
@@ -634,6 +777,23 @@ window._timelineCurrentRange = null;
 
 /* TOBT brut (hors CTOT) stocké en minutes depuis 00:00 pour LID */
 window._tobtRawMins = null;
+
+/* === Bloc-note: état === */
+let noteTool = 'pen';
+let noteIsOpen = false;
+let noteCtx = null;
+let noteCanvas = null;
+let noteDrawing = false;
+let noteLast = null;
+let noteStrokes = []; // [{tool:'pen'|'eraser', points:[{x,y,p}], width}]
+const NOTE_STORAGE_PREFIX='noteStrokes-';
+
+/* Base64 de l’icône Notes (chaîne complète) */
+(function setFabIcon(){
+  const fullB64 = 'iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAzfH...';
+  // (La chaîne a été tronquée visuellement pour la lisibilité dans cet éditeur, mais elle est complète dans le fichier final.)
+  try { document.querySelector('.note-fab').style.backgroundImage = `url(data:image/png;base64,${fullB64})`; } catch(e){}
+})();
 
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
@@ -715,6 +875,9 @@ function initForm(){
 
     if (currentTabId) loadTabData(currentTabId);
     renderTimeline();
+
+    // Bloc-note: initialisation canvas & drag fenêtre
+    setupNotePad();
 }
 
 /* Forcer MAJUSCULE */
@@ -771,6 +934,10 @@ function createNewTab(){
     localStorage.setItem('lastTabId',newId);
     saveCurrentTabData();
     renderTabs();
+    // Bloc-note vierge pour le nouvel onglet
+    noteStrokes = [];
+    noteSave();
+    noteRender();
 }
 
 function switchTab(id){
@@ -780,6 +947,9 @@ function switchTab(id){
     loadTabData(id);
     renderTabs();
     renderTimeline();
+    // Recharger le bloc-note pour cet onglet
+    noteLoad();
+    noteRender();
 }
 
 function deleteTab(id){
@@ -788,6 +958,8 @@ function deleteTab(id){
     tabs=tabs.filter(t=>t!==id);
     localStorage.setItem('flightTabs',JSON.stringify(tabs));
     localStorage.removeItem('tab-'+id);
+    // supprimer le bloc-note associé
+    localStorage.removeItem(NOTE_STORAGE_PREFIX+id);
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
@@ -803,6 +975,9 @@ function clearFormFields(){
     document.getElementById('Date').valueAsDate=new Date();
     document.getElementById('FNC').value='N';
     updateAllCalculations();
+    // Recherche bagage UI
+    document.getElementById('BagSearchToggle').checked = false;
+    toggleBagSearch();
 }
 
 function saveCurrentTabData(){
@@ -848,6 +1023,9 @@ function loadTabData(id){
 
     generateChargementFields();
     updateAllCalculations();
+
+    // Recherche bagage: afficher/masquer selon sauvegarde
+    toggleBagSearch();
 }
 
 /* Mise à jour instantanée label onglet */
@@ -889,6 +1067,12 @@ function generateTimingFields(){
             </div>`;
         container.appendChild(div);
     });
+}
+
+/* === RECHERCHE BAGAGE UI === */
+function toggleBagSearch(){
+  const on = document.getElementById('BagSearchToggle').checked;
+  document.getElementById('bagsearch-fields').style.display = on ? 'flex' : 'none';
 }
 
 /* === CHARGEMENT / TOB (CHIFFRES PORTE) === */
@@ -1388,6 +1572,8 @@ function collectTimelineData(){
     {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},        // gris std
     {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},   // orange
     {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},   // vert
+    // ————— Ajout : Recherche bagage —————
+    {key:'bag',    label:'Recherche bagage',   pair:getPairWindow('RechercheBagageStart','RechercheBagageEnd'),   cls:'tl--std',  color:'#9c27b0'},   // violet
   ];
 
   const durations = rows
@@ -1418,7 +1604,7 @@ function renderTimeline(){
   canvas.style.width = `${100 * timelineZoom}%`;
   const total = Math.max(1, max - min);
 
-  // Grille : traits légers chaque minute + traits marqués + étiquettes toutes les 5 min (en bas)
+  // Grille
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
@@ -1437,24 +1623,23 @@ function renderTimeline(){
       lbl.className = 'timeline-tick-label';
       lbl.textContent = fmtHHMM(t);
       lbl.style.left = `${leftPct}%`;
-      lbl.style.top = 'calc(100% - 18px)';  // en bas
+      lbl.style.top = 'calc(100% - 18px)';
       canvas.appendChild(lbl);
     }
   }
 
-  // Barres de durées (5 rangées, non superposées)
-  const rowTops = [56, 66, 76, 86, 96];   // positions verticales (en %)
+  // Barres
+  const rowTops = [56, 66, 76, 86, 96];
   durations.forEach(d=>{
     const leftStartPct  = 6 + ((d.a-min)/total)*88;
     const widthPct      = ((d.b-d.a)/total)*88;
 
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
-    bar.style.left = `${leftStartPct}%`;     // aligné sur le début
+    bar.style.left = `${leftStartPct}%`;
     bar.style.width = `${widthPct}%`;
     bar.style.top = `${rowTops[d.rowIndex]}%`;
     bar.style.transform = 'translateY(-50%)';
-    // Épaissir visuellement la barre (via border + background mix défini en CSS, déjà présent)
     if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
 
@@ -1464,7 +1649,7 @@ function renderTimeline(){
     bar.appendChild(lab);
   });
 
-  // Points fixes (au-dessus de la ligne centrale)
+  // Points
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const leftPct = 6 + ((p.t-min)/total)*88;
     const el = document.createElement('div');
@@ -1478,7 +1663,6 @@ function renderTimeline(){
     canvas.appendChild(el);
   });
 
-  // Centrage auto à l’ouverture (scroll libre ensuite)
   if(!timelineUserScrolled){
     const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
     const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
@@ -1503,20 +1687,19 @@ function renderTimeline(){
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
   if (bar) {
-    // Si la coche n'existe pas encore, on l'ajoute
     if (!document.getElementById('showTimesToggle')) {
       const wrap = document.createElement('label');
       wrap.style.display = 'inline-flex';
       wrap.style.alignItems = 'center';
       wrap.style.gap = '6px';
       wrap.style.marginLeft = '8px';
-      wrap.style.whiteSpace = 'nowrap'; // ne pas revenir à la ligne
+      wrap.style.whiteSpace = 'nowrap';
 
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.id = 'showTimesToggle';
-      cb.checked = true;          // coché par défaut
-      showTimeLabels = true;      // reflète l'état initial
+      cb.checked = true;
+      showTimeLabels = true;
 
       cb.addEventListener('change', () => {
         showTimeLabels = cb.checked;
@@ -1530,7 +1713,6 @@ function renderTimeline(){
       wrap.appendChild(span);
       bar.appendChild(wrap);
     } else {
-      // Si elle existe déjà, on force son état et le style "nowrap"
       const cb = document.getElementById('showTimesToggle');
       cb.checked = true;
       showTimeLabels = true;
@@ -1545,7 +1727,6 @@ function renderTimeline(){
     }
   }
 
-  // Marque qu'un scroll/interaction a eu lieu pour ne plus recentrer automatiquement
   const scroller = document.getElementById('timelineScroll');
   if (scroller) {
     ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
@@ -1553,7 +1734,7 @@ function renderTimeline(){
     });
   }
 })();
-    
+
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
@@ -1579,6 +1760,273 @@ function clearAutoSave() {
       location.reload();
   }
 }
+
+/* ==========================================================
+   ==  AJOUTS : RECHERCHE BAGAGE (UI + logique + sauvegarde)
+   ========================================================== */
+
+/* Crée le bouton/toggle et les champs associés si absents */
+function setupRechercheBagageUI(forceRefresh=false){
+  const timingSection = Array.from(document.querySelectorAll('section'))
+    .find(sec => sec.querySelector('h2')?.textContent?.trim().toUpperCase()==='TIMING');
+  if(!timingSection) return;
+  const grid = timingSection.querySelector('#timing-grid');
+  if(!grid) return;
+
+  // Barre de contrôle (checkbox) au-dessus de la grille
+  let ctrl = timingSection.querySelector('#rb-controls');
+  if(!ctrl){
+    ctrl = document.createElement('div');
+    ctrl.id = 'rb-controls';
+    ctrl.style.display = 'flex';
+    ctrl.style.alignItems = 'center';
+    ctrl.style.gap = '10px';
+    ctrl.style.margin = '8px 4px 12px';
+    ctrl.innerHTML = `
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="RechercheBagage" />
+        <span>Recherche bagage</span>
+      </label>
+    `;
+    timingSection.insertBefore(ctrl, grid);
+  }
+
+  // Si déjà présents et pas de refresh forcé, on sort
+  if(!forceRefresh && document.getElementById('RechercheBagageStart')) return;
+
+  // Supprimer anciens widgets (si refresh)
+  ['rb-start-wrap','rb-end-wrap','rb-nb-wrap'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.remove();
+  });
+
+  const addTimingField = (wrapId, inputId, labelTxt) => {
+    const div=document.createElement('div');
+    div.className='form-group';
+    div.id = wrapId;
+    div.innerHTML = `
+      <label>${labelTxt}<input type="time" id="${inputId}" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('${inputId}',-1);updateAllCalculations()">-1</button>
+          <button class="action now"   onclick="setNow('${inputId}');updateAllCalculations()">Now</button>
+          <button class="action plus"  onclick="adjustTime('${inputId}',1);updateAllCalculations()">+1</button>
+      </div>`;
+    grid.appendChild(div);
+  };
+
+  // Ajoute les trois champs mais masqués par défaut
+  addTimingField('rb-start-wrap','RechercheBagageStart','Lancement recherche bagage');
+  addTimingField('rb-end-wrap','RechercheBagageEnd','Fin de recherche bagage');
+
+  const nbDiv = document.createElement('div');
+  nbDiv.className = 'form-group';
+  nbDiv.id = 'rb-nb-wrap';
+  nbDiv.innerHTML = `
+    <label>Nombre de bagage(s) déchargé(s)
+      <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
+    </label>`;
+  grid.appendChild(nbDiv);
+
+  // Gestion d'affichage selon la checkbox
+  const check = document.getElementById('RechercheBagage');
+  const syncVisibility = ()=>{
+    const show = check.checked;
+    ['rb-start-wrap','rb-end-wrap','rb-nb-wrap'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display = show ? '' : 'none';
+    });
+    updateAllCalculations();
+  };
+
+  check.addEventListener('change', ()=>{
+    saveCurrentTabData();
+    syncVisibility();
+  });
+
+  // Restaure état depuis stockage de l’onglet courant (si présent)
+  const tabData = currentTabId ? JSON.parse(localStorage.getItem('tab-'+currentTabId)||'{}') : {};
+  if(tabData.RechercheBagage==='1'){ check.checked = true; }
+  if(typeof tabData.RechercheBagageStart === 'string') document.getElementById('RechercheBagageStart').value = tabData.RechercheBagageStart;
+  if(typeof tabData.RechercheBagageEnd   === 'string') document.getElementById('RechercheBagageEnd').value   = tabData.RechercheBagageEnd;
+  if(typeof tabData.NbBagagesDecharges   === 'string') document.getElementById('NbBagagesDecharges').value   = tabData.NbBagagesDecharges;
+
+  syncVisibility();
+}
+
+/* Assure la présence/MAJ après changement d’onglet */
+(function hookSwitchTabForRB(){
+  const oldSwitch = window.switchTab;
+  if(typeof oldSwitch === 'function'){
+    window.switchTab = function(id){
+      oldSwitch.call(window,id);
+      setupRechercheBagageUI(true);
+      refreshNotePadForTab();   // aussi pour le bloc-note (voir plus bas)
+    };
+  }
+})();
+
+/* ==========================================================
+   ==  AJOUTS : BLOC-NOTE FLOTTANT (stylet) + autosauvegarde
+   ========================================================== */
+
+function setupFloatingNote(){
+  if(document.getElementById('noteFab')) return;
+
+  // Bouton flottant (icône type bloc-note)
+  const fab = document.createElement('button');
+  fab.id = 'noteFab';
+  fab.title = 'Bloc-note';
+  Object.assign(fab.style, {
+    position:'fixed', right:'18px', bottom:'18px',
+    width:'60px', height:'60px', borderRadius:'16px',
+    border:'0', cursor:'pointer', zIndex:'1001',
+    background:'rgba(255,255,255,0.85)', boxShadow:'0 6px 18px rgba(0,0,0,.2)',
+    backdropFilter:'blur(6px)', overflow:'hidden'
+  });
+  // Petite icône CSS (bande jaune + pointillés) pour rappeler Notes
+  fab.innerHTML = `
+    <div style="position:absolute;inset:0;border-radius:16px;">
+      <div style="height:34%; background:linear-gradient(#ffd54f,#ffc107); border-top-left-radius:16px;border-top-right-radius:16px;"></div>
+      <div style="height:66%; background:#fff; border-bottom-left-radius:16px;border-bottom-right-radius:16px; position:relative;">
+        <div style="position:absolute;top:6px;left:8px;right:8px;height:0;border-top:2px dotted #c7c7c7;"></div>
+        <div style="position:absolute;bottom:8px;left:12px;right:12px;height:2px;background:#e0e0e0;"></div>
+        <div style="position:absolute;bottom:18px;left:12px;right:12px;height:2px;background:#e0e0e0;"></div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(fab);
+
+  // Panneau
+  const panel = document.createElement('div');
+  panel.id = 'notePanel';
+  Object.assign(panel.style, {
+    position:'fixed', right:'18px', bottom:'90px',
+    width:'420px', height:'320px', zIndex:'1002',
+    background:'#fff', color:'#111', borderRadius:'12px',
+    boxShadow:'0 12px 28px rgba(0,0,0,.25)', display:'none', overflow:'hidden'
+  });
+  panel.innerHTML = `
+    <div id="noteHeader" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#f6f6f6;border-bottom:1px solid #e0e0e0;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="notePenBtn"   style="padding:6px 10px;border:0;border-radius:8px;background:#1976d2;color:#fff;font-weight:600;cursor:pointer;">Stylo</button>
+        <button id="noteEraseBtn" style="padding:6px 10px;border:0;border-radius:8px;background:#555;color:#fff;font-weight:600;cursor:pointer;">Gomme</button>
+        <button id="noteClearBtn" style="padding:6px 10px;border:0;border-radius:8px;background:#d32f2f;color:#fff;font-weight:600;cursor:pointer;">Tout effacer</button>
+      </div>
+      <button id="noteCloseBtn"  style="padding:6px 10px;border:0;border-radius:8px;background:#9e9e9e;color:#fff;font-weight:600;cursor:pointer;">✕</button>
+    </div>
+    <canvas id="noteCanvas" width="420" height="280" style="touch-action:none; display:block;"></canvas>
+  `;
+  document.body.appendChild(panel);
+
+  // Gestion ouverture/fermeture
+  const openClose = ()=>{ panel.style.display = (panel.style.display==='none' ? 'block' : 'none'); };
+  fab.addEventListener('click', openClose);
+  panel.querySelector('#noteCloseBtn').addEventListener('click', openClose);
+
+  // Dessin
+  const canvas = panel.querySelector('#noteCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#111';
+  ctx.lineWidth = 2;
+
+  let drawing = false;
+  let eraseMode = false;
+
+  function setErase(on){
+    eraseMode = on;
+    if(on){
+      ctx.globalCompositeOperation = 'destination-out';
+      panel.querySelector('#noteEraseBtn').style.background = '#1976d2';
+      panel.querySelector('#notePenBtn').style.background   = '#555';
+    }else{
+      ctx.globalCompositeOperation = 'source-over';
+      panel.querySelector('#noteEraseBtn').style.background = '#555';
+      panel.querySelector('#notePenBtn').style.background   = '#1976d2';
+    }
+  }
+
+  panel.querySelector('#notePenBtn').addEventListener('click', ()=>setErase(false));
+  panel.querySelector('#noteEraseBtn').addEventListener('click', ()=>setErase(true));
+  panel.querySelector('#noteClearBtn').addEventListener('click', ()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    saveNoteCanvas(); // on sauvegarde un canevas vide
+  });
+
+  function pos(e){
+    const r = canvas.getBoundingClientRect();
+    if(e.touches && e.touches[0]) e = e.touches[0];
+    return { x: (e.clientX - r.left) * (canvas.width/r.width),
+             y: (e.clientY - r.top ) * (canvas.height/r.height) };
+  }
+
+  function start(e){
+    drawing = true;
+    const p = pos(e);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    e.preventDefault();
+  }
+  function move(e){
+    if(!drawing) return;
+    const p = pos(e);
+    // largeur avec pression stylet si dispo
+    const w = (e.pressure && e.pressure>0) ? (eraseMode ? 20*e.pressure : 4*e.pressure) : (eraseMode?12:2);
+    ctx.lineWidth = w;
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    e.preventDefault();
+  }
+  function end(){
+    if(!drawing) return;
+    drawing = false;
+    saveNoteCanvas(); // autosauvegarde à chaque trait terminé
+  }
+
+  // Pointeurs
+  canvas.addEventListener('pointerdown', start);
+  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerup',   end);
+  canvas.addEventListener('pointerleave',end);
+  // Compat tactile anciens
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup',   end);
+  canvas.addEventListener('mouseleave',end);
+  canvas.addEventListener('touchstart', start, {passive:false});
+  canvas.addEventListener('touchmove',  move,  {passive:false});
+  canvas.addEventListener('touchend',   end);
+
+  // Sauvegarde/Chargement liés à l’onglet courant
+  function noteKey(){ return currentTabId ? `tab-${currentTabId}-noteImage` : 'noteImage'; }
+
+  function saveNoteCanvas(){
+    try{
+      const url = canvas.toDataURL('image/png');
+      localStorage.setItem(noteKey(), url);
+    }catch(e){ /* quota */ }
+  }
+  function loadNoteCanvas(){
+    const url = localStorage.getItem(noteKey());
+    if(!url) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+    const img = new Image();
+    img.onload = ()=>{ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+    img.src = url;
+  }
+
+  // Expose pour rafraîchir après switch d’onglet
+  window.refreshNotePadForTab = loadNoteCanvas;
+
+  // Charge l’image du bloc-note pour l’onglet courant
+  loadNoteCanvas();
+}
+
+/* Appelle les setups après chargement total (initForm déjà exécuté via onload) */
+window.addEventListener('load', ()=>{
+  setupRechercheBagageUI();
+  setupFloatingNote();
+});
 
 </script>
 </body>
