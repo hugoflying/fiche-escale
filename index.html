@@ -374,54 +374,6 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 .tl-pos-var-1   { top: 70%; }
 .tl-pos-var-2   { top: 80%; }
 .tl-pos-var-3   { top: 90%; }
-
-/* ====== AJOUT : BLOC-NOTE FLOTTANT ====== */
-#note-fab{
-  position:fixed; right:18px; bottom:18px;
-  width:64px; height:64px; border:0; border-radius:16px;
-  background: rgba(255,255,255,.85);
-  box-shadow: 0 8px 24px rgba(0,0,0,.25);
-  cursor:pointer; z-index:1100; padding:8px;
-  backdrop-filter: blur(6px);
-}
-#note-fab:hover{ transform: translateY(-1px); }
-#note-fab svg{ width:100%; height:100%; display:block; }
-
-/* Fenêtre du bloc-note (draggable) */
-#note-modal{
-  position:fixed; right:96px; bottom:24px;
-  width:480px; max-width:92vw; height:360px; max-height:70vh;
-  background:#fff; color:#111; border-radius:12px;
-  box-shadow: 0 16px 40px rgba(0,0,0,.35);
-  display:none; z-index:1101; overflow:hidden;
-}
-body.dark #note-modal{ background:#1c1c1c; color:#f5f5f5; }
-
-.note-header{
-  height:40px; display:flex; align-items:center; justify-content:space-between;
-  padding:0 10px; cursor:move; user-select:none;
-  background: linear-gradient(#ffe27a, #ffcf42);
-  color:#222; font-weight:700; letter-spacing:.2px;
-}
-.note-tools{
-  display:flex; align-items:center; gap:8px; padding:8px; border-bottom:1px solid rgba(0,0,0,.08);
-}
-.note-btn{
-  border:0; border-radius:8px; padding:8px 10px; cursor:pointer; font-weight:600;
-  background:#e7ebf0;
-}
-body.dark .note-btn{ background:#2a2a2a; color:#eee; }
-.note-btn.active{ outline:2px solid #1976d2; }
-.note-spacer{ flex:1; }
-.note-canvas-wrap{ height: calc(100% - 40px - 50px); /* header + tools */ }
-#note-canvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
-body.dark #note-canvas{ background:#111; }
-
-/* petite croix */
-.note-close{
-  width:28px; height:28px; border-radius:8px; border:0; cursor:pointer; background:#00000020;
-}
-.note-close:hover{ background:#00000035; }
 </style>
 </head>
 <body onload="initForm()">
@@ -658,49 +610,6 @@ body.dark #note-canvas{ background:#111; }
     </div>
 </section>
 
-<!-- ====== AJOUT : UI BLOC-NOTE FLOTTANT ====== -->
-<button id="note-fab" title="Bloc-note (stylet) – Ouvrir / Fermer" onclick="noteToggle()" aria-label="Bloc-note">
-  <!-- Icône style Apple Notes en SVG (sans ressource externe) -->
-  <svg viewBox="0 0 100 100" aria-hidden="true">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#ffde59"/>
-        <stop offset="100%" stop-color="#ffc107"/>
-      </linearGradient>
-    </defs>
-    <rect x="6" y="6" rx="22" ry="22" width="88" height="88" fill="#fff"/>
-    <rect x="6" y="6" rx="22" ry="22" width="88" height="28" fill="url(#g)"/>
-    <g opacity=".4">
-      <circle cx="18" cy="36" r="2.2" fill="#999"/>
-      <rect x="24" y="35" width="60" height="2.5" fill="#bbb"/>
-      <circle cx="18" cy="54" r="2.2" fill="#999"/>
-      <rect x="24" y="53" width="60" height="2.5" fill="#bbb"/>
-      <circle cx="18" cy="72" r="2.2" fill="#999"/>
-      <rect x="24" y="71" width="60" height="2.5" fill="#bbb"/>
-    </g>
-  </svg>
-</button>
-
-<div id="note-modal" role="dialog" aria-label="Bloc-note">
-  <div class="note-header" id="note-drag">
-    <span>Bloc-note</span>
-    <button class="note-close" onclick="noteToggle()" aria-label="Fermer">✕</button>
-  </div>
-  <div class="note-tools">
-    <button id="note-pen" class="note-btn active" onclick="noteSetMode('pen')" title="Stylo (dessin)">✏️ Stylo</button>
-    <button id="note-eraser" class="note-btn" onclick="noteSetMode('eraser')" title="Gomme">🧽 Gomme</button>
-    <div class="note-spacer"></div>
-    <label class="note-btn" style="padding:6px 10px;">
-      Épaisseur
-      <input id="note-size" type="range" min="1" max="20" value="3" style="vertical-align:middle;">
-    </label>
-    <button class="note-btn" onclick="noteClear()" title="Tout effacer">🗑️ Effacer tout</button>
-  </div>
-  <div class="note-canvas-wrap">
-    <canvas id="note-canvas"></canvas>
-  </div>
-</div>
-
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
@@ -805,11 +714,6 @@ function initForm(){
     if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 
     if (currentTabId) loadTabData(currentTabId);
-
-    /* ====== AJOUT : initialisation bloc-note ====== */
-    noteInit();                       // prépare canvas/outils
-    noteLoadForCurrentTab();          // restaure le dessin de l’onglet courant
-
     renderTimeline();
 }
 
@@ -867,9 +771,6 @@ function createNewTab(){
     localStorage.setItem('lastTabId',newId);
     saveCurrentTabData();
     renderTabs();
-    /* bloc-note : démarre un canevas vierge pour le nouvel onglet */
-    noteClear(true); // true = silencieux
-    noteSave();      // crée une entrée vide
 }
 
 function switchTab(id){
@@ -879,8 +780,6 @@ function switchTab(id){
     loadTabData(id);
     renderTabs();
     renderTimeline();
-    /* ====== AJOUT : charger dessin de l’onglet ====== */
-    noteLoadForCurrentTab();
 }
 
 function deleteTab(id){
@@ -889,8 +788,6 @@ function deleteTab(id){
     tabs=tabs.filter(t=>t!==id);
     localStorage.setItem('flightTabs',JSON.stringify(tabs));
     localStorage.removeItem('tab-'+id);
-    /* supprimer aussi le bloc-note associé */
-    localStorage.removeItem('note-'+id);
     if(tabs.length>0) switchTab(tabs[0]);
     else createNewTab();
     renderTabs();
@@ -1447,7 +1344,7 @@ function getPairWindow(idA,idB){
 }
 
 function collectTimelineData(){
-   // Points fixes (événements)
+  // Points fixes (événements)
   const fixedPoints = [];
   const addPoint = (label, t, cls='tl--std')=>{
     if(t==null) return;
@@ -1656,7 +1553,7 @@ function renderTimeline(){
     });
   }
 })();
-
+    
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
