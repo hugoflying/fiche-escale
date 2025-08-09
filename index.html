@@ -1282,75 +1282,125 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
 }
 
 /* === TIMELINE helpers (5-min grid, jalons auto) === */
-
-// Zoom par défaut = 300%
-let timelineZoom = 3;
-let timelineUserScrolled = false;
-let showDurationLabels = true; // remplace showTimeLabels
+let showTimeLabels = true;           // coche "Heure sur étiquettes"
+let timelineUserScrolled = false;    // pour ne centrer qu'à l'ouverture
 
 function parseHHMM(str){
-  if(!str) return null;
-  const m = str.match(/^(\d{1,2}):(\d{2})$/);
-  if(!m) return null;
-  let h = parseInt(m[1], 10), mn = parseInt(m[2], 10);
-  return h*60 + mn;
+  if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
+  const [h,m] = str.split(':').map(Number);
+  return h*60 + m;
+}
+function fmtHHMM(mins){
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function labelFromInputEl(input){
+  const lab = input.closest('label');
+  if(lab){
+    const firstTextNode = Array.from(lab.childNodes).find(n=>n.nodeType===3);
+    const t = (firstTextNode?.textContent || "").trim();
+    if(t) return t.replace(/\s*[:：]?\s*$/,'');
+  }
+  return input.id || 'Horaire';
 }
 
-function fmtHHMM(m){
-  if(m == null) return '';
-  const h = Math.floor(m/60)%24;
-  const mn = m%60;
-  return `${h.toString().padStart(2,'0')}:${mn.toString().padStart(2,'0')}`;
+/* Fenêtre d’affichage :
+   1) [H-15 - 5 min, AOBT + 5 min] si H-15 et AOBT dispo
+   2) [SIBT - 5 min, SOBT + 5 min] si dispo
+   3) fallback min/max des données (+ marges)
+*/
+function computeTimelineWindow(allTimes){
+  const h15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
+  if(h15 != null && aobt != null){
+    let min = h15 - 5;
+    let max = aobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'H-15/AOBT'};
+  }
+  const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
+  if(sibt != null && sobt != null){
+    let min = sibt - 5;
+    let max = sobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'SIBT/SOBT'};
+  }
+  if(allTimes.length){
+    let min = Math.min(...allTimes) - 10;
+    let max = Math.max(...allTimes) + 10;
+    if (max - min < 30){ min -= 10; max += 10; }
+    return {min, max, basis:'data'};
+  }
+  return {min:0, max:60, basis:'default'};
 }
 
-function fmtDuration(a,b){
-  if(a==null || b==null) return '';
-  const diff = b-a;
-  return `${diff} min`;
+function getPairWindow(idA,idB){
+  const a = parseHHMM(document.getElementById(idA)?.value || '');
+  const b = parseHHMM(document.getElementById(idB)?.value || '');
+  if(a==null || b==null) return null;
+  return [Math.min(a,b), Math.max(a,b)];
 }
 
 function collectTimelineData(){
+  // Points fixes (événements)
   const fixedPoints = [];
-  const durations = [];
+  const addPoint = (label, t, cls='tl--std')=>{
+    if(t==null) return;
+    fixedPoints.push({label, t, cls});
+  };
 
-  // Ajout H-15, H-40, SIBT, AIBT, TOBT, CTOT, AOBT
-  const addFixed = (id,label,cls) => {
+  const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
+  const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
+  const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+  const CTOT = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
+  const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+
+  addPoint('SIBT', SIBT, 'tl--std');
+  addPoint('AIBT', AIBT, 'tl--std');
+  addPoint('SOBT', SOBT, 'tl--std');
+  addPoint('AOBT', AOBT, 'tl--std');
+  addPoint('TOBT', TOBT, 'tl--tobt');
+  addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('H-15', H15,  'tl--turn');  // point H-15
+  addPoint('H-40', H40,  'tl--turn');  // point H-40
+
+  // Événements unitaires (points)
+  const singles = [
+    ['ArrPNT','Arrivée PNT avion'],
+    ['ArrPNC','Arrivée PNC avion'],
+    ['RemiseLID','Remise LID/LDS'],
+    ['FermeturePorteAvion','Fermeture porte avion'],
+  ];
+  singles.forEach(([id,label])=>{
     const t = parseHHMM(document.getElementById(id)?.value || '');
-    if(t != null) fixedPoints.push({t,label,cls});
-  };
+    if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
+  });
 
-  addFixed('HMoins15', 'H-15', 'fp');
-  addFixed('HMoins40', 'H-40', 'fp');
-  addFixed('SIBT', 'SIBT', 'fp');
-  addFixed('AIBT', 'AIBT', 'fp');
-  addFixed('TOBT', 'TOBT', 'fp');
-  addFixed('CTOT', 'CTOT', 'fp');
-  addFixed('AOBT', 'AOBT', 'fp');
+  // Lignes de durées (barres) — non superposées, une par rangée
+  const rows = [
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},        // rouge
+    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},        // bleu
+    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},        // gris std
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},   // orange
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},   // vert
+  ];
 
-  // Durées à afficher
-  const addDuration = (idStart,idEnd,label,color,row) => {
-    const a = parseHHMM(document.getElementById(idStart)?.value || '');
-    const b = parseHHMM(document.getElementById(idEnd)?.value || '');
-    if(a!=null && b!=null && b>a){
-      durations.push({a,b,label,color,rowIndex:row});
-    }
-  };
+  const durations = rows
+    .filter(r=>r.pair!=null)
+    .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
-  addDuration('PremierDebarque','DernierDebarque','Débarquement','red',0);
-  addDuration('PremierEmbarque','DernierEmbarque','Embarquement','blue',1);
-  addDuration('ArriveeFuel','FinFuel','Fuel','orange',2);
-  addDuration('ArriveeLift','DepartLift','Lift','green',3);
-  addDuration('PremierEmbarquePorte','DernierEmbarquePorte','Embarquement porte','gray',4);
+  const allTimes = [
+    ...fixedPoints.map(p=>p.t),
+    ...durations.flatMap(d=>[d.a,d.b])
+  ];
+  const windowInfo = computeTimelineWindow(allTimes);
 
-  // Fenêtre d'affichage centrée sur SIBT/AOBT ou AIBT/AOBT
-  let min = Math.min(...fixedPoints.map(p=>p.t), ...durations.map(d=>d.a)) || 0;
-  let max = Math.max(...fixedPoints.map(p=>p.t), ...durations.map(d=>d.b)) || 0;
-  if(isFinite(min) && isFinite(max)){
-    min -= 5; // marge 5 min avant
-    max += 5; // marge 5 min après
-  }
-
-  return {fixedPoints,durations,windowInfo:{min,max}};
+  return {fixedPoints, durations, windowInfo};
 }
 
 function renderTimeline(){
@@ -1360,25 +1410,26 @@ function renderTimeline(){
 
   canvas.innerHTML = '';
 
-  const {fixedPoints,durations,windowInfo} = collectTimelineData();
-  const {min,max} = windowInfo;
+  const {fixedPoints, durations, windowInfo} = collectTimelineData();
+  const {min, max} = windowInfo;
   if(min === undefined) return;
 
-  window._timelineCurrentRange = {min,max};
+  window._timelineCurrentRange = {min, max};
   canvas.style.width = `${100 * timelineZoom}%`;
   const total = Math.max(1, max - min);
 
-  // Grille : traits chaque minute + traits 5 min marqués
+  // Grille : traits légers chaque minute + traits marqués + étiquettes toutes les 5 min (en bas)
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
+
     const vline = document.createElement('div');
     vline.style.position = 'absolute';
     vline.style.left = `${leftPct}%`;
     vline.style.top = '12%';
     vline.style.height = '78%';
-    vline.style.width = '1px';
-    vline.style.background = (t % 5 === 0) ? '#bbb' : 'rgba(0,0,0,0.08)';
+    vline.style.width = (t % 5 === 0) ? '1.5px' : '1px';
+    vline.style.background = (t % 5 === 0) ? '#bdbdbd' : 'rgba(0,0,0,0.08)';
     canvas.appendChild(vline);
 
     if(t % 5 === 0){
@@ -1386,59 +1437,55 @@ function renderTimeline(){
       lbl.className = 'timeline-tick-label';
       lbl.textContent = fmtHHMM(t);
       lbl.style.left = `${leftPct}%`;
-      lbl.style.top = 'calc(100% - 18px)';
+      lbl.style.top = 'calc(100% - 18px)';  // en bas
       canvas.appendChild(lbl);
     }
   }
 
-  // Barres de durées
-  const rowTops = [56, 66, 76, 86, 96];
+  // Barres de durées (5 rangées, non superposées)
+  const rowTops = [56, 66, 76, 86, 96];   // positions verticales (en %)
   durations.forEach(d=>{
     const leftStartPct  = 6 + ((d.a-min)/total)*88;
     const widthPct      = ((d.b-d.a)/total)*88;
+
     const bar = document.createElement('div');
-    bar.className = `tl-range`;
-    bar.style.background = d.color;
-    bar.style.left = `${leftStartPct}%`;
+    bar.className = `tl-range ${d.cls}`;
+    bar.style.left = `${leftStartPct}%`;     // aligné sur le début
     bar.style.width = `${widthPct}%`;
     bar.style.top = `${rowTops[d.rowIndex]}%`;
     bar.style.transform = 'translateY(-50%)';
+    // Épaissir visuellement la barre (via border + background mix défini en CSS, déjà présent)
+    if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    lab.textContent = showDurationLabels ? `${d.label} : ${fmtDuration(d.a,d.b)}` : d.label;
+    lab.textContent = showTimeLabels ? `${d.label} : ${fmtHHMM(d.a)}-${fmtHHMM(d.b)}` : d.label;
     bar.appendChild(lab);
   });
 
-  // Points fixes avec anti-chevauchement vertical
-  fixedPoints.sort((a,b)=>a.t-b.t);
-  let lastLeft = -999, lastTop = 28;
-  fixedPoints.forEach((p,idx)=>{
+  // Points fixes (au-dessus de la ligne centrale)
+  fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const leftPct = 6 + ((p.t-min)/total)*88;
-    let topPos = 28;
-    if(Math.abs(leftPct - lastLeft) < 2){ // si proche, décaler
-      topPos = lastTop + 12;
-    }
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
     el.style.left = `${leftPct}%`;
-    el.style.top  = `${topPos}%`;
+    el.style.top  = '28%';
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
-    label.textContent = `${p.label} : ${fmtHHMM(p.t)}`;
+    label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
-    lastLeft = leftPct; lastTop = topPos;
   });
 
-  // Centrage initial
+  // Centrage auto à l’ouverture (scroll libre ensuite)
   if(!timelineUserScrolled){
     const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
     const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
     const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
     const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
     let start = null, end = null;
+
     if(aibt != null && aobt != null){ start = aibt; end = aobt; }
     else if(sibt != null && aobt != null){ start = sibt; end = aobt; }
     else if(sibt != null && sobt != null){ start = sibt; end = sobt; }
@@ -1452,34 +1499,57 @@ function renderTimeline(){
   }
 }
 
-// Bouton "Durée sur étiquette"
+/* Injecte la coche "Heure sur étiquettes" si absente + capte l'interaction pour ne pas recentrer */
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
-  if(bar && !document.getElementById('showTimesToggle')){
-    const wrap = document.createElement('label');
-    wrap.style.display = 'inline-flex';
-    wrap.style.alignItems = 'center';
-    wrap.style.gap = '6px';
-    wrap.style.marginLeft = '8px';
-    wrap.style.whiteSpace = 'nowrap';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.id = 'showTimesToggle';
-    cb.checked = true;
-    showDurationLabels = true;
-    cb.addEventListener('change', ()=>{
-      showDurationLabels = cb.checked;
-      renderTimeline();
-    });
-    const span = document.createElement('span');
-    span.textContent = 'Durée sur étiquette';
-    wrap.appendChild(cb); wrap.appendChild(span);
-    bar.appendChild(wrap);
+  if (bar) {
+    // Si la coche n'existe pas encore, on l'ajoute
+    if (!document.getElementById('showTimesToggle')) {
+      const wrap = document.createElement('label');
+      wrap.style.display = 'inline-flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '6px';
+      wrap.style.marginLeft = '8px';
+      wrap.style.whiteSpace = 'nowrap'; // ne pas revenir à la ligne
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'showTimesToggle';
+      cb.checked = true;          // coché par défaut
+      showTimeLabels = true;      // reflète l'état initial
+
+      cb.addEventListener('change', () => {
+        showTimeLabels = cb.checked;
+        renderTimeline();
+      });
+
+      const span = document.createElement('span');
+      span.textContent = 'Heure sur étiquettes';
+
+      wrap.appendChild(cb);
+      wrap.appendChild(span);
+      bar.appendChild(wrap);
+    } else {
+      // Si elle existe déjà, on force son état et le style "nowrap"
+      const cb = document.getElementById('showTimesToggle');
+      cb.checked = true;
+      showTimeLabels = true;
+      const wrap = cb.closest('label');
+      if (wrap) {
+        wrap.style.whiteSpace = 'nowrap';
+        wrap.style.display = 'inline-flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.gap = '6px';
+        wrap.style.marginLeft = '8px';
+      }
+    }
   }
+
+  // Marque qu'un scroll/interaction a eu lieu pour ne plus recentrer automatiquement
   const scroller = document.getElementById('timelineScroll');
-  if(scroller){
+  if (scroller) {
     ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
-      scroller.addEventListener(ev, ()=>{ timelineUserScrolled = true; }, {passive:true});
+      scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
     });
   }
 })();
