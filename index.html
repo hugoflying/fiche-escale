@@ -1418,7 +1418,7 @@ function renderTimeline(){
   const canvas   = document.getElementById('timelineCanvas');
   if(!scroller || !canvas) return;
 
-  // Nettoyage (pas de barre grise centrale)
+  // Nettoyage
   canvas.innerHTML = '';
 
   const {fixedPoints, durations, windowInfo} = collectTimelineData();
@@ -1430,7 +1430,7 @@ function renderTimeline(){
   // Largeur en fonction du zoom
   canvas.style.width = `${100 * timelineZoom}%`;
 
-  // Dimensions réelles (px) après mise à jour de la largeur
+  // Dimensions réelles
   const widthPx = canvas.getBoundingClientRect().width;
   const leftPad = widthPx * 0.06;  // 6%
   const avail   = widthPx * 0.88;  // 88%
@@ -1438,15 +1438,16 @@ function renderTimeline(){
 
   const timeToX = (t)=> leftPad + ((t - min) / total) * avail;
 
-  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS ----------
-  const MIN_LABEL_GAP_PX = 160;  // écart mini horizontal entre étiquettes
-  const DOT_SAFE_PX      = 18;   // marge pour éviter chevauchement des points
+  // ---------- Placement sans chevauchement : ÉVÉNEMENTS ----------
+  const MIN_LABEL_GAP_PX = 160;
+  const DOT_SAFE_PX      = 18;
 
   const eventsSorted = fixedPoints
+    .filter(p => p.t >= min && p.t <= max) // filtre hors fenêtre
     .map(p => ({p, x: timeToX(p.t)}))
     .sort((a,b) => a.x - b.x);
 
-  const lanes = []; // mémorise le dernier X placé par rangée
+  const lanes = [];
   eventsSorted.forEach(item => {
     let laneIdx = -1;
     for (let i=0; i<lanes.length; i++){
@@ -1465,14 +1466,14 @@ function renderTimeline(){
   const nDurRowsUsed = durations.length ? (Math.max(...durations.map(d=>d.rowIndex)) + 1) : 0;
 
   // ---------- Hauteur nécessaire ----------
-  const BASE_H                = 260; // hauteur de base
+  const BASE_H                = 260;
   const TOP_MARGIN            = 16;
   const BOTTOM_MARGIN         = 18;
-  const GAP_ABOVE_TRACK       = 60;  // réduit pour rapprocher le haut
-  const EVENT_ROW_SPACING     = 42;  // augmente pour plus d'espace entre étiquettes fixes
-  const GAP_BELOW_TRACK       = 80;  // augmente pour plus d'air sous les barres
-  const DURATION_ROW_SPACING  = 40;  // espacement entre rangées de durées
-  const BAR_LABEL_EXTRA       = 30;  // marge pour étiquette au-dessus d'une barre
+  const GAP_ABOVE_TRACK       = 60;
+  const EVENT_ROW_SPACING     = 42;
+  const GAP_BELOW_TRACK       = 80;
+  const DURATION_ROW_SPACING  = 40;
+  const BAR_LABEL_EXTRA       = 30;
 
   const requiredForEvents = 2 * (GAP_ABOVE_TRACK + Math.max(0, nEventRows-1)*EVENT_ROW_SPACING + TOP_MARGIN);
   const requiredForDur    = nDurRowsUsed
@@ -1484,7 +1485,7 @@ function renderTimeline(){
 
   const trackY = H * 0.5;
 
-  // ---------- Grille verticale & labels d’axe ----------
+  // ---------- Grille et labels d’axe ----------
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = timeToX(t);
 
@@ -1507,17 +1508,25 @@ function renderTimeline(){
     }
   }
 
-  // ---------- Barres de durées ----------
+  // ---------- Barres de durées avec clamp ----------
   const durRowY = (idx)=> trackY + GAP_BELOW_TRACK + idx * DURATION_ROW_SPACING;
+
   durations.forEach(d => {
-    const xStart = timeToX(d.a);
-    const xEnd   = timeToX(d.b);
-    const y      = durRowY(d.rowIndex);
+    if (d.b <= min || d.a >= max) return; // hors fenêtre
+
+    const aClamped = Math.max(min, Math.min(max, d.a));
+    const bClamped = Math.max(min, Math.min(max, d.b));
+
+    const xStart = timeToX(aClamped);
+    const xEnd   = timeToX(bClamped);
+    const width  = Math.max(1, xEnd - xStart);
+
+    const y = durRowY(d.rowIndex);
 
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
     bar.style.left = `${xStart}px`;
-    bar.style.width = `${Math.max(1, xEnd - xStart)}px`;
+    bar.style.width = `${width}px`;
     bar.style.top = `${y}px`;
     bar.style.transform = 'translateY(-50%)';
     if(d.color){ bar.style.setProperty('--c', d.color); }
@@ -1525,7 +1534,11 @@ function renderTimeline(){
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    lab.textContent = showTimeLabels ? `${d.label} : ${fmtDuration(d.b - d.a)}` : d.label;
+    const visibleDelta = bClamped - aClamped;
+    lab.textContent = showTimeLabels
+      ? `${d.label} : ${fmtDuration(visibleDelta)}`
+      : d.label;
+
     bar.appendChild(lab);
   });
 
