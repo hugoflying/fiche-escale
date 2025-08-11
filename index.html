@@ -1418,7 +1418,7 @@ function renderTimeline(){
   const canvas   = document.getElementById('timelineCanvas');
   if(!scroller || !canvas) return;
 
-  // Nettoyage (plus de barre grise centrale)
+  // Nettoyage (pas de barre grise centrale)
   canvas.innerHTML = '';
 
   const {fixedPoints, durations, windowInfo} = collectTimelineData();
@@ -1438,9 +1438,9 @@ function renderTimeline(){
 
   const timeToX = (t)=> leftPad + ((t - min) / total) * avail;
 
-  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS (points/étiquettes) ----------
-  const MIN_LABEL_GAP_PX = 140;  // écart mini entre deux étiquettes
-  const DOT_SAFE_PX      = 16;   // marge supplémentaire pour éviter chevauchement des points
+  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS ----------
+  const MIN_LABEL_GAP_PX = 160;  // écart mini horizontal entre étiquettes
+  const DOT_SAFE_PX      = 18;   // marge pour éviter chevauchement des points
 
   const eventsSorted = fixedPoints
     .map(p => ({p, x: timeToX(p.t)}))
@@ -1465,14 +1465,14 @@ function renderTimeline(){
   const nDurRowsUsed = durations.length ? (Math.max(...durations.map(d=>d.rowIndex)) + 1) : 0;
 
   // ---------- Hauteur nécessaire ----------
-  const BASE_H                = 260; // avant 220
+  const BASE_H                = 260; // hauteur de base
   const TOP_MARGIN            = 16;
   const BOTTOM_MARGIN         = 18;
-  const GAP_ABOVE_TRACK       = 80;  // avant 60
-  const EVENT_ROW_SPACING     = 36;  // avant 28
-  const GAP_BELOW_TRACK       = 72;  // avant 60
-  const DURATION_ROW_SPACING  = 40;  // avant 34
-  const BAR_LABEL_EXTRA       = 30;  // avant 26
+  const GAP_ABOVE_TRACK       = 70;  // réduit de 10px
+  const EVENT_ROW_SPACING     = 36;  // espacement entre rangées d’événements
+  const GAP_BELOW_TRACK       = 60;  // réduit de 12px
+  const DURATION_ROW_SPACING  = 40;  // espacement entre rangées de durées
+  const BAR_LABEL_EXTRA       = 30;  // marge pour étiquette au-dessus d'une barre
 
   const requiredForEvents = 2 * (GAP_ABOVE_TRACK + Math.max(0, nEventRows-1)*EVENT_ROW_SPACING + TOP_MARGIN);
   const requiredForDur    = nDurRowsUsed
