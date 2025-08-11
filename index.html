@@ -265,7 +265,7 @@ body.dark #tab-bar { background: #121212; }
   position: absolute; left:6%; right:6%; top:50%;
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
 }
-body.dark .timeline-track { display: none; }
+body.dark .timeline-track{ background:#2e2e2e; }
 
 /* Grille verticale 5 min — plus épaisse et haute */
 .timeline-tick {
@@ -325,20 +325,14 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
   z-index: 2;
 }
 .tl-range-label {
-  position: absolute;
-  top: -16px;            /* avant: -22px  -> rapproche l’étiquette */
-  left: 50%;
+  position:absolute; top: -22px; left:50%;
   transform: translateX(-50%);
-  font-size: 13px;       /* avant: 14px   -> plus compact */
-  padding: 1px 6px;      /* avant: 2px 8px*/
-  border-radius: 6px;
+  font-size: 14px;                               /* + grand */
+  background: rgba(255,255,255,.9);
+  padding: 2px 8px; border-radius:6px;
   font-weight: 600;
-  background: rgba(255,255,255,.92);
 }
-body.dark .tl-range-label {
-  background: rgba(0,0,0,.55);
-  color: #fff;
-}
+body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 
 /* --- Toolbar timeline --- */
 .timeline-toolbar{
@@ -1424,100 +1418,78 @@ function renderTimeline(){
   const canvas   = document.getElementById('timelineCanvas');
   if(!scroller || !canvas) return;
 
-  // Reset
+  // Nettoyage & track de base
   canvas.innerHTML = '';
+  const track = document.createElement('div');
+  track.className = 'timeline-track';
+  canvas.appendChild(track);
 
-  // Données
-  const {fixedPoints, durations} = collectTimelineData();
-  const allTimes = [
-    ...fixedPoints.map(p=>p.t),
-    ...durations.flatMap(d=>[d.a,d.b])
-  ].filter(t => t != null);
+  const {fixedPoints, durations, windowInfo} = collectTimelineData();
+  const {min, max} = windowInfo || {};
+  if(min === undefined || max === undefined) return;
 
-  if(!allTimes.length){
-    canvas.style.width = `${100 * timelineZoom}%`;
-    canvas.style.height = `220px`;
-    return;
-  }
-
-  // Fenêtre centrée sur 1ère↔dernière action + marge pour labels aux bords
-  let min = Math.min(...allTimes);
-  let max = Math.max(...allTimes);
-  const PAD_MIN = 15;       // marge en minutes (évite que TOBT/SOBT sortent à droite/gauche)
-  const MIN_SPAN = 30;      // largeur mini
-  min -= PAD_MIN;
-  max += PAD_MIN;
-  if ((max - min) < MIN_SPAN){
-    const mid = (min + max) / 2;
-    min = mid - MIN_SPAN/2;
-    max = mid + MIN_SPAN/2;
-  }
   window._timelineCurrentRange = {min, max};
 
-  // Métriques
+  // Largeur en fonction du zoom
   canvas.style.width = `${100 * timelineZoom}%`;
+
+  // Dimensions réelles (px) après mise à jour de la largeur
   const widthPx = canvas.getBoundingClientRect().width;
-  const leftPad = widthPx * 0.06;   // 6%
-  const avail   = widthPx * 0.88;   // 88%
+  const leftPad = widthPx * 0.06;  // 6%
+  const avail   = widthPx * 0.88;  // 88%
   const total   = Math.max(1, max - min);
-  const xMinPx  = leftPad + 2;                 // clamp "sécurité" pour les points
-  const xMaxPx  = leftPad + avail - 2;
 
   const timeToX = (t)=> leftPad + ((t - min) / total) * avail;
 
-  // Anti-chevauchement (horizontal) des événements
-  const MIN_LABEL_GAP_PX = 160;
-  const DOT_SAFE_PX      = 18;
-
+  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS (points/étiquettes) ----------
+  // On transforme les points en [{p, x}] triés par X
   const eventsSorted = fixedPoints
-    .filter(p => p.t >= min && p.t <= max)
     .map(p => ({p, x: timeToX(p.t)}))
     .sort((a,b) => a.x - b.x);
 
-  const lanes = [];
+  // Empilement en "voies" (lanes) avec distance minimale d'affichage
+  const MIN_LABEL_GAP_PX = 90;      // écart horizontal mini entre deux étiquettes sur la même rangée
+  const lanes = [];                  // mémorise le dernier X placé par rangée
   eventsSorted.forEach(item => {
     let laneIdx = -1;
     for (let i=0; i<lanes.length; i++){
-      if (item.x - lanes[i] >= (MIN_LABEL_GAP_PX + DOT_SAFE_PX)) { 
-        laneIdx = i; break;
-      }
+      if (item.x - lanes[i] >= MIN_LABEL_GAP_PX) { laneIdx = i; break; }
     }
     if (laneIdx === -1) { laneIdx = lanes.length; lanes.push(-Infinity); }
     item.lane = laneIdx;
-    lanes[laneIdx] = item.x + DOT_SAFE_PX;
+    lanes[laneIdx] = item.x;
   });
   const nEventRows = lanes.length;
 
+  // ---------- Placement : BARRES DE DURÉE ----------
+  // Nombre de rangées durées utilisées (0..maxRowIndex)
   const nDurRowsUsed = durations.length ? (Math.max(...durations.map(d=>d.rowIndex)) + 1) : 0;
 
-  // Géométrie verticale : zone tampon entre fixes et durées pour éviter l’empiètement
-  const BASE_H                = 260;
-  const TOP_MARGIN            = 14;
-  const BOTTOM_MARGIN         = 14;
+  // ---------- Calcul de hauteur nécessaire (on agrandit pour éviter tout chevauchement) ----------
+  const BASE_H                = 220;
+  const TOP_MARGIN            = 16;
+  const BOTTOM_MARGIN         = 18;
+  const GAP_ABOVE_TRACK       = 60;  // distance track -> 1ère rangée d’événements au-dessus
+  const EVENT_ROW_SPACING     = 28;  // espacement vertical entre rangées d’événements
+  const GAP_BELOW_TRACK       = 60;  // distance track -> 1ère rangée de durées en dessous
+  const DURATION_ROW_SPACING  = 34;  // espacement vertical entre rangées de durées
+  const BAR_LABEL_EXTRA       = 26;  // marge pour étiquette au-dessus d'une barre
 
-  const GAP_ABOVE_TRACK       = 56;  // un peu plus haut que précédemment (évite que TOBT touche le haut)
-  const GAP_BELOW_TRACK       = 88;  // plus d’air sous les barres
-  const BUFFER_BETWEEN_ZONES  = 10;  // bande "no-fly" entre fixes et durées
-
-  const EVENT_ROW_SPACING     = 42;
-  const DURATION_ROW_SPACING  = 40;
-  const BAR_LABEL_EXTRA       = 30;
-
+  // Conditions de non-chevauchement => hauteur mini due aux événements et aux durées
   const requiredForEvents = 2 * (GAP_ABOVE_TRACK + Math.max(0, nEventRows-1)*EVENT_ROW_SPACING + TOP_MARGIN);
   const requiredForDur    = nDurRowsUsed
       ? 2 * (GAP_BELOW_TRACK + (nDurRowsUsed-1)*DURATION_ROW_SPACING + BAR_LABEL_EXTRA + BOTTOM_MARGIN)
       : 2 * (GAP_BELOW_TRACK + BOTTOM_MARGIN);
 
-  const H = Math.max(BASE_H, requiredForEvents, requiredForDur) + BUFFER_BETWEEN_ZONES;
+  const H = Math.max(BASE_H, requiredForEvents, requiredForDur);
   canvas.style.height = `${H}px`;
 
-  // Décale très légèrement vers le haut pour conserver de l’air en bas sans écraser le haut
-  const TRACK_OFFSET = -6; // px
-  const trackY = H * 0.5 + TRACK_OFFSET;
+  const trackY = H * 0.5;
 
-  // Grille & labels d’axe
+  // ---------- Grille verticale & labels d’axe (toutes les minutes, label toutes les 5) ----------
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = timeToX(t);
+
     const vline = document.createElement('div');
     vline.style.position = 'absolute';
     vline.style.left = `${x}px`;
@@ -1537,24 +1509,18 @@ function renderTimeline(){
     }
   }
 
-  // Barres (clampées)
+  // ---------- Barres de durées (rangées sous la track, sans chevauchement vertical) ----------
   const durRowY = (idx)=> trackY + GAP_BELOW_TRACK + idx * DURATION_ROW_SPACING;
 
   durations.forEach(d => {
-    if (d.b <= min || d.a >= max) return;
-
-    const aClamped = Math.max(min, Math.min(max, d.a));
-    const bClamped = Math.max(min, Math.min(max, d.b));
-
-    const xStart = timeToX(aClamped);
-    const xEnd   = timeToX(bClamped);
-    const width  = Math.max(1, xEnd - xStart);
+    const xStart = timeToX(d.a);
+    const xEnd   = timeToX(d.b);
     const y      = durRowY(d.rowIndex);
 
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
     bar.style.left = `${xStart}px`;
-    bar.style.width = `${width}px`;
+    bar.style.width = `${Math.max(1, xEnd - xStart)}px`;
     bar.style.top = `${y}px`;
     bar.style.transform = 'translateY(-50%)';
     if(d.color){ bar.style.setProperty('--c', d.color); }
@@ -1562,18 +1528,15 @@ function renderTimeline(){
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    const visibleDelta = bClamped - aClamped;
-    lab.textContent = showTimeLabels ? `${d.label} : ${fmtDuration(visibleDelta)}` : d.label;
+    lab.textContent = showTimeLabels ? `${d.label} : ${fmtDuration(d.b - d.a)}` : d.label;
     bar.appendChild(lab);
   });
 
-  // Points fixes (clamp X + anti-chevauchement)
+  // ---------- Points/étiquettes fixes (rangées au-dessus de la track, sans chevauchement) ----------
   const eventRowY = (idx)=> trackY - (GAP_ABOVE_TRACK + idx * EVENT_ROW_SPACING);
 
   eventsSorted.forEach(item => {
-    const {p, lane} = item;
-    const rawX = timeToX(p.t);
-    const x = Math.max(xMinPx, Math.min(xMaxPx, rawX));  // clamp horizontal
+    const {p, x, lane} = item;
     const y = eventRowY(lane);
 
     const el = document.createElement('div');
@@ -1590,21 +1553,37 @@ function renderTimeline(){
     canvas.appendChild(el);
   });
 
-  // Auto-centrage sur le milieu de la fenêtre
+  // ---------- Centrage auto au premier rendu (si utilisateur n’a pas scrolleté) ----------
   if(!timelineUserScrolled){
-    const mid = (min + max) / 2;
-    const midX = leftPad + ((mid - min) / total) * avail;
-    const centerLeft = midX - scroller.clientWidth / 2;
-    scroller.scrollLeft = Math.max(0, centerLeft);
+    const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
+    const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
+    const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+    const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
+    let start = null, end = null;
+
+    if(aibt != null && aobt != null){ start = aibt; end = aobt; }
+    else if(sibt != null && aobt != null){ start = sibt; end = aobt; }
+    else if(sibt != null && sobt != null){ start = sibt; end = sobt; }
+
+    if(start != null && end != null){
+      const mid = (start + end) / 2;
+      const midX = leftPad + ((mid - min) / total) * avail;
+      const centerLeft = midX - scroller.clientWidth / 2;
+      scroller.scrollLeft = Math.max(0, centerLeft);
+    }
   }
 
-  // Libellé de la coche (anti-duplication)
+  // ---------- Sécurisation de l’intitulé du bouton (supprime toute duplication) ----------
   (function normalizeShowTimesToggle(){
     const wrap = document.querySelector('.timeline-toolbar .tl-toggle');
     if(!wrap) return;
+
+    // Enlever les éventuels textes en double
     Array.from(wrap.childNodes).forEach(n=>{
-      if(n.nodeType === 3 && n.textContent.trim()) n.remove();
+      if(n.nodeType === 3 && n.textContent.trim()) n.remove(); // supprime texte brut en double
     });
+
+    // S'assurer qu'on a exactement un <span> avec le libellé
     let span = wrap.querySelector('span');
     if(!span){
       span = document.createElement('span');
