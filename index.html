@@ -363,7 +363,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 /* Hauteur augmentée pour empiler les lignes de durées */
 .timeline-canvas{
   position:relative;
-  height:220px;              /* + haut pour 5 lignes confort */
+  height:220px;              /* base, ajustée dynamiquement en JS */
   min-width:600px;
   width:100%;   /* ajusté par le zoom côté JS */
 }
@@ -1418,24 +1418,81 @@ function renderTimeline(){
   const canvas   = document.getElementById('timelineCanvas');
   if(!scroller || !canvas) return;
 
+  // Nettoyage & track de base
   canvas.innerHTML = '';
+  const track = document.createElement('div');
+  track.className = 'timeline-track';
+  canvas.appendChild(track);
 
   const {fixedPoints, durations, windowInfo} = collectTimelineData();
-  const {min, max} = windowInfo;
-  if(min === undefined) return;
+  const {min, max} = windowInfo || {};
+  if(min === undefined || max === undefined) return;
 
   window._timelineCurrentRange = {min, max};
-  canvas.style.width = `${100 * timelineZoom}%`;
-  const total = Math.max(1, max - min);
 
-  // Grille : traits légers chaque minute + traits marqués + étiquettes toutes les 5 min (en bas)
+  // Largeur en fonction du zoom
+  canvas.style.width = `${100 * timelineZoom}%`;
+
+  // Dimensions réelles (px) après mise à jour de la largeur
+  const widthPx = canvas.getBoundingClientRect().width;
+  const leftPad = widthPx * 0.06;  // 6%
+  const avail   = widthPx * 0.88;  // 88%
+  const total   = Math.max(1, max - min);
+
+  const timeToX = (t)=> leftPad + ((t - min) / total) * avail;
+
+  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS (points/étiquettes) ----------
+  // On transforme les points en [{p, x}] triés par X
+  const eventsSorted = fixedPoints
+    .map(p => ({p, x: timeToX(p.t)}))
+    .sort((a,b) => a.x - b.x);
+
+  // Empilement en "voies" (lanes) avec distance minimale d'affichage
+  const MIN_LABEL_GAP_PX = 90;      // écart horizontal mini entre deux étiquettes sur la même rangée
+  const lanes = [];                  // mémorise le dernier X placé par rangée
+  eventsSorted.forEach(item => {
+    let laneIdx = -1;
+    for (let i=0; i<lanes.length; i++){
+      if (item.x - lanes[i] >= MIN_LABEL_GAP_PX) { laneIdx = i; break; }
+    }
+    if (laneIdx === -1) { laneIdx = lanes.length; lanes.push(-Infinity); }
+    item.lane = laneIdx;
+    lanes[laneIdx] = item.x;
+  });
+  const nEventRows = lanes.length;
+
+  // ---------- Placement : BARRES DE DURÉE ----------
+  // Nombre de rangées durées utilisées (0..maxRowIndex)
+  const nDurRowsUsed = durations.length ? (Math.max(...durations.map(d=>d.rowIndex)) + 1) : 0;
+
+  // ---------- Calcul de hauteur nécessaire (on agrandit pour éviter tout chevauchement) ----------
+  const BASE_H                = 220;
+  const TOP_MARGIN            = 16;
+  const BOTTOM_MARGIN         = 18;
+  const GAP_ABOVE_TRACK       = 60;  // distance track -> 1ère rangée d’événements au-dessus
+  const EVENT_ROW_SPACING     = 28;  // espacement vertical entre rangées d’événements
+  const GAP_BELOW_TRACK       = 60;  // distance track -> 1ère rangée de durées en dessous
+  const DURATION_ROW_SPACING  = 34;  // espacement vertical entre rangées de durées
+  const BAR_LABEL_EXTRA       = 26;  // marge pour étiquette au-dessus d'une barre
+
+  // Conditions de non-chevauchement => hauteur mini due aux événements et aux durées
+  const requiredForEvents = 2 * (GAP_ABOVE_TRACK + Math.max(0, nEventRows-1)*EVENT_ROW_SPACING + TOP_MARGIN);
+  const requiredForDur    = nDurRowsUsed
+      ? 2 * (GAP_BELOW_TRACK + (nDurRowsUsed-1)*DURATION_ROW_SPACING + BAR_LABEL_EXTRA + BOTTOM_MARGIN)
+      : 2 * (GAP_BELOW_TRACK + BOTTOM_MARGIN);
+
+  const H = Math.max(BASE_H, requiredForEvents, requiredForDur);
+  canvas.style.height = `${H}px`;
+
+  const trackY = H * 0.5;
+
+  // ---------- Grille verticale & labels d’axe (toutes les minutes, label toutes les 5) ----------
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
-    const x = (t-min)/total;
-    const leftPct = 6 + x*88;
+    const x = timeToX(t);
 
     const vline = document.createElement('div');
     vline.style.position = 'absolute';
-    vline.style.left = `${leftPct}%`;
+    vline.style.left = `${x}px`;
     vline.style.top = '12%';
     vline.style.height = '78%';
     vline.style.width = (t % 5 === 0) ? '1.5px' : '1px';
@@ -1446,56 +1503,57 @@ function renderTimeline(){
       const lbl = document.createElement('div');
       lbl.className = 'timeline-tick-label';
       lbl.textContent = fmtHHMM(t);
-      lbl.style.left = `${leftPct}%`;
-      lbl.style.top = 'calc(100% - 18px)';  // en bas
+      lbl.style.left = `${x}px`;
+      lbl.style.top = 'calc(100% - 18px)';
       canvas.appendChild(lbl);
     }
   }
 
-  // Barres de durées (5 rangées, non superposées)
-  const rowTops = [56, 66, 76, 86, 96];   // positions verticales (en %)
-  durations.forEach(d=>{
-    const leftStartPct  = 6 + ((d.a-min)/total)*88;
-    const widthPct      = ((d.b-d.a)/total)*88;
+  // ---------- Barres de durées (rangées sous la track, sans chevauchement vertical) ----------
+  const durRowY = (idx)=> trackY + GAP_BELOW_TRACK + idx * DURATION_ROW_SPACING;
+
+  durations.forEach(d => {
+    const xStart = timeToX(d.a);
+    const xEnd   = timeToX(d.b);
+    const y      = durRowY(d.rowIndex);
 
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
-    bar.style.left = `${leftStartPct}%`;     // aligné sur le début
-    bar.style.width = `${widthPct}%`;
-    bar.style.top = `${rowTops[d.rowIndex]}%`;
+    bar.style.left = `${xStart}px`;
+    bar.style.width = `${Math.max(1, xEnd - xStart)}px`;
+    bar.style.top = `${y}px`;
     bar.style.transform = 'translateY(-50%)';
-    // Épaissir visuellement la barre (via border + background mix défini en CSS, déjà présent)
     if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    // NOUVEAU : si la coche est active, on affiche la durée au lieu des heures de début/fin
-    if (showTimeLabels) {
-      const delta = d.b - d.a;
-      lab.textContent = `${d.label} : ${fmtDuration(delta)}`;
-    } else {
-      lab.textContent = d.label;
-    }
+    lab.textContent = showTimeLabels ? `${d.label} : ${fmtDuration(d.b - d.a)}` : d.label;
     bar.appendChild(lab);
   });
 
-  // Points fixes (au-dessus de la ligne centrale)
-  fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
-    const leftPct = 6 + ((p.t-min)/total)*88;
+  // ---------- Points/étiquettes fixes (rangées au-dessus de la track, sans chevauchement) ----------
+  const eventRowY = (idx)=> trackY - (GAP_ABOVE_TRACK + idx * EVENT_ROW_SPACING);
+
+  eventsSorted.forEach(item => {
+    const {p, x, lane} = item;
+    const y = eventRowY(lane);
+
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
-    el.style.left = `${leftPct}%`;
-    el.style.top  = '28%';
+    el.style.left = `${x}px`;
+    el.style.top  = `${y}px`;
+
     const dot = document.createElement('div'); dot.className = 'tl-dot';
-    const label = document.createElement('div'); label.className='tl-label';
-    // On laisse le comportement d’origine pour les points unitaires
+    const label = document.createElement('div'); label.className = 'tl-label';
     label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
-    el.appendChild(dot); el.appendChild(label);
+
+    el.appendChild(dot);
+    el.appendChild(label);
     canvas.appendChild(el);
   });
 
-  // Centrage auto à l’ouverture (scroll libre ensuite)
+  // ---------- Centrage auto au premier rendu (si utilisateur n’a pas scrolleté) ----------
   if(!timelineUserScrolled){
     const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
     const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
@@ -1509,35 +1567,66 @@ function renderTimeline(){
 
     if(start != null && end != null){
       const mid = (start + end) / 2;
-      const midX = (mid - min) / total;
-      const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
+      const midX = leftPad + ((mid - min) / total) * avail;
+      const centerLeft = midX - scroller.clientWidth / 2;
       scroller.scrollLeft = Math.max(0, centerLeft);
     }
   }
+
+  // ---------- Sécurisation de l’intitulé du bouton (supprime toute duplication) ----------
+  (function normalizeShowTimesToggle(){
+    const wrap = document.querySelector('.timeline-toolbar .tl-toggle');
+    if(!wrap) return;
+
+    // Enlever les éventuels textes en double
+    Array.from(wrap.childNodes).forEach(n=>{
+      if(n.nodeType === 3 && n.textContent.trim()) n.remove(); // supprime texte brut en double
+    });
+
+    // S'assurer qu'on a exactement un <span> avec le libellé
+    let span = wrap.querySelector('span');
+    if(!span){
+      span = document.createElement('span');
+      wrap.appendChild(span);
+    }
+    span.textContent = 'Durée sur étiquettes';
+  })();
 }
 
-/* Injecte la coche si absente + capte l'interaction pour ne pas recentrer */
-(function injectShowHoursToggle(){
+/* (Remplacement de l’ancien IIFE d’injection)
+   - Ne crée RIEN si la case existe déjà.
+   - Normalise juste le contenu et branche les événements 'user scrolled'. */
+(function ensureShowTimesToggleIntegrity(){
   const bar = document.querySelector('.timeline-toolbar');
   if (bar) {
-    // Si la coche n'existe pas encore, on l'ajoute
-    if (!document.getElementById('showTimesToggle')) {
+    const existing = bar.querySelector('#showTimesToggle');
+    if (existing) {
+      // Normalisation de l’étiquette une seule fois au chargement
+      const wrap = existing.closest('label');
+      if (wrap) {
+        // Nettoyer tout texte brut résiduel
+        Array.from(wrap.childNodes).forEach(n=>{
+          if(n.nodeType === 3 && n.textContent.trim()) n.remove();
+        });
+        let span = wrap.querySelector('span');
+        if(!span){
+          span = document.createElement('span');
+          wrap.appendChild(span);
+        }
+        span.textContent = 'Durée sur étiquettes';
+      }
+    } else {
+      // Cas rare: la coche n’existe pas dans le HTML -> on la crée proprement
       const wrap = document.createElement('label');
-      wrap.style.display = 'inline-flex';
-      wrap.style.alignItems = 'center';
-      wrap.style.gap = '6px';
-      wrap.style.marginLeft = '8px';
-      wrap.style.whiteSpace = 'nowrap';
+      wrap.className = 'tl-toggle';
+      wrap.title = 'Afficher la durée sur les étiquettes';
 
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.id = 'showTimesToggle';
-      cb.checked = true;          // coché par défaut
-      showTimeLabels = true;      // reflète l'état initial
-
+      cb.checked = true;
       cb.addEventListener('change', () => {
-        showTimeLabels = cb.checked;
-        renderTimeline();
+        try { showTimeLabels = cb.checked; renderTimeline(); } catch(e){}
       });
 
       const span = document.createElement('span');
@@ -1546,27 +1635,6 @@ function renderTimeline(){
       wrap.appendChild(cb);
       wrap.appendChild(span);
       bar.appendChild(wrap);
-    } else {
-      // Si elle existe déjà, on force son état et le style "nowrap" + texte
-      const cb = document.getElementById('showTimesToggle');
-      cb.checked = true;
-      showTimeLabels = true;
-      const wrap = cb.closest('label');
-      if (wrap) {
-        wrap.style.whiteSpace = 'nowrap';
-        wrap.style.display = 'inline-flex';
-        wrap.style.alignItems = 'center';
-        wrap.style.gap = '6px';
-        wrap.style.marginLeft = '8px';
-        // mettre à jour le texte lisible
-        const span = wrap.querySelector('span');
-        if (span) span.textContent = 'Durée sur étiquettes';
-        else {
-          const sp = document.createElement('span');
-          sp.textContent = 'Durée sur étiquettes';
-          wrap.appendChild(sp);
-        }
-      }
     }
   }
 
@@ -1578,7 +1646,7 @@ function renderTimeline(){
     });
   }
 })();
-    
+
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
