@@ -347,7 +347,7 @@ body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
 
-/* Coche “Heure sur étiquettes” */
+/* Coche “Durée sur étiquettes” */
 .tl-toggle {
   display:inline-flex; align-items:center; gap:6px; margin-left:8px; font-size: 14px;
 }
@@ -533,11 +533,11 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 
     <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
 
-    <!-- Coche “Heure sur étiquettes” (liée à showTimeLabels côté JS) -->
-    <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
+    <!-- Coche “Durée sur étiquettes” (lié à showTimeLabels côté JS) -->
+    <label class="tl-toggle" title="Afficher la durée sur les étiquettes">
       <input type="checkbox" id="showTimesToggle" checked
              onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
-      Heure sur étiquettes
+      Durée sur étiquettes
     </label>
   </div>
 
@@ -1282,7 +1282,7 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
 }
 
 /* === TIMELINE helpers (5-min grid, jalons auto) === */
-let showTimeLabels = true;           // coche "Heure sur étiquettes"
+let showTimeLabels = true;           // coche “Durée sur étiquettes” (ON = on affiche la durée sur les barres)
 let timelineUserScrolled = false;    // pour ne centrer qu'à l'ouverture
 
 function parseHHMM(str){
@@ -1295,6 +1295,16 @@ function fmtHHMM(mins){
   const h = Math.floor(mins/60), m = mins%60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
+/* Nouveau : format durée “1h05” ou “25 min” */
+function fmtDuration(deltaMin){
+  if(deltaMin == null || isNaN(deltaMin)) return '';
+  if(deltaMin < 0) deltaMin = -deltaMin;
+  const h = Math.floor(deltaMin/60);
+  const m = deltaMin % 60;
+  if(h === 0) return `${m} min`;
+  return `${h}h${String(m).padStart(2,'0')}`;
+}
+
 function labelFromInputEl(input){
   const lab = input.closest('label');
   if(lab){
@@ -1460,7 +1470,13 @@ function renderTimeline(){
 
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    lab.textContent = showTimeLabels ? `${d.label} : ${fmtHHMM(d.a)}-${fmtHHMM(d.b)}` : d.label;
+    // NOUVEAU : si la coche est active, on affiche la durée au lieu des heures de début/fin
+    if (showTimeLabels) {
+      const delta = d.b - d.a;
+      lab.textContent = `${d.label} : ${fmtDuration(delta)}`;
+    } else {
+      lab.textContent = d.label;
+    }
     bar.appendChild(lab);
   });
 
@@ -1473,6 +1489,7 @@ function renderTimeline(){
     el.style.top  = '28%';
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
+    // On laisse le comportement d’origine pour les points unitaires
     label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
@@ -1499,7 +1516,7 @@ function renderTimeline(){
   }
 }
 
-/* Injecte la coche "Heure sur étiquettes" si absente + capte l'interaction pour ne pas recentrer */
+/* Injecte la coche si absente + capte l'interaction pour ne pas recentrer */
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
   if (bar) {
@@ -1510,7 +1527,7 @@ function renderTimeline(){
       wrap.style.alignItems = 'center';
       wrap.style.gap = '6px';
       wrap.style.marginLeft = '8px';
-      wrap.style.whiteSpace = 'nowrap'; // ne pas revenir à la ligne
+      wrap.style.whiteSpace = 'nowrap';
 
       const cb = document.createElement('input');
       cb.type = 'checkbox';
@@ -1524,13 +1541,13 @@ function renderTimeline(){
       });
 
       const span = document.createElement('span');
-      span.textContent = 'Heure sur étiquettes';
+      span.textContent = 'Durée sur étiquettes';
 
       wrap.appendChild(cb);
       wrap.appendChild(span);
       bar.appendChild(wrap);
     } else {
-      // Si elle existe déjà, on force son état et le style "nowrap"
+      // Si elle existe déjà, on force son état et le style "nowrap" + texte
       const cb = document.getElementById('showTimesToggle');
       cb.checked = true;
       showTimeLabels = true;
@@ -1541,6 +1558,14 @@ function renderTimeline(){
         wrap.style.alignItems = 'center';
         wrap.style.gap = '6px';
         wrap.style.marginLeft = '8px';
+        // mettre à jour le texte lisible
+        const span = wrap.querySelector('span');
+        if (span) span.textContent = 'Durée sur étiquettes';
+        else {
+          const sp = document.createElement('span');
+          sp.textContent = 'Durée sur étiquettes';
+          wrap.appendChild(sp);
+        }
       }
     }
   }
