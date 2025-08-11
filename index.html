@@ -1427,26 +1427,50 @@ function renderTimeline(){
   // Nettoyage
   canvas.innerHTML = '';
 
-  const {fixedPoints, durations, windowInfo} = collectTimelineData();
-  const {min, max} = windowInfo || {};
-  if(min === undefined || max === undefined) return;
+  // Récup données
+  const {fixedPoints, durations} = collectTimelineData();
+
+  // === Fenêtre centrée sur T_min/T_max de TOUTES les actions ===
+  const allTimes = [
+    ...fixedPoints.map(p=>p.t),
+    ...durations.flatMap(d=>[d.a,d.b])
+  ].filter(t => t != null);
+
+  if(!allTimes.length){
+    // rien à afficher -> largeur / hauteur par défaut
+    canvas.style.width = `${100 * timelineZoom}%`;
+    canvas.style.height = `220px`;
+    return;
+  }
+
+  // bornes brutes
+  let min = Math.min(...allTimes);
+  let max = Math.max(...allTimes);
+
+  // padding de confort et largeur minimale
+  const PAD_MIN = 8;             // minutes de marge visuelle aux extrémités
+  const MIN_SPAN = 30;           // fenêtre minimale en minutes
+  min -= PAD_MIN;
+  max += PAD_MIN;
+  if ((max - min) < MIN_SPAN){
+    const mid = (min + max) / 2;
+    min = mid - MIN_SPAN/2;
+    max = mid + MIN_SPAN/2;
+  }
 
   window._timelineCurrentRange = {min, max};
 
-  // Largeur en fonction du zoom
+  // Largeur (zoom) + métriques
   canvas.style.width = `${100 * timelineZoom}%`;
-
-  // Dimensions réelles
   const widthPx = canvas.getBoundingClientRect().width;
   const leftPad = widthPx * 0.06;  // 6%
   const avail   = widthPx * 0.88;  // 88%
   const total   = Math.max(1, max - min);
-
   const timeToX = (t)=> leftPad + ((t - min) / total) * avail;
 
-  // ---------- Placement sans chevauchement : ÉVÉNEMENTS ----------
-  const MIN_LABEL_GAP_PX = 160;
-  const DOT_SAFE_PX      = 18;
+  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS ----------
+  const MIN_LABEL_GAP_PX = 160;  // écart mini horizontal entre étiquettes
+  const DOT_SAFE_PX      = 18;   // marge pour éviter chevauchement des points
 
   const eventsSorted = fixedPoints
     .filter(p => p.t >= min && p.t <= max) // filtre hors fenêtre
@@ -1471,16 +1495,19 @@ function renderTimeline(){
   // ---------- Placement : BARRES DE DURÉE ----------
   const nDurRowsUsed = durations.length ? (Math.max(...durations.map(d=>d.rowIndex)) + 1) : 0;
 
-  // ---------- Hauteur nécessaire ----------
+  // ---------- Hauteur & géométrie ----------
   const BASE_H                = 260;
-  const TOP_MARGIN            = 16;
-  const BOTTOM_MARGIN         = 18;
-  const GAP_ABOVE_TRACK       = 60;
+  const TOP_MARGIN            = 12;
+  const BOTTOM_MARGIN         = 12;
+
+  // Moins d’écart fixes/variables + plus d’air sous les barres
+  const GAP_ABOVE_TRACK       = 48;  // (avant 60)
+  const GAP_BELOW_TRACK       = 48;  // (avant 80)
   const EVENT_ROW_SPACING     = 42;
-  const GAP_BELOW_TRACK       = 80;
   const DURATION_ROW_SPACING  = 40;
   const BAR_LABEL_EXTRA       = 30;
 
+  // Hauteur nécessaire (pour éviter tout chevauchement vertical)
   const requiredForEvents = 2 * (GAP_ABOVE_TRACK + Math.max(0, nEventRows-1)*EVENT_ROW_SPACING + TOP_MARGIN);
   const requiredForDur    = nDurRowsUsed
       ? 2 * (GAP_BELOW_TRACK + (nDurRowsUsed-1)*DURATION_ROW_SPACING + BAR_LABEL_EXTRA + BOTTOM_MARGIN)
@@ -1489,9 +1516,11 @@ function renderTimeline(){
   const H = Math.max(BASE_H, requiredForEvents, requiredForDur);
   canvas.style.height = `${H}px`;
 
-  const trackY = H * 0.5;
+  // On décale légèrement le centre vers le haut pour créer PLUS de marge en bas
+  const TRACK_OFFSET = -12; // px (négatif = monte le groupe)
+  const trackY = H * 0.5 + TRACK_OFFSET;
 
-  // ---------- Grille et labels d’axe ----------
+  // ---------- Grille & labels d’axe (toutes les minutes, label /5) ----------
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = timeToX(t);
 
@@ -1514,7 +1543,7 @@ function renderTimeline(){
     }
   }
 
-  // ---------- Barres de durées avec clamp ----------
+  // ---------- Barres de durées (clampées aux bornes) ----------
   const durRowY = (idx)=> trackY + GAP_BELOW_TRACK + idx * DURATION_ROW_SPACING;
 
   durations.forEach(d => {
@@ -1544,11 +1573,10 @@ function renderTimeline(){
     lab.textContent = showTimeLabels
       ? `${d.label} : ${fmtDuration(visibleDelta)}`
       : d.label;
-
     bar.appendChild(lab);
   });
 
-  // ---------- Points fixes ----------
+  // ---------- Points fixes (sans chevauchement) ----------
   const eventRowY = (idx)=> trackY - (GAP_ABOVE_TRACK + idx * EVENT_ROW_SPACING);
   eventsSorted.forEach(item => {
     const {p, x, lane} = item;
@@ -1568,24 +1596,12 @@ function renderTimeline(){
     canvas.appendChild(el);
   });
 
-  // ---------- Centrage auto ----------
+  // ---------- Centrage auto sur milieu (Tmin/Tmax) ----------
   if(!timelineUserScrolled){
-    const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
-    const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-    const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
-    const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
-    let start = null, end = null;
-
-    if(aibt != null && aobt != null){ start = aibt; end = aobt; }
-    else if(sibt != null && aobt != null){ start = sibt; end = aobt; }
-    else if(sibt != null && sobt != null){ start = sibt; end = sobt; }
-
-    if(start != null && end != null){
-      const mid = (start + end) / 2;
-      const midX = leftPad + ((mid - min) / total) * avail;
-      const centerLeft = midX - scroller.clientWidth / 2;
-      scroller.scrollLeft = Math.max(0, centerLeft);
-    }
+    const mid = (min + max) / 2;
+    const midX = leftPad + ((mid - min) / total) * avail;
+    const centerLeft = midX - scroller.clientWidth / 2;
+    scroller.scrollLeft = Math.max(0, centerLeft);
   }
 
   // ---------- Correction du libellé du bouton ----------
