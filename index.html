@@ -1424,32 +1424,27 @@ function renderTimeline(){
   const canvas   = document.getElementById('timelineCanvas');
   if(!scroller || !canvas) return;
 
-  // Nettoyage
+  // Reset
   canvas.innerHTML = '';
 
-  // Récup données
+  // Données
   const {fixedPoints, durations} = collectTimelineData();
-
-  // === Fenêtre centrée sur T_min/T_max de TOUTES les actions ===
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
     ...durations.flatMap(d=>[d.a,d.b])
   ].filter(t => t != null);
 
   if(!allTimes.length){
-    // rien à afficher -> largeur / hauteur par défaut
     canvas.style.width = `${100 * timelineZoom}%`;
     canvas.style.height = `220px`;
     return;
   }
 
-  // bornes brutes
+  // Fenêtre centrée sur 1ère↔dernière action + marge pour labels aux bords
   let min = Math.min(...allTimes);
   let max = Math.max(...allTimes);
-
-  // padding de confort et largeur minimale
-  const PAD_MIN = 8;             // minutes de marge visuelle aux extrémités
-  const MIN_SPAN = 30;           // fenêtre minimale en minutes
+  const PAD_MIN = 15;       // marge en minutes (évite que TOBT/SOBT sortent à droite/gauche)
+  const MIN_SPAN = 30;      // largeur mini
   min -= PAD_MIN;
   max += PAD_MIN;
   if ((max - min) < MIN_SPAN){
@@ -1457,23 +1452,25 @@ function renderTimeline(){
     min = mid - MIN_SPAN/2;
     max = mid + MIN_SPAN/2;
   }
-
   window._timelineCurrentRange = {min, max};
 
-  // Largeur (zoom) + métriques
+  // Métriques
   canvas.style.width = `${100 * timelineZoom}%`;
   const widthPx = canvas.getBoundingClientRect().width;
-  const leftPad = widthPx * 0.06;  // 6%
-  const avail   = widthPx * 0.88;  // 88%
+  const leftPad = widthPx * 0.06;   // 6%
+  const avail   = widthPx * 0.88;   // 88%
   const total   = Math.max(1, max - min);
+  const xMinPx  = leftPad + 2;                 // clamp "sécurité" pour les points
+  const xMaxPx  = leftPad + avail - 2;
+
   const timeToX = (t)=> leftPad + ((t - min) / total) * avail;
 
-  // ---------- Placement SANS CHEVAUCHEMENT : ÉVÉNEMENTS ----------
-  const MIN_LABEL_GAP_PX = 160;  // écart mini horizontal entre étiquettes
-  const DOT_SAFE_PX      = 18;   // marge pour éviter chevauchement des points
+  // Anti-chevauchement (horizontal) des événements
+  const MIN_LABEL_GAP_PX = 160;
+  const DOT_SAFE_PX      = 18;
 
   const eventsSorted = fixedPoints
-    .filter(p => p.t >= min && p.t <= max) // filtre hors fenêtre
+    .filter(p => p.t >= min && p.t <= max)
     .map(p => ({p, x: timeToX(p.t)}))
     .sort((a,b) => a.x - b.x);
 
@@ -1482,8 +1479,7 @@ function renderTimeline(){
     let laneIdx = -1;
     for (let i=0; i<lanes.length; i++){
       if (item.x - lanes[i] >= (MIN_LABEL_GAP_PX + DOT_SAFE_PX)) { 
-        laneIdx = i; 
-        break; 
+        laneIdx = i; break;
       }
     }
     if (laneIdx === -1) { laneIdx = lanes.length; lanes.push(-Infinity); }
@@ -1492,38 +1488,36 @@ function renderTimeline(){
   });
   const nEventRows = lanes.length;
 
-  // ---------- Placement : BARRES DE DURÉE ----------
   const nDurRowsUsed = durations.length ? (Math.max(...durations.map(d=>d.rowIndex)) + 1) : 0;
 
-  // ---------- Hauteur & géométrie ----------
+  // Géométrie verticale : zone tampon entre fixes et durées pour éviter l’empiètement
   const BASE_H                = 260;
-  const TOP_MARGIN            = 12;
-  const BOTTOM_MARGIN         = 12;
+  const TOP_MARGIN            = 14;
+  const BOTTOM_MARGIN         = 14;
 
-  // Moins d’écart fixes/variables + plus d’air sous les barres
-  const GAP_ABOVE_TRACK       = 48;  // (avant 60)
-  const GAP_BELOW_TRACK       = 48;  // (avant 80)
+  const GAP_ABOVE_TRACK       = 56;  // un peu plus haut que précédemment (évite que TOBT touche le haut)
+  const GAP_BELOW_TRACK       = 88;  // plus d’air sous les barres
+  const BUFFER_BETWEEN_ZONES  = 10;  // bande "no-fly" entre fixes et durées
+
   const EVENT_ROW_SPACING     = 42;
   const DURATION_ROW_SPACING  = 40;
   const BAR_LABEL_EXTRA       = 30;
 
-  // Hauteur nécessaire (pour éviter tout chevauchement vertical)
   const requiredForEvents = 2 * (GAP_ABOVE_TRACK + Math.max(0, nEventRows-1)*EVENT_ROW_SPACING + TOP_MARGIN);
   const requiredForDur    = nDurRowsUsed
       ? 2 * (GAP_BELOW_TRACK + (nDurRowsUsed-1)*DURATION_ROW_SPACING + BAR_LABEL_EXTRA + BOTTOM_MARGIN)
       : 2 * (GAP_BELOW_TRACK + BOTTOM_MARGIN);
 
-  const H = Math.max(BASE_H, requiredForEvents, requiredForDur);
+  const H = Math.max(BASE_H, requiredForEvents, requiredForDur) + BUFFER_BETWEEN_ZONES;
   canvas.style.height = `${H}px`;
 
-  // On décale légèrement le centre vers le haut pour créer PLUS de marge en bas
-  const TRACK_OFFSET = -12; // px (négatif = monte le groupe)
+  // Décale très légèrement vers le haut pour conserver de l’air en bas sans écraser le haut
+  const TRACK_OFFSET = -6; // px
   const trackY = H * 0.5 + TRACK_OFFSET;
 
-  // ---------- Grille & labels d’axe (toutes les minutes, label /5) ----------
+  // Grille & labels d’axe
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = timeToX(t);
-
     const vline = document.createElement('div');
     vline.style.position = 'absolute';
     vline.style.left = `${x}px`;
@@ -1543,11 +1537,11 @@ function renderTimeline(){
     }
   }
 
-  // ---------- Barres de durées (clampées aux bornes) ----------
+  // Barres (clampées)
   const durRowY = (idx)=> trackY + GAP_BELOW_TRACK + idx * DURATION_ROW_SPACING;
 
   durations.forEach(d => {
-    if (d.b <= min || d.a >= max) return; // hors fenêtre
+    if (d.b <= min || d.a >= max) return;
 
     const aClamped = Math.max(min, Math.min(max, d.a));
     const bClamped = Math.max(min, Math.min(max, d.b));
@@ -1555,8 +1549,7 @@ function renderTimeline(){
     const xStart = timeToX(aClamped);
     const xEnd   = timeToX(bClamped);
     const width  = Math.max(1, xEnd - xStart);
-
-    const y = durRowY(d.rowIndex);
+    const y      = durRowY(d.rowIndex);
 
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
@@ -1570,16 +1563,17 @@ function renderTimeline(){
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
     const visibleDelta = bClamped - aClamped;
-    lab.textContent = showTimeLabels
-      ? `${d.label} : ${fmtDuration(visibleDelta)}`
-      : d.label;
+    lab.textContent = showTimeLabels ? `${d.label} : ${fmtDuration(visibleDelta)}` : d.label;
     bar.appendChild(lab);
   });
 
-  // ---------- Points fixes (sans chevauchement) ----------
+  // Points fixes (clamp X + anti-chevauchement)
   const eventRowY = (idx)=> trackY - (GAP_ABOVE_TRACK + idx * EVENT_ROW_SPACING);
+
   eventsSorted.forEach(item => {
-    const {p, x, lane} = item;
+    const {p, lane} = item;
+    const rawX = timeToX(p.t);
+    const x = Math.max(xMinPx, Math.min(xMaxPx, rawX));  // clamp horizontal
     const y = eventRowY(lane);
 
     const el = document.createElement('div');
@@ -1596,7 +1590,7 @@ function renderTimeline(){
     canvas.appendChild(el);
   });
 
-  // ---------- Centrage auto sur milieu (Tmin/Tmax) ----------
+  // Auto-centrage sur le milieu de la fenêtre
   if(!timelineUserScrolled){
     const mid = (min + max) / 2;
     const midX = leftPad + ((mid - min) / total) * avail;
@@ -1604,7 +1598,7 @@ function renderTimeline(){
     scroller.scrollLeft = Math.max(0, centerLeft);
   }
 
-  // ---------- Correction du libellé du bouton ----------
+  // Libellé de la coche (anti-duplication)
   (function normalizeShowTimesToggle(){
     const wrap = document.querySelector('.timeline-toolbar .tl-toggle');
     if(!wrap) return;
