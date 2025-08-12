@@ -1136,7 +1136,7 @@ function updateCTOTDisplay(){
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-       const aibttxt = document.getElementById('AIBT').value;
+    const aibttxt = document.getElementById('AIBT').value;
     if (!cie || !sibttxt || !aibttxt) return;
 
     const [sH, sM] = sibttxt.split(':').map(Number);
@@ -1367,7 +1367,7 @@ function collectTimelineData(){
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
   addPoint('H-15', H15,  'tl--turn');  // point H-15
-  addPoint('H-40', H40,  'tl--turn');  // point H-40
+  addPoint('H-40', H40,  'tl--turn');  // point H-40 (ajouté)
 
   // Événements unitaires (points)
   const singles = [
@@ -1381,13 +1381,13 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  // Lignes de durées (barres) — non superposées, une par rangée
+  // Lignes de durées (barres)
   const rows = [
-    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},        // rouge
-    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},        // bleu
-    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},        // gris std
-    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},   // orange
-    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},   // vert
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},      // rouge
+    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},      // bleu
+    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},      // gris std
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'}, // orange
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'}, // vert
   ];
 
   const durations = rows
@@ -1418,7 +1418,7 @@ function renderTimeline(){
   canvas.style.width = `${100 * timelineZoom}%`;
   const total = Math.max(1, max - min);
 
-  // Grille : traits légers chaque minute + traits marqués + étiquettes toutes les 5 min (en bas)
+  // Grille 1 min + labels 5 min (en bas)
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
@@ -1454,28 +1454,53 @@ function renderTimeline(){
     bar.style.width = `${widthPct}%`;
     bar.style.top = `${rowTops[d.rowIndex]}%`;
     bar.style.transform = 'translateY(-50%)';
-    // Épaissir visuellement la barre (via border + background mix défini en CSS, déjà présent)
     if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
 
+    // Étiquette = DURÉE (en minutes) uniquement
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    lab.textContent = showTimeLabels ? `${d.label} : ${fmtHHMM(d.a)}-${fmtHHMM(d.b)}` : d.label;
+    const durMin = Math.max(0, d.b - d.a);
+    lab.textContent = `${d.label} : ${durMin} min`;
     bar.appendChild(lab);
   });
 
-  // Points fixes (au-dessus de la ligne centrale)
+  // ---- Points fixes avec anti-chevauchement (étiquettes comprises) ----
+  // Lanes empilées au-dessus de la piste centrale
+  const lanesEndX = [];                // dernier X de chaque lane (px)
+  const laneTopStart = 18;             // % (au-dessus de la track)
+  const laneGap = 8;                   // % entre lanes
+  const marginPx = 6;                  // marge mini entre étiquettes
+  const canvasWidth = canvas.getBoundingClientRect().width;
+
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const leftPct = 6 + ((p.t-min)/total)*88;
+
+    // Créer l'élément (caché pour mesurer)
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
     el.style.left = `${leftPct}%`;
-    el.style.top  = '28%';
+    el.style.top  = '0%';
+    el.style.visibility = 'hidden';
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
     label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
+
+    // Mesurer la largeur utile (étiquette)
+    const w = Math.max(label.offsetWidth, 12);
+    const centerX = (leftPct/100) * canvasWidth;
+    const startX = centerX - (w/2) - marginPx;
+    const endX   = centerX + (w/2) + marginPx;
+
+    // Trouver une lane libre (pas de chevauchement)
+    let lane = 0;
+    while(lanesEndX[lane] !== undefined && startX <= lanesEndX[lane]) lane++;
+    lanesEndX[lane] = endX;
+
+    el.style.top = `${laneTopStart + lane*laneGap}%`;
+    el.style.visibility = 'visible';
   });
 
   // Centrage auto à l’ouverture (scroll libre ensuite)
@@ -1503,20 +1528,19 @@ function renderTimeline(){
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
   if (bar) {
-    // Si la coche n'existe pas encore, on l'ajoute
     if (!document.getElementById('showTimesToggle')) {
       const wrap = document.createElement('label');
       wrap.style.display = 'inline-flex';
       wrap.style.alignItems = 'center';
       wrap.style.gap = '6px';
       wrap.style.marginLeft = '8px';
-      wrap.style.whiteSpace = 'nowrap'; // ne pas revenir à la ligne
+      wrap.style.whiteSpace = 'nowrap';
 
       const cb = document.createElement('input');
       cb.type = 'checkbox';
       cb.id = 'showTimesToggle';
-      cb.checked = true;          // coché par défaut
-      showTimeLabels = true;      // reflète l'état initial
+      cb.checked = true;
+      showTimeLabels = true;
 
       cb.addEventListener('change', () => {
         showTimeLabels = cb.checked;
@@ -1530,7 +1554,6 @@ function renderTimeline(){
       wrap.appendChild(span);
       bar.appendChild(wrap);
     } else {
-      // Si elle existe déjà, on force son état et le style "nowrap"
       const cb = document.getElementById('showTimesToggle');
       cb.checked = true;
       showTimeLabels = true;
@@ -1545,7 +1568,6 @@ function renderTimeline(){
     }
   }
 
-  // Marque qu'un scroll/interaction a eu lieu pour ne plus recentrer automatiquement
   const scroller = document.getElementById('timelineScroll');
   if (scroller) {
     ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
@@ -1553,7 +1575,7 @@ function renderTimeline(){
     });
   }
 })();
-    
+
 /* === VALIDATION (Sans Airtable) === */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
