@@ -1311,13 +1311,13 @@ function labelFromInputEl(input){
    3) fallback min/max des données (+ marges)
 */
 function computeTimelineWindow(allTimes){
-  const h15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
   const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-  if(h15 != null && aobt != null){
-    let min = h15 - 5;
+  if(aibt != null && aobt != null){
+    let min = aibt - 5;
     let max = aobt + 5;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'H-15/AOBT'};
+    return {min, max, basis:'AIBT/AOBT'};
   }
   const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
   const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
@@ -1335,7 +1335,7 @@ function computeTimelineWindow(allTimes){
   }
   return {min:0, max:60, basis:'default'};
 }
-
+    
 function getPairWindow(idA,idB){
   const a = parseHHMM(document.getElementById(idA)?.value || '');
   const b = parseHHMM(document.getElementById(idB)?.value || '');
