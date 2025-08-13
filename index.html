@@ -1344,13 +1344,12 @@ function getPairWindow(idA,idB){
 }
 
 function collectTimelineData(){
-  // Points fixes (événements)
   const fixedPoints = [];
   const addPoint = (label, t, cls='tl--std')=>{
-    if(t==null) return;
-    fixedPoints.push({label, t, cls});
+    if(t != null) fixedPoints.push({label, t, cls});
   };
 
+  // Récupération des horaires
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
   const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
@@ -1360,7 +1359,7 @@ function collectTimelineData(){
   const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
 
-  // Ajout des points souhaités
+  // Ajout des jalons principaux
   addPoint('H-40', H40,  'tl--turn');
   addPoint('H-15', H15,  'tl--turn');
   addPoint('SIBT', SIBT, 'tl--std');
@@ -1370,39 +1369,42 @@ function collectTimelineData(){
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
 
-  // Événements unitaires (points supplémentaires)
-  const singles = [
+  // Autres événements simples
+  [
     ['ArrPNT','Arrivée PNT avion'],
     ['ArrPNC','Arrivée PNC avion'],
     ['RemiseLID','Remise LID/LDS'],
     ['FermeturePorteAvion','Fermeture porte avion'],
-  ];
-  singles.forEach(([id,label])=>{
+  ].forEach(([id,label])=>{
     const t = parseHHMM(document.getElementById(id)?.value || '');
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
   // Lignes de durées
   const rows = [
-    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
-    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
-    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
-    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},
-    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},
+    {label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
+    {label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
+    {label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
+    {label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},
+    {label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},
   ];
 
   const durations = rows
     .filter(r=>r.pair!=null)
     .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
+  // Tous les horaires pour calculer la fenêtre
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
     ...durations.flatMap(d=>[d.a,d.b])
   ];
+
+  // Fenêtre basée sur AIBT/AOBT si dispo
   const windowInfo = computeTimelineWindow(allTimes);
 
   return {fixedPoints, durations, windowInfo};
 }
+
     
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
