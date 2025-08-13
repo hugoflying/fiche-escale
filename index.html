@@ -1467,9 +1467,9 @@ function renderTimeline(){
 
      // ---- Points fixes avec anti-chevauchement (étiquettes comprises) ----
     const lanesEndX = [];                // dernier X de chaque lane (px)
-    const laneTopStart = 14;             // % (au-dessus de la track)
-    const laneGap = 12;                   // % entre lanes
-    const marginPx = 14;                  // marge mini entre étiquettes
+    const laneTopStart = 0;             // % (au-dessus de la track)
+    const laneGap = 20;                   // % entre lanes
+    const marginPx = 26;                  // marge mini entre étiquettes
     const canvasWidth = canvas.getBoundingClientRect().width;
 
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
