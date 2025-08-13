@@ -1310,37 +1310,10 @@ function labelFromInputEl(input){
    2) [SIBT - 5 min, SOBT + 5 min] si dispo
    3) fallback min/max des données (+ marges)
 */
+/* === POPUP === */
 function computeTimelineWindow(allTimes){
-  const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
-  const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-  if(aibt != null && aobt != null){
-    let min = aibt - 5;
-    let max = aobt + 5;
-    if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'24h'};
-  }
-  const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
-  const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
-  if(sibt != null && sobt != null){
-    let min = sibt - 5;
-    let max = sobt + 5;
-    if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'SIBT/SOBT'};
-  }
-  if(allTimes.length){
-    let min = Math.min(...allTimes) - 10;
-    let max = Math.max(...allTimes) + 10;
-    if (max - min < 30){ min -= 10; max += 10; }
-    return {min, max, basis:'data'};
-  }
-  return {min:0, max:60, basis:'default'};
-}
-    
-function getPairWindow(idA,idB){
-  const a = parseHHMM(document.getElementById(idA)?.value || '');
-  const b = parseHHMM(document.getElementById(idB)?.value || '');
-  if(a==null || b==null) return null;
-  return [Math.min(a,b), Math.max(a,b)];
+  // Fenêtre fixe sur 24h (00:00 → 23:59)
+  return { min: 0, max: 1440, basis: '24h' };
 }
 
 function collectTimelineData(){
@@ -1393,18 +1366,68 @@ function collectTimelineData(){
     .filter(r=>r.pair!=null)
     .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
-  // Tous les horaires pour calculer la fenêtre
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
     ...durations.flatMap(d=>[d.a,d.b])
   ];
 
-  // Fenêtre basée sur AIBT/AOBT si dispo
   const windowInfo = computeTimelineWindow(allTimes);
 
   return {fixedPoints, durations, windowInfo};
 }
 
+function renderTimeline(){
+  const {fixedPoints, durations, windowInfo} = collectTimelineData();
+  const container = document.querySelector('.timeline-scroll');
+  if(!container) return;
+  container.innerHTML = ''; // reset
+
+  // largeur totale proportionnelle à 1440 min
+  const totalMinutes = windowInfo.max - windowInfo.min;
+  const pxPerMinute = 3; // zoom de base
+  const totalWidth = totalMinutes * pxPerMinute;
+  container.style.width = totalWidth + 'px';
+
+  // Grille horaire
+  for(let m = windowInfo.min; m <= windowInfo.max; m += 60){
+    const line = document.createElement('div');
+    line.className = 'tl-grid-line';
+    line.style.left = (m * pxPerMinute) + 'px';
+    line.textContent = String(Math.floor(m/60)).padStart(2,'0') + ':00';
+    container.appendChild(line);
+  }
+
+  // Points fixes
+  fixedPoints.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'tl-point ' + p.cls;
+    el.style.left = (p.t * pxPerMinute) + 'px';
+    el.title = p.label + ' ' + formatMinutesToHHMM(p.t);
+    container.appendChild(el);
+  });
+
+  // Barres de durée
+  durations.forEach(d=>{
+    const el = document.createElement('div');
+    el.className = 'tl-bar ' + d.cls;
+    el.style.left = (d.a * pxPerMinute) + 'px';
+    el.style.width = ((d.b - d.a) * pxPerMinute) + 'px';
+    if(d.color) el.style.backgroundColor = d.color;
+    el.title = d.label + ' ' + formatMinutesToHHMM(d.a) + ' - ' + formatMinutesToHHMM(d.b);
+    container.appendChild(el);
+  });
+
+  // Centrage auto sur AIBT-5 (ou SIBT si pas d'AIBT)
+  const aibt = parseHHMM(document.getElementById('AIBT')?.value || '') 
+            ?? parseHHMM(document.getElementById('SIBT')?.value || '');
+  if(aibt != null){
+    const scrollParent = document.querySelector('.timeline-wrapper');
+    if(scrollParent){
+      const targetPx = Math.max(0, (aibt - 5) * pxPerMinute);
+      scrollParent.scrollLeft = targetPx - (scrollParent.clientWidth / 2);
+    }
+  }
+}
     
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
