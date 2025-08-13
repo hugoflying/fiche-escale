@@ -1317,7 +1317,7 @@ function computeTimelineWindow(allTimes){
     let min = aibt - 5;
     let max = aobt + 5;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'AIBT/AOBT'};
+    return {min, max, basis:'24h'};
   }
   const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
   const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
