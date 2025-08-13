@@ -281,8 +281,11 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 
 /* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{
-  position: fixed; top: 70px; left: 2vw;
-  width: 96vw; height: 80vh; min-width: 600px; min-height: 320px;
+  position: fixed; top: 6vh; left: 2vw; /* position par défaut visible */
+  width: 96vw; height: 80vh;            /* quasi plein écran */
+  min-width: 320px; min-height: 260px;
+  max-width: calc(100vw - 20px);        /* toujours entièrement visible */
+  max-height: calc(100vh - 20px);
   background: rgba(255,255,255,0.9);
   color:#111;
   border-radius:16px;
@@ -300,7 +303,7 @@ body.dark .note-overlay{
   background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08);
 }
 
-/* petit visuel poignée de redimensionnement */
+/* Poignée de redimensionnement */
 .note-overlay::after{
   content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px;
   background:
@@ -319,17 +322,19 @@ body.dark .note-overlay::after{
 /* barre de titre */
 .note-titlebar{
   cursor:grab; user-select:none;
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  display:flex; align-items:center; gap:10px;
   padding:10px 12px;
   background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
   border-bottom: 1px solid rgba(0,0,0,.06);
 }
+.note-titlebar .spacer{ flex:1; }
 .note-titlebar:active{ cursor:grabbing; }
 body.dark .note-titlebar{
   background: linear-gradient(180deg, rgba(30,30,30,.7), rgba(30,30,30,.45));
   border-bottom-color: rgba(255,255,255,.08);
 }
 
+/* Toolbar */
 .note-toolbar{
   display:flex; gap:10px; align-items:center; padding:10px 12px;
   border-bottom:1px solid rgba(0,0,0,.06); flex-wrap:wrap;
@@ -337,13 +342,20 @@ body.dark .note-titlebar{
 body.dark .note-toolbar{ border-bottom-color: rgba(255,255,255,.08); }
 .note-toolbar .note-btn{
   border:0; padding:8px 12px; border-radius:10px; background:#e7ebf0; cursor:pointer; font-weight:600;
-  transition: transform .12s ease, background .15s ease;
+  transition: transform .12s ease, background .15s ease, box-shadow .15s ease;
 }
 .note-toolbar .note-btn:hover{ background:#dde3ea; }
 .note-toolbar .note-btn:active{ transform: translateY(1px); }
 body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-btn.active{ outline: 2px solid #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,.15); }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
+
+/* bouton danger (croix rouge) */
+.note-btn-danger{
+  background:#e53935 !important; color:#fff !important;
+}
+.note-btn-danger:hover{ filter: brightness(0.95); }
+.note-btn-danger:active{ transform: translateY(1px); }
 
 .note-toolbar input[type="range"]{ width:140px; }
 .note-color{
@@ -579,15 +591,14 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
 <div id="noteOverlay" class="note-overlay" aria-hidden="true">
   <div id="noteDragBar" class="note-titlebar">
     <strong>Bloc-note</strong>
-    <div>
-      <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">Effacer</button>
-      <button type="button" class="note-btn" onclick="closeNotepadOverlay()" title="Fermer">✖</button>
-    </div>
+    <div class="spacer"></div>
+    <button type="button" class="note-btn note-btn-danger" onclick="closeNotepadOverlay()" title="Fermer (ESC)" aria-label="Fermer">❌</button>
   </div>
 
   <div class="note-toolbar">
     <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
     <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
+    <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
@@ -713,11 +724,15 @@ function initForm(){
   if (currentTabId) loadTabData(currentTabId);
   renderTimeline();
 
-  // Raccourci pour ouvrir le bloc-note (Ctrl/Cmd + N)
+  // Raccourci: ouvrir le bloc-note (Ctrl/Cmd + N) et fermer (ESC)
   document.addEventListener('keydown', (e)=>{
     if(e.key==='n' && (e.ctrlKey || e.metaKey)){
       e.preventDefault();
       toggleNotepadOverlay();
+    }
+    if(e.key==='Escape' && noteOpen){
+      e.preventDefault();
+      closeNotepadOverlay();
     }
   });
 }
@@ -1534,13 +1549,13 @@ const NOTE_UNDO_LIMIT = 100;
 
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
-/* Ouverture / fermeture avec animation */
+/* Ouverture / fermeture */
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   if (!noteInited) initNotepadOnce();
   el.style.display = 'block';
-  // async pour déclencher transition
+  ensureNoteOverlayInViewport();   // s’adapte à l’écran
   requestAnimationFrame(()=>{ el.classList.add('open'); });
   el.setAttribute('aria-hidden','false');
   noteOpen = true;
@@ -1552,13 +1567,40 @@ function openNotepadOverlay(){
 function closeNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   el.classList.remove('open');
-  el.addEventListener('transitionend', function handler(){
-    el.removeEventListener('transitionend', handler);
-    if (!noteOpen) return;
-  });
   el.style.display = 'none';
   el.setAttribute('aria-hidden','true');
   noteOpen = false;
+}
+
+/* Toujours visible à l’écran (clamp taille/position) */
+function ensureNoteOverlayInViewport(){
+  const overlay = document.getElementById('noteOverlay');
+  if(!overlay) return;
+  const margin = 10;
+
+  // contraindre la taille
+  overlay.style.maxWidth  = `calc(100vw - ${margin*2}px)`;
+  overlay.style.maxHeight = `calc(100vh - ${margin*2}px)`;
+
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const rect = overlay.getBoundingClientRect();
+
+  // ajuster largeur/hauteur si trop grandes
+  let w = Math.min(rect.width,  vw - margin*2);
+  let h = Math.min(rect.height, vh - margin*2);
+  if (Math.abs(w - rect.width) > 0.5) overlay.style.width  = w + 'px';
+  if (Math.abs(h - rect.height) > 0.5) overlay.style.height = h + 'px';
+
+  // recalcul rect après éventuel changement taille
+  const rect2 = overlay.getBoundingClientRect();
+  w = rect2.width; h = rect2.height;
+
+  // clamp position
+  let left = Math.min(Math.max(rect2.left,  margin), vw - margin - w);
+  let top  = Math.min(Math.max(rect2.top,   margin), vh - margin - h);
+  overlay.style.left = left + 'px';
+  overlay.style.top  = top  + 'px';
+  overlay.style.right = 'auto';
 }
 
 /* Init unique */
@@ -1582,21 +1624,29 @@ function initNotepadOnce(){
   });
   document.addEventListener('mousemove', (e)=>{
     if(!noteDrag.active) return;
-    const overlay = document.getElementById('noteOverlay');
     let left = e.clientX - noteDrag.dx;
     let top  = e.clientY - noteDrag.dy;
-    left = Math.max(10, Math.min(window.innerWidth  - overlay.offsetWidth  - 10, left));
-    top  = Math.max(10, Math.min(window.innerHeight - overlay.offsetHeight - 10, top));
+    const vw = window.innerWidth, vh = window.innerHeight, margin=10;
+    left = Math.max(margin, Math.min(vw - margin - overlay.offsetWidth,  left));
+    top  = Math.max(margin, Math.min(vh - margin - overlay.offsetHeight, top));
     overlay.style.left = left + 'px';
-    overlay.style.top  = top + 'px';
+    overlay.style.top  = top  + 'px';
     overlay.style.right = 'auto';
   });
-  document.addEventListener('mouseup', ()=>{ noteDrag.active=false; document.getElementById('noteOverlay').classList.remove('dragging'); });
+  document.addEventListener('mouseup', ()=>{
+    if(!noteDrag.active) return;
+    noteDrag.active=false;
+    overlay.classList.remove('dragging');
+    ensureNoteOverlayInViewport();
+  });
 
-  // ResizeObserver -> adapter canvas
-  noteRO = new ResizeObserver(()=>{ fitNoteCanvas(); renderNote(); });
-  noteRO.observe(document.getElementById('noteOverlay'));
+  // ResizeObserver -> adapter canvas + garder la fenêtre à l’écran
+  noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
+  noteRO.observe(overlay);
   noteRO.observe(document.querySelector('.note-canvas-wrap'));
+
+  // S’adapte aussi quand la fenêtre (viewport) change
+  window.addEventListener('resize', ensureNoteOverlayInViewport);
 
   // Pointer events
   noteCanvas.addEventListener('pointerdown', notePointerDown);
@@ -1614,7 +1664,7 @@ function initNotepadOnce(){
     else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) { e.preventDefault(); noteRedo(); }
   });
 
-  // Bouton effacer est déjà relié à noteClearAll()
+  // UI initiale
   updatePenSizeLabel(); updateEraserSizeLabel();
   const firstDot = document.querySelector('.note-color'); if(firstDot) firstDot.classList.add('selected');
 }
@@ -1776,6 +1826,7 @@ switchTab = function(id){
   if(noteOpen){
     loadNotepad(); noteUndoStack = []; noteRedoStack = [];
     fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
+    ensureNoteOverlayInViewport();
   }
 };
 </script>
