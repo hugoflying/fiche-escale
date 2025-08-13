@@ -9,7 +9,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: Arial, sans-serif;
-    background: #ffffff; /* fond de page blanc */
+    background: #ffffff;
     color: #222;
     padding: 10px;
 }
@@ -19,11 +19,11 @@ h1 { text-align: center; margin: 10px 0 15px; }
 
 /* Sections (blocs) */
 section {
-    background: #f5f5f5;                   /* gris clair pour les blocs */
+    background: #f5f5f5;
     border-radius: 8px;
     padding: 12px;
-    margin-bottom: 22px;                   /* espace entre sections */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* ombre renforcée */
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 body.dark section { background: #1e1e1e; }
 
@@ -35,14 +35,14 @@ h2 {
     border-bottom: 1px solid #ccc;
     text-align: center;
     cursor: pointer;
-    background: #e8f0fe;                /* jour */
+    background: #e8f0fe;
     color: #123;
     border-left: 6px solid #1976d2;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
 body.dark h2 {
-    background: #242424;                /* nuit */
+    background: #242424;
     color: #f5f5f5;
     border-left: 6px solid #90caf9;
     border-bottom-color: #3a3a3a;
@@ -92,7 +92,7 @@ textarea {
 /* Affichage visuel en MAJ pour certains champs */
 input.uppercase { text-transform: uppercase; }
 
-/* Champ horaire + boutons : alignement parfait */
+/* Champ horaire + boutons */
 .form-group input[type="time"] {
     width: 100%;
     box-sizing: border-box;
@@ -115,7 +115,9 @@ button.action {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: transform .15s ease, filter .2s ease;
 }
+button.action:active { transform: scale(0.98); filter: brightness(0.95); }
 button.minus { background: #555; color: white; }
 button.now   { background: #1976d2; color: white; }
 button.plus  { background: #555; color: white; }
@@ -142,17 +144,8 @@ button.plus  { background: #555; color: white; }
     margin-bottom: 32px;
     flex-wrap: wrap;
 }
-.timer-group {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-.timer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
+.timer-group { display: flex; gap: 20px; align-items: center; }
+.timer { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .timer-label { font-weight: bold; font-size: 1rem; }
 .timer-value {
     background: #d32f2f;
@@ -167,97 +160,51 @@ button.plus  { background: #555; color: white; }
 #timer-ctot { background: #455a64; }
 
 /* Toggles (barre du haut) */
-.toggle-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-}
-.toggle-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.toggle-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.toggle-group { display: flex; align-items: center; gap: 8px; }
 
 /* Interrupteurs */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 28px;
-}
+.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #cfd4da;
-    transition: .2s;
-    border-radius: 999px;
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background: #cfd4da; transition: .2s; border-radius: 999px;
     box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
 }
 .slider:before {
-    position: absolute;
-    content: "";
-    height: 22px; width: 22px;
-    left: 3px; top: 3px;
-    background: #fff;
-    transition: .2s;
-    border-radius: 50%;
-    box-shadow: 0 1px 2px rgba(0,0,0,.3);
+    position: absolute; content: ""; height: 22px; width: 22px; left: 3px; top: 3px;
+    background: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
 .switch input:checked + .slider { background: #1976d2; }
 .switch input:checked + .slider:before { transform: translateX(32px); }
 
 /* Légendes des interrupteurs */
-.toggle-caption {
-    font-size: .9rem;
-    user-select: none;
-}
+.toggle-caption { font-size: .9rem; user-select: none; }
 
 /* Onglets */
 #tab-bar {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    position: sticky;
-    top: 0;
-    background: #ffffff;
-    z-index: 999;
-    padding: 5px 0;
+    display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;
+    position: sticky; top: 0; background: #ffffff; z-index: 999; padding: 5px 0;
+    backdrop-filter: saturate(180%) blur(6px);
 }
 #tab-bar button {
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 1.1rem;
-    padding: 10px 18px;
+    border: none; cursor: pointer; border-radius: 8px;
+    font-size: 1.05rem; padding: 8px 14px; transition: background .15s ease, transform .12s ease;
+    background: #eef2f7;
 }
+#tab-bar button:hover { background: #e1e7f0; }
+#tab-bar button:active { transform: translateY(1px); }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
-    font-weight: bold;
-    font-size: 1.2rem;
-    background: #4caf50;
-    color: #fff;
+    font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
 }
 
 /* Popup notifications */
 #popup {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 1rem;
-    color: #fff;
-    display: none;
-    z-index: 1000;
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    padding: 12px 20px; border-radius: 10px; font-size: 1rem; color: #fff;
+    display: none; z-index: 1000;
 }
-#popup.success { background: #4caf50; }
-#popup.error { background: #d32f2f; }
-#popup.info { background: #2196f3; }
 
 /* === TIMELINE (base) === */
 .timeline-wrap { padding: 8px 4px 2px; }
@@ -267,314 +214,293 @@ body.dark #tab-bar { background: #121212; }
 }
 body.dark .timeline-track{ background:#2e2e2e; }
 
-/* Grille verticale 5 min — plus épaisse et haute */
-.timeline-tick {
-  position: absolute;
-  width: 2px;
-  background:#b0b6bd;
-}
+.timeline-tick { position: absolute; width: 2px; background:#b0b6bd; }
 body.dark .timeline-tick { background:#3e444b; }
 
 .timeline-tick-label {
-  position: absolute; top: calc(50% + 12px);
-  transform: translateX(-50%);
-  font-size: 14px;
-  font-weight: 600;
-  color:#444;
+  position: absolute; top: calc(50% + 12px); transform: translateX(-50%);
+  font-size: 14px; font-weight: 600; color:#444;
 }
 body.dark .timeline-tick-label { color:#cfd4da; }
 
-.tl-event, .tl-range {
-  position: absolute; transform: translate(-50%, -50%);
-  white-space: nowrap; line-height:1;
-  z-index: 1;
-}
+.tl-event, .tl-range { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height:1; z-index: 1; }
 
 /* Points (événements) */
 .tl-dot {
-  width: 12px; height: 12px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+  width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
   margin: 0 auto 4px;
 }
 .tl-label {
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: #f1f3f5; color:#111;
-  font-size: 14px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+  padding: 3px 8px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
 }
 body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.07); }
 
 /* couleurs */
-.tl--std  { --c:#607d8b; }   /* gris (porte / divers) */
-.tl--tobt { --c:#2e7d32; }   /* vert (TOBT) */
-.tl--ctot { --c:#455a64; }   /* gris foncé (CTOT) */
-.tl--ops  { --c:#1976d2; }   /* bleu : Embarquement */
-.tl--turn { --c:#d32f2f; }   /* rouge : Débarquement */
+.tl--std  { --c:#607d8b; }
+.tl--tobt { --c:#2e7d32; }
+.tl--ctot { --c:#455a64; }
+.tl--ops  { --c:#1976d2; }
+.tl--turn { --c:#d32f2f; }
 .tl-event .tl-dot { background: var(--c); }
 
 /* Barres de durées */
 .tl-range {
-  top:50%;
-  height: 12px;
-  background: color-mix(in srgb, var(--c) 50%, transparent);
-  border: 2px solid var(--c);
-  border-radius: 8px;
-  z-index: 2;
+  top:50%; height: 12px; background: color-mix(in srgb, var(--c) 50%, transparent);
+  border: 2px solid var(--c); border-radius: 8px; z-index: 2;
 }
 .tl-range-label {
-  position:absolute; top: -22px; left:50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  background: rgba(255,255,255,.9);
-  padding: 2px 8px; border-radius:6px;
-  font-weight: 600;
+  position:absolute; top: -22px; left:50%; transform: translateX(-50%);
+  font-size: 14px; background: rgba(255,255,255,.9);
+  padding: 2px 8px; border-radius:6px; font-weight: 600;
 }
 body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 
 /* --- Toolbar timeline --- */
-.timeline-toolbar{
-  display:flex; align-items:center; gap:8px;
-  margin: 4px 0 8px;
-}
+.timeline-toolbar{ display:flex; align-items:center; gap:8px; margin: 4px 0 8px; }
 .tl-btn{
-  padding:6px 10px; border:0; border-radius:6px; cursor:pointer;
-  background:#e7ebf0; font-weight:600;
+  padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
+  background:#e7ebf0; font-weight:600; transition: transform .12s ease, background .15s ease;
 }
+.tl-btn:hover{ background:#dde3ea; }
+.tl-btn:active{ transform: translateY(1px); }
 body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
 
 /* Coche “Heure sur étiquettes” */
-.tl-toggle {
-  display:inline-flex; align-items:center; gap:6px; margin-left:8px; font-size: 14px;
-}
+.tl-toggle { display:inline-flex; align-items:center; gap:6px; margin-left:8px; font-size: 14px; }
 
 /* --- zone scrollable + canvas --- */
 .timeline-scroll{
-  overflow-x:auto; overflow-y:hidden;  /* scroll horizontal utile seulement si zoom > 100 % */
-  border-radius:8px; background:#ffffff;
+  overflow-x:auto; overflow-y:hidden;
+  border-radius:12px; background:#ffffff;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.timeline-canvas{ position:relative; height:480px; min-width:600px; width:100%; }
 
-/* Hauteur augmentée pour empiler les lignes de durées */
-.timeline-canvas{
-  position:relative;
-  height:480px;
-  min-width:600px;
-  width:100%;
-}
-
-/* Positions verticales */
-.tl-pos-fixed   { top: 28%; }
-.tl-pos-var-0   { top: 60%; }
-.tl-pos-var-1   { top: 70%; }
-.tl-pos-var-2   { top: 80%; }
-.tl-pos-var-3   { top: 90%; }
-
-/* === BLOC-NOTE (overlay) === */
+/* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{
-  position: fixed; top: 90px; right: 20px;
-  width: 680px; height: 460px;
-  background:#fff; color:#111;
-  border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,.35);
+  position: fixed; top: 70px; left: 2vw;
+  width: 96vw; height: 80vh; min-width: 600px; min-height: 320px;
+  background: rgba(255,255,255,0.9);
+  color:#111;
+  border-radius:16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
   z-index:2000; display:none; overflow:hidden; resize: both;
+  backdrop-filter: saturate(180%) blur(12px);
+  opacity: 0; transform: translateY(10px) scale(.98);
+  transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
+  border: 1px solid rgba(0,0,0,.06);
 }
-body.dark .note-overlay{ background:#1a1a1a; color:#eee; }
+.note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
+.note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 
-.note-titlebar{
-  cursor:move; user-select:none;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:8px 10px; background:#e7ebf0;
+body.dark .note-overlay{
+  background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08);
 }
-body.dark .note-titlebar{ background:#2a2a2a; }
+
+/* petit visuel poignée de redimensionnement */
+.note-overlay::after{
+  content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px;
+  background:
+    linear-gradient(135deg, rgba(0,0,0,.25) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(0,0,0,.15) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(0,0,0,.10) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
+  pointer-events:none; opacity:.6;
+}
+body.dark .note-overlay::after{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.3) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
+}
+
+/* barre de titre */
+.note-titlebar{
+  cursor:grab; user-select:none;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.note-titlebar:active{ cursor:grabbing; }
+body.dark .note-titlebar{
+  background: linear-gradient(180deg, rgba(30,30,30,.7), rgba(30,30,30,.45));
+  border-bottom-color: rgba(255,255,255,.08);
+}
 
 .note-toolbar{
-  display:flex; gap:10px; align-items:center;
-  padding:8px 10px; border-bottom:1px solid rgba(0,0,0,.08);
-  flex-wrap:wrap;
+  display:flex; gap:10px; align-items:center; padding:10px 12px;
+  border-bottom:1px solid rgba(0,0,0,.06); flex-wrap:wrap;
 }
+body.dark .note-toolbar{ border-bottom-color: rgba(255,255,255,.08); }
 .note-toolbar .note-btn{
-  border:0; padding:6px 10px; border-radius:6px;
-  background:#e7ebf0; cursor:pointer; font-weight:600;
+  border:0; padding:8px 12px; border-radius:10px; background:#e7ebf0; cursor:pointer; font-weight:600;
+  transition: transform .12s ease, background .15s ease;
 }
+.note-toolbar .note-btn:hover{ background:#dde3ea; }
+.note-toolbar .note-btn:active{ transform: translateY(1px); }
 body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
-.note-btn.active{ outline: 2px solid #1976d2; }
+.note-btn.active{ outline: 2px solid #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,.15); }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
 
-.note-toolbar input[type="range"]{ width:120px; }
-.note-color{ width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.2); cursor:pointer; }
-.note-color.selected{ outline:2px solid #1976d2; }
+.note-toolbar input[type="range"]{ width:140px; }
+.note-color{
+  width:24px; height:24px; border-radius:50%; border:2px solid #fff;
+  box-shadow:0 0 0 1px rgba(0,0,0,.2); cursor:pointer; transition: transform .12s ease;
+}
+.note-color:hover{ transform: scale(1.06); }
+.note-color.selected{ outline:3px solid #1976d2; }
 
-.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 88px); }
+.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); }
 #noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
 body.dark #noteCanvas{ background:#111; }
 
-/* Icône bloc-note dans le bandeau d’onglets (poussé à droite) */
-#tab-bar .note-icon{ margin-left:auto; }
+/* Icône bloc-note dans le bandeau d’onglets */
+#tab-bar .note-icon{ margin-left:auto; border-radius:12px; }
+#tab-bar .note-icon:hover{ background:#e9eef6; }
+body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
 </style>
 </head>
 <body onload="initForm()">
 
 <!-- Modes -->
 <div class="toggle-container">
-    <!-- Switch Jour/Nuit -->
-    <div class="toggle-group">
-        <span class="toggle-caption">Jour / Nuit</span>
-        <label class="switch" title="Basculer Jour/Nuit">
-            <input type="checkbox" id="darkToggle" onchange="setDarkMode(this.checked)">
-            <span class="slider"></span>
-        </label>
-    </div>
-
-    <!-- Switch Local / UTC -->
-    <div class="toggle-group">
-        <span class="toggle-caption">Local / UTC</span>
-        <label class="switch" title="Basculer Local/UTC">
-            <input type="checkbox" id="utcToggle" onchange="setTimeModeUTC(this.checked)">
-            <span class="slider"></span>
-        </label>
-    </div>
+  <div class="toggle-group">
+    <span class="toggle-caption">Jour / Nuit</span>
+    <label class="switch" title="Basculer Jour/Nuit">
+      <input type="checkbox" id="darkToggle" onchange="setDarkMode(this.checked)">
+      <span class="slider"></span>
+    </label>
+  </div>
+  <div class="toggle-group">
+    <span class="toggle-caption">Local / UTC</span>
+    <label class="switch" title="Basculer Local/UTC">
+      <input type="checkbox" id="utcToggle" onchange="setTimeModeUTC(this.checked)">
+      <span class="slider"></span>
+    </label>
+  </div>
 </div>
 
 <!-- Barre d’onglets -->
 <div id="tab-bar">
-    <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
+  <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
 </div>
 
 <h1>SUIVI PERFORMANCE</h1>
 
-<!-- Timers (2 groupes) -->
+<!-- Timers -->
 <div class="timer-box">
-    <!-- Groupe 1 : H-40, H-15, LID -->
-    <div class="timer-group">
-        <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
-    </div>
-
-    <!-- Groupe 2 : TOBT, CTOT -->
-    <div class="timer-group">
-        <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">CTOT</div><div id="timer-ctot" class="timer-value">--:--</div></div>
-    </div>
+  <div class="timer-group">
+    <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
+    <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
+    <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
+  </div>
+  <div class="timer-group">
+    <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
+    <div class="timer"><div class="timer-label">CTOT</div><div id="timer-ctot" class="timer-value">--:--</div></div>
+  </div>
 </div>
 
 <!-- INFO VOL -->
 <section>
-    <h2>INFO VOL</h2>
-    <div class="form-grid">
-        <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
-        <div class="form-group"><label>Cie
-            <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
-                <option value="">--</option>
-                <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
-                <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
-                <option>V7</option><option>Autre</option>
-            </select>
-        </label></div>
-
-        <div class="form-group"><label>N° VOL<input class="uppercase" type="text" id="NVol"></label></div>
-        <div class="form-group"><label>Provenance<input class="uppercase" type="text" id="From" maxlength="3"></label></div>
-        <div class="form-group"><label>Destination<input class="uppercase" type="text" id="To" maxlength="3"></label></div>
-        <div class="form-group"><label>Immat<input class="uppercase" type="text" id="Immat" maxlength="5"></label></div>
-
-        <div class="form-group"><label>Parking
-            <select id="Parking">
-                <option value="">--</option>
-                <option>1</option><option>2</option><option>3</option><option>4</option>
-                <option>5</option><option>6</option><option>7</option><option>8</option>
-                <option>9</option><option>10</option><option>11</option><option>12</option>
-            </select>
-        </label></div>
-
-        <div class="form-group"><label>RZA<input class="uppercase" type="text" id="RZA" maxlength="3"></label></div>
-        <div class="form-group"><label>FNC
-            <select id="FNC">
-                <option>Y</option><option selected>N</option>
-            </select>
-        </label></div>
-    </div>
+  <h2>INFO VOL</h2>
+  <div class="form-grid">
+    <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
+    <div class="form-group"><label>Cie
+      <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
+        <option value="">--</option>
+        <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
+        <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
+        <option>V7</option><option>Autre</option>
+      </select>
+    </label></div>
+    <div class="form-group"><label>N° VOL<input class="uppercase" type="text" id="NVol"></label></div>
+    <div class="form-group"><label>Provenance<input class="uppercase" type="text" id="From" maxlength="3"></label></div>
+    <div class="form-group"><label>Destination<input class="uppercase" type="text" id="To" maxlength="3"></label></div>
+    <div class="form-group"><label>Immat<input class="uppercase" type="text" id="Immat" maxlength="5"></label></div>
+    <div class="form-group"><label>Parking
+      <select id="Parking">
+        <option value="">--</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option>
+        <option>9</option><option>10</option><option>11</option><option>12</option>
+      </select>
+    </label></div>
+    <div class="form-group"><label>RZA<input class="uppercase" type="text" id="RZA" maxlength="3"></label></div>
+    <div class="form-group"><label>FNC
+      <select id="FNC"><option>Y</option><option selected>N</option></select>
+    </label></div>
+  </div>
 </section>
 
 <!-- HORAIRES -->
 <section>
-    <h2>HORAIRES</h2>
-    <div class="form-grid">
-        <div class="form-group">
-            <label>SIBT<input type="time" id="SIBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <label>AIBT<input type="time" id="AIBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <label>AOBT<input type="time" id="AOBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
-            </div>
-        </div>
-
-        <!-- CTOT -->
-        <div class="form-group">
-            <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('CTOT',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('CTOT');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('CTOT',1);updateAllCalculations()">+1</button>
-            </div>
-        </div>
+  <h2>HORAIRES</h2>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>SIBT<input type="time" id="SIBT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
+      </div>
     </div>
+    <div class="form-group">
+      <label>AIBT<input type="time" id="AIBT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>AOBT<input type="time" id="AOBT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('CTOT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('CTOT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('CTOT',1);updateAllCalculations()">+1</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- TIMING -->
 <section>
-    <h2>TIMING</h2>
-    <div class="form-grid" id="timing-grid"></div>
+  <h2>TIMING</h2>
+  <div class="form-grid" id="timing-grid"></div>
 </section>
 
 <!-- TIMELINE -->
 <section>
   <h2>TIMELINE</h2>
 
-  <!-- barre d’outils -->
   <div class="timeline-toolbar">
     <button type="button" class="tl-btn" onclick="timelineZoomOut()">−</button>
     <span id="timelineZoomLabel">100%</span>
     <button type="button" class="tl-btn" onclick="timelineZoomIn()">+</button>
-
     <div class="tl-sep"></div>
-
     <button type="button" class="tl-btn" onclick="timelineScroll(-15)">◀ 15 min</button>
     <button type="button" class="tl-btn" onclick="timelineScroll(15)">15 min ▶</button>
-
     <div class="tl-sep"></div>
-
     <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
-
-    <!-- Coche “Heure sur étiquettes” -->
     <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
       <input type="checkbox" id="showTimesToggle" checked
              onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
@@ -582,76 +508,74 @@ body.dark #noteCanvas{ background:#111; }
     </label>
   </div>
 
-  <!-- zone scrollable -->
   <div class="timeline-scroll" id="timelineScroll">
     <div id="timelineCanvas" class="timeline-canvas">
       <div class="timeline-track"></div>
-      <!-- rendu dynamique -->
     </div>
   </div>
 </section>
 
 <!-- CHIFFRES PORTE -->
 <section>
-    <h2>CHIFFRES PORTE</h2>
-    <div id="chargement-container" class="form-grid"></div>
+  <h2>CHIFFRES PORTE</h2>
+  <div id="chargement-container" class="form-grid"></div>
 </section>
 
 <!-- RETARDS -->
 <section>
-    <h2>RETARDS (Départ)</h2>
-    <div class="form-grid">
-        <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
-        <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" oninput="updateDLDuree2()"></label></div>
-        <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
-        <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" oninput="updateDLDuree3()"></label></div>
-        <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
-        <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3"></label></div>
-    </div>
+  <h2>RETARDS (Départ)</h2>
+  <div class="form-grid">
+    <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
+    <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" oninput="updateDLDuree2()"></label></div>
+    <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
+    <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" oninput="updateDLDuree3()"></label></div>
+    <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
+    <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3"></label></div>
+  </div>
 </section>
 
 <!-- DL JUSTIFICATION -->
 <section>
-    <h2>DL JUSTIFICATIONS</h2>
-    <textarea id="DLJustif"></textarea>
+  <h2>DL JUSTIFICATIONS</h2>
+  <textarea id="DLJustif"></textarea>
 </section>
 
 <!-- FAITS SAILLANTS -->
 <section>
-    <h2>FAITS SAILLANTS</h2>
-    <textarea id="FaitsSaillants"></textarea>
+  <h2>FAITS SAILLANTS</h2>
+  <textarea id="FaitsSaillants"></textarea>
 </section>
 
 <!-- ASSISTANCES -->
 <section>
-    <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
-    <div class="form-grid">
-        <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-        <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-        <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-        <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
-    </div>
+  <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
+  <div class="form-grid">
+    <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+    <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+    <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+    <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
+  </div>
 </section>
 
 <!-- PRESTATIONS -->
 <section>
-    <h2>PRESTATIONS</h2>
-    <div class="form-grid">
-        <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>T</option><option>F</option></select></label></div>
-        <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
-        <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
-        <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
-    </div>
+  <h2>PRESTATIONS</h2>
+  <div class="form-grid">
+    <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>T</option><option>F</option></select></label></div>
+    <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
+    <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
+  </div>
 </section>
 
-<!-- BLOC-NOTE SUPERPOSÉ -->
+<!-- === BLOC-NOTE SUPERPOSÉ === -->
 <div id="noteOverlay" class="note-overlay" aria-hidden="true">
   <div id="noteDragBar" class="note-titlebar">
     <strong>Bloc-note</strong>
@@ -662,8 +586,8 @@ body.dark #noteCanvas{ background:#111; }
   </div>
 
   <div class="note-toolbar">
-    <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">Crayon</button>
-    <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">Gomme</button>
+    <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
+    <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
@@ -676,7 +600,7 @@ body.dark #noteCanvas{ background:#111; }
     <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
     <span id="eraserSizeVal">22</span>px
 
-    <div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-left:12px;">
       <div class="note-color" style="background:#111" onclick="pickColor(this,'#111')"></div>
       <div class="note-color" style="background:#d32f2f" onclick="pickColor(this,'#d32f2f')"></div>
       <div class="note-color" style="background:#1976d2" onclick="pickColor(this,'#1976d2')"></div>
@@ -704,17 +628,16 @@ let currentTabId=null;
 const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
 
-/* === TIMELINE – zoom & scroll === */
+/* TIMELINE zoom & scroll */
 let timelineZoom = 1;       // 1 = 100%
 const TL_ZOOM_MIN = 0.5;
-const TL_ZOOM_MAX = 8;      // 8 = 800%
+const TL_ZOOM_MAX = 8;      // 800%
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
-/* TOBT brut (hors CTOT) stocké en minutes depuis 00:00 pour LID */
+/* TOBT brut (hors CTOT) stocké en minutes pour LID */
 window._tobtRawMins = null;
 
-/* Zoom/scroll controls */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
@@ -737,648 +660,588 @@ function timelineScroll(deltaMinutes){
   scroller.scrollLeft += deltaMinutes * pxPerMin;
 }
 
-/* === INIT === */
+/* INIT */
 function initForm(){
-    renderTabs();
-    let lastTab=localStorage.getItem('lastTabId');
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    if(tabs.length===0) createNewTab();
-    else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
-    else switchTab(tabs[0]);
+  renderTabs();
+  let lastTab=localStorage.getItem('lastTabId');
+  let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+  if(tabs.length===0) createNewTab();
+  else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
+  else switchTab(tabs[0]);
 
-    generateTimingFields();
-    generateChargementFields();
-    attachAutoSave();
-    window.addEventListener('beforeunload', saveCurrentTabData);
+  generateTimingFields();
+  generateChargementFields();
+  attachAutoSave();
+  window.addEventListener('beforeunload', saveCurrentTabData);
 
-    // collapse/expand
-    document.querySelectorAll("section h2").forEach(h2=>{
-        h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
+  document.querySelectorAll("section h2").forEach(h2=>{
+    h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
+  });
+
+  document.getElementById('Parking').onchange = updateTabLabelInstant;
+  document.getElementById('To').oninput = updateTabLabelInstant;
+  document.getElementById('From').oninput = applyPrestationsDefaults;
+  document.getElementById('To').oninput = applyPrestationsDefaults;
+
+  setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
+
+  const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
+  const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
+  setDarkMode(storedDark, true);
+  setTimeModeUTC(storedUTC, true);
+
+  const scroller = document.getElementById('timelineScroll');
+  if(scroller){
+    let isDown=false, startX=0, startLeft=0;
+    scroller.addEventListener('mousedown', e=>{ isDown=true; startX=e.clientX; startLeft=scroller.scrollLeft; });
+    scroller.addEventListener('mouseleave', ()=>{ isDown=false; });
+    scroller.addEventListener('mouseup', ()=>{ isDown=false; });
+    scroller.addEventListener('mousemove', e=>{
+      if(!isDown) return;
+      const dx = e.clientX - startX;
+      scroller.scrollLeft = startLeft - dx;
+      e.preventDefault();
     });
+    ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
+      scroller.addEventListener(ev, ()=>{ window.timelineUserScrolled = true; }, {passive:true});
+    });
+  }
 
-    // MAJ onglets + presets prestations
-    document.getElementById('Parking').onchange = updateTabLabelInstant;
-    document.getElementById('To').oninput = updateTabLabelInstant;
-    document.getElementById('From').oninput = applyPrestationsDefaults;
-    document.getElementById('To').oninput = applyPrestationsDefaults;
+  const lbl = document.getElementById('timelineZoomLabel');
+  if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 
-    // Forcer MAJUSCULE
-    setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
+  if (currentTabId) loadTabData(currentTabId);
+  renderTimeline();
 
-    // Switches au chargement
-    const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
-    const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
-    setDarkMode(storedDark, /*fromInit*/true);
-    setTimeModeUTC(storedUTC, /*fromInit*/true);
-
-    // Drag to scroll (timeline only)
-    const scroller = document.getElementById('timelineScroll');
-    if(scroller){
-      let isDown=false, startX=0, startLeft=0;
-      scroller.addEventListener('mousedown', e=>{ isDown=true; startX=e.clientX; startLeft=scroller.scrollLeft; });
-      scroller.addEventListener('mouseleave', ()=>{ isDown=false; });
-      scroller.addEventListener('mouseup', ()=>{ isDown=false; });
-      scroller.addEventListener('mousemove', e=>{
-        if(!isDown) return;
-        const dx = e.clientX - startX;
-        scroller.scrollLeft = startLeft - dx;
-        e.preventDefault();
-      });
-      ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
-        scroller.addEventListener(ev, ()=>{ window.timelineUserScrolled = true; }, {passive:true});
-      });
+  // Raccourci pour ouvrir le bloc-note (Ctrl/Cmd + N)
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='n' && (e.ctrlKey || e.metaKey)){
+      e.preventDefault();
+      toggleNotepadOverlay();
     }
-
-    const lbl = document.getElementById('timelineZoomLabel');
-    if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
-
-    if (currentTabId) loadTabData(currentTabId);
-    renderTimeline();
-
-    // Raccourci pour ouvrir le bloc-note (Ctrl/Cmd + N)
-    document.addEventListener('keydown', (e)=>{
-      if(e.key==='n' && (e.ctrlKey || e.metaKey)){
-        e.preventDefault();
-        toggleNotepadOverlay();
-      }
-    });
+  });
 }
 
 /* Forcer MAJUSCULE */
 function setupUppercaseInputs(ids){
-    ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
-        el.addEventListener('input', toUpper);
-        el.addEventListener('blur', toUpper);
-    });
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
+    el.addEventListener('input', toUpper);
+    el.addEventListener('blur', toUpper);
+  });
 }
 
 /* Empêcher négatifs / non-entiers sur WCH* */
 function sanitizePositiveInt(inputEl){
-    inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
+  inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
 /* Autosave */
 function attachAutoSave(){
-    const handler=()=>{
-        clearTimeout(saveTimer);
-        saveTimer=setTimeout(()=>{ saveCurrentTabData(); renderTimeline(); }, 300);
-    };
-    document.addEventListener('input', handler, true);
-    document.addEventListener('change', handler, true);
+  const handler=()=>{
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>{ saveCurrentTabData(); renderTimeline(); }, 300);
+  };
+  document.addEventListener('input', handler, true);
+  document.addEventListener('change', handler, true);
 }
 
 /* Tabs */
 function renderTabs(){
-    const tabBar=document.getElementById('tab-bar');
-    tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    tabs.forEach((id)=>{
-        const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
-        let label=data.To?String(data.To).toUpperCase():"VOL";
-        let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
-        const btn=document.createElement('button');
-        btn.textContent=label+" "+parking;
-        btn.style.fontWeight=id===currentTabId?'bold':'normal';
-        btn.onclick=()=>switchTab(id);
-        btn.ondblclick=()=>deleteTab(id);
-        tabBar.appendChild(btn);
-    });
+  const tabBar=document.getElementById('tab-bar');
+  tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
+  let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+  tabs.forEach((id)=>{
+    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+    let label=data.To?String(data.To).toUpperCase():"VOL";
+    let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
+    const btn=document.createElement('button');
+    btn.textContent=label+" "+parking;
+    btn.style.fontWeight=id===currentTabId?'bold':'normal';
+    btn.onclick=()=>switchTab(id);
+    btn.ondblclick=()=>deleteTab(id);
+    tabBar.appendChild(btn);
+  });
 
-    // Bouton bloc-note (poussé à droite via CSS)
-    const noteBtn = document.createElement('button');
-    noteBtn.className = 'note-icon';
-    noteBtn.title = 'Ouvrir le bloc-note';
-    noteBtn.textContent = '📝';
-    noteBtn.onclick = toggleNotepadOverlay;
-    tabBar.appendChild(noteBtn);
+  // Bouton bloc-note
+  const noteBtn = document.createElement('button');
+  noteBtn.className = 'note-icon';
+  noteBtn.title = 'Ouvrir le bloc-note';
+  noteBtn.textContent = '📝';
+  noteBtn.onclick = toggleNotepadOverlay;
+  tabBar.appendChild(noteBtn);
 }
 
 function createNewTab(){
-    const newId=Date.now();
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    tabs.push(newId);
-    localStorage.setItem('flightTabs',JSON.stringify(tabs));
-    clearFormFields();
-    currentTabId=newId;
-    localStorage.setItem('lastTabId',newId);
-    saveCurrentTabData();
-    renderTabs();
+  const newId=Date.now();
+  let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+  tabs.push(newId);
+  localStorage.setItem('flightTabs',JSON.stringify(tabs));
+  clearFormFields();
+  currentTabId=newId;
+  localStorage.setItem('lastTabId',newId);
+  saveCurrentTabData();
+  renderTabs();
 }
 
 function switchTab(id){
-    saveCurrentTabData();
-    currentTabId=id;
-    localStorage.setItem('lastTabId',id);
-    loadTabData(id);
-    renderTabs();
-    renderTimeline();
+  saveCurrentTabData();
+  currentTabId=id;
+  localStorage.setItem('lastTabId',id);
+  loadTabData(id);
+  renderTabs();
+  renderTimeline();
 }
 
 function deleteTab(id){
-    if(!confirm("Supprimer cet onglet ?")) return;
-    let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
-    tabs=tabs.filter(t=>t!==id);
-    localStorage.setItem('flightTabs',JSON.stringify(tabs));
-    localStorage.removeItem('tab-'+id);
-    if(tabs.length>0) switchTab(tabs[0]);
-    else createNewTab();
-    renderTabs();
-    renderTimeline();
+  if(!confirm("Supprimer cet onglet ?")) return;
+  let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
+  tabs=tabs.filter(t=>t!==id);
+  localStorage.setItem('flightTabs',JSON.stringify(tabs));
+  localStorage.removeItem('tab-'+id);
+  if(tabs.length>0) switchTab(tabs[0]);
+  else createNewTab();
+  renderTabs();
+  renderTimeline();
 }
 
 function clearFormFields(){
-    document.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(el.type==='checkbox'||el.type==='radio') el.checked=false;
-        else if(el.tagName==='SELECT') el.selectedIndex=0;
-        else el.value='';
-    });
-    document.getElementById('Date').valueAsDate=new Date();
-    document.getElementById('FNC').value='N';
-    updateAllCalculations();
+  document.querySelectorAll('input, select, textarea').forEach(el=>{
+    if(el.type==='checkbox'||el.type==='radio') el.checked=false;
+    else if(el.tagName==='SELECT') el.selectedIndex=0;
+    else el.value='';
+  });
+  document.getElementById('Date').valueAsDate=new Date();
+  document.getElementById('FNC').value='N';
+  updateAllCalculations();
 }
 
 function saveCurrentTabData(){
-    if(!currentTabId) return;
-    let data={};
-    document.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(!el.id) return;
-        if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
-        else data[el.id]=el.value;
-    });
-    data.modeDark=document.body.classList.contains('dark')?'1':'0';
-    data.modeUTC=isUTC?'1':'0';
-    data.timer_h40=document.getElementById('timer-h40').textContent;
-    data.timer_h15=document.getElementById('timer-h15').textContent;
-    data.timer_h8=document.getElementById('timer-h8').textContent;
-    data.timer_tobt=document.getElementById('timer-tobt').textContent;
-    data.timer_ctot=document.getElementById('timer-ctot').textContent;
-    localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
-    localStorage.setItem('lastTabId',currentTabId);
-    renderTabs();
+  if(!currentTabId) return;
+  let data={};
+  document.querySelectorAll('input, select, textarea').forEach(el=>{
+    if(!el.id) return;
+    if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
+    else data[el.id]=el.value;
+  });
+  data.modeDark=document.body.classList.contains('dark')?'1':'0';
+  data.modeUTC=isUTC?'1':'0';
+  data.timer_h40=document.getElementById('timer-h40').textContent;
+  data.timer_h15=document.getElementById('timer-h15').textContent;
+  data.timer_h8=document.getElementById('timer-h8').textContent;
+  data.timer_tobt=document.getElementById('timer-tobt').textContent;
+  data.timer_ctot=document.getElementById('timer-ctot').textContent;
+  localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
+  localStorage.setItem('lastTabId',currentTabId);
+  renderTabs();
 }
 
 function loadTabData(id){
-    const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+  const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
 
-    document.querySelectorAll('input, select, textarea').forEach(el=>{
-        if(!el.id || data[el.id]===undefined) return;
-        if(el.type==='checkbox') el.checked = data[el.id]==='1';
-        else el.value = data[el.id];
-    });
+  document.querySelectorAll('input, select, textarea').forEach(el=>{
+    if(!el.id || data[el.id]===undefined) return;
+    if(el.type==='checkbox') el.checked = data[el.id]==='1';
+    else el.value = data[el.id];
+  });
 
-    if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
-    isUTC=data.modeUTC==='1';
+  if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
+  isUTC=data.modeUTC==='1';
 
-    document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
-    document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
-    document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
-    document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
-    document.getElementById('timer-ctot').textContent=data.timer_ctot||'--:--';
+  document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
+  document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
+  document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
+  document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
+  document.getElementById('timer-ctot').textContent=data.timer_ctot||'--:--';
 
-    document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
-    document.getElementById('utcToggle').checked  = isUTC;
+  document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
+  document.getElementById('utcToggle').checked  = isUTC;
 
-    generateChargementFields();
-    updateAllCalculations();
+  generateChargementFields();
+  updateAllCalculations();
 }
 
-/* Mise à jour instantanée label onglet */
-function updateTabLabelInstant(){
-    saveCurrentTabData();
-    renderTabs();
-}
+/* Mise à jour label onglet */
+function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS */
 function generateTimingFields(){
-    const timings=[
-        "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
-        "AvionPremierEmbarque","AvionDernierEmbarque",
-        "PortePremierEmbarque","PorteDernierEmbarque",
-        "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
-        "RemiseLID","FermeturePorteAvion"
-    ];
+  const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
+    "AvionPremierEmbarque","AvionDernierEmbarque",
+    "PortePremierEmbarque","PorteDernierEmbarque",
+    "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
+    "RemiseLID","FermeturePorteAvion"];
 
-    const labels=[
-        "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
-        "Avion : Premier embarqué","Avion : Dernier embarqué",
-        "Porte : Premier embarqué","Porte : Dernier embarqué",
-        "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
-        "Remise LID/LDS","Fermeture porte avion"
-    ];
+  const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
+    "Avion : Premier embarqué","Avion : Dernier embarqué",
+    "Porte : Premier embarqué","Porte : Dernier embarqué",
+    "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
+    "Remise LID/LDS","Fermeture porte avion"];
 
-    const container=document.getElementById('timing-grid');
-    container.innerHTML="";
-
-    timings.forEach((id,i)=>{
-        const div=document.createElement('div');
-        div.className='form-group';
-        div.innerHTML=`
-            <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-                <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-                <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-                <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-            </div>`;
-        container.appendChild(div);
-    });
+  const container=document.getElementById('timing-grid');
+  container.innerHTML="";
+  timings.forEach((id,i)=>{
+    const div=document.createElement('div');
+    div.className='form-group';
+    div.innerHTML=`
+      <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+      </div>`;
+    container.appendChild(div);
+  });
 }
 
-/* === CHARGEMENT / TOB (CHIFFRES PORTE) === */
+/* CHARGEMENT / TOB */
 function generateChargementFields() {
-    const cie = document.getElementById('Cie').value;
-    const container = document.getElementById('chargement-container');
-    container.innerHTML = "";
+  const cie = document.getElementById('Cie').value;
+  const container = document.getElementById('chargement-container');
+  container.innerHTML = "";
+  let html = "";
 
-    let html = "";
-
-    if (cie === "FR" || cie === "RK") {
-        html += `
-            <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-            <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
-        `;
-    } else {
-        html += `
-            <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-            <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
-            <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-            <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
-            <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>
-        `;
-    }
-
+  if (cie === "FR" || cie === "RK") {
     html += `
-        <div class="form-group" style="flex:1 1 100%;">
-            <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
-        </div>
-    `;
-    container.innerHTML = html;
-    updateTOB();
+      <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
+      <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
+      <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+      <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+      <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>`;
+  } else {
+    html += `
+      <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
+      <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
+      <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
+      <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+      <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+      <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
+      <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>`;
+  }
+  html += `<div class="form-group" style="flex:1 1 100%;"><label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label></div>`;
+  container.innerHTML = html;
+  updateTOB();
 }
 
 function updateTOB() {
-    const cie = document.getElementById('Cie').value;
-    let mainTotal = 0;
-    let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
+  const cie = document.getElementById('Cie').value;
+  let mainTotal = 0;
+  let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
 
-    if (cie === "FR" || cie === "RK") {
-        mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-                    (parseInt(document.getElementById('CHILD')?.value) || 0);
-    } else {
-        mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                    (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                    (parseInt(document.getElementById('CHILD')?.value) || 0);
-    }
+  if (cie === "FR" || cie === "RK") {
+    mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) +
+                (parseInt(document.getElementById('CHILD')?.value) || 0);
+  } else {
+    mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
+                (parseInt(document.getElementById('FEMALE')?.value) || 0) +
+                (parseInt(document.getElementById('CHILD')?.value) || 0);
+  }
 
-    let tobText = "";
-    if (mainTotal === 0 && infants === 0) {
-        tobText = "";
-    } else if (infants > 0) {
-        tobText = `${mainTotal} + ${infants}`;
-    } else {
-        tobText = `${mainTotal}`;
-    }
+  let tobText = "";
+  if (mainTotal === 0 && infants === 0) tobText = "";
+  else if (infants > 0) tobText = `${mainTotal} + ${infants}`;
+  else tobText = `${mainTotal}`;
 
-    document.getElementById('TOB').value = tobText;
-    checkTOBCoherence();
+  document.getElementById('TOB').value = tobText;
+  checkTOBCoherence();
 }
 
-/* === COHÉRENCE TOB === */
+/* COHÉRENCE TOB */
 function checkTOBCoherence() {
-    const cie = document.getElementById('Cie').value;
-    let tobMain = 0;
+  const cie = document.getElementById('Cie').value;
+  let tobMain = 0;
 
-    if (cie === "FR" || cie === "RK") {
-        tobMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-                  (parseInt(document.getElementById('CHILD')?.value) || 0);
-        const sum = (parseInt(document.getElementById('FWD')?.value) || 0) +
-                    (parseInt(document.getElementById('MID')?.value) || 0) +
-                    (parseInt(document.getElementById('AFT')?.value) || 0);
-        styleTOB(sum === tobMain);
-    } else {
-        tobMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                  (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                  (parseInt(document.getElementById('CHILD')?.value) || 0);
-        const sum = (parseInt(document.getElementById('OA')?.value) || 0) +
-                    (parseInt(document.getElementById('OB')?.value) || 0) +
-                    (parseInt(document.getElementById('OC')?.value) || 0) +
-                    (parseInt(document.getElementById('OD')?.value) || 0);
-        styleTOB(sum === tobMain);
-    }
+  if (cie === "FR" || cie === "RK") {
+    tobMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
+              (parseInt(document.getElementById('CHILD')?.value) || 0);
+    const sum = (parseInt(document.getElementById('FWD')?.value) || 0) +
+                (parseInt(document.getElementById('MID')?.value) || 0) +
+                (parseInt(document.getElementById('AFT')?.value) || 0);
+    styleTOB(sum === tobMain);
+  } else {
+    tobMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
+              (parseInt(document.getElementById('FEMALE')?.value) || 0) +
+              (parseInt(document.getElementById('CHILD')?.value) || 0);
+    const sum = (parseInt(document.getElementById('OA')?.value) || 0) +
+                (parseInt(document.getElementById('OB')?.value) || 0) +
+                (parseInt(document.getElementById('OC')?.value) || 0) +
+                (parseInt(document.getElementById('OD')?.value) || 0);
+    styleTOB(sum === tobMain);
+  }
 }
 function styleTOB(valid) {
-    const tobField = document.getElementById('TOB');
-    if (valid) {
-        tobField.style.border = "1px solid #ccc";
-        tobField.style.color = "#000";
-    } else {
-        tobField.style.border = "2px solid red";
-        tobField.style.color = "red";
-    }
+  const tobField = document.getElementById('TOB');
+  if (valid) { tobField.style.border = "1px solid #ccc"; tobField.style.color = "#000"; }
+  else { tobField.style.border = "2px solid red"; tobField.style.color = "red"; }
 }
 
-/* === CALCULS === */
+/* CALCULS */
 function updateAllCalculations() {
-    updateTimers();
-    updateSOBTDefault();
-    updateTOBT();
-    updateDLCode();
-    updateDLDuree2();
-    updateLID();             // LID = TOBT (hors CTOT) - 8
-    updateCTOTDisplay();
-    applyPrestationsDefaults();
-    renderTimeline(); // timeline live
+  updateTimers();
+  updateSOBTDefault();
+  updateTOBT();
+  updateDLCode();
+  updateDLDuree2();
+  updateLID();
+  updateCTOTDisplay();
+  applyPrestationsDefaults();
+  renderTimeline();
 }
 
-/* === TIMERS H-40/H-15 === */
+/* TIMERS H-40/H-15 */
 function updateTimers() {
-    const sobt = document.getElementById('SOBT').value;
-    if (!sobt) {
-        ['timer-h40', 'timer-h15', 'timer-h8'].forEach(id => document.getElementById(id).textContent = '--:--');
-        return;
-    }
-    const [hh, mm] = sobt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(hh);
-    base.setMinutes(mm);
-    const h40 = new Date(base.getTime() - 40 * 60000);
-    const h15 = new Date(base.getTime() - 15 * 60000);
-    document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
-    document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
+  const sobt = document.getElementById('SOBT').value;
+  if (!sobt) {
+    ['timer-h40', 'timer-h15', 'timer-h8'].forEach(id => document.getElementById(id).textContent = '--:--');
+    return;
+  }
+  const [hh, mm] = sobt.split(':').map(Number);
+  const base = new Date(); base.setHours(hh, mm, 0, 0);
+  const h40 = new Date(base.getTime() - 40 * 60000);
+  const h15 = new Date(base.getTime() - 15 * 60000);
+  document.getElementById('timer-h40').textContent = `${String(h40.getHours()).padStart(2, '0')}:${String(h40.getMinutes()).padStart(2, '0')}`;
+  document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === LID = TOBT - 8 (HORS CTOT) === */
+/* LID = TOBT - 8 (HORS CTOT) */
 function updateLID() {
-    const tobtRawMins = window._tobtRawMins; // minutes depuis 00:00
-    if (tobtRawMins == null) {
-        document.getElementById('timer-h8').textContent = "--:--";
-        return;
-    }
-    const lid = tobtRawMins - 8;
-    const out = fmtHHMM(lid);
-    document.getElementById('timer-h8').textContent = out;
+  const tobtRawMins = window._tobtRawMins;
+  if (tobtRawMins == null) { document.getElementById('timer-h8').textContent = "--:--"; return; }
+  const lid = tobtRawMins - 8;
+  document.getElementById('timer-h8').textContent = fmtHHMM(lid);
 }
 
-/* === SOBT PAR DÉFAUT === */
+/* SOBT par défaut */
 function updateSOBTDefault() {
-    if (manualSOBT) return;
-    const cie = document.getElementById('Cie').value;
-    const sibt = document.getElementById('SIBT').value;
-    const arrPNT = document.getElementById('ArrPNT')?.value;
-    const arrPNC = document.getElementById('ArrPNC')?.value;
-    if (!sibt) return;
+  if (manualSOBT) return;
+  const cie = document.getElementById('Cie').value;
+  const sibt = document.getElementById('SIBT').value;
+  const arrPNT = document.getElementById('ArrPNT')?.value;
+  const arrPNC = document.getElementById('ArrPNC')?.value;
+  if (!sibt) return;
+  if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
 
-    if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
-
-    let [sH, sM] = sibt.split(':').map(Number);
-    const base = new Date();
-    base.setHours(sH, sM);
-
-    let add = 35;
-    if (cie === "FR" || cie === "RK") {
-        add = (arrPNT || arrPNC) ? 35 : 25;
-    }
-
-    const sobtCalc = new Date(base.getTime() + add * 60000);
-    document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
+  let [sH, sM] = sibt.split(':').map(Number);
+  const base = new Date(); base.setHours(sH, sM);
+  let add = 35;
+  if (cie === "FR" || cie === "RK") add = (arrPNT || arrPNC) ? 35 : 25;
+  const sobtCalc = new Date(base.getTime() + add * 60000);
+  document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === TOBT CALCUL + règle CTOT (stocke TOBT brut pour LID) === */
+/* TOBT + règle CTOT (stocke TOBT brut pour LID) */
 function updateTOBT() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    const sobttxt = document.getElementById('SOBT').value;
-    const ctottxt = document.getElementById('CTOT').value;
+  const cie = document.getElementById('Cie').value;
+  const sibttxt = document.getElementById('SIBT').value;
+  const aibttxt = document.getElementById('AIBT').value;
+  const sobttxt = document.getElementById('SOBT').value;
+  const ctottxt = document.getElementById('CTOT').value;
 
-    if (!cie || !sibttxt) {
-        document.getElementById('timer-tobt').textContent = '--:--';
-        window._tobtRawMins = null;
-        return;
-    }
+  if (!cie || !sibttxt) {
+    document.getElementById('timer-tobt').textContent = '--:--';
+    window._tobtRawMins = null; return;
+  }
 
-    const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
-    const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
+  const [sH, sM] = sibttxt.split(':').map(Number);
+  const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
+  const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
 
-    const SIBT = new Date(); SIBT.setHours(sH, sM, 0, 0);
-    const AIBT = new Date(); AIBT.setHours(aH, aM, 0, 0);
-    const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
+  const SIBT = new Date(); SIBT.setHours(sH, sM, 0, 0);
+  const AIBT = new Date(); AIBT.setHours(aH, aM, 0, 0);
+  const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
 
-    let TOBT_raw = new Date(SIBT);
+  let TOBT_raw = new Date(SIBT);
 
-    if (cie === 'FR' || cie === 'RK' || cie === 'W4' || cie === 'W6') {
-        if (AIBT > SIBT) {
-            const arrPNT = document.getElementById('ArrPNT')?.value;
-            const arrPNC = document.getElementById('ArrPNC')?.value;
-            const add = (arrPNT || arrPNC) ? 35 : 25;
-            TOBT_raw = new Date(AIBT.getTime() + add * 60000);
-        } else {
-            TOBT_raw = new Date(SIBT);
-        }
-    } else {
-        if (AIBT > SIBT) {
-            const diff = (SOBT - SIBT) / 60000;
-            TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
-        } else {
-            TOBT_raw = new Date(SIBT);
-        }
-    }
-
-    // TOBT brut doit être >= SOBT
-    if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
-
-    // Mémorise TOBT brut (sans CTOT) en minutes pour LID
-    window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
-
-    // Applique ensuite la règle CTOT pour l'affichage de TOBT (timer)
-    let TOBT_adj = new Date(TOBT_raw);
-    if (ctottxt) {
-        const [cH, cM] = ctottxt.split(':').map(Number);
-        const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
-        const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
-        if (CTOT > tobtPlus15) {
-            TOBT_adj = new Date(CTOT.getTime() - 15*60000);
-        }
-        if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
-    }
-
-    document.getElementById('timer-tobt').textContent =
-        `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
-}
-
-/* === CTOT (affichage) === */
-function updateCTOTDisplay(){
-    const ctot = document.getElementById('CTOT').value;
-    document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
-}
-
-/* === DL CODES === */
-function updateDLCode() {
-    const cie = document.getElementById('Cie').value;
-    const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
-    if (!cie || !sibttxt || !aibttxt) return;
-
-    const [sH, sM] = sibttxt.split(':').map(Number);
-    const [aH, aM] = aibttxt.split(':').map(Number);
-    const SIBT = new Date(); SIBT.setHours(sH, sM);
-    const AIBT = new Date(); AIBT.setHours(aH, aM);
-
+  if (cie === 'FR' || cie === 'RK' || cie === 'W4' || cie === 'W6') {
     if (AIBT > SIBT) {
-        if (cie === 'FR') document.getElementById('DLcode1').value = '93';
-        else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
-        else document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = Math.round((AIBT - SIBT) / 60000) || '';
+      const arrPNT = document.getElementById('ArrPNT')?.value;
+      const arrPNC = document.getElementById('ArrPNC')?.value;
+      const add = (arrPNT || arrPNC) ? 35 : 25;
+      TOBT_raw = new Date(AIBT.getTime() + add * 60000);
     } else {
-        document.getElementById('DLcode1').value = '';
-        document.getElementById('DLduree1').value = '';
+      TOBT_raw = new Date(SIBT);
     }
+  } else {
+    if (AIBT > SIBT) {
+      const diff = (SOBT - SIBT) / 60000;
+      TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
+    } else {
+      TOBT_raw = new Date(SIBT);
+    }
+  }
+
+  if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
+  window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
+
+  let TOBT_adj = new Date(TOBT_raw);
+  if (ctottxt) {
+    const [cH, cM] = ctottxt.split(':').map(Number);
+    const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
+    const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
+    if (CTOT > tobtPlus15) TOBT_adj = new Date(CTOT.getTime() - 15*60000);
+    if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
+  }
+
+  document.getElementById('timer-tobt').textContent =
+    `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
 }
 
-/* === DL DURÉES 2 & 3 === */
+/* CTOT (affichage) */
+function updateCTOTDisplay(){
+  const ctot = document.getElementById('CTOT').value;
+  document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
+}
+
+/* DL CODES */
+function updateDLCode() {
+  const cie = document.getElementById('Cie').value;
+  const sibttxt = document.getElementById('SIBT').value;
+  const aibttxt = document.getElementById('AIBT').value;
+  if (!cie || !sibttxt || !aibttxt) return;
+
+  const [sH, sM] = sibttxt.split(':').map(Number);
+  const [aH, aM] = aibttxt.split(':').map(Number);
+  const SIBT = new Date(); SIBT.setHours(sH, sM);
+  const AIBT = new Date(); AIBT.setHours(aH, aM);
+
+  if (AIBT > SIBT) {
+    if (cie === 'FR') document.getElementById('DLcode1').value = '93';
+    else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
+    else document.getElementById('DLcode1').value = '';
+    document.getElementById('DLduree1').value = Math.round((AIBT - SIBT) / 60000) || '';
+  } else {
+    document.getElementById('DLcode1').value = '';
+    document.getElementById('DLduree1').value = '';
+  }
+}
+
+/* DL DURÉES 2 & 3 */
 function updateDLDuree2() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
+  const sobt = document.getElementById('SOBT').value;
+  const aobt = document.getElementById('AOBT').value;
+  const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
 
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
+  if (sobt && aobt) {
+    const [soH, soM] = sobt.split(':').map(Number);
+    const [aoH, aoM] = aobt.split(':').map(Number);
+    const SOBT = new Date(); SOBT.setHours(soH, soM);
+    const AOBT = new Date(); AOBT.setHours(aoH, aoM);
 
-        let diff = Math.round((AOBT - SOBT) / 60000) - dlduree1;
-        document.getElementById('DLduree2').value = diff > 0 ? diff : '';
-        updateDLDuree3();
-    } else {
-        document.getElementById('DLduree2').value = '';
-    }
+    let diff = Math.round((AOBT - SOBT) / 60000) - dlduree1;
+    document.getElementById('DLduree2').value = diff > 0 ? diff : '';
+    updateDLDuree3();
+  } else {
+    document.getElementById('DLduree2').value = '';
+  }
 }
 function updateDLDuree3() {
-    const sobt = document.getElementById('SOBT').value;
-    const aobt = document.getElementById('AOBT').value;
-    const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
-    const dlduree2 = parseInt(document.getElementById('DLduree2').value) || 0;
+  const sobt = document.getElementById('SOBT').value;
+  const aobt = document.getElementById('AOBT').value;
+  const dlduree1 = parseInt(document.getElementById('DLduree1').value) || 0;
+  const dlduree2 = parseInt(document.getElementById('DLduree2').value) || 0;
 
-    if (sobt && aobt) {
-        const [soH, soM] = sobt.split(':').map(Number);
-        const [aoH, aoM] = aobt.split(':').map(Number);
-        const SOBT = new Date(); SOBT.setHours(soH, soM);
-        const AOBT = new Date(); AOBT.setHours(aoH, aoM);
-        const total = Math.round((AOBT - SOBT) / 60000);
-        const reste = total - dlduree1 - dlduree2;
-        document.getElementById('DLduree3').value = reste > 0 ? reste : '';
-    }
+  if (sobt && aobt) {
+    const [soH, soM] = sobt.split(':').map(Number);
+    const [aoH, aoM] = aobt.split(':').map(Number);
+    const SOBT = new Date(); SOBT.setHours(soH, soM);
+    const AOBT = new Date(); AOBT.setHours(aoH, aoM);
+    const total = Math.round((AOBT - SOBT) / 60000);
+    const reste = total - dlduree1 - dlduree2;
+    document.getElementById('DLduree3').value = reste > 0 ? reste : '';
+  }
 }
 
-/* === PRESTATIONS AUTO === */
+/* PRESTATIONS AUTO */
 function applyPrestationsDefaults() {
-    const from = document.getElementById('From').value.toUpperCase();
-    const to = document.getElementById('To').value.toUpperCase();
+  const from = document.getElementById('From').value.toUpperCase();
+  const to = document.getElementById('To').value.toUpperCase();
 
-    if (from === "BVA") {
-        document.getElementById('Ordures').value = "N";
-        document.getElementById('EauPotable').value = "Y";
-        document.getElementById('MenageAssist').value = "N";
-    }
-    if (to === "BVA") {
-        document.getElementById('Ordures').value = "Y";
-        document.getElementById('Vidange').value = "Y";
-        document.getElementById('MenageAtalian').value = "T";
-    }
+  if (from === "BVA") {
+    document.getElementById('Ordures').value = "N";
+    document.getElementById('EauPotable').value = "Y";
+    document.getElementById('MenageAssist').value = "N";
+  }
+  if (to === "BVA") {
+    document.getElementById('Ordures').value = "Y";
+    document.getElementById('Vidange').value = "Y";
+    document.getElementById('MenageAtalian').value = "T";
+  }
 }
 
-/* === UTILITAIRES === */
+/* UTILITAIRES */
 function setNow(fieldId) {
-    const now = new Date();
-    const hh = isUTC ? now.getUTCHours() : now.getHours();
-    const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-    document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  const now = new Date();
+  const hh = isUTC ? now.getUTCHours() : now.getHours();
+  const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
+  document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
 function adjustTime(fieldId, delta) {
-    const input = document.getElementById(fieldId);
-    if (!input.value) return;
-    let [hh, mm] = input.value.split(':').map(Number);
-    let total = hh * 60 + mm + delta;
-    if (total < 0) total += 1440;
-    if (total >= 1440) total -= 1440;
-    hh = Math.floor(total / 60);
-    mm = total % 60;
-    input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  const input = document.getElementById(fieldId);
+  if (!input.value) return;
+  let [hh, mm] = input.value.split(':').map(Number);
+  let total = hh * 60 + mm + delta;
+  if (total < 0) total += 1440;
+  if (total >= 1440) total -= 1440;
+  hh = Math.floor(total / 60);
+  mm = total % 60;
+  input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-/* === Switches Jour/Nuit & Local/UTC === */
+/* Switches */
 function setDarkMode(enable, fromInit=false){
-    const currentlyDark = document.body.classList.contains('dark');
-    if (enable && !currentlyDark) document.body.classList.add('dark');
-    if (!enable && currentlyDark) document.body.classList.remove('dark');
-    document.getElementById('darkToggle').checked = enable;
-    localStorage.setItem('modeDark', enable ? '1' : '0');
+  const currentlyDark = document.body.classList.contains('dark');
+  if (enable && !currentlyDark) document.body.classList.add('dark');
+  if (!enable && currentlyDark) document.body.classList.remove('dark');
+  document.getElementById('darkToggle').checked = enable;
+  localStorage.setItem('modeDark', enable ? '1' : '0');
 }
 
 function setTimeModeUTC(enable, fromInit=false){
-    const offsetHours = -new Date().getTimezoneOffset() / 60;
+  const offsetHours = -new Date().getTimezoneOffset() / 60;
 
-    if (!fromInit && enable !== isUTC) {
-        const inputs = document.querySelectorAll('input[type="time"]');
-        inputs.forEach(input => {
-            if (!input.value) return;
-            let [hh, mm] = input.value.split(':').map(Number);
-            let newH = enable ? hh - offsetHours : hh + offsetHours;
-            let totalMin = Math.round(newH * 60 + mm);
-            totalMin = ((totalMin % 1440) + 1440) % 1440;
-            const outH = Math.floor(totalMin / 60);
-            const outM = totalMin % 60;
-            input.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
-        });
-    }
-    isUTC = enable;
-    document.getElementById('utcToggle').checked = enable;
-    localStorage.setItem('modeUTC', enable ? '1' : '0');
-    updateAllCalculations();
+  if (!fromInit && enable !== isUTC) {
+    const inputs = document.querySelectorAll('input[type="time"]');
+    inputs.forEach(input => {
+      if (!input.value) return;
+      let [hh, mm] = input.value.split(':').map(Number);
+      let newH = enable ? hh - offsetHours : hh + offsetHours;
+      let totalMin = Math.round(newH * 60 + mm);
+      totalMin = ((totalMin % 1440) + 1440) % 1440;
+      const outH = Math.floor(totalMin / 60);
+      const outM = totalMin % 60;
+      input.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
+    });
+  }
+  isUTC = enable;
+  document.getElementById('utcToggle').checked = enable;
+  localStorage.setItem('modeUTC', enable ? '1' : '0');
+  updateAllCalculations();
 }
 
-/* Compat anciens appels */
-function toggleDarkMode(){ setDarkMode(!document.body.classList.contains('dark')); }
-function toggleTimeMode(){ setTimeModeUTC(!isUTC); }
-
-/* === POPUP === */
+/* POPUP */
 function showPopup(message, color = "#2196f3", duration = 2000) {
-    const popup = document.createElement('div');
-    popup.textContent = message;
-    popup.style.position = "fixed";
-    popup.style.top = "60px";
-    popup.style.left = "50%";
-    popup.style.transform = "translateX(-50%)";
-    popup.style.background = color;
-    popup.style.color = "#fff";
-    popup.style.padding = "10px 20px";
-    popup.style.borderRadius = "6px";
-    popup.style.fontSize = "1rem";
-    popup.style.zIndex = "1000";
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), duration);
+  const popup = document.createElement('div');
+  popup.id = "popup";
+  popup.textContent = message;
+  popup.style.background = color;
+  document.body.appendChild(popup);
+  popup.style.display = "block";
+  setTimeout(() => popup.remove(), duration);
 }
 
-/* === TIMELINE helpers === */
-let showTimeLabels = true;           // coche "Heure sur étiquettes"
-let timelineUserScrolled = false;    // pour ne centrer qu'à l’ouverture
+/* TIMELINE helpers */
+let showTimeLabels = true;
+let timelineUserScrolled = false;
 
 function parseHHMM(str){
   if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
@@ -1390,21 +1253,12 @@ function fmtHHMM(mins){
   const h = Math.floor(mins/60), m = mins%60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
-
-/* Projette un temps sur la fenêtre étendue (pour passage de minuit) */
 function toExtended(t, min, max){
   const wraps = (max > 1440);
   if (!wraps) return t;
   const startMod = ((min % 1440) + 1440) % 1440;
   return (t < startMod) ? t + 1440 : t;
 }
-
-/* Fenêtre d’affichage :
-   - Référence de début = (H-40 si H-40 < SIBT) sinon SIBT
-   - Début réel = référence - 5 minutes
-   - Fin = (AOBT ou TOBT) + 5 minutes
-   - Gère passage de minuit en étendant max au-delà de 1440 si nécessaire
-*/
 function computeTimelineWindow(allTimes){
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
@@ -1416,21 +1270,17 @@ function computeTimelineWindow(allTimes){
 
   if (haveStart && haveEnd) {
     let startRef = null;
-    if (H40 != null && SIBT != null) {
-      startRef = (H40 < SIBT) ? H40 : SIBT; // règle demandée
-    } else {
-      startRef = (H40 != null) ? H40 : SIBT; // si un seul dispo
-    }
+    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT;
+    else startRef = (H40 != null) ? H40 : SIBT;
     let min = startRef - 5;
     let endRef = (AOBT != null ? AOBT : TOBT);
     let max = endRef + 5;
 
-    if (max <= min) max += 1440;             // passage minuit
-    if (max - min < 30) { min -= 10; max += 10; } // largeur mini lisible
+    if (max <= min) max += 1440;
+    if (max - min < 30) { min -= 10; max += 10; }
     return {min, max, basis:'(H40<SIBT?H40:SIBT) → AOBT|TOBT'};
   }
 
-  // Fallbacks
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
   if (SOBT != null) {
     let startRef = (SIBT != null) ? SIBT : (SOBT - 40);
@@ -1453,21 +1303,15 @@ function computeTimelineWindow(allTimes){
 
   return {min:0, max:60, basis:'default'};
 }
-
 function getPairWindow(idA,idB){
   const a = parseHHMM(document.getElementById(idA)?.value || '');
   const b = parseHHMM(document.getElementById(idB)?.value || '');
   if(a==null || b==null) return null;
   return [Math.min(a,b), Math.max(a,b)];
 }
-
 function collectTimelineData(){
-  // Points fixes (événements)
   const fixedPoints = [];
-  const addPoint = (label, t, cls='tl--std')=>{
-    if(t==null) return;
-    fixedPoints.push({label, t, cls});
-  };
+  const addPoint = (label, t, cls='tl--std')=>{ if(t==null) return; fixedPoints.push({label, t, cls}); };
 
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
   const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
@@ -1478,16 +1322,11 @@ function collectTimelineData(){
   const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
 
-  addPoint('SIBT', SIBT, 'tl--std');
-  addPoint('AIBT', AIBT, 'tl--std');
-  addPoint('SOBT', SOBT, 'tl--std');
-  addPoint('AOBT', AOBT, 'tl--std');
-  addPoint('TOBT', TOBT, 'tl--tobt');
-  addPoint('CTOT', CTOT, 'tl--ctot');
-  addPoint('H-15', H15,  'tl--turn');
-  addPoint('H-40', H40,  'tl--turn');
+  addPoint('SIBT', SIBT, 'tl--std'); addPoint('AIBT', AIBT, 'tl--std');
+  addPoint('SOBT', SOBT, 'tl--std'); addPoint('AOBT', AOBT, 'tl--std');
+  addPoint('TOBT', TOBT, 'tl--tobt'); addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('H-15', H15,  'tl--turn'); addPoint('H-40', H40,  'tl--turn');
 
-  // Événements unitaires
   const singles = [
     ['ArrPNT','Arrivée PNT avion'],
     ['ArrPNC','Arrivée PNC avion'],
@@ -1499,7 +1338,6 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  // Lignes de durées
   const rows = [
     {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
     {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
@@ -1512,10 +1350,7 @@ function collectTimelineData(){
     .filter(r=>r.pair!=null)
     .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
-  const allTimes = [
-    ...fixedPoints.map(p=>p.t),
-    ...durations.flatMap(d=>[d.a,d.b])
-  ];
+  const allTimes = [ ...fixedPoints.map(p=>p.t), ...durations.flatMap(d=>[d.a,d.b]) ];
   const windowInfo = computeTimelineWindow(allTimes);
 
   return {fixedPoints, durations, windowInfo};
@@ -1535,12 +1370,10 @@ function renderTimeline(){
   window._timelineCurrentRange = {min, max};
   const total = Math.max(1, max - min);
 
-  // Largeur du canvas : à 100% = viewport (pas de scroll), si zoom>100% => scroll
   const viewport = scroller.clientWidth || 1200;
   const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
   canvas.style.width = canvasPx + 'px';
 
-  // Grille
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
@@ -1564,7 +1397,6 @@ function renderTimeline(){
     }
   }
 
-  // Barres de durées
   const rowTops = [56, 66, 76, 86, 96];
   durations.forEach(d=>{
     const aExt = toExtended(d.a, min, max);
@@ -1591,12 +1423,9 @@ function renderTimeline(){
     bar.appendChild(lab);
   });
 
-  // Points fixes (anti-chevauchement)
   const lanesEndX = [];
-  const laneTopStart = 18;   // %
-  const laneGap = 10;        // %
+  const laneTopStart = 18; const laneGap = 10; const marginPx = 16;
   const canvasWidth = canvas.getBoundingClientRect().width;
-  const marginPx = 16;
 
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const tExt = toExtended(p.t, min, max);
@@ -1626,7 +1455,6 @@ function renderTimeline(){
     el.style.visibility = 'visible';
   });
 
-  // Centrage initial (toute la plage est visible à 100%)
   if(!timelineUserScrolled){
     const centerMin = (min + max) / 2;
     const midX = (centerMin - min) / total;
@@ -1635,127 +1463,99 @@ function renderTimeline(){
   }
 }
 
-/* Injecte la coche + capte l'interaction pour ne pas recentrer */
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
   if (bar) {
     if (!document.getElementById('showTimesToggle')) {
       const wrap = document.createElement('label');
-      wrap.style.display = 'inline-flex';
-      wrap.style.alignItems = 'center';
-      wrap.style.gap = '6px';
-      wrap.style.marginLeft = '8px';
-      wrap.style.whiteSpace = 'nowrap';
+      wrap.style.display = 'inline-flex'; wrap.style.alignItems = 'center';
+      wrap.style.gap = '6px'; wrap.style.marginLeft = '8px'; wrap.style.whiteSpace = 'nowrap';
 
       const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.id = 'showTimesToggle';
-      cb.checked = true;
-      showTimeLabels = true;
+      cb.type = 'checkbox'; cb.id = 'showTimesToggle'; cb.checked = true; showTimeLabels = true;
+      cb.addEventListener('change', () => { showTimeLabels = cb.checked; renderTimeline(); });
 
-      cb.addEventListener('change', () => {
-        showTimeLabels = cb.checked;
-        renderTimeline();
-      });
-
-      const span = document.createElement('span');
-      span.textContent = 'Heure sur étiquettes';
-
-      wrap.appendChild(cb);
-      wrap.appendChild(span);
-      bar.appendChild(wrap);
+      const span = document.createElement('span'); span.textContent = 'Heure sur étiquettes';
+      wrap.appendChild(cb); wrap.appendChild(span); bar.appendChild(wrap);
     } else {
-      const cb = document.getElementById('showTimesToggle');
-      cb.checked = true;
-      showTimeLabels = true;
+      const cb = document.getElementById('showTimesToggle'); cb.checked = true; showTimeLabels = true;
       const wrap = cb.closest('label');
       if (wrap) {
-        wrap.style.whiteSpace = 'nowrap';
-        wrap.style.display = 'inline-flex';
-        wrap.style.alignItems = 'center';
-        wrap.style.gap = '6px';
-        wrap.style.marginLeft = '8px';
+        wrap.style.whiteSpace = 'nowrap'; wrap.style.display = 'inline-flex';
+        wrap.style.alignItems = 'center'; wrap.style.gap = '6px'; wrap.style.marginLeft = '8px';
       }
     }
   }
-
   const scroller = document.getElementById('timelineScroll');
-  if (scroller) {
-    ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
-      scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
-    });
-  }
+  if (scroller) { ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
+    scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
+  });}
 })();
 
-/* === VALIDATION (Sans Airtable) === */
+/* VALIDATION */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
   let missing = required.some(id => !document.getElementById(id).value);
-
-  if (missing) {
-      showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-  } else {
-      showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
-  }
+  if (missing) showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
+  else showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
 }
 
-/* === SAUVEGARDE MANUELLE === */
+/* SAUVEGARDE MANUELLE */
 function manualSave() {
   saveCurrentTabData();
   showPopup("Enregistrement réussi", "#2196f3", 2000);
 }
 
-/* === RESET === */
+/* RESET */
 function clearAutoSave() {
   if (confirm("Tout réinitialiser ?")) {
-      localStorage.clear();
-      location.reload();
+    localStorage.clear();
+    location.reload();
   }
 }
 
 /* ==========================================================
-   === BLOC-NOTE : état, dessin, undo/redo, persistance ===
+   === BLOC-NOTE : état, dessin HiDPI, undo/redo, modern UI ===
    ========================================================== */
 let noteOpen = false;
-let noteTool = 'pen';             // 'pen' | 'eraser'
+let noteTool = 'pen';
 let noteColor = '#111111';
 let notePenSize = 3;
 let noteEraserSize = 22;
-let noteStrokes = [];             // tableau de traits pour l’onglet courant
+let noteStrokes = [];
 let noteIsDrawing = false;
 let noteCurrentStroke = null;
 let noteCanvas, noteCtx, noteRO;
 let noteDrag = {active:false, dx:0, dy:0};
-
 let noteInited = false;
 let noteUndoStack = [];
 let noteRedoStack = [];
 const NOTE_UNDO_LIMIT = 100;
 
-function noteStorageKey(){
-  return currentTabId ? `notepad-${currentTabId}` : 'notepad-default';
-}
+function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
-/* Ouverture / fermeture */
-function toggleNotepadOverlay(){
-  if (noteOpen) closeNotepadOverlay(); else openNotepadOverlay();
-}
+/* Ouverture / fermeture avec animation */
+function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
+  if (!noteInited) initNotepadOnce();
   el.style.display = 'block';
+  // async pour déclencher transition
+  requestAnimationFrame(()=>{ el.classList.add('open'); });
   el.setAttribute('aria-hidden','false');
   noteOpen = true;
-  initNotepadOnce();
   loadNotepad();
   fitNoteCanvas();
   renderNote();
-  // reset piles undo/redo
-  noteUndoStack = [];
-  noteRedoStack = [];
-  updateUndoRedoBtns();
+  noteUndoStack = []; noteRedoStack = []; updateUndoRedoBtns();
 }
 function closeNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
+  el.classList.remove('open');
+  el.addEventListener('transitionend', function handler(){
+    el.removeEventListener('transitionend', handler);
+    if (!noteOpen) return;
+  });
   el.style.display = 'none';
   el.setAttribute('aria-hidden','true');
   noteOpen = false;
@@ -1763,18 +1563,17 @@ function closeNotepadOverlay(){
 
 /* Init unique */
 function initNotepadOnce(){
-  if (noteInited) return;
-  noteInited = true;
+  if (noteInited) return; noteInited = true;
 
   noteCanvas = document.getElementById('noteCanvas');
-  noteCtx = noteCanvas.getContext('2d');
-  noteCtx.lineJoin = 'round';
-  noteCtx.lineCap  = 'round';
+  noteCtx = noteCanvas.getContext('2d', { willReadFrequently: false });
+  noteCtx.lineJoin = 'round'; noteCtx.lineCap  = 'round';
 
-  // Drag de la fenêtre par la barre de titre
+  // Drag de la fenêtre
   const dragBar = document.getElementById('noteDragBar');
   const overlay = document.getElementById('noteOverlay');
   dragBar.addEventListener('mousedown', (e)=>{
+    overlay.classList.add('dragging');
     noteDrag.active = true;
     const r = overlay.getBoundingClientRect();
     noteDrag.dx = e.clientX - r.left;
@@ -1786,59 +1585,51 @@ function initNotepadOnce(){
     const overlay = document.getElementById('noteOverlay');
     let left = e.clientX - noteDrag.dx;
     let top  = e.clientY - noteDrag.dy;
-    left = Math.max(10, Math.min(window.innerWidth - 100, left));
-    top  = Math.max(10, Math.min(window.innerHeight - 100, top));
+    left = Math.max(10, Math.min(window.innerWidth  - overlay.offsetWidth  - 10, left));
+    top  = Math.max(10, Math.min(window.innerHeight - overlay.offsetHeight - 10, top));
     overlay.style.left = left + 'px';
     overlay.style.top  = top + 'px';
     overlay.style.right = 'auto';
   });
-  document.addEventListener('mouseup', ()=>{ noteDrag.active=false; });
+  document.addEventListener('mouseup', ()=>{ noteDrag.active=false; document.getElementById('noteOverlay').classList.remove('dragging'); });
 
-  // Redimensionnement -> adapter canvas (ResizeObserver)
+  // ResizeObserver -> adapter canvas
   noteRO = new ResizeObserver(()=>{ fitNoteCanvas(); renderNote(); });
   noteRO.observe(document.getElementById('noteOverlay'));
+  noteRO.observe(document.querySelector('.note-canvas-wrap'));
 
-  // Pointer events pour stylet/souris
+  // Pointer events
   noteCanvas.addEventListener('pointerdown', notePointerDown);
   noteCanvas.addEventListener('pointermove', notePointerMove);
   noteCanvas.addEventListener('pointerup',   notePointerUp);
   noteCanvas.addEventListener('pointerleave',notePointerUp);
   noteCanvas.addEventListener('pointercancel',notePointerUp);
 
-  // Bouton Effacer (déjà avec onclick HTML)
-  document.getElementById('noteClearBtn').onclick = noteClearAll;
-
-  // Valeurs UI
-  updatePenSizeLabel();
-  updateEraserSizeLabel();
-  const firstDot = document.querySelector('.note-color');
-  if(firstDot) firstDot.classList.add('selected');
-
-  // Raccourcis clavier Undo/Redo dans le bloc-note
+  // Raccourcis Undo/Redo si bloc-note ouvert
   document.addEventListener('keydown', (e)=>{
     if(!noteOpen) return;
     const isMac = navigator.platform.toLowerCase().includes('mac');
     const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
-
-    if (ctrlOrCmd && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      if (e.shiftKey) noteRedo();
-      else noteUndo();
-    } else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) {
-      e.preventDefault();
-      noteRedo();
-    }
+    if (ctrlOrCmd && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? noteRedo() : noteUndo(); }
+    else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) { e.preventDefault(); noteRedo(); }
   });
+
+  // Bouton effacer est déjà relié à noteClearAll()
+  updatePenSizeLabel(); updateEraserSizeLabel();
+  const firstDot = document.querySelector('.note-color'); if(firstDot) firstDot.classList.add('selected');
 }
 
-/* Taille canvas en HiDPI */
+/* HiDPI: dimension réelle + échelle unique */
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
   const rect = noteCanvas.getBoundingClientRect();
-  noteCanvas.width  = Math.max(1, Math.floor(rect.width * dpr));
+  noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
   noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
-  noteCtx.setTransform(dpr,0,0,dpr,0,0);
+  noteCtx.setTransform(1,0,0,1,0,0);
+  noteCtx.scale(dpr, dpr);
+  noteCtx.lineJoin = 'round';
+  noteCtx.lineCap  = 'round';
 }
 
 /* Outils & UI */
@@ -1862,39 +1653,29 @@ function pickColor(el, color){
   document.getElementById('noteColorInput').value = color;
   document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
   if(el) el.classList.add('selected');
-  setNoteTool('pen'); // repasse automatiquement en crayon
+  setNoteTool('pen');
 }
 
 /* Persistance */
 function saveNotepad(){
-  try{
-    localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes));
-  }catch(e){
-    showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000);
-  }
+  try{ localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes)); }
+  catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000); }
 }
 function loadNotepad(){
   try{
     const raw = localStorage.getItem(noteStorageKey());
     noteStrokes = raw ? JSON.parse(raw) : [];
-  }catch(e){
-    noteStrokes = [];
-  }
+  }catch(e){ noteStrokes = []; }
 }
 
 /* Undo/Redo helpers */
-function snapshotStrokes(){
-  return JSON.parse(JSON.stringify(noteStrokes));
-}
+function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
 function pushUndoState(){
   noteUndoStack.push(snapshotStrokes());
   if (noteUndoStack.length > NOTE_UNDO_LIMIT) noteUndoStack.shift();
   updateUndoRedoBtns();
 }
-function clearRedo(){
-  noteRedoStack = [];
-  updateUndoRedoBtns();
-}
+function clearRedo(){ noteRedoStack = []; updateUndoRedoBtns(); }
 function updateUndoRedoBtns(){
   const u = document.getElementById('noteUndoBtn');
   const r = document.getElementById('noteRedoBtn');
@@ -1902,35 +1683,24 @@ function updateUndoRedoBtns(){
   if (r) r.disabled = noteRedoStack.length === 0;
 }
 
+/* Coordonnées pointer en px CSS (sans décalage) */
+function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
+
 /* Dessin */
 function notePointerDown(e){
   e.preventDefault();
   noteCanvas.setPointerCapture(e.pointerId);
-
-  // prendre un snapshot pour Undo AVANT de commencer un trait
-  pushUndoState();
-  clearRedo();
+  pushUndoState(); clearRedo();
 
   noteIsDrawing = true;
-
   const pt = noteEventPoint(e);
-  const stroke = {
-    tool: noteTool,
-    color: noteColor,
-    size: (noteTool==='pen' ? notePenSize : noteEraserSize),
-    points: [pt]
-  };
+  const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
   noteCurrentStroke = stroke;
 
-  // dessine un point initial
   noteCtx.save();
   noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = stroke.color;
-  noteCtx.lineWidth = stroke.size;
-  noteCtx.beginPath();
-  noteCtx.moveTo(pt.x, pt.y);
-  noteCtx.lineTo(pt.x+0.01, pt.y+0.01);
-  noteCtx.stroke();
+  noteCtx.strokeStyle = stroke.color; noteCtx.lineWidth = stroke.size;
+  noteCtx.beginPath(); noteCtx.moveTo(pt.x, pt.y); noteCtx.lineTo(pt.x+0.01, pt.y+0.01); noteCtx.stroke();
   noteCtx.restore();
 }
 function notePointerMove(e){
@@ -1939,15 +1709,10 @@ function notePointerMove(e){
   const prev = noteCurrentStroke.points[noteCurrentStroke.points.length-1];
   noteCurrentStroke.points.push(pt);
 
-  // dessine l’incrémental
   noteCtx.save();
   noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = noteCurrentStroke.color;
-  noteCtx.lineWidth = noteCurrentStroke.size;
-  noteCtx.beginPath();
-  noteCtx.moveTo(prev.x, prev.y);
-  noteCtx.lineTo(pt.x, pt.y);
-  noteCtx.stroke();
+  noteCtx.strokeStyle = noteCurrentStroke.color; noteCtx.lineWidth = noteCurrentStroke.size;
+  noteCtx.beginPath(); noteCtx.moveTo(prev.x, prev.y); noteCtx.lineTo(pt.x, pt.y); noteCtx.stroke();
   noteCtx.restore();
 }
 function notePointerUp(e){
@@ -1955,23 +1720,21 @@ function notePointerUp(e){
   noteIsDrawing = false;
   if(noteCurrentStroke && noteCurrentStroke.points.length>0){
     noteStrokes.push(noteCurrentStroke);
-    saveNotepad();      // sauvegarde chaque trait
-    renderNote();
-    updateUndoRedoBtns();
+    saveNotepad(); renderNote(); updateUndoRedoBtns();
   }
   noteCurrentStroke = null;
 }
-function noteEventPoint(e){
-  const r = noteCanvas.getBoundingClientRect();
-  return { x: e.clientX - r.left, y: e.clientY - r.top };
-}
 
-/* Rendu complet (replay des traits) */
+/* Rendu complet (replay) */
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
-  noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
+
+  // Effacer en device px
   noteCtx.save();
   noteCtx.setTransform(1,0,0,1,0,0);
+  noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
+  noteCtx.restore();
+  // Le contexte est déjà scalé pour dessiner en px CSS
 
   for(const s of noteStrokes){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
@@ -1980,13 +1743,9 @@ function renderNote(){
     if(!s.points || s.points.length===0) continue;
     noteCtx.beginPath();
     noteCtx.moveTo(s.points[0].x, s.points[0].y);
-    for(let i=1;i<s.points.length;i++){
-      const p = s.points[i];
-      noteCtx.lineTo(p.x, p.y);
-    }
+    for(let i=1;i<s.points.length;i++){ const p = s.points[i]; noteCtx.lineTo(p.x, p.y); }
     noteCtx.stroke();
   }
-  noteCtx.restore();
 }
 
 /* Undo / Redo */
@@ -1994,40 +1753,29 @@ function noteUndo(){
   if (noteUndoStack.length === 0) return;
   noteRedoStack.push(snapshotStrokes());
   noteStrokes = noteUndoStack.pop();
-  saveNotepad();
-  renderNote();
-  updateUndoRedoBtns();
+  saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
 function noteRedo(){
   if (noteRedoStack.length === 0) return;
   noteUndoStack.push(snapshotStrokes());
   noteStrokes = noteRedoStack.pop();
-  saveNotepad();
-  renderNote();
-  updateUndoRedoBtns();
+  saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
 
-/* “Tout effacer” (annulable) */
+/* Tout effacer (annulable) */
 function noteClearAll(){
   if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
   pushUndoState();
-  noteStrokes = [];
-  clearRedo();
-  saveNotepad();
-  renderNote();
+  noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
 }
 
-/* Recharger les traits si on change d’onglet alors que le bloc-note est ouvert */
+/* Recharger traits si on change d’onglet alors que le bloc-note est ouvert */
 const _switchTabOrig = switchTab;
 switchTab = function(id){
   _switchTabOrig(id);
   if(noteOpen){
-    loadNotepad();
-    noteUndoStack = [];
-    noteRedoStack = [];
-    fitNoteCanvas();
-    renderNote();
-    updateUndoRedoBtns();
+    loadNotepad(); noteUndoStack = []; noteRedoStack = [];
+    fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
   }
 };
 </script>
