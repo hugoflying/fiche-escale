@@ -216,13 +216,6 @@ button.plus  { background: #555; color: white; }
 }
 
 /* Onglets */
-#tab-bar button {
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 1.1rem;
-    padding: 10px 18px;
-}
 #tab-bar {
     display: flex;
     gap: 5px;
@@ -233,6 +226,13 @@ button.plus  { background: #555; color: white; }
     background: #ffffff;
     z-index: 999;
     padding: 5px 0;
+}
+#tab-bar button {
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    padding: 10px 18px;
 }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
@@ -365,15 +365,56 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
   position:relative;
   height:480px;
   min-width:600px;
-  width:100%;   /* fixé en px côté JS pour épouser la fenêtre calculée */
+  width:100%;
 }
 
-/* Positions verticales (si utilisées par d’autres rendus) */
+/* Positions verticales */
 .tl-pos-fixed   { top: 28%; }
 .tl-pos-var-0   { top: 60%; }
 .tl-pos-var-1   { top: 70%; }
 .tl-pos-var-2   { top: 80%; }
 .tl-pos-var-3   { top: 90%; }
+
+/* === BLOC-NOTE (overlay) === */
+.note-overlay{
+  position: fixed; top: 90px; right: 20px;
+  width: 680px; height: 460px;
+  background:#fff; color:#111;
+  border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,.35);
+  z-index:2000; display:none; overflow:hidden; resize: both;
+}
+body.dark .note-overlay{ background:#1a1a1a; color:#eee; }
+
+.note-titlebar{
+  cursor:move; user-select:none;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 10px; background:#e7ebf0;
+}
+body.dark .note-titlebar{ background:#2a2a2a; }
+
+.note-toolbar{
+  display:flex; gap:10px; align-items:center;
+  padding:8px 10px; border-bottom:1px solid rgba(0,0,0,.08);
+  flex-wrap:wrap;
+}
+.note-toolbar .note-btn{
+  border:0; padding:6px 10px; border-radius:6px;
+  background:#e7ebf0; cursor:pointer; font-weight:600;
+}
+body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
+.note-btn.active{ outline: 2px solid #1976d2; }
+.note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
+
+.note-toolbar input[type="range"]{ width:120px; }
+.note-color{ width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.2); cursor:pointer; }
+.note-color.selected{ outline:2px solid #1976d2; }
+
+.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 88px); }
+#noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
+body.dark #noteCanvas{ background:#111; }
+
+/* Icône bloc-note dans le bandeau d’onglets (poussé à droite) */
+#tab-bar .note-icon{ margin-left:auto; }
 </style>
 </head>
 <body onload="initForm()">
@@ -533,7 +574,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 
     <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
 
-    <!-- Coche “Heure sur étiquettes” (liée à showTimeLabels côté JS) -->
+    <!-- Coche “Heure sur étiquettes” -->
     <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
       <input type="checkbox" id="showTimesToggle" checked
              onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
@@ -610,6 +651,46 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
     </div>
 </section>
 
+<!-- BLOC-NOTE SUPERPOSÉ -->
+<div id="noteOverlay" class="note-overlay" aria-hidden="true">
+  <div id="noteDragBar" class="note-titlebar">
+    <strong>Bloc-note</strong>
+    <div>
+      <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">Effacer</button>
+      <button type="button" class="note-btn" onclick="closeNotepadOverlay()" title="Fermer">✖</button>
+    </div>
+  </div>
+
+  <div class="note-toolbar">
+    <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">Crayon</button>
+    <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">Gomme</button>
+
+    <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
+    <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
+
+    <span style="margin-left:6px;">Taille crayon</span>
+    <input id="penSize" type="range" min="1" max="20" step="1" value="3" oninput="updatePenSizeLabel()">
+    <span id="penSizeVal">3</span>px
+
+    <span style="margin-left:12px;">Taille gomme</span>
+    <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
+    <span id="eraserSizeVal">22</span>px
+
+    <div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
+      <div class="note-color" style="background:#111" onclick="pickColor(this,'#111')"></div>
+      <div class="note-color" style="background:#d32f2f" onclick="pickColor(this,'#d32f2f')"></div>
+      <div class="note-color" style="background:#1976d2" onclick="pickColor(this,'#1976d2')"></div>
+      <div class="note-color" style="background:#2e7d32" onclick="pickColor(this,'#2e7d32')"></div>
+      <div class="note-color" style="background:#ff9800" onclick="pickColor(this,'#ff9800')"></div>
+      <input id="noteColorInput" type="color" value="#111111" onchange="pickColor(null,this.value)">
+    </div>
+  </div>
+
+  <div class="note-canvas-wrap">
+    <canvas id="noteCanvas"></canvas>
+  </div>
+</div>
+
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
@@ -626,7 +707,7 @@ let saveTimer=null;
 /* === TIMELINE – zoom & scroll === */
 let timelineZoom = 1;       // 1 = 100%
 const TL_ZOOM_MIN = 0.5;
-const TL_ZOOM_MAX = 8;
+const TL_ZOOM_MAX = 8;      // 8 = 800%
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
@@ -684,7 +765,7 @@ function initForm(){
     // Forcer MAJUSCULE
     setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
-    // Appliquer états des switches au chargement
+    // Switches au chargement
     const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
     const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
     setDarkMode(storedDark, /*fromInit*/true);
@@ -713,6 +794,14 @@ function initForm(){
 
     if (currentTabId) loadTabData(currentTabId);
     renderTimeline();
+
+    // Raccourci pour ouvrir le bloc-note (Ctrl/Cmd + N)
+    document.addEventListener('keydown', (e)=>{
+      if(e.key==='n' && (e.ctrlKey || e.metaKey)){
+        e.preventDefault();
+        toggleNotepadOverlay();
+      }
+    });
 }
 
 /* Forcer MAJUSCULE */
@@ -757,6 +846,14 @@ function renderTabs(){
         btn.ondblclick=()=>deleteTab(id);
         tabBar.appendChild(btn);
     });
+
+    // Bouton bloc-note (poussé à droite via CSS)
+    const noteBtn = document.createElement('button');
+    noteBtn.className = 'note-icon';
+    noteBtn.title = 'Ouvrir le bloc-note';
+    noteBtn.textContent = '📝';
+    noteBtn.onclick = toggleNotepadOverlay;
+    tabBar.appendChild(noteBtn);
 }
 
 function createNewTab(){
@@ -1134,7 +1231,7 @@ function updateCTOTDisplay(){
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-    aibttxt = document.getElementById('AIBT').value;
+    const aibttxt = document.getElementById('AIBT').value;
     if (!cie || !sibttxt || !aibttxt) return;
 
     const [sH, sM] = sibttxt.split(':').map(Number);
@@ -1226,7 +1323,7 @@ function adjustTime(fieldId, delta) {
     input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 
-/* === Switches Jour/Nuit & Local/UTC (offset dynamique) === */
+/* === Switches Jour/Nuit & Local/UTC === */
 function setDarkMode(enable, fromInit=false){
     const currentlyDark = document.body.classList.contains('dark');
     if (enable && !currentlyDark) document.body.classList.add('dark');
@@ -1281,7 +1378,7 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
 
 /* === TIMELINE helpers === */
 let showTimeLabels = true;           // coche "Heure sur étiquettes"
-let timelineUserScrolled = false;    // pour ne centrer qu'à l'ouverture
+let timelineUserScrolled = false;    // pour ne centrer qu'à l’ouverture
 
 function parseHHMM(str){
   if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
@@ -1296,10 +1393,10 @@ function fmtHHMM(mins){
 
 /* Projette un temps sur la fenêtre étendue (pour passage de minuit) */
 function toExtended(t, min, max){
-  const wraps = (max > 1440);           // max > 1440 => on a étendu la fenêtre sur le jour +1
+  const wraps = (max > 1440);
   if (!wraps) return t;
   const startMod = ((min % 1440) + 1440) % 1440;
-  return (t < startMod) ? t + 1440 : t; // pousse les temps < start sur +1440
+  return (t < startMod) ? t + 1440 : t;
 }
 
 /* Fenêtre d’affichage :
@@ -1333,10 +1430,9 @@ function computeTimelineWindow(allTimes){
     return {min, max, basis:'(H40<SIBT?H40:SIBT) → AOBT|TOBT'};
   }
 
-  // Fallbacks : si H-40/SIBT ou fin manquants
+  // Fallbacks
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
   if (SOBT != null) {
-    // si SIBT dispo mais pas H-40, on suit la logique: référence = SIBT
     let startRef = (SIBT != null) ? SIBT : (SOBT - 40);
     let min = startRef - 5;
     let endRef = (AOBT ?? TOBT ?? SOBT);
@@ -1391,7 +1487,7 @@ function collectTimelineData(){
   addPoint('H-15', H15,  'tl--turn');
   addPoint('H-40', H40,  'tl--turn');
 
-  // Événements unitaires (points)
+  // Événements unitaires
   const singles = [
     ['ArrPNT','Arrivée PNT avion'],
     ['ArrPNC','Arrivée PNC avion'],
@@ -1403,7 +1499,7 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  // Lignes de durées (barres)
+  // Lignes de durées
   const rows = [
     {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
     {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
@@ -1439,14 +1535,12 @@ function renderTimeline(){
   window._timelineCurrentRange = {min, max};
   const total = Math.max(1, max - min);
 
-  // Largeur du canvas :
-  // - à 100% : exactement la largeur visible (donc pas de scroll)
-  // - si zoom > 100% : largeur proportionnelle => scroll dispo
+  // Largeur du canvas : à 100% = viewport (pas de scroll), si zoom>100% => scroll
   const viewport = scroller.clientWidth || 1200;
   const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
   canvas.style.width = canvasPx + 'px';
 
-  // Grille (chaque minute + labels 5 min) sur la fenêtre étendue
+  // Grille
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
@@ -1465,12 +1559,12 @@ function renderTimeline(){
       lbl.className = 'timeline-tick-label';
       lbl.textContent = fmtHHMM(t);
       lbl.style.left = `${leftPct}%`;
-      lbl.style.top = 'calc(100% - 18px)';  // en bas
+      lbl.style.top = 'calc(100% - 18px)';
       canvas.appendChild(lbl);
     }
   }
 
-  // Barres de durées (5 rangées, non superposées)
+  // Barres de durées
   const rowTops = [56, 66, 76, 86, 96];
   durations.forEach(d=>{
     const aExt = toExtended(d.a, min, max);
@@ -1497,7 +1591,7 @@ function renderTimeline(){
     bar.appendChild(lab);
   });
 
-  // ---- Points fixes (anti-chevauchement) ----
+  // Points fixes (anti-chevauchement)
   const lanesEndX = [];
   const laneTopStart = 18;   // %
   const laneGap = 10;        // %
@@ -1618,6 +1712,324 @@ function clearAutoSave() {
       location.reload();
   }
 }
+
+/* ==========================================================
+   === BLOC-NOTE : état, dessin, undo/redo, persistance ===
+   ========================================================== */
+let noteOpen = false;
+let noteTool = 'pen';             // 'pen' | 'eraser'
+let noteColor = '#111111';
+let notePenSize = 3;
+let noteEraserSize = 22;
+let noteStrokes = [];             // tableau de traits pour l’onglet courant
+let noteIsDrawing = false;
+let noteCurrentStroke = null;
+let noteCanvas, noteCtx, noteRO;
+let noteDrag = {active:false, dx:0, dy:0};
+
+let noteInited = false;
+let noteUndoStack = [];
+let noteRedoStack = [];
+const NOTE_UNDO_LIMIT = 100;
+
+function noteStorageKey(){
+  return currentTabId ? `notepad-${currentTabId}` : 'notepad-default';
+}
+
+/* Ouverture / fermeture */
+function toggleNotepadOverlay(){
+  if (noteOpen) closeNotepadOverlay(); else openNotepadOverlay();
+}
+function openNotepadOverlay(){
+  const el = document.getElementById('noteOverlay');
+  el.style.display = 'block';
+  el.setAttribute('aria-hidden','false');
+  noteOpen = true;
+  initNotepadOnce();
+  loadNotepad();
+  fitNoteCanvas();
+  renderNote();
+  // reset piles undo/redo
+  noteUndoStack = [];
+  noteRedoStack = [];
+  updateUndoRedoBtns();
+}
+function closeNotepadOverlay(){
+  const el = document.getElementById('noteOverlay');
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden','true');
+  noteOpen = false;
+}
+
+/* Init unique */
+function initNotepadOnce(){
+  if (noteInited) return;
+  noteInited = true;
+
+  noteCanvas = document.getElementById('noteCanvas');
+  noteCtx = noteCanvas.getContext('2d');
+  noteCtx.lineJoin = 'round';
+  noteCtx.lineCap  = 'round';
+
+  // Drag de la fenêtre par la barre de titre
+  const dragBar = document.getElementById('noteDragBar');
+  const overlay = document.getElementById('noteOverlay');
+  dragBar.addEventListener('mousedown', (e)=>{
+    noteDrag.active = true;
+    const r = overlay.getBoundingClientRect();
+    noteDrag.dx = e.clientX - r.left;
+    noteDrag.dy = e.clientY - r.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e)=>{
+    if(!noteDrag.active) return;
+    const overlay = document.getElementById('noteOverlay');
+    let left = e.clientX - noteDrag.dx;
+    let top  = e.clientY - noteDrag.dy;
+    left = Math.max(10, Math.min(window.innerWidth - 100, left));
+    top  = Math.max(10, Math.min(window.innerHeight - 100, top));
+    overlay.style.left = left + 'px';
+    overlay.style.top  = top + 'px';
+    overlay.style.right = 'auto';
+  });
+  document.addEventListener('mouseup', ()=>{ noteDrag.active=false; });
+
+  // Redimensionnement -> adapter canvas (ResizeObserver)
+  noteRO = new ResizeObserver(()=>{ fitNoteCanvas(); renderNote(); });
+  noteRO.observe(document.getElementById('noteOverlay'));
+
+  // Pointer events pour stylet/souris
+  noteCanvas.addEventListener('pointerdown', notePointerDown);
+  noteCanvas.addEventListener('pointermove', notePointerMove);
+  noteCanvas.addEventListener('pointerup',   notePointerUp);
+  noteCanvas.addEventListener('pointerleave',notePointerUp);
+  noteCanvas.addEventListener('pointercancel',notePointerUp);
+
+  // Bouton Effacer (déjà avec onclick HTML)
+  document.getElementById('noteClearBtn').onclick = noteClearAll;
+
+  // Valeurs UI
+  updatePenSizeLabel();
+  updateEraserSizeLabel();
+  const firstDot = document.querySelector('.note-color');
+  if(firstDot) firstDot.classList.add('selected');
+
+  // Raccourcis clavier Undo/Redo dans le bloc-note
+  document.addEventListener('keydown', (e)=>{
+    if(!noteOpen) return;
+    const isMac = navigator.platform.toLowerCase().includes('mac');
+    const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+
+    if (ctrlOrCmd && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) noteRedo();
+      else noteUndo();
+    } else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) {
+      e.preventDefault();
+      noteRedo();
+    }
+  });
+}
+
+/* Taille canvas en HiDPI */
+function fitNoteCanvas(){
+  if(!noteCanvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = noteCanvas.getBoundingClientRect();
+  noteCanvas.width  = Math.max(1, Math.floor(rect.width * dpr));
+  noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  noteCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+/* Outils & UI */
+function setNoteTool(tool){
+  noteTool = tool;
+  document.getElementById('toolPen').classList.toggle('active', tool==='pen');
+  document.getElementById('toolErase').classList.toggle('active', tool==='eraser');
+}
+function updatePenSizeLabel(){
+  const v = parseInt(document.getElementById('penSize').value)||3;
+  notePenSize = v;
+  document.getElementById('penSizeVal').textContent = v;
+}
+function updateEraserSizeLabel(){
+  const v = parseInt(document.getElementById('eraserSize').value)||22;
+  noteEraserSize = v;
+  document.getElementById('eraserSizeVal').textContent = v;
+}
+function pickColor(el, color){
+  noteColor = color;
+  document.getElementById('noteColorInput').value = color;
+  document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  setNoteTool('pen'); // repasse automatiquement en crayon
+}
+
+/* Persistance */
+function saveNotepad(){
+  try{
+    localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes));
+  }catch(e){
+    showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000);
+  }
+}
+function loadNotepad(){
+  try{
+    const raw = localStorage.getItem(noteStorageKey());
+    noteStrokes = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    noteStrokes = [];
+  }
+}
+
+/* Undo/Redo helpers */
+function snapshotStrokes(){
+  return JSON.parse(JSON.stringify(noteStrokes));
+}
+function pushUndoState(){
+  noteUndoStack.push(snapshotStrokes());
+  if (noteUndoStack.length > NOTE_UNDO_LIMIT) noteUndoStack.shift();
+  updateUndoRedoBtns();
+}
+function clearRedo(){
+  noteRedoStack = [];
+  updateUndoRedoBtns();
+}
+function updateUndoRedoBtns(){
+  const u = document.getElementById('noteUndoBtn');
+  const r = document.getElementById('noteRedoBtn');
+  if (u) u.disabled = noteUndoStack.length === 0;
+  if (r) r.disabled = noteRedoStack.length === 0;
+}
+
+/* Dessin */
+function notePointerDown(e){
+  e.preventDefault();
+  noteCanvas.setPointerCapture(e.pointerId);
+
+  // prendre un snapshot pour Undo AVANT de commencer un trait
+  pushUndoState();
+  clearRedo();
+
+  noteIsDrawing = true;
+
+  const pt = noteEventPoint(e);
+  const stroke = {
+    tool: noteTool,
+    color: noteColor,
+    size: (noteTool==='pen' ? notePenSize : noteEraserSize),
+    points: [pt]
+  };
+  noteCurrentStroke = stroke;
+
+  // dessine un point initial
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.strokeStyle = stroke.color;
+  noteCtx.lineWidth = stroke.size;
+  noteCtx.beginPath();
+  noteCtx.moveTo(pt.x, pt.y);
+  noteCtx.lineTo(pt.x+0.01, pt.y+0.01);
+  noteCtx.stroke();
+  noteCtx.restore();
+}
+function notePointerMove(e){
+  if(!noteIsDrawing || !noteCurrentStroke) return;
+  const pt = noteEventPoint(e);
+  const prev = noteCurrentStroke.points[noteCurrentStroke.points.length-1];
+  noteCurrentStroke.points.push(pt);
+
+  // dessine l’incrémental
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.strokeStyle = noteCurrentStroke.color;
+  noteCtx.lineWidth = noteCurrentStroke.size;
+  noteCtx.beginPath();
+  noteCtx.moveTo(prev.x, prev.y);
+  noteCtx.lineTo(pt.x, pt.y);
+  noteCtx.stroke();
+  noteCtx.restore();
+}
+function notePointerUp(e){
+  if(!noteIsDrawing) return;
+  noteIsDrawing = false;
+  if(noteCurrentStroke && noteCurrentStroke.points.length>0){
+    noteStrokes.push(noteCurrentStroke);
+    saveNotepad();      // sauvegarde chaque trait
+    renderNote();
+    updateUndoRedoBtns();
+  }
+  noteCurrentStroke = null;
+}
+function noteEventPoint(e){
+  const r = noteCanvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+/* Rendu complet (replay des traits) */
+function renderNote(){
+  if(!noteCtx || !noteCanvas) return;
+  noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
+  noteCtx.save();
+  noteCtx.setTransform(1,0,0,1,0,0);
+
+  for(const s of noteStrokes){
+    noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
+    noteCtx.strokeStyle = s.color || '#111';
+    noteCtx.lineWidth = s.size || 3;
+    if(!s.points || s.points.length===0) continue;
+    noteCtx.beginPath();
+    noteCtx.moveTo(s.points[0].x, s.points[0].y);
+    for(let i=1;i<s.points.length;i++){
+      const p = s.points[i];
+      noteCtx.lineTo(p.x, p.y);
+    }
+    noteCtx.stroke();
+  }
+  noteCtx.restore();
+}
+
+/* Undo / Redo */
+function noteUndo(){
+  if (noteUndoStack.length === 0) return;
+  noteRedoStack.push(snapshotStrokes());
+  noteStrokes = noteUndoStack.pop();
+  saveNotepad();
+  renderNote();
+  updateUndoRedoBtns();
+}
+function noteRedo(){
+  if (noteRedoStack.length === 0) return;
+  noteUndoStack.push(snapshotStrokes());
+  noteStrokes = noteRedoStack.pop();
+  saveNotepad();
+  renderNote();
+  updateUndoRedoBtns();
+}
+
+/* “Tout effacer” (annulable) */
+function noteClearAll(){
+  if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
+  pushUndoState();
+  noteStrokes = [];
+  clearRedo();
+  saveNotepad();
+  renderNote();
+}
+
+/* Recharger les traits si on change d’onglet alors que le bloc-note est ouvert */
+const _switchTabOrig = switchTab;
+switchTab = function(id){
+  _switchTabOrig(id);
+  if(noteOpen){
+    loadNotepad();
+    noteUndoStack = [];
+    noteRedoStack = [];
+    fitNoteCanvas();
+    renderNote();
+    updateUndoRedoBtns();
+  }
+};
 </script>
 </body>
 </html>
