@@ -1311,43 +1311,36 @@ function labelFromInputEl(input){
    3) fallback min/max des données (+ marges)
 */
 function computeTimelineWindow(allTimes){
-  const PAD = 6;       // minutes de marge de chaque côté
-  const MIN_SPAN = 45; // largeur minimale (évite un zoom trop serré)
-
-  // Base facultative (H-15/AOBT ou SIBT/SOBT)
-  let baseMin = Infinity, baseMax = -Infinity;
   const h15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-  if (h15 != null && aobt != null) {
-    baseMin = h15 - 5; baseMax = aobt + 5;
-  } else {
-    const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
-    const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
-    if (sibt != null && sobt != null) {
-      baseMin = sibt - 5; baseMax = sobt + 5;
-    }
+  if(h15 != null && aobt != null){
+    let min = h15 - 5;
+    let max = aobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'H-15/AOBT'};
   }
-
-  // Bornes réelles de toutes les données présentes
-  let dataMin = Infinity, dataMax = -Infinity;
-  allTimes.forEach(t => { if (t!=null) { dataMin = Math.min(dataMin,t); dataMax = Math.max(dataMax,t); }});
-
-  if (!isFinite(dataMin)) {
-    // pas de données -> fenêtre par défaut
-    return {min:0, max:60, basis:'default'};
+  const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
+  if(sibt != null && sobt != null){
+    let min = sibt - 5;
+    let max = sobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'SIBT/SOBT'};
   }
-
-  // Union "base" élargie aux vraies bornes + padding
-  let min = isFinite(baseMin) ? Math.min(baseMin, dataMin - PAD) : (dataMin - PAD);
-  let max = isFinite(baseMax) ? Math.max(baseMax, dataMax + PAD) : (dataMax + PAD);
-
-  // Largeur minimale
-  if ((max - min) < MIN_SPAN) {
-    const mid = (min + max) / 2;
-    min = mid - MIN_SPAN/2;
-    max = mid + MIN_SPAN/2;
+  if(allTimes.length){
+    let min = Math.min(...allTimes) - 10;
+    let max = Math.max(...allTimes) + 10;
+    if (max - min < 30){ min -= 10; max += 10; }
+    return {min, max, basis:'data'};
   }
-  return {min, max, basis:'union'};
+  return {min:0, max:60, basis:'default'};
+}
+
+function getPairWindow(idA,idB){
+  const a = parseHHMM(document.getElementById(idA)?.value || '');
+  const b = parseHHMM(document.getElementById(idB)?.value || '');
+  if(a==null || b==null) return null;
+  return [Math.min(a,b), Math.max(a,b)];
 }
 
 function collectTimelineData(){
