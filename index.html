@@ -309,10 +309,10 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 
 /* couleurs */
 .tl--std  { --c:#607d8b; }   /* gris (porte / divers) */
-.tl--tobt { --c:#2e7d32; }   /* vert */
-.tl--ctot { --c:#455a64; }   /* gris foncé */
-.tl--ops  { --c:#1976d2; }   /* bleu (Embarquement) */
-.tl--turn { --c:#d32f2f; }   /* rouge (Débarquement) */
+.tl--tobt { --c:#2e7d32; }   /* vert (TOBT) */
+.tl--ctot { --c:#455a64; }   /* gris foncé (CTOT) */
+.tl--ops  { --c:#1976d2; }   /* bleu : Embarquement */
+.tl--turn { --c:#d32f2f; }   /* rouge : Débarquement */
 .tl-event .tl-dot { background: var(--c); }
 
 /* Barres de durées */
@@ -354,7 +354,7 @@ body.dark .tl-sep{ background:#3a3a3a; }
 
 /* --- zone scrollable + canvas --- */
 .timeline-scroll{
-  overflow-x:auto; overflow-y:hidden;  /* scroll uniquement horizontal si zoom > 100 % */
+  overflow-x:auto; overflow-y:hidden;  /* scroll horizontal utile seulement si zoom > 100 % */
   border-radius:8px; background:#ffffff;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
@@ -365,7 +365,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
   position:relative;
   height:480px;
   min-width:600px;
-  width:100%;   /* sera fixé en px côté JS pour s’ajuster à la fenêtre demandée */
+  width:100%;   /* fixé en px côté JS pour épouser la fenêtre calculée */
 }
 
 /* Positions verticales (si utilisées par d’autres rendus) */
@@ -1134,7 +1134,7 @@ function updateCTOTDisplay(){
 function updateDLCode() {
     const cie = document.getElementById('Cie').value;
     const sibttxt = document.getElementById('SIBT').value;
-    const aibttxt = document.getElementById('AIBT').value;
+    aibttxt = document.getElementById('AIBT').value;
     if (!cie || !sibttxt || !aibttxt) return;
 
     const [sH, sM] = sibttxt.split(':').map(Number);
@@ -1303,40 +1303,56 @@ function toExtended(t, min, max){
 }
 
 /* Fenêtre d’affichage :
-   - min = H-40 - 5
-   - max = (AOBT ou TOBT) + 5
-   - gère le passage de minuit en étendant max au-delà de 1440 si nécessaire
+   - Référence de début = (H-40 si H-40 < SIBT) sinon SIBT
+   - Début réel = référence - 5 minutes
+   - Fin = (AOBT ou TOBT) + 5 minutes
+   - Gère passage de minuit en étendant max au-delà de 1440 si nécessaire
 */
 function computeTimelineWindow(allTimes){
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+  const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
   const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
   const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
 
-  if (H40 != null && (AOBT != null || TOBT != null)) {
-    let start = H40 - 5;
-    let end   = (AOBT != null ? AOBT : TOBT) + 5;
-    if (end <= start) end += 1440;         // passage minuit
-    if (end - start < 30) { start -= 10; end += 10; } // largeur mini
-    return {min:start, max:end, basis:'H40→AOBT|TOBT'};
+  const haveStart = (H40 != null) || (SIBT != null);
+  const haveEnd   = (AOBT != null) || (TOBT != null);
+
+  if (haveStart && haveEnd) {
+    let startRef = null;
+    if (H40 != null && SIBT != null) {
+      startRef = (H40 < SIBT) ? H40 : SIBT; // règle demandée
+    } else {
+      startRef = (H40 != null) ? H40 : SIBT; // si un seul dispo
+    }
+    let min = startRef - 5;
+    let endRef = (AOBT != null ? AOBT : TOBT);
+    let max = endRef + 5;
+
+    if (max <= min) max += 1440;             // passage minuit
+    if (max - min < 30) { min -= 10; max += 10; } // largeur mini lisible
+    return {min, max, basis:'(H40<SIBT?H40:SIBT) → AOBT|TOBT'};
   }
 
-  // Fallback quand H-40 pas prêt : on se base sur SOBT
+  // Fallbacks : si H-40/SIBT ou fin manquants
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
   if (SOBT != null) {
-    let start = (SOBT - 45);               // 5 min avant H-40 => SOBT - 45
-    let end   = (AOBT ?? TOBT ?? SOBT) + 5;
-    if (end <= start) end += 1440;
-    if (end - start < 30) { start -= 10; end += 10; }
-    return {min:start, max:end, basis:'fallback SOBT'};
+    // si SIBT dispo mais pas H-40, on suit la logique: référence = SIBT
+    let startRef = (SIBT != null) ? SIBT : (SOBT - 40);
+    let min = startRef - 5;
+    let endRef = (AOBT ?? TOBT ?? SOBT);
+    let max = endRef + 5;
+
+    if (max <= min) max += 1440;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'fallback SOBT'};
   }
 
-  // Dernier fallback : d'après les données présentes
   if (allTimes && allTimes.length){
-    let start = Math.min(...allTimes) - 10;
-    let end   = Math.max(...allTimes) + 10;
-    if (end <= start) end += 1440;
-    if (end - start < 30) { start -= 10; end += 10; }
-    return {min:start, max:end, basis:'data'};
+    let min = Math.min(...allTimes) - 10;
+    let max = Math.max(...allTimes) + 10;
+    if (max <= min) max += 1440;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'data'};
   }
 
   return {min:0, max:60, basis:'default'};
@@ -1400,7 +1416,6 @@ function collectTimelineData(){
     .filter(r=>r.pair!=null)
     .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
-  // Fenêtre calculée
   const allTimes = [
     ...fixedPoints.map(p=>p.t),
     ...durations.flatMap(d=>[d.a,d.b])
@@ -1431,7 +1446,7 @@ function renderTimeline(){
   const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
   canvas.style.width = canvasPx + 'px';
 
-  // Grille (chaque minute + labels 5 min), basée sur la fenêtre étendue
+  // Grille (chaque minute + labels 5 min) sur la fenêtre étendue
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
@@ -1456,7 +1471,7 @@ function renderTimeline(){
   }
 
   // Barres de durées (5 rangées, non superposées)
-  const rowTops = [56, 66, 76, 86, 96];   // positions verticales (en %)
+  const rowTops = [56, 66, 76, 86, 96];
   durations.forEach(d=>{
     const aExt = toExtended(d.a, min, max);
     const bExt = toExtended(d.b, min, max);
@@ -1475,18 +1490,17 @@ function renderTimeline(){
     if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
 
-    // Étiquette = DURÉE (en minutes)
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    const durMin = Math.max(0, d.b - d.a); // durée modulo 24h non nécessaire ici
+    const durMin = Math.max(0, d.b - d.a);
     lab.textContent = `${d.label} : ${durMin} min`;
     bar.appendChild(lab);
   });
 
-  // ---- Points fixes (anti-chevauchement des étiquettes) ----
-  const lanesEndX = [];                // dernier X de chaque lane (px)
-  const laneTopStart = 18;             // % (au-dessus de la track)
-  const laneGap = 10;                  // % entre lanes
+  // ---- Points fixes (anti-chevauchement) ----
+  const lanesEndX = [];
+  const laneTopStart = 18;   // %
+  const laneGap = 10;        // %
   const canvasWidth = canvas.getBoundingClientRect().width;
   const marginPx = 16;
 
@@ -1518,10 +1532,10 @@ function renderTimeline(){
     el.style.visibility = 'visible';
   });
 
-  // --- centrage initial (toute la plage est visible à 100%) ---
+  // Centrage initial (toute la plage est visible à 100%)
   if(!timelineUserScrolled){
     const centerMin = (min + max) / 2;
-    const midX = (centerMin - min) / total;      // ~0.5
+    const midX = (centerMin - min) / total;
     const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
     scroller.scrollLeft = Math.max(0, centerLeft);
   }
@@ -1604,7 +1618,6 @@ function clearAutoSave() {
       location.reload();
   }
 }
-
 </script>
 </body>
 </html>
