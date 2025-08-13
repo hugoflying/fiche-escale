@@ -630,6 +630,9 @@ let timelineZoom = 1;       // 1 = 100%
 const TL_ZOOM_MIN = 0.5;
 const TL_ZOOM_MAX = 4;
 const TL_ZOOM_STEP = 0.25;
+/* Largeur de base par minute pour 24h (donne ~4320 px à 100%) */
+const TL_BASE_PX_PER_MIN = 3;
+
 window._timelineCurrentRange = null;
 
 /* TOBT brut (hors CTOT) stocké en minutes depuis 00:00 pour LID */
@@ -1305,35 +1308,10 @@ function labelFromInputEl(input){
   return input.id || 'Horaire';
 }
 
-/* Fenêtre d’affichage :
-   1) [H-15 - 5 min, AOBT + 5 min] si H-15 et AOBT dispo
-   2) [SIBT - 5 min, SOBT + 5 min] si dispo
-   3) fallback min/max des données (+ marges)
-*/
+/* === Fenêtre fixe 24h === */
 function computeTimelineWindow(allTimes){
-  const h15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
-  const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-  if(h15 != null && aobt != null){
-    let min = h15 - 5;
-    let max = aobt + 5;
-    if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'H-15/AOBT'};
-  }
-  const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
-  const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
-  if(sibt != null && sobt != null){
-    let min = sibt - 5;
-    let max = sobt + 5;
-    if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'SIBT/SOBT'};
-  }
-  if(allTimes.length){
-    let min = Math.min(...allTimes) - 10;
-    let max = Math.max(...allTimes) + 10;
-    if (max - min < 30){ min -= 10; max += 10; }
-    return {min, max, basis:'data'};
-  }
-  return {min:0, max:60, basis:'default'};
+  // Période fixe : 00:00 → 24:00
+  return {min:0, max:1440, basis:'24h'};
 }
 
 function getPairWindow(idA,idB){
@@ -1367,7 +1345,7 @@ function collectTimelineData(){
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
   addPoint('H-15', H15,  'tl--turn');  // point H-15
-  addPoint('H-40', H40,  'tl--turn');  // point H-40 (ajouté)
+  addPoint('H-40', H40,  'tl--turn');  // point H-40
 
   // Événements unitaires (points)
   const singles = [
@@ -1383,11 +1361,11 @@ function collectTimelineData(){
 
   // Lignes de durées (barres)
   const rows = [
-    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},      // rouge
-    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},      // bleu
-    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},      // gris std
-    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'}, // orange
-    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'}, // vert
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
+    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
+    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},
   ];
 
   const durations = rows
@@ -1415,8 +1393,11 @@ function renderTimeline(){
   if(min === undefined) return;
 
   window._timelineCurrentRange = {min, max};
-  canvas.style.width = `${100 * timelineZoom}%`;
-  const total = Math.max(1, max - min);
+
+  // Largeur pixelisée pour assurer le scroll horizontal sur 24h
+  const total = Math.max(1, max - min); // 1440
+  const canvasPx = total * TL_BASE_PX_PER_MIN * timelineZoom; // ex ~4320 px à 100%
+  canvas.style.width = `${canvasPx}px`;
 
   // Grille 1 min + labels 5 min (en bas)
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
@@ -1465,12 +1446,12 @@ function renderTimeline(){
     bar.appendChild(lab);
   });
 
-     // ---- Points fixes avec anti-chevauchement (étiquettes comprises) ----
-    const lanesEndX = [];                // dernier X de chaque lane (px)
-    const laneTopStart = 18;             // % (au-dessus de la track)
-    const laneGap = 10;                   // % entre lanes
-    const marginPx = 16;                  // marge mini entre étiquettes
-    const canvasWidth = canvas.getBoundingClientRect().width;
+  // ---- Points fixes avec anti-chevauchement (étiquettes comprises) ----
+  const lanesEndX = [];                // dernier X de chaque lane (px)
+  const laneTopStart = 18;             // % (au-dessus de la track)
+  const laneGap = 10;                  // % entre lanes
+  const marginPx = 16;                 // marge mini entre étiquettes
+  const canvasWidth = canvas.getBoundingClientRect().width;
 
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const leftPct = 6 + ((p.t-min)/total)*88;
@@ -1502,24 +1483,37 @@ function renderTimeline(){
     el.style.visibility = 'visible';
   });
 
-  // Centrage auto à l’ouverture (scroll libre ensuite)
+  // Centrage auto à l’ouverture (H-40 & AIBT), puis on te laisse scroller librement
   if(!timelineUserScrolled){
-    const aibt = parseHHMM(document.getElementById('AIBT')?.value || '');
-    const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
-    const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
-    const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
-    let start = null, end = null;
+    const H40 = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+    const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
+    const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
+    const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
 
-    if(aibt != null && aobt != null){ start = aibt; end = aobt; }
-    else if(sibt != null && aobt != null){ start = sibt; end = aobt; }
-    else if(sibt != null && sobt != null){ start = sibt; end = sobt; }
-
-    if(start != null && end != null){
-      const mid = (start + end) / 2;
-      const midX = (mid - min) / total;
-      const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
-      scroller.scrollLeft = Math.max(0, centerLeft);
+    function circularMid(a,b,period=1440){
+      if(a==null || b==null) return null;
+      let diff = (b - a + period) % period;     // a → b
+      if(diff > period/2){ // passer par l'autre côté
+        // mid vers le sens inverse
+        let back = (a - (period - diff)/2 + period) % period;
+        return back;
+      } else {
+        return (a + diff/2) % period;
+      }
     }
+
+    let centerMin = null;
+    if(H40!=null && AIBT!=null){
+      centerMin = circularMid(H40, AIBT);
+    } else if(SIBT!=null && SOBT!=null){
+      centerMin = circularMid(SIBT, SOBT);
+    } else {
+      centerMin = 12*60; // midi par défaut
+    }
+
+    const midX = (centerMin - min + 1440) % 1440 / total;
+    const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
+    scroller.scrollLeft = Math.max(0, centerLeft);
   }
 }
 
