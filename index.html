@@ -1360,16 +1360,17 @@ function collectTimelineData(){
   const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
 
+  // Ajout des points souhaités
+  addPoint('H-40', H40,  'tl--turn');
+  addPoint('H-15', H15,  'tl--turn');
   addPoint('SIBT', SIBT, 'tl--std');
   addPoint('AIBT', AIBT, 'tl--std');
   addPoint('SOBT', SOBT, 'tl--std');
   addPoint('AOBT', AOBT, 'tl--std');
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
-  addPoint('H-15', H15,  'tl--turn');  // point H-15
-  addPoint('H-40', H40,  'tl--turn');  // point H-40 (ajouté)
 
-  // Événements unitaires (points)
+  // Événements unitaires (points supplémentaires)
   const singles = [
     ['ArrPNT','Arrivée PNT avion'],
     ['ArrPNC','Arrivée PNC avion'],
@@ -1381,13 +1382,13 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  // Lignes de durées (barres)
+  // Lignes de durées
   const rows = [
-    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},      // rouge
-    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},      // bleu
-    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},      // gris std
-    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'}, // orange
-    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'}, // vert
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
+    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
+    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},
   ];
 
   const durations = rows
@@ -1402,7 +1403,7 @@ function collectTimelineData(){
 
   return {fixedPoints, durations, windowInfo};
 }
-
+    
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
