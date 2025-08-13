@@ -309,7 +309,7 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 
 /* couleurs */
 .tl--std  { --c:#607d8b; }   /* gris (porte / divers) */
-.tl--tobt { --c:#2e7d32; }   /* vert (Fuel selon mapping actuel) */
+.tl--tobt { --c:#2e7d32; }   /* vert */
 .tl--ctot { --c:#455a64; }   /* gris foncé */
 .tl--ops  { --c:#1976d2; }   /* bleu : (Embarquement) */
 .tl--turn { --c:#d32f2f; }   /* rouge : (Débarquement) */
@@ -365,7 +365,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
   position:relative;
   height:480px;              /* + haut pour 5 lignes confort */
   min-width:600px;
-  width:100%;   /* ajusté par le zoom côté JS */
+  width:100%;   /* re-défini en px côté JS pour 24h */
 }
 
 /* Positions verticales (si utilisées par d’autres rendus) */
@@ -707,8 +707,7 @@ function initForm(){
         scroller.scrollLeft = startLeft - dx;
         e.preventDefault();
       });
-      // marquer l'interaction utilisateur pour le centrage par défaut
-      ['wheel','mousedown','touchstart','keydown'].forEach(ev=>{
+      ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
         scroller.addEventListener(ev, ()=>{ window.timelineUserScrolled = true; }, {passive:true});
       });
     }
@@ -1115,8 +1114,9 @@ function updateTOBT() {
 
     // Applique ensuite la règle CTOT pour l'affichage de TOBT (timer)
     let TOBT_adj = new Date(TOBT_raw);
-    if (ctottxt) {
-        const [cH, cM] = ctottxt.split(':').map(Number);
+    const ctottxtVal = ctottxt;
+    if (ctottxtVal) {
+        const [cH, cM] = ctottxtVal.split(':').map(Number);
         const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
         const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
         if (CTOT > tobtPlus15) {
@@ -1284,7 +1284,7 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     setTimeout(() => popup.remove(), duration);
 }
 
-/* === TIMELINE helpers (5-min grid, jalons auto) === */
+/* === TIMELINE helpers (24h fixe + centrage H-40/AOBT|TOBT) === */
 let showTimeLabels = true;           // coche "Heure sur étiquettes"
 let timelineUserScrolled = false;    // pour ne centrer qu'à l'ouverture
 
@@ -1298,19 +1298,9 @@ function fmtHHMM(mins){
   const h = Math.floor(mins/60), m = mins%60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
-function labelFromInputEl(input){
-  const lab = input.closest('label');
-  if(lab){
-    const firstTextNode = Array.from(lab.childNodes).find(n=>n.nodeType===3);
-    const t = (firstTextNode?.textContent || "").trim();
-    if(t) return t.replace(/\s*[:：]?\s*$/,'');
-  }
-  return input.id || 'Horaire';
-}
 
-/* === Fenêtre fixe 24h === */
-function computeTimelineWindow(allTimes){
-  // Période fixe : 00:00 → 24:00
+/* Fenêtre fixe 24h */
+function computeTimelineWindow(){
   return {min:0, max:1440, basis:'24h'};
 }
 
@@ -1344,8 +1334,8 @@ function collectTimelineData(){
   addPoint('AOBT', AOBT, 'tl--std');
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
-  addPoint('H-15', H15,  'tl--turn');  // point H-15
-  addPoint('H-40', H40,  'tl--turn');  // point H-40
+  addPoint('H-15', H15,  'tl--turn');
+  addPoint('H-40', H40,  'tl--turn');
 
   // Événements unitaires (points)
   const singles = [
@@ -1372,11 +1362,7 @@ function collectTimelineData(){
     .filter(r=>r.pair!=null)
     .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
-  const allTimes = [
-    ...fixedPoints.map(p=>p.t),
-    ...durations.flatMap(d=>[d.a,d.b])
-  ];
-  const windowInfo = computeTimelineWindow(allTimes);
+  const windowInfo = computeTimelineWindow();
 
   return {fixedPoints, durations, windowInfo};
 }
@@ -1396,7 +1382,7 @@ function renderTimeline(){
 
   // Largeur pixelisée pour assurer le scroll horizontal sur 24h
   const total = Math.max(1, max - min); // 1440
-  const canvasPx = total * TL_BASE_PX_PER_MIN * timelineZoom; // ex ~4320 px à 100%
+  const canvasPx = total * TL_BASE_PX_PER_MIN * timelineZoom; // ~4320 px à 100%
   canvas.style.width = `${canvasPx}px`;
 
   // Grille 1 min + labels 5 min (en bas)
@@ -1438,7 +1424,7 @@ function renderTimeline(){
     if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
 
-    // Étiquette = DURÉE (en minutes) uniquement
+    // Étiquette = DURÉE (en minutes)
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
     const durMin = Math.max(0, d.b - d.a);
@@ -1456,7 +1442,6 @@ function renderTimeline(){
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const leftPct = 6 + ((p.t-min)/total)*88;
 
-    // Créer l'élément (caché pour mesurer)
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
     el.style.left = `${leftPct}%`;
@@ -1468,13 +1453,11 @@ function renderTimeline(){
     el.appendChild(dot); el.appendChild(label);
     canvas.appendChild(el);
 
-    // Mesurer la largeur utile (étiquette)
     const w = Math.max(label.offsetWidth, 12);
     const centerX = (leftPct/100) * canvasWidth;
     const startX = centerX - (w/2) - marginPx;
     const endX   = centerX + (w/2) + marginPx;
 
-    // Trouver une lane libre (pas de chevauchement)
     let lane = 0;
     while(lanesEndX[lane] !== undefined && startX <= lanesEndX[lane]) lane++;
     lanesEndX[lane] = endX;
@@ -1483,32 +1466,34 @@ function renderTimeline(){
     el.style.visibility = 'visible';
   });
 
-  // Centrage auto à l’ouverture (H-40 & AIBT), puis on te laisse scroller librement
+  // === CentrAge initial : milieu circulaire entre H-40 & (AOBT ou TOBT) ===
   if(!timelineUserScrolled){
-    const H40 = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
-    const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
+    const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+    const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+    const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
     const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
     const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
 
     function circularMid(a,b,period=1440){
       if(a==null || b==null) return null;
-      let diff = (b - a + period) % period;     // a → b
-      if(diff > period/2){ // passer par l'autre côté
-        // mid vers le sens inverse
-        let back = (a - (period - diff)/2 + period) % period;
-        return back;
+      const diff = (b - a + period) % period;
+      if(diff > period/2){
+        return (a - (period - diff)/2 + period) % period; // chemin le plus court autre sens
       } else {
         return (a + diff/2) % period;
       }
     }
 
+    // Priorité : H-40 & AOBT ; sinon H-40 & TOBT ; sinon SIBT & SOBT ; sinon midi
     let centerMin = null;
-    if(H40!=null && AIBT!=null){
-      centerMin = circularMid(H40, AIBT);
+    if(H40!=null && AOBT!=null){
+      centerMin = circularMid(H40, AOBT);
+    } else if(H40!=null && TOBT!=null){
+      centerMin = circularMid(H40, TOBT);
     } else if(SIBT!=null && SOBT!=null){
       centerMin = circularMid(SIBT, SOBT);
     } else {
-      centerMin = 12*60; // midi par défaut
+      centerMin = 12*60;
     }
 
     const midX = (centerMin - min + 1440) % 1440 / total;
@@ -1517,7 +1502,7 @@ function renderTimeline(){
   }
 }
 
-/* Injecte la coche "Heure sur étiquettes" si absente + capte l'interaction pour ne pas recentrer */
+/* Injecte la coche + capte l'interaction pour ne pas recentrer */
 (function injectShowHoursToggle(){
   const bar = document.querySelector('.timeline-toolbar');
   if (bar) {
