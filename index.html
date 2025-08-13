@@ -1310,19 +1310,47 @@ function labelFromInputEl(input){
    2) [SIBT - 5 min, SOBT + 5 min] si dispo
    3) fallback min/max des données (+ marges)
 */
-/* === POPUP === */
 function computeTimelineWindow(allTimes){
-  // Fenêtre fixe sur 24h (00:00 → 23:59)
-  return { min: 0, max: 1440, basis: '24h' };
+  const h15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
+  if(h15 != null && aobt != null){
+    let min = h15 - 5;
+    let max = aobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'H-15/AOBT'};
+  }
+  const sibt = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
+  if(sibt != null && sobt != null){
+    let min = sibt - 5;
+    let max = sobt + 5;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'SIBT/SOBT'};
+  }
+  if(allTimes.length){
+    let min = Math.min(...allTimes) - 10;
+    let max = Math.max(...allTimes) + 10;
+    if (max - min < 30){ min -= 10; max += 10; }
+    return {min, max, basis:'data'};
+  }
+  return {min:0, max:60, basis:'default'};
+}
+
+function getPairWindow(idA,idB){
+  const a = parseHHMM(document.getElementById(idA)?.value || '');
+  const b = parseHHMM(document.getElementById(idB)?.value || '');
+  if(a==null || b==null) return null;
+  return [Math.min(a,b), Math.max(a,b)];
 }
 
 function collectTimelineData(){
+  // Points fixes (événements)
   const fixedPoints = [];
   const addPoint = (label, t, cls='tl--std')=>{
-    if(t != null) fixedPoints.push({label, t, cls});
+    if(t==null) return;
+    fixedPoints.push({label, t, cls});
   };
 
-  // Récupération des horaires
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
   const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
@@ -1332,34 +1360,34 @@ function collectTimelineData(){
   const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
 
-  // Ajout des jalons principaux
-  addPoint('H-40', H40,  'tl--turn');
-  addPoint('H-15', H15,  'tl--turn');
   addPoint('SIBT', SIBT, 'tl--std');
   addPoint('AIBT', AIBT, 'tl--std');
   addPoint('SOBT', SOBT, 'tl--std');
   addPoint('AOBT', AOBT, 'tl--std');
   addPoint('TOBT', TOBT, 'tl--tobt');
   addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('H-15', H15,  'tl--turn');  // point H-15
+  addPoint('H-40', H40,  'tl--turn');  // point H-40 (ajouté)
 
-  // Autres événements simples
-  [
+  // Événements unitaires (points)
+  const singles = [
     ['ArrPNT','Arrivée PNT avion'],
     ['ArrPNC','Arrivée PNC avion'],
     ['RemiseLID','Remise LID/LDS'],
     ['FermeturePorteAvion','Fermeture porte avion'],
-  ].forEach(([id,label])=>{
+  ];
+  singles.forEach(([id,label])=>{
     const t = parseHHMM(document.getElementById(id)?.value || '');
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  // Lignes de durées
+  // Lignes de durées (barres)
   const rows = [
-    {label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
-    {label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
-    {label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
-    {label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},
-    {label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},
+    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},      // rouge
+    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},      // bleu
+    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},      // gris std
+    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'}, // orange
+    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'}, // vert
   ];
 
   const durations = rows
@@ -1370,65 +1398,11 @@ function collectTimelineData(){
     ...fixedPoints.map(p=>p.t),
     ...durations.flatMap(d=>[d.a,d.b])
   ];
-
   const windowInfo = computeTimelineWindow(allTimes);
 
   return {fixedPoints, durations, windowInfo};
 }
 
-function renderTimeline(){
-  const {fixedPoints, durations, windowInfo} = collectTimelineData();
-  const container = document.querySelector('.timeline-scroll');
-  if(!container) return;
-  container.innerHTML = ''; // reset
-
-  // largeur totale proportionnelle à 1440 min
-  const totalMinutes = windowInfo.max - windowInfo.min;
-  const pxPerMinute = 3; // zoom de base
-  const totalWidth = totalMinutes * pxPerMinute;
-  container.style.width = totalWidth + 'px';
-
-  // Grille horaire
-  for(let m = windowInfo.min; m <= windowInfo.max; m += 60){
-    const line = document.createElement('div');
-    line.className = 'tl-grid-line';
-    line.style.left = (m * pxPerMinute) + 'px';
-    line.textContent = String(Math.floor(m/60)).padStart(2,'0') + ':00';
-    container.appendChild(line);
-  }
-
-  // Points fixes
-  fixedPoints.forEach(p=>{
-    const el = document.createElement('div');
-    el.className = 'tl-point ' + p.cls;
-    el.style.left = (p.t * pxPerMinute) + 'px';
-    el.title = p.label + ' ' + formatMinutesToHHMM(p.t);
-    container.appendChild(el);
-  });
-
-  // Barres de durée
-  durations.forEach(d=>{
-    const el = document.createElement('div');
-    el.className = 'tl-bar ' + d.cls;
-    el.style.left = (d.a * pxPerMinute) + 'px';
-    el.style.width = ((d.b - d.a) * pxPerMinute) + 'px';
-    if(d.color) el.style.backgroundColor = d.color;
-    el.title = d.label + ' ' + formatMinutesToHHMM(d.a) + ' - ' + formatMinutesToHHMM(d.b);
-    container.appendChild(el);
-  });
-
-  // Centrage auto sur AIBT-5 (ou SIBT si pas d'AIBT)
-  const aibt = parseHHMM(document.getElementById('AIBT')?.value || '') 
-            ?? parseHHMM(document.getElementById('SIBT')?.value || '');
-  if(aibt != null){
-    const scrollParent = document.querySelector('.timeline-wrapper');
-    if(scrollParent){
-      const targetPx = Math.max(0, (aibt - 5) * pxPerMinute);
-      scrollParent.scrollLeft = targetPx - (scrollParent.clientWidth / 2);
-    }
-  }
-}
-    
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
