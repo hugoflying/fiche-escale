@@ -363,7 +363,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 /* Hauteur augmentée pour empiler les lignes de durées */
 .timeline-canvas{
   position:relative;
-  height:330px;              /* + haut pour 5 lignes confort */
+  height:400px;              /* + haut pour 5 lignes confort */
   min-width:600px;
   width:100%;   /* ajusté par le zoom côté JS */
 }
@@ -1469,7 +1469,7 @@ function renderTimeline(){
     const lanesEndX = [];                // dernier X de chaque lane (px)
     const laneTopStart = 22;             // % (au-dessus de la track)
     const laneGap = 20;                   // % entre lanes
-    const marginPx = 26;                  // marge mini entre étiquettes
+    const marginPx = 18;                  // marge mini entre étiquettes
     const canvasWidth = canvas.getBoundingClientRect().width;
 
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
