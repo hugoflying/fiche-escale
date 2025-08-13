@@ -270,7 +270,7 @@ body.dark .timeline-track{ background:#2e2e2e; }
 /* Grille verticale 5 min — plus épaisse et haute */
 .timeline-tick {
   position: absolute;
-  width: 2px;                /* + épais */
+  width: 2px;
   background:#b0b6bd;
 }
 body.dark .timeline-tick { background:#3e444b; }
@@ -278,7 +278,7 @@ body.dark .timeline-tick { background:#3e444b; }
 .timeline-tick-label {
   position: absolute; top: calc(50% + 12px);
   transform: translateX(-50%);
-  font-size: 14px;           /* + gros */
+  font-size: 14px;
   font-weight: 600;
   color:#444;
 }
@@ -292,17 +292,17 @@ body.dark .timeline-tick-label { color:#cfd4da; }
 
 /* Points (événements) */
 .tl-dot {
-  width: 12px; height: 12px;           /* + gros */
+  width: 12px; height: 12px;
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 0 0 1px rgba(0,0,0,.15);
   margin: 0 auto 4px;
 }
 .tl-label {
-  padding: 3px 8px;                     /* + grand */
+  padding: 3px 8px;
   border-radius: 999px;
   background: #f1f3f5; color:#111;
-  font-size: 14px;                      /* + grand */
+  font-size: 14px;
   box-shadow: 0 0 0 1px rgba(0,0,0,.07);
 }
 body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.07); }
@@ -311,23 +311,23 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 .tl--std  { --c:#607d8b; }   /* gris (porte / divers) */
 .tl--tobt { --c:#2e7d32; }   /* vert */
 .tl--ctot { --c:#455a64; }   /* gris foncé */
-.tl--ops  { --c:#1976d2; }   /* bleu : (Embarquement) */
-.tl--turn { --c:#d32f2f; }   /* rouge : (Débarquement) */
+.tl--ops  { --c:#1976d2; }   /* bleu (Embarquement) */
+.tl--turn { --c:#d32f2f; }   /* rouge (Débarquement) */
 .tl-event .tl-dot { background: var(--c); }
 
-/* Barres de durées — plus épaisses et plus saturées */
+/* Barres de durées */
 .tl-range {
   top:50%;
-  height: 12px;                                  /* + épais */
-  background: color-mix(in srgb, var(--c) 50%, transparent); /* + saturé */
-  border: 2px solid var(--c);                    /* + épais */
+  height: 12px;
+  background: color-mix(in srgb, var(--c) 50%, transparent);
+  border: 2px solid var(--c);
   border-radius: 8px;
   z-index: 2;
 }
 .tl-range-label {
   position:absolute; top: -22px; left:50%;
   transform: translateX(-50%);
-  font-size: 14px;                               /* + grand */
+  font-size: 14px;
   background: rgba(255,255,255,.9);
   padding: 2px 8px; border-radius:6px;
   font-weight: 600;
@@ -354,7 +354,7 @@ body.dark .tl-sep{ background:#3a3a3a; }
 
 /* --- zone scrollable + canvas --- */
 .timeline-scroll{
-  overflow-x:auto; overflow-y:hidden;  /* scroll uniquement horizontal */
+  overflow-x:auto; overflow-y:hidden;  /* scroll uniquement horizontal si zoom > 100 % */
   border-radius:8px; background:#ffffff;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
@@ -363,9 +363,9 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 /* Hauteur augmentée pour empiler les lignes de durées */
 .timeline-canvas{
   position:relative;
-  height:480px;              /* + haut pour 5 lignes confort */
+  height:480px;
   min-width:600px;
-  width:100%;   /* re-défini en px côté JS pour 24h */
+  width:100%;   /* sera fixé en px côté JS pour s’ajuster à la fenêtre demandée */
 }
 
 /* Positions verticales (si utilisées par d’autres rendus) */
@@ -616,9 +616,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <script>
-/* === CODE JS COMPLET (parties avant helpers inchangées) === */
-
-/* Variables */
+/* === Variables === */
 let isUTC=false;
 let manualSOBT=false;
 let currentTabId=null;
@@ -630,14 +628,12 @@ let timelineZoom = 1;       // 1 = 100%
 const TL_ZOOM_MIN = 0.5;
 const TL_ZOOM_MAX = 4;
 const TL_ZOOM_STEP = 0.25;
-/* Largeur de base par minute pour 24h (donne ~4320 px à 100%) */
-const TL_BASE_PX_PER_MIN = 3;
-
 window._timelineCurrentRange = null;
 
 /* TOBT brut (hors CTOT) stocké en minutes depuis 00:00 pour LID */
 window._tobtRawMins = null;
 
+/* Zoom/scroll controls */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
@@ -660,7 +656,7 @@ function timelineScroll(deltaMinutes){
   scroller.scrollLeft += deltaMinutes * pxPerMin;
 }
 
-/* INIT */
+/* === INIT === */
 function initForm(){
     renderTabs();
     let lastTab=localStorage.getItem('lastTabId');
@@ -1114,9 +1110,8 @@ function updateTOBT() {
 
     // Applique ensuite la règle CTOT pour l'affichage de TOBT (timer)
     let TOBT_adj = new Date(TOBT_raw);
-    const ctottxtVal = ctottxt;
-    if (ctottxtVal) {
-        const [cH, cM] = ctottxtVal.split(':').map(Number);
+    if (ctottxt) {
+        const [cH, cM] = ctottxt.split(':').map(Number);
         const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
         const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
         if (CTOT > tobtPlus15) {
@@ -1284,7 +1279,7 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
     setTimeout(() => popup.remove(), duration);
 }
 
-/* === TIMELINE helpers (24h fixe + centrage H-40/AOBT|TOBT) === */
+/* === TIMELINE helpers === */
 let showTimeLabels = true;           // coche "Heure sur étiquettes"
 let timelineUserScrolled = false;    // pour ne centrer qu'à l'ouverture
 
@@ -1299,9 +1294,52 @@ function fmtHHMM(mins){
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-/* Fenêtre fixe 24h */
-function computeTimelineWindow(){
-  return {min:0, max:1440, basis:'24h'};
+/* Projette un temps sur la fenêtre étendue (pour passage de minuit) */
+function toExtended(t, min, max){
+  const wraps = (max > 1440);           // max > 1440 => on a étendu la fenêtre sur le jour +1
+  if (!wraps) return t;
+  const startMod = ((min % 1440) + 1440) % 1440;
+  return (t < startMod) ? t + 1440 : t; // pousse les temps < start sur +1440
+}
+
+/* Fenêtre d’affichage :
+   - min = H-40 - 5
+   - max = (AOBT ou TOBT) + 5
+   - gère le passage de minuit en étendant max au-delà de 1440 si nécessaire
+*/
+function computeTimelineWindow(allTimes){
+  const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+  const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+
+  if (H40 != null && (AOBT != null || TOBT != null)) {
+    let start = H40 - 5;
+    let end   = (AOBT != null ? AOBT : TOBT) + 5;
+    if (end <= start) end += 1440;         // passage minuit
+    if (end - start < 30) { start -= 10; end += 10; } // largeur mini
+    return {min:start, max:end, basis:'H40→AOBT|TOBT'};
+  }
+
+  // Fallback quand H-40 pas prêt : on se base sur SOBT
+  const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
+  if (SOBT != null) {
+    let start = (SOBT - 45);               // 5 min avant H-40 => SOBT - 45
+    let end   = (AOBT ?? TOBT ?? SOBT) + 5;
+    if (end <= start) end += 1440;
+    if (end - start < 30) { start -= 10; end += 10; }
+    return {min:start, max:end, basis:'fallback SOBT'};
+  }
+
+  // Dernier fallback : d'après les données présentes
+  if (allTimes && allTimes.length){
+    let start = Math.min(...allTimes) - 10;
+    let end   = Math.max(...allTimes) + 10;
+    if (end <= start) end += 1440;
+    if (end - start < 30) { start -= 10; end += 10; }
+    return {min:start, max:end, basis:'data'};
+  }
+
+  return {min:0, max:60, basis:'default'};
 }
 
 function getPairWindow(idA,idB){
@@ -1362,7 +1400,12 @@ function collectTimelineData(){
     .filter(r=>r.pair!=null)
     .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
-  const windowInfo = computeTimelineWindow();
+  // Fenêtre calculée
+  const allTimes = [
+    ...fixedPoints.map(p=>p.t),
+    ...durations.flatMap(d=>[d.a,d.b])
+  ];
+  const windowInfo = computeTimelineWindow(allTimes);
 
   return {fixedPoints, durations, windowInfo};
 }
@@ -1379,13 +1422,16 @@ function renderTimeline(){
   if(min === undefined) return;
 
   window._timelineCurrentRange = {min, max};
+  const total = Math.max(1, max - min);
 
-  // Largeur pixelisée pour assurer le scroll horizontal sur 24h
-  const total = Math.max(1, max - min); // 1440
-  const canvasPx = total * TL_BASE_PX_PER_MIN * timelineZoom; // ~4320 px à 100%
-  canvas.style.width = `${canvasPx}px`;
+  // Largeur du canvas :
+  // - à 100% : exactement la largeur visible (donc pas de scroll)
+  // - si zoom > 100% : largeur proportionnelle => scroll dispo
+  const viewport = scroller.clientWidth || 1200;
+  const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
+  canvas.style.width = canvasPx + 'px';
 
-  // Grille 1 min + labels 5 min (en bas)
+  // Grille (chaque minute + labels 5 min), basée sur la fenêtre étendue
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
     const leftPct = 6 + x*88;
@@ -1412,12 +1458,17 @@ function renderTimeline(){
   // Barres de durées (5 rangées, non superposées)
   const rowTops = [56, 66, 76, 86, 96];   // positions verticales (en %)
   durations.forEach(d=>{
-    const leftStartPct  = 6 + ((d.a-min)/total)*88;
-    const widthPct      = ((d.b-d.a)/total)*88;
+    const aExt = toExtended(d.a, min, max);
+    const bExt = toExtended(d.b, min, max);
+    const start = Math.min(aExt, bExt);
+    const end   = Math.max(aExt, bExt);
+
+    const leftStartPct  = 6 + ((start-min)/total)*88;
+    const widthPct      = ((end-start)/total)*88;
 
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
-    bar.style.left = `${leftStartPct}%`;     // aligné sur le début
+    bar.style.left = `${leftStartPct}%`;
     bar.style.width = `${widthPct}%`;
     bar.style.top = `${rowTops[d.rowIndex]}%`;
     bar.style.transform = 'translateY(-50%)';
@@ -1427,20 +1478,21 @@ function renderTimeline(){
     // Étiquette = DURÉE (en minutes)
     const lab = document.createElement('div');
     lab.className = 'tl-range-label';
-    const durMin = Math.max(0, d.b - d.a);
+    const durMin = Math.max(0, d.b - d.a); // durée modulo 24h non nécessaire ici
     lab.textContent = `${d.label} : ${durMin} min`;
     bar.appendChild(lab);
   });
 
-  // ---- Points fixes avec anti-chevauchement (étiquettes comprises) ----
+  // ---- Points fixes (anti-chevauchement des étiquettes) ----
   const lanesEndX = [];                // dernier X de chaque lane (px)
   const laneTopStart = 18;             // % (au-dessus de la track)
   const laneGap = 10;                  // % entre lanes
-  const marginPx = 16;                 // marge mini entre étiquettes
   const canvasWidth = canvas.getBoundingClientRect().width;
+  const marginPx = 16;
 
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
-    const leftPct = 6 + ((p.t-min)/total)*88;
+    const tExt = toExtended(p.t, min, max);
+    const leftPct = 6 + ((tExt-min)/total)*88;
 
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
@@ -1466,37 +1518,10 @@ function renderTimeline(){
     el.style.visibility = 'visible';
   });
 
-  // === CentrAge initial : milieu circulaire entre H-40 & (AOBT ou TOBT) ===
+  // --- centrage initial (toute la plage est visible à 100%) ---
   if(!timelineUserScrolled){
-    const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
-    const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
-    const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
-    const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
-    const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
-
-    function circularMid(a,b,period=1440){
-      if(a==null || b==null) return null;
-      const diff = (b - a + period) % period;
-      if(diff > period/2){
-        return (a - (period - diff)/2 + period) % period; // chemin le plus court autre sens
-      } else {
-        return (a + diff/2) % period;
-      }
-    }
-
-    // Priorité : H-40 & AOBT ; sinon H-40 & TOBT ; sinon SIBT & SOBT ; sinon midi
-    let centerMin = null;
-    if(H40!=null && AOBT!=null){
-      centerMin = circularMid(H40, AOBT);
-    } else if(H40!=null && TOBT!=null){
-      centerMin = circularMid(H40, TOBT);
-    } else if(SIBT!=null && SOBT!=null){
-      centerMin = circularMid(SIBT, SOBT);
-    } else {
-      centerMin = 12*60;
-    }
-
-    const midX = (centerMin - min + 1440) % 1440 / total;
+    const centerMin = (min + max) / 2;
+    const midX = (centerMin - min) / total;      // ~0.5
     const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
     scroller.scrollLeft = Math.max(0, centerLeft);
   }
