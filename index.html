@@ -156,7 +156,7 @@ button.plus  { background: #555; color: white; }
     font-size: 1.1rem;
 }
 #timer-tobt { background: #2e7d32; }
-#timer-h8   { background: orange; }
+#timer-h8   { background: #ffd54f; color:#000; }   /* LID jaune */
 #timer-ctot { background: #455a64; }
 
 /* Toggles (barre du haut) */
@@ -402,7 +402,7 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
   <div class="timer-group">
     <div class="timer"><div class="timer-label">HLE</div><div id="timer-h40" class="timer-value">--:--</div></div>
     <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
+    <div id="lidBlock" class="timer" style="display:none;"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
   </div>
   <div class="timer-group">
     <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
@@ -515,7 +515,7 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
     <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
       <input type="checkbox" id="showTimesToggle" checked
              onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
-      Afficher heure sur étiquettes
+      Afficher heure/durée sur étiquettes
     </label>
   </div>
 
@@ -689,7 +689,7 @@ function initForm(){
   });
 
   // mise à jour labels d'onglets
-  document.getElementById('Parking').onchange = updateTabLabelInstant; // au cas où
+  document.getElementById('Parking').onchange = updateTabLabelInstant;
   document.getElementById('Cie').onchange = updateTabLabelInstant;
   document.getElementById('NVol').oninput = updateTabLabelInstant;
   document.getElementById('To').oninput = updateTabLabelInstant;
@@ -936,7 +936,7 @@ function generateTimingFields(){
 
 /* CHARGEMENT / TOB */
 function generateChargementFields() {
-  const cie = document.getElementById('Cie').value;
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const container = document.getElementById('chargement-container');
   container.innerHTML = "";
   let html = "";
@@ -946,32 +946,42 @@ function generateChargementFields() {
       <div class="form-group-4col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
       <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
       <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
-      <div class="form-group-3col"><label>FWD<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
-      <div class="form-group-3col"><label>MID<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
-      <div class="form-group-3col"><label>AFT<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
-      <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-      <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>`;
+
+      <div class="form-group-3col"><label>FWD/OA<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-3col"><label>MID/OB<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
+      <div class="form-group-3col"><label>AFT/OC<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
+    `;
   } else {
     html += `
       <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
       <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
       <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
       <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+
       <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
-      <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-      <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
-      <div class="form-group-3col"><label>GB<input type="number" id="GB"></label></div>`;
+    `;
   }
+
   html += `<div class="form-group" style="flex:1 1 100%;"><label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label></div>`;
   container.innerHTML = html;
+
   updateTOB();
+  updateLIDVisibility(); // au cas où Cie change
+}
+
+/* Affichage conditionnel LID (FR/RK uniquement) */
+function updateLIDVisibility(){
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
+  const lid = document.getElementById('lidBlock');
+  if(!lid) return;
+  lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
 }
 
 function updateTOB() {
-  const cie = document.getElementById('Cie').value;
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   let mainTotal = 0;
   let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
 
@@ -989,13 +999,15 @@ function updateTOB() {
   else if (infants > 0) tobText = `${mainTotal} + ${infants}`;
   else tobText = `${mainTotal}`;
 
-  document.getElementById('TOB').value = tobText;
+  const tobField = document.getElementById('TOB');
+  if (tobField) tobField.value = tobText;
+
   checkTOBCoherence();
 }
 
 /* COHÉRENCE TOB */
 function checkTOBCoherence() {
-  const cie = document.getElementById('Cie').value;
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   let tobMain = 0;
 
   if (cie === "FR" || cie === "RK") {
@@ -1018,6 +1030,7 @@ function checkTOBCoherence() {
 }
 function styleTOB(valid) {
   const tobField = document.getElementById('TOB');
+  if (!tobField) return;
   if (valid) { tobField.style.border = "1px solid #ccc"; tobField.style.color = "#000"; }
   else { tobField.style.border = "2px solid red"; tobField.style.color = "red"; }
 }
@@ -1032,6 +1045,7 @@ function updateAllCalculations() {
   updateLID();
   updateCTOTDisplay();
   applyPrestationsDefaults();
+  updateLIDVisibility();
   renderTimeline();
 }
 
@@ -1053,9 +1067,11 @@ function updateTimers() {
 /* LID = TOBT - 8 (HORS CTOT) */
 function updateLID() {
   const tobtRawMins = window._tobtRawMins;
-  if (tobtRawMins == null) { document.getElementById('timer-h8').textContent = "--:--"; return; }
+  const el = document.getElementById('timer-h8');
+  if (!el) return;
+  if (tobtRawMins == null) { el.textContent = "--:--"; return; }
   const lid = tobtRawMins - 8;
-  document.getElementById('timer-h8').textContent = fmtHHMM(lid);
+  el.textContent = fmtHHMM(lid);
 }
 
 /* SOBT par défaut */
@@ -1139,22 +1155,24 @@ function updateCTOTDisplay(){
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
-/* DL CODES */
+/* DL CODES (mapping demandé) */
 function updateDLCode() {
-  const cie = document.getElementById('Cie').value;
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
   const aibttxt = document.getElementById('AIBT').value;
-  if (!cie || !sibttxt || !aibttxt) return;
+  if (!sibttxt || !aibttxt) return;
 
   const [sH, sM] = sibttxt.split(':').map(Number);
   const [aH, aM] = aibttxt.split(':').map(Number);
   const SIBT = new Date(); SIBT.setHours(sH, sM);
   const AIBT = new Date(); AIBT.setHours(aH, aM);
 
+  // On ne renseigne un DL que si AIBT > SIBT (retard constaté)
   if (AIBT > SIBT) {
-    if (cie === 'FR') document.getElementById('DLcode1').value = '93';
+    if (cie === 'FR' || cie === 'RK') document.getElementById('DLcode1').value = '93';
     else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
     else document.getElementById('DLcode1').value = '';
+
     document.getElementById('DLduree1').value = Math.round((AIBT - SIBT) / 60000) || '';
   } else {
     document.getElementById('DLcode1').value = '';
@@ -1200,8 +1218,8 @@ function updateDLDuree3() {
 
 /* PRESTATIONS AUTO */
 function applyPrestationsDefaults() {
-  const from = document.getElementById('From').value.toUpperCase();
-  const to = document.getElementById('To').value.toUpperCase();
+  const from = (document.getElementById('From').value||'').toUpperCase();
+  const to = (document.getElementById('To').value||'').toUpperCase();
 
   if (from === "BVA") {
     document.getElementById('Ordures').value = "N";
@@ -1364,7 +1382,7 @@ function collectTimelineData(){
   addPoint('SIBT', SIBT, 'tl--std'); addPoint('AIBT', AIBT, 'tl--std');
   addPoint('SOBT', SOBT, 'tl--std'); addPoint('AOBT', AOBT, 'tl--std');
   addPoint('TOBT', TOBT, 'tl--tobt'); addPoint('CTOT', CTOT, 'tl--ctot');
-  addPoint('HLE',  H40,  'tl--turn'); // affichage HLE au lieu de H-40
+  addPoint('HLE',  H40,  'tl--turn');
   addPoint('H-15', H15,  'tl--turn');
 
   const singles = [
@@ -1555,7 +1573,7 @@ function clearAutoSave() {
 }
 
 /* ==========================================================
-   === BLOC-NOTE (identique version moderne, avec undo/redo) ===
+   === BLOC-NOTE (version moderne, avec undo/redo) ===
    ========================================================== */
 let noteOpen = false;
 let noteTool = 'pen';
