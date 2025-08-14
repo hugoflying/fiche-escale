@@ -3,118 +3,56 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>BVA — Vols du jour</title>
+<title>BVA — Vols du jour (GoFlightLabs)</title>
 <style>
   :root{
-    --bg:#ffffff;
-    --card:#f5f7fb;
-    --ink:#0e1420;
-    --muted:#5e6a85;
-    --brand:#2d5bff;
-    --ok:#1bbf72;
-    --warn:#ff9f1a;
-    --late:#ff4d4f;
-    --chip:#e7ecff;
-    --shadow: 0 6px 18px rgba(0,0,0,.08);
-    --radius:16px;
+    --bg:#ffffff; --card:#f5f7fb; --ink:#0e1420; --muted:#5e6a85; --brand:#2d5bff;
+    --ok:#1bbf72; --warn:#ff9f1a; --late:#ff4d4f; --chip:#e7ecff;
+    --shadow:0 6px 18px rgba(0,0,0,.08); --radius:16px;
   }
   *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-  }
-  header{
-    position:sticky; top:0; z-index:20; background:var(--bg);
-    border-bottom:1px solid #e9edf5;
-  }
-  .wrap{max-width:1100px; margin:0 auto; padding:18px 16px}
-  .title{
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-  }
-  .title h1{font-size:22px; margin:0; letter-spacing:.2px}
-  .pill{
-    display:inline-flex; gap:6px; padding:8px 10px; border-radius:999px;
-    background:var(--chip); color:#2643b3; font-weight:600; font-size:13px;
-    align-items:center;
-  }
-  .controls{
-    margin-top:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-  }
-  .segmented{
-    display:flex; background:#e9edf5; border-radius:999px; padding:3px; gap:4px;
-  }
-  .segmented button{
-    appearance:none; border:0; background:transparent; padding:8px 14px; border-radius:999px;
-    font-weight:600; color:var(--muted); cursor:pointer;
-  }
-  .segmented button.active{background:#fff; color:var(--ink); box-shadow:var(--shadow)}
-  .field{
-    display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #e5e9f2;
-    padding:8px 10px; border-radius:10px;
-  }
-  .field input[type="date"], .field input[type="text"]{
-    border:0; outline:0; font-size:14px; background:transparent; color:var(--ink);
-  }
-  .btn{
-    appearance:none; border:0; background:var(--brand); color:#fff;
-    padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
-    box-shadow:var(--shadow);
-  }
-  .btn.ghost{background:#fff; color:var(--brand); border:1px solid #cfe0ff}
-  .hint{color:var(--muted); font-size:13px; margin-left:auto}
-  .toggle{
-    display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
-    font-size:13px; color:var(--muted);
-  }
-  .toggle input{accent-color:var(--brand); width:18px; height:18px}
-
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid #e9edf5}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 16px}
+  .title{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .title h1{font-size:22px;margin:0}
+  .pill{display:inline-flex;gap:6px;padding:8px 10px;border-radius:999px;background:var(--chip);color:#2643b3;font-weight:600;font-size:13px}
+  .controls{margin-top:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .segmented{display:flex;background:#e9edf5;border-radius:999px;padding:3px;gap:4px}
+  .segmented button{appearance:none;border:0;background:transparent;padding:8px 14px;border-radius:999px;font-weight:600;color:var(--muted);cursor:pointer}
+  .segmented button.active{background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .field{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e5e9f2;padding:8px 10px;border-radius:10px}
+  .field input[type="date"],.field input[type="text"]{border:0;outline:0;font-size:14px;background:transparent;color:var(--ink)}
+  .btn{appearance:none;border:0;background:var(--brand);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+  .hint{color:var(--muted);font-size:13px;margin-left:auto}
+  .toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px;color:var(--muted)}
+  .toggle input{accent-color:var(--brand);width:18px;height:18px}
   main{padding:18px 16px}
-  .section{
-    max-width:1100px; margin:0 auto;
-  }
-  .section h2{
-    margin:16px 0 8px; font-size:16px; color:#33405f; letter-spacing:.2px;
-  }
-  .grid{
-    display:grid; grid-template-columns: repeat(12, 1fr); gap:12px;
-  }
-  @media (max-width:900px){ .grid{grid-template-columns: repeat(6, 1fr);} }
-  @media (max-width:640px){ .grid{grid-template-columns: repeat(1, 1fr);} }
-
-  .card{
-    grid-column: span 6; background:var(--card); border-radius:var(--radius);
-    padding:14px; box-shadow:var(--shadow); position:relative; overflow:hidden;
-  }
-  @media (max-width:640px){ .card{grid-column: span 1;} }
-  .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
-  .flight{
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  }
-  .chip{
-    background:#fff; border:1px solid #e5e9f2; border-radius:10px; padding:4px 8px; font-weight:700; font-size:12px;
-  }
-  .flight-no{font-weight:800; font-size:18px}
-  .airline{font-size:12px; color:var(--muted)}
-  .dir{font-size:11px; font-weight:800; letter-spacing:.8px; color:#6071a4}
-  .city{font-size:14px; font-weight:700}
-  .times{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
-  .timebox{display:flex; flex-direction:column; gap:2px; min-width:70px}
-  .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px}
+  .section{max-width:1100px;margin:0 auto}
+  .section h2{margin:16px 0 8px;font-size:16px;color:#33405f}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  @media (max-width:900px){.grid{grid-template-columns:repeat(6,1fr)}}
+  @media (max-width:640px){.grid{grid-template-columns:repeat(1,1fr)}}
+  .card{grid-column:span 6;background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  @media (max-width:640px){.card{grid-column:span 1}}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .flight{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .chip{background:#fff;border:1px solid #e5e9f2;border-radius:10px;padding:4px 8px;font-weight:700;font-size:12px}
+  .dir{font-size:11px;font-weight:800;letter-spacing:.8px;color:#6071a4}
+  .flight-no{font-weight:800;font-size:18px}
+  .airline{font-size:12px;color:var(--muted)}
+  .times{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .timebox{display:flex;flex-direction:column;gap:2px;min-width:70px}
+  .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
   .val{font-weight:800}
-  .delay{font-size:12px; font-weight:800; padding:3px 8px; border-radius:999px}
-  .delay.ok{background:#eafaf3; color:var(--ok)}
-  .delay.warn{background:#fff5e8; color:var(--warn)}
-  .delay.late{background:#ffecec; color:var(--late)}
-  .meta{display:flex; gap:10px; align-items:center; flex-wrap:wrap; color:#4b5774; font-size:12px}
-  .meta .dot{width:6px; height:6px; border-radius:50%; background:#aab3c7}
-  .status{font-weight:800; font-size:12px; color:#33405f}
-  .empty{
-    border:2px dashed #d8e0f0; border-radius:16px; padding:28px; text-align:center; color:#5f6b87
-  }
-  .badge{
-    position:absolute; right:12px; top:12px; background:#fff; border:1px solid #e5e9f2;
-    border-radius:999px; padding:4px 8px; font-size:11px; font-weight:800; color:#3c4b76;
-  }
+  .delay{font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px}
+  .delay.ok{background:#eafaf3;color:var(--ok)}
+  .delay.warn{background:#fff5e8;color:var(--warn)}
+  .delay.late{background:#ffecec;color:var(--late)}
+  .meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#4b5774;font-size:12px}
+  .meta .dot{width:6px;height:6px;border-radius:50%;background:#aab3c7}
+  .badge{position:absolute;right:12px;top:12px;background:#fff;border:1px solid #e5e9f2;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800;color:#3c4b76}
+  .empty{border:2px dashed #d8e0f0;border-radius:16px;padding:28px;text-align:center;color:#5f6b87}
 </style>
 </head>
 <body>
@@ -131,18 +69,15 @@
         <button data-dir="DEP">Départs</button>
       </div>
       <label class="field" title="Date locale (Europe/Paris)">
-        <span>📅</span>
-        <input type="date" id="datePicker">
+        <span>📅</span><input type="date" id="datePicker">
       </label>
-      <label class="field" style="flex:1" title="Rechercher : vol, ville, compagnie, immat…">
-        <span>🔎</span>
-        <input type="text" id="search" placeholder="Rechercher un vol…">
+      <label class="field" style="flex:1" title="Rechercher : vol, compagnie, codes…">
+        <span>🔎</span><input type="text" id="search" placeholder="Rechercher un vol…">
       </label>
       <button class="btn" id="refreshBtn">Rafraîchir</button>
       <span class="hint" id="countHint">—</span>
-      <label class="toggle" title="Utiliser un jeu d’exemple si l’API est indisponible côté navigateur">
-        <input type="checkbox" id="demoToggle" />
-        Démo si API indisponible
+      <label class="toggle">
+        <input type="checkbox" id="demoToggle"> Démo si l’API est bloquée (CORS)
       </label>
     </div>
   </div>
@@ -153,348 +88,214 @@
     <h2>Arrivées</h2>
     <div id="arrivals" class="grid"></div>
   </section>
-
   <section class="section">
     <h2>Départs</h2>
     <div id="departures" class="grid"></div>
   </section>
-
   <section class="section" id="emptyState" style="display:none">
-    <div class="empty">
-      Aucun vol ne correspond à vos filtres pour cette journée.
-    </div>
+    <div class="empty">Aucun vol ne correspond aux filtres.</div>
   </section>
 </main>
 
 <script>
-/* ===================== CONFIG ===================== */
+/* ========= CONFIG ========= */
 const ACCESS_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiNTQ5Njc5YTE2NGZhODZkN2RmZjQ0MjBhNjM1NGVhMTVlOGE1M2E3ZjkxZTFkMDE2NDZmMzgyMTkzYzRkZDQyOWY1NjFlMjZkNWU4MWM5YjEiLCJpYXQiOjE3NTUxNjQyNTYsIm5iZiI6MTc1NTE2NDI1NiwiZXhwIjoxNzg2NzAwMjU2LCJzdWIiOiIyNTY2OSIsInNjb3BlcyI6W119.NvJJN1Lt8IMXxl7QJ-UN9e0Z_7F4neBjOcBuJqUvk8Wanly43jtgBzZJDtt0PggqRWpcOP9gCU8Oi3ow69XOnQ";
-const BASE = "https://www.goflightlabs.com/flights";
+const ENDPOINT = "https://www.goflightlabs.com/advanced-flights-schedules";
 const IATA_BVA = "BVA";
-const ICAO_BVA = "LFOB";
 const TZ = "Europe/Paris";
-/* ================================================== */
+/* ========================= */
 
-const fmtTime = d => d ? new Intl.DateTimeFormat('fr-FR',{ timeZone:TZ, hour:'2-digit', minute:'2-digit' }).format(new Date(d)) : "—";
-const fmtDate = d => new Intl.DateTimeFormat('fr-FR',{ timeZone:TZ, dateStyle:'medium' }).format(new Date(d));
-const todayLocalISO = () => {
-  const now = new Date();
-  const iso = new Date(now.toLocaleString('en-CA',{ timeZone:TZ, hour12:false })).toISOString().slice(0,10);
-  return iso; // YYYY-MM-DD in Paris TZ
+const fmt = new Intl.DateTimeFormat('fr-FR',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+const fmtDay = new Intl.DateTimeFormat('fr-FR',{timeZone:TZ, dateStyle:'medium'});
+
+const toMs = v => (v==null ? null : (v>1e12 ? v : v*1000));
+const ymdTZ = ms => {
+  if(ms==null) return null;
+  const d = new Date(ms);
+  const y = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric'}).format(d);
+  const m = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,month:'2-digit'}).format(d);
+  const da= new Intl.DateTimeFormat('en-CA',{timeZone:TZ,day:'2-digit'}).format(d);
+  return `${y}-${m}-${da}`; // YYYY-MM-DD
 };
-const sameLocalDay = (date, isoYmd) => {
-  if(!date) return false;
-  const local = new Date(new Date(date).toLocaleString('en-CA',{ timeZone:TZ, hour12:false }));
-  return local.toISOString().slice(0,10) === isoYmd;
-};
-const minutesDiff = (a,b) => {
-  if(!a || !b) return null;
-  const mm = Math.round((new Date(a) - new Date(b))/60000);
-  return mm;
-};
-const pick = (obj, paths, fallback=null) => {
-  for(const p of paths){
-    try{
-      const v = p.split('.').reduce((o,k)=>o?.[k], obj);
-      if(v !== undefined && v !== null && !(typeof v === 'string' && v.trim()==='')) return v;
-    }catch(_){}
-  }
-  return fallback;
-};
-const cleanICAO = v => (v||"").toUpperCase();
-const cleanIATA = v => (v||"").toUpperCase();
-
-/* ---------- Robust fetch with param variants ---------- */
-async function fetchFlightsFor(dir, ymd){
-  // Preferred server-side filters (try several variants)
-  const queries = [];
-  if(dir==="ARR"){
-    queries.push(`arr_iata=${IATA_BVA}`, `arrival_iata=${IATA_BVA}`, `arrivalIata=${IATA_BVA}`,
-                 `arr_icao=${ICAO_BVA}`, `arrival_icao=${ICAO_BVA}`);
-  }else if(dir==="DEP"){
-    queries.push(`dep_iata=${IATA_BVA}`, `departure_iata=${IATA_BVA}`, `depIata=${IATA_BVA}`,
-                 `dep_icao=${ICAO_BVA}`, `departure_icao=${ICAO_BVA}`);
-  }else{
-    // Fallback: no server filter
-    queries.push("");
-  }
-
-  // Try each variant until one returns usable data
-  for(const q of queries){
-    const url = `${BASE}?access_key=${encodeURIComponent(ACCESS_KEY)}${q ? "&"+q : ""}`;
-    try{
-      const res = await fetch(url, {mode:'cors'});
-      if(!res.ok) continue;
-      const data = await res.json();
-      const arr = normalizeData(data, dir);
-      if(arr.length) return arr;
-      // If empty but request succeeded, still return (maybe no flights)
-      if(q) return arr;
-    }catch(e){
-      // try next
-    }
-  }
-  throw new Error("API indisponible ou bloquée par CORS");
-}
-
-/* ---------- Normalize into a common shape ---------- */
-function normalizeData(apiResponse, forceDir){
-  // Accept multiple shapes: {data:[]}, {results:[]}, or array directly
-  const list = apiResponse?.data ?? apiResponse?.results ?? apiResponse ?? [];
-  const flights = [];
-  for(const it of (Array.isArray(list)?list:[])){
-    const dep = pick(it, ["departure","Departure","dep"], {});
-    const arr = pick(it, ["arrival","Arrival","arr"], {});
-    const airline = pick(it, ["airline","Airline"], {});
-    const flight = pick(it, ["flight","Flight"], {});
-    const aircraft = pick(it, ["aircraft","Aircraft"], {});
-    const live = pick(it, ["live","Live"], {});
-
-    const depIata = cleanIATA(pick(dep, ["iata","IATA","airport.iata"]));
-    const arrIata = cleanIATA(pick(arr, ["iata","IATA","airport.iata"]));
-    const depIcao = cleanICAO(pick(dep, ["icao","ICAO","airport.icao"]));
-    const arrIcao = cleanICAO(pick(arr, ["icao","ICAO","airport.icao"]));
-
-    const dir = forceDir || ((arrIata===IATA_BVA || arrIcao===ICAO_BVA) ? "ARR"
-                       : (depIata===IATA_BVA || depIcao===ICAO_BVA) ? "DEP" : "UNK");
-
-    if(dir==="UNK") continue; // not a BVA flight
-
-    flights.push({
-      dir,
-      flightNumber: pick(flight, ["iata","iata_number","number","IATA"], pick(it, ["flight_iata","callsign","callsignIata"], "—")),
-      callsign: pick(flight, ["icao","ICAO","number"], pick(it, ["callsign","Callsign"], null)),
-      airline: pick(airline, ["name","Name"], pick(it, ["airline_name"], "")),
-      dep: {
-        iata: depIata || null,
-        icao: depIcao || null,
-        name: pick(dep, ["airport","Airport","name"], null),
-        city: pick(dep, ["city","City"], null),
-        scheduled: pick(dep, ["scheduled","scheduled_time","scheduledTime"]),
-        estimated: pick(dep, ["estimated","estimated_time","estimatedTime"]),
-        actual: pick(dep, ["actual","actual_time","actualTime"]),
-        gate: pick(dep, ["gate","Gate"]),
-        terminal: pick(dep, ["terminal","Terminal"])
-      },
-      arr: {
-        iata: arrIata || null,
-        icao: arrIcao || null,
-        name: pick(arr, ["airport","Airport","name"], null),
-        city: pick(arr, ["city","City"], null),
-        scheduled: pick(arr, ["scheduled","scheduled_time","scheduledTime"]),
-        estimated: pick(arr, ["estimated","estimated_time","estimatedTime"]),
-        actual: pick(arr, ["actual","actual_time","actualTime"]),
-        gate: pick(arr, ["gate","Gate"]),
-        terminal: pick(arr, ["terminal","Terminal"])
-      },
-      status: pick(it, ["status","flight_status","FlightStatus"], live?.is_grounded ? "au sol" : null),
-      aircraft: {
-        model: pick(aircraft, ["model","Model"]),
-        icao: pick(aircraft, ["icao","ICAO","icao24","hex"]),
-        iata: pick(aircraft, ["iata","IATA"]),
-        reg: pick(aircraft, ["registration","Registration","reg"])
-      }
-    });
-  }
-  return flights;
-}
-
-/* ---------- DEMO DATA (fallback) ---------- */
-const demoData = (() => {
-  const base = new Date(new Date().toLocaleString('en-CA',{ timeZone:TZ }));
-  const set = (h,m) => new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, m).toISOString();
-  return [
-    {dir:"ARR", flightNumber:"TT245", airline:"Trans Travel", dep:{iata:"LGW", city:"London"}, arr:{iata:"BVA", scheduled:set(22,56), actual:null, estimated:set(23, 2)} , status:"en route", aircraft:{model:"AT76", reg:"PAWOF"}},
-    {dir:"ARR", flightNumber:"TT983", airline:"Trans Travel", dep:{iata:"FDF", city:"Fort-de-France"}, arr:{iata:"BVA", scheduled:set(23,12), actual:set(23,13)} , status:"arrivé", aircraft:{model:"A388", reg:"PAWOF"}},
-    {dir:"DEP", flightNumber:"TT247", airline:"Trans Travel", arr:{iata:"LGW", city:"London"}, dep:{iata:"BVA", scheduled:set(23,25)}, status:"prévu", aircraft:{model:"AT76", reg:"PAWOF"}},
-    {dir:"DEP", flightNumber:"TT984", airline:"Trans Travel", arr:{iata:"FDF", city:"Fort-de-France"}, dep:{iata:"BVA", scheduled:set(23,40), estimated:set(23,41)}, status:"retardé", aircraft:{model:"A388", reg:"PAWOF"}},
-    {dir:"ARR", flightNumber:"TT001", airline:"Trans Travel", dep:{iata:"DPS", city:"Denpasar"}, arr:{iata:"BVA", scheduled:set(23,23), actual:set(23,55)}, status:"arrivé", aircraft:{model:"B788", reg:"PAWOF"}},
-    {dir:"DEP", flightNumber:"TT101", airline:"Trans Travel", arr:{iata:"DPS", city:"Denpasar"}, dep:{iata:"BVA", scheduled:set(1,34)}, status:"prévu", aircraft:{model:"B788", reg:"PAWOF"}},
-  ];
-})();
-
-/* ---------- Rendering ---------- */
-function delayBadge(sched, actualOrEst){
-  const d = minutesDiff(actualOrEst, sched);
-  if(d === null) return "";
+const fmtTime = ms => ms==null ? "—" : fmt.format(new Date(ms));
+const minDiff = (msA, msB) => (msA==null||msB==null) ? null : Math.round((msA-msB)/60000);
+const delayBadge = (sched, ref) => {
+  const d = minDiff(ref, sched);
+  if(d===null) return "";
   const cls = d<=0 ? "ok" : (d<=15 ? "warn" : "late");
   const txt = d===0 ? "à l'heure" : (d<0 ? `${Math.abs(d)}' en avance` : `+${d}'`);
   return `<span class="delay ${cls}">${txt}</span>`;
+};
+
+function pickFlightNumber(it){
+  return it.flight_iata || it.flight_icao || it.flight_number || "—";
 }
-function airportLabel(a){
-  if(!a) return "—";
-  const parts = [a.iata || a.icao || "—", a.city || a.name || ""].filter(Boolean);
-  return parts.join(" · ");
+
+/* ---- Fetch ALL pages for a type (arrival/ departure) ---- */
+async function fetchSchedules(type){
+  const limit = 1000;
+  let skip = 0, all = [];
+  while(true){
+    const url = `${ENDPOINT}?access_key=${encodeURIComponent(ACCESS_KEY)}&iataCode=${IATA_BVA}&type=${type}&limit=${limit}&skip=${skip}`;
+    const res = await fetch(url, {mode:'cors'});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const json = await res.json();
+    const rows = Array.isArray(json?.data) ? json.data : Array.isArray(json?.response) ? json.response : Array.isArray(json) ? json : [];
+    all.push(...rows);
+    const hasMore = json?.has_more === true || (typeof json?.total_items === "number" ? (skip + limit) < json.total_items : false);
+    if(!hasMore) break;
+    skip += limit;
+    if(skip > 20000) break; // garde-fou
+  }
+  return all;
 }
-function cardTemplate(f){
-  const isArr = f.dir === "ARR";
-  const A = isArr ? f.dep : f.arr; // opposite airport as city label
-  const B = isArr ? f.arr : f.dep; // BVA side for timings
+
+/* ---- Normalize to our UI model ---- */
+function normalize(rows, dir){
+  return rows
+    .filter(r => dir==="ARR" ? r.arr_iata===IATA_BVA : r.dep_iata===IATA_BVA)
+    .map(r => {
+      const sched = dir==="ARR" ? toMs(r.arr_time_ts) : toMs(r.dep_time_ts);
+      const est   = dir==="ARR" ? toMs(r.arr_estimated_ts) : toMs(r.dep_estimated_ts);
+      const act   = dir==="ARR" ? toMs(r.arr_actual_ts) : toMs(r.dep_actual_ts);
+      return {
+        dir,
+        status: r.status || "",
+        airline: r.airline_iata || r.airline_icao || "",
+        number: pickFlightNumber(r),
+        dep: { iata: r.dep_iata || "", icao: r.dep_icao || "" },
+        arr: { iata: r.arr_iata || "", icao: r.arr_icao || "" },
+        aircraft: r.aircraft_icao || "",
+        sched, est, act
+      };
+    });
+}
+
+/* ---- DEMO data (si CORS) ---- */
+const demoData = [
+  {dir:"ARR", status:"active", airline:"TO", number:"TO4101", dep:{iata:"PMI"}, arr:{iata:"BVA"}, aircraft:"A320", sched: Date.now()-3600e3, est: Date.now()-1800e3, act:null},
+  {dir:"DEP", status:"scheduled", airline:"FR", number:"FR1234", dep:{iata:"BVA"}, arr:{iata:"BGY"}, aircraft:"B738", sched: Date.now()+1800e3, est:null, act:null},
+  {dir:"ARR", status:"landed", airline:"W6", number:"W63123", dep:{iata:"OTP"}, arr:{iata:"BVA"}, aircraft:"A21N", sched: Date.now()-7200e3, est:null, act:Date.now()-6900e3},
+];
+
+/* ---- Rendering ---- */
+function card(f){
+  const isArr = f.dir==="ARR";
   const STA_STD = isArr ? "STA" : "STD";
   const ETA_ETD = isArr ? "ETA" : "ETD";
   const ATA_ATD = isArr ? "ATA" : "ATD";
-  const sched = B?.scheduled;
-  const est = B?.estimated;
-  const act = B?.actual;
-  const badge = f.status ? `<span class="badge">${f.status.toUpperCase()}</span>` : "";
   return `
-  <article class="card" data-dir="${f.dir}" data-text="${[
-      f.flightNumber, f.airline, f.callsign, f.aircraft?.reg, f.aircraft?.model, A?.city, A?.iata, B?.iata
-    ].filter(Boolean).join(" ").toLowerCase()}">
-    ${badge}
+  <article class="card" data-dir="${f.dir}" data-text="${[f.number,f.airline,f.dep.iata,f.arr.iata,f.aircraft].join(' ').toLowerCase()}">
+    <span class="badge">${(f.status||"").toUpperCase()}</span>
     <div class="row">
       <div class="flight">
         <span class="chip dir">${f.dir}</span>
-        <span class="flight-no">${f.flightNumber || "—"}</span>
-        <span class="airline">${f.airline || ""}</span>
+        <span class="flight-no">${f.number}</span>
+        <span class="airline">${f.airline}</span>
       </div>
       <div class="meta">
-        ${f.aircraft?.model ? `<span>${f.aircraft.model}</span>` : ""}
-        ${f.aircraft?.reg ? `<span class="dot"></span><span>${f.aircraft.reg}</span>` : ""}
-        ${f.callsign ? `<span class="dot"></span><span>${f.callsign}</span>` : ""}
+        ${f.aircraft ? `<span>${f.aircraft}</span>` : ""}
+        <span class="dot"></span><span>${f.dep.iata||"—"} → ${f.arr.iata||"—"}</span>
       </div>
     </div>
-
     <div class="row" style="margin-top:8px">
-      <div>
-        <div class="lbl">${isArr ? "Provenance" : "Destination"}</div>
-        <div class="city">${airportLabel(A)}</div>
-      </div>
       <div class="times">
-        <div class="timebox">
-          <div class="lbl">${STA_STD}</div>
-          <div class="val">${fmtTime(sched)}</div>
-        </div>
-        <div class="timebox">
-          <div class="lbl">${ETA_ETD}</div>
-          <div class="val">${fmtTime(est) || "—"}</div>
-        </div>
-        <div class="timebox">
-          <div class="lbl">${ATA_ATD}</div>
-          <div class="val">${fmtTime(act) || "—"}</div>
-        </div>
-        ${delayBadge(sched, act || est || null)}
+        <div class="timebox"><div class="lbl">${STA_STD}</div><div class="val">${fmtTime(f.sched)}</div></div>
+        <div class="timebox"><div class="lbl">${ETA_ETD}</div><div class="val">${fmtTime(f.est)}</div></div>
+        <div class="timebox"><div class="lbl">${ATA_ATD}</div><div class="val">${fmtTime(f.act)}</div></div>
+        ${delayBadge(f.sched, f.act ?? f.est)}
       </div>
     </div>
   </article>`;
 }
 
-function render(allFlights, activeDir, ymd, search){
-  // Filter by local day + direction + search
-  const byDay = allFlights.filter(f => {
-    const t = (f.dir==="ARR" ? f.arr?.scheduled : f.dep?.scheduled) || f.arr?.estimated || f.dep?.estimated || f.arr?.actual || f.dep?.actual;
-    return sameLocalDay(t, ymd);
-  });
+function render(list, filterDir, ymd, q){
+  const byDay = list.filter(f => ymdTZ(f.sched) === ymd);
+  const filtered = byDay.filter(f => filterDir==="ALL" || f.dir===filterDir)
+                        .filter(f => !q || (f.number+f.airline+f.dep.iata+f.arr.iata+f.aircraft).toLowerCase().includes(q));
+  filtered.sort((a,b)=> (a.sched??0)-(b.sched??0));
 
-  const filtered = byDay.filter(f => activeDir==="ALL" || f.dir===activeDir)
-    .filter(f => !search || (document.createElement('div').innerHTML = '', true) && (
-      (f.flightNumber||"").toLowerCase().includes(search) ||
-      (f.airline||"").toLowerCase().includes(search) ||
-      (f.callsign||"").toLowerCase().includes(search) ||
-      (f.dep?.city||"").toLowerCase().includes(search) ||
-      (f.arr?.city||"").toLowerCase().includes(search) ||
-      (f.dep?.iata||"").toLowerCase().includes(search) ||
-      (f.arr?.iata||"").toLowerCase().includes(search) ||
-      (f.aircraft?.reg||"").toLowerCase().includes(search) ||
-      (f.aircraft?.model||"").toLowerCase().includes(search)
-    ));
-
-  // Sort by scheduled local time (Arr/Dep specific)
-  const sortKey = f => {
-    const t = (f.dir==="ARR" ? f.arr?.scheduled : f.dep?.scheduled) || (f.dir==="ARR" ? f.arr?.estimated : f.dep?.estimated) || (f.dir==="ARR" ? f.arr?.actual : f.dep?.actual) || 0;
-    return new Date(t).getTime();
-  };
-  filtered.sort((a,b) => sortKey(a)-sortKey(b));
-
-  const arr = filtered.filter(f => f.dir==="ARR").map(cardTemplate).join("");
-  const dep = filtered.filter(f => f.dir==="DEP").map(cardTemplate).join("");
-
-  document.getElementById('arrivals').innerHTML = arr || "";
-  document.getElementById('departures').innerHTML = dep || "";
-  const empty = (!arr && (activeDir!=="DEP")) && (!dep && (activeDir!=="ARR"));
+  const arr = filtered.filter(f=>f.dir==="ARR").map(card).join("");
+  const dep = filtered.filter(f=>f.dir==="DEP").map(card).join("");
+  document.getElementById('arrivals').innerHTML = arr;
+  document.getElementById('departures').innerHTML = dep;
+  const empty = (!arr && (filterDir!=="DEP")) && (!dep && (filterDir!=="ARR"));
   document.getElementById('emptyState').style.display = empty ? "block" : "none";
+  document.getElementById('countHint').textContent = filtered.length ? `${filtered.length} vol${filtered.length>1?"s":""}` : "—";
 
-  const count = filtered.length;
-  document.getElementById('countHint').textContent = count ? `${count} vol${count>1?"s":""}` : "—";
-  // Hide sections if a specific tab is active
-  document.querySelector('section:nth-of-type(1) h2').style.display = (activeDir==="DEP")?"none":"block";
-  document.querySelector('section:nth-of-type(2) h2').style.display = (activeDir==="ARR")?"none":"block";
+  // Masque les titres selon l’onglet
+  document.querySelectorAll('.section h2')[0].style.display = (filterDir==="DEP")?"none":"block";
+  document.querySelectorAll('.section h2')[1].style.display = (filterDir==="ARR")?"none":"block";
 }
 
-/* ---------- Controller ---------- */
-const state = {
-  flights: [],
-  dir: "ALL",
-  ymd: todayLocalISO(),
-  search: ""
-};
+/* ---- Controller ---- */
+const state = { dir:"ALL", ymd:null, q:"", flights:[] };
 
-async function loadFlights(){
+function todayYMD(){
+  const now = new Date();
+  const y = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric'}).format(now);
+  const m = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,month:'2-digit'}).format(now);
+  const d = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,day:'2-digit'}).format(now);
+  return `${y}-${m}-${d}`;
+}
+
+function setBusy(b){
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = b; btn.textContent = b ? "Chargement…" : "Rafraîchir";
+}
+
+async function load(){
   setBusy(true);
-  const useDemo = document.getElementById('demoToggle').checked;
   try{
-    // Try real API (arrivals + departures). If it fails and demo checked => fallback.
-    const [arr, dep] = await Promise.all([
-      fetchFlightsFor("ARR", state.ymd),
-      fetchFlightsFor("DEP", state.ymd)
+    const [arrRows, depRows] = await Promise.all([
+      fetchSchedules("arrival"),
+      fetchSchedules("departure")
     ]);
-    state.flights = [...arr, ...dep];
-  }catch(e){
-    if(useDemo){
-      console.warn(e.message);
+    const flights = [...normalize(arrRows,"ARR"), ...normalize(depRows,"DEP")];
+    state.flights = flights;
+  }catch(err){
+    if(document.getElementById('demoToggle').checked){
+      console.warn("API indisponible côté navigateur (CORS ?). Fallback démo.", err);
       state.flights = demoData;
     }else{
-      alert("Impossible d'accéder à l'API depuis le navigateur (CORS ou indisponible). Active le mode 'Démo' ou interroge l'API via un petit proxy serveur.");
+      alert("Impossible d’appeler l’API (CORS ou indisponible). Active le mode Démo ou passe par un petit proxy serveur.");
       state.flights = [];
     }
   }finally{
     setBusy(false);
-    render(state.flights, state.dir, state.ymd, state.search);
+    render(state.flights, state.dir, state.ymd, state.q);
   }
 }
 
-function setBusy(b){
-  document.getElementById('refreshBtn').disabled = b;
-  document.getElementById('refreshBtn').textContent = b ? "Chargement…" : "Rafraîchir";
-}
-
-/* ---------- Init UI ---------- */
+/* ---- Init ---- */
 (function init(){
-  // Date picker -> today local (Paris)
-  const dp = document.getElementById('datePicker');
-  dp.value = state.ymd;
-  dp.addEventListener('change', e => {
-    state.ymd = e.target.value || todayLocalISO();
-    document.getElementById('dayLabel').textContent = `${fmtDate(state.ymd)} • Europe/Paris`;
-    render(state.flights, state.dir, state.ymd, state.search);
-  });
-  document.getElementById('dayLabel').textContent = `${fmtDate(state.ymd)} • Europe/Paris`;
+  state.ymd = todayYMD();
+  document.getElementById('datePicker').value = state.ymd;
+  document.getElementById('dayLabel').textContent = `${fmtDay.format(new Date())} • Europe/Paris`;
 
-  // Tabs
-  document.querySelectorAll('#dirTabs button').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('#dirTabs button').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      state.dir = btn.dataset.dir;
-      render(state.flights, state.dir, state.ymd, state.search);
+  document.getElementById('datePicker').addEventListener('change', e=>{
+    state.ymd = e.target.value || todayYMD();
+    document.getElementById('dayLabel').textContent = `${fmtDay.format(new Date(state.ymd))} • Europe/Paris`;
+    render(state.flights, state.dir, state.ymd, state.q);
+  });
+
+  document.querySelectorAll('#dirTabs button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('#dirTabs button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active'); state.dir = b.dataset.dir;
+      render(state.flights, state.dir, state.ymd, state.q);
     });
   });
 
-  // Search
-  const s = document.getElementById('search');
-  s.addEventListener('input', e=>{
-    state.search = (e.target.value||"").trim().toLowerCase();
-    render(state.flights, state.dir, state.ymd, state.search);
+  document.getElementById('search').addEventListener('input', e=>{
+    state.q = (e.target.value||"").toLowerCase().trim();
+    render(state.flights, state.dir, state.ymd, state.q);
   });
 
-  // Refresh
-  document.getElementById('refreshBtn').addEventListener('click', loadFlights);
+  document.getElementById('refreshBtn').addEventListener('click', load);
+  document.getElementById('demoToggle').addEventListener('change', load);
 
-  // Demo toggle: just reload
-  document.getElementById('demoToggle').addEventListener('change', loadFlights);
-
-  // First load
-  loadFlights();
+  load();
 })();
 </script>
 </body>
