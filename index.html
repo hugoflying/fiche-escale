@@ -156,7 +156,7 @@ button.plus  { background: #555; color: white; }
     font-size: 1.1rem;
 }
 #timer-tobt { background: #2e7d32; }
-#timer-h8   { background: #ffd54f; color:#000; }   /* LID jaune */
+#timer-h8   { background: #ffd54f; color:#000; } /* LID jaune */
 #timer-ctot { background: #455a64; }
 
 /* Toggles (barre du haut) */
@@ -611,7 +611,7 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
     <span id="eraserSizeVal">22</span>px
 
     <div style="display:flex; align-items:center; gap:10px; margin-left:12px;">
-      <div class="note-color" style="background:#111" onclick="pickColor(this,'#111')"></div>
+      <div class="note-color" id="noteColorDotDefault" style="background:#111" onclick="pickColor(this, getThemeDefaultPen())"></div>
       <div class="note-color" style="background:#d32f2f" onclick="pickColor(this,'#d32f2f')"></div>
       <div class="note-color" style="background:#1976d2" onclick="pickColor(this,'#1976d2')"></div>
       <div class="note-color" style="background:#2e7d32" onclick="pickColor(this,'#2e7d32')"></div>
@@ -648,6 +648,11 @@ window._timelineCurrentRange = null;
 /* TOBT brut (hors CTOT) stocké en minutes pour LID */
 window._tobtRawMins = null;
 
+/* === Notepad theme defaults === */
+const NOTE_DEFAULT_LIGHT = '#111111';
+const NOTE_DEFAULT_DARK  = '#FFFFFF';
+
+/* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
@@ -688,15 +693,18 @@ function initForm(){
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
 
-  // mise à jour labels d'onglets
-  document.getElementById('Parking').onchange = updateTabLabelInstant;
-  document.getElementById('Cie').onchange = updateTabLabelInstant;
-  document.getElementById('NVol').oninput = updateTabLabelInstant;
-  document.getElementById('To').oninput = updateTabLabelInstant;
+  // MAJ onglets + presets + Cie (éviter d'écraser l'attribut onchange inline)
+  document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
+  document.getElementById('Cie').addEventListener('change', ()=>{
+    updateTabLabelInstant();
+    generateChargementFields();
+    updateAllCalculations();
+  });
+  document.getElementById('NVol').addEventListener('input', updateTabLabelInstant);
+  document.getElementById('To').addEventListener('input', updateTabLabelInstant);
 
-  // presets prestations
-  document.getElementById('From').oninput = applyPrestationsDefaults;
-  document.getElementById('To').oninput = applyPrestationsDefaults;
+  document.getElementById('From').addEventListener('input', applyPrestationsDefaults);
+  document.getElementById('To').addEventListener('input', applyPrestationsDefaults);
 
   setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
@@ -950,6 +958,9 @@ function generateChargementFields() {
       <div class="form-group-3col"><label>FWD/OA<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-3col"><label>MID/OB<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-3col"><label>AFT/OC<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
+
+      <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+      <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
     `;
   } else {
     html += `
@@ -962,6 +973,9 @@ function generateChargementFields() {
       <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
       <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
+
+      <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
+      <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
     `;
   }
 
@@ -1167,7 +1181,6 @@ function updateDLCode() {
   const SIBT = new Date(); SIBT.setHours(sH, sM);
   const AIBT = new Date(); AIBT.setHours(aH, aM);
 
-  // On ne renseigne un DL que si AIBT > SIBT (retard constaté)
   if (AIBT > SIBT) {
     if (cie === 'FR' || cie === 'RK') document.getElementById('DLcode1').value = '93';
     else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
@@ -1260,6 +1273,9 @@ function setDarkMode(enable, fromInit=false){
   if (!enable && currentlyDark) document.body.classList.remove('dark');
   document.getElementById('darkToggle').checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
+
+  // Adapter le bloc-note au thème (traits + couleur par défaut)
+  adaptNotepadThemeColors(enable, fromInit);
 }
 
 function setTimeModeUTC(enable, fromInit=false){
@@ -1577,7 +1593,7 @@ function clearAutoSave() {
    ========================================================== */
 let noteOpen = false;
 let noteTool = 'pen';
-let noteColor = '#111111';
+let noteColor = NOTE_DEFAULT_LIGHT;
 let notePenSize = 3;
 let noteEraserSize = 22;
 let noteStrokes = [];
@@ -1589,6 +1605,10 @@ let noteInited = false;
 let noteUndoStack = [];
 let noteRedoStack = [];
 const NOTE_UNDO_LIMIT = 100;
+
+function getThemeDefaultPen(){
+  return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+}
 
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
@@ -1690,8 +1710,18 @@ function initNotepadOnce(){
   });
 
   updatePenSizeLabel(); updateEraserSizeLabel();
-  const firstDot = document.querySelector('.note-color'); if(firstDot) firstDot.classList.add('selected');
+
+  // point de couleur par défaut selon thème
+  const defaultDot = document.getElementById('noteColorDotDefault');
+  if(defaultDot){
+    defaultDot.style.background = getThemeDefaultPen();
+    defaultDot.classList.add('selected');
+  }
+  // couleur input selon thème
+  document.getElementById('noteColorInput').value = rgbToHex(getThemeDefaultPen());
+  noteColor = getThemeDefaultPen();
 }
+function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
 
 function fitNoteCanvas(){
   if(!noteCanvas) return;
@@ -1742,7 +1772,7 @@ function loadNotepad(){
 function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
 function pushUndoState(){
   noteUndoStack.push(snapshotStrokes());
-  if (noteUndoStack.length > NOTE_UNDO_LIMIT) noteUndoStack.shift();
+  if (noteUndoStack.length > 100) noteUndoStack.shift();
   updateUndoRedoBtns();
 }
 function clearRedo(){ noteRedoStack = []; updateUndoRedoBtns(); }
@@ -1802,7 +1832,7 @@ function renderNote(){
 
   for(const s of noteStrokes){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
-    noteCtx.strokeStyle = s.color || '#111';
+    noteCtx.strokeStyle = s.color || getThemeDefaultPen();
     noteCtx.lineWidth = s.size || 3;
     if(!s.points || s.points.length===0) continue;
     noteCtx.beginPath();
@@ -1831,6 +1861,49 @@ function noteClearAll(){
   noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
 }
 
+/* === Adaptation bloc-note au thème (inversion noir/blanc) === */
+function adaptNotepadThemeColors(dark, fromInit){
+  const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+
+  // Met à jour le point de couleur par défaut et la sélection
+  const defaultDot = document.getElementById('noteColorDotDefault');
+  if (defaultDot) {
+    defaultDot.style.background = newDefault;
+    document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
+    defaultDot.classList.add('selected');
+  }
+  noteColor = newDefault;
+  const colorInput = document.getElementById('noteColorInput');
+  if (colorInput) colorInput.value = newDefault;
+
+  // Charge strokes du vol courant, remplace toutes les couleurs crayon par le défaut du thème
+  try{
+    const key = noteStorageKey();
+    const raw = localStorage.getItem(key);
+    let strokes = raw ? JSON.parse(raw) : [];
+
+    // Inversion globale demandée (tous les traits non-gomme)
+    let changed = false;
+    for(const s of strokes){
+      if(s.tool !== 'eraser' && s.color !== newDefault){
+        s.color = newDefault;
+        changed = true;
+      }
+    }
+    if(changed){
+      localStorage.setItem(key, JSON.stringify(strokes));
+    }
+
+    // Si overlay ouvert, applique tout de suite
+    if(noteOpen){
+      noteStrokes = strokes;
+      fitNoteCanvas();
+      renderNote();
+    }
+  }catch(e){}
+}
+
+/* Maintien bloc-note lors du switch d’onglet */
 const _switchTabOrig = switchTab;
 switchTab = function(id){
   _switchTabOrig(id);
