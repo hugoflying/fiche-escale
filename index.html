@@ -281,10 +281,10 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 
 /* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{
-  position: fixed; top: 6vh; left: 2vw; /* position par défaut visible */
-  width: 96vw; height: 80vh;            /* quasi plein écran */
+  position: fixed; top: 6vh; left: 2vw;
+  width: 96vw; height: 80vh;
   min-width: 320px; min-height: 260px;
-  max-width: calc(100vw - 20px);        /* toujours entièrement visible */
+  max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
   background: rgba(255,255,255,0.9);
   color:#111;
@@ -298,12 +298,9 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 }
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
 .note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
-
 body.dark .note-overlay{
   background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08);
 }
-
-/* Poignée de redimensionnement */
 .note-overlay::after{
   content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px;
   background:
@@ -351,9 +348,7 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
 
 /* bouton danger (croix rouge) */
-.note-btn-danger{
-  background:#e53935 !important; color:#fff !important;
-}
+.note-btn-danger{ background:#e53935 !important; color:#fff !important; }
 .note-btn-danger:hover{ filter: brightness(0.95); }
 .note-btn-danger:active{ transform: translateY(1px); }
 
@@ -405,7 +400,7 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
 <!-- Timers -->
 <div class="timer-box">
   <div class="timer-group">
-    <div class="timer"><div class="timer-label">H-40</div><div id="timer-h40" class="timer-value">--:--</div></div>
+    <div class="timer"><div class="timer-label">HLE</div><div id="timer-h40" class="timer-value">--:--</div></div>
     <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
     <div class="timer"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
   </div>
@@ -421,16 +416,20 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
   <div class="form-grid">
     <div class="form-group" style="flex:1 1 100%;"><label>Date<input type="date" id="Date"></label></div>
     <div class="form-group"><label>Cie
-      <select id="Cie" onchange="updateAllCalculations(); generateChargementFields();">
+      <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
         <option value="">--</option>
         <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
         <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
         <option>V7</option><option>Autre</option>
       </select>
     </label></div>
-    <div class="form-group"><label>N° VOL<input class="uppercase" type="text" id="NVol"></label></div>
+    <div class="form-group"><label>N° VOL
+      <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
+    </label></div>
     <div class="form-group"><label>Provenance<input class="uppercase" type="text" id="From" maxlength="3"></label></div>
-    <div class="form-group"><label>Destination<input class="uppercase" type="text" id="To" maxlength="3"></label></div>
+    <div class="form-group"><label>Destination
+      <input class="uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
+    </label></div>
     <div class="form-group"><label>Immat<input class="uppercase" type="text" id="Immat" maxlength="5"></label></div>
     <div class="form-group"><label>Parking
       <select id="Parking">
@@ -689,8 +688,13 @@ function initForm(){
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
 
-  document.getElementById('Parking').onchange = updateTabLabelInstant;
+  // mise à jour labels d'onglets
+  document.getElementById('Parking').onchange = updateTabLabelInstant; // au cas où
+  document.getElementById('Cie').onchange = updateTabLabelInstant;
+  document.getElementById('NVol').oninput = updateTabLabelInstant;
   document.getElementById('To').oninput = updateTabLabelInstant;
+
+  // presets prestations
   document.getElementById('From').oninput = applyPrestationsDefaults;
   document.getElementById('To').oninput = applyPrestationsDefaults;
 
@@ -722,9 +726,13 @@ function initForm(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 
   if (currentTabId) loadTabData(currentTabId);
+
+  // date par défaut si vide
+  setDefaultDateToTodayIfEmpty();
+
   renderTimeline();
 
-  // Raccourci: ouvrir le bloc-note (Ctrl/Cmd + N) et fermer (ESC)
+  // Raccourcis bloc-note
   document.addEventListener('keydown', (e)=>{
     if(e.key==='n' && (e.ctrlKey || e.metaKey)){
       e.preventDefault();
@@ -735,6 +743,12 @@ function initForm(){
       closeNotepadOverlay();
     }
   });
+}
+
+/* date par défaut = aujourd’hui si vide */
+function setDefaultDateToTodayIfEmpty(){
+  const d = document.getElementById('Date');
+  if(d && !d.value){ d.valueAsDate = new Date(); }
 }
 
 /* Forcer MAJUSCULE */
@@ -770,10 +784,16 @@ function renderTabs(){
   let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
   tabs.forEach((id)=>{
     const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
-    let label=data.To?String(data.To).toUpperCase():"VOL";
-    let parking=data.Parking?circledNums[parseInt(data.Parking)]:"";
+
+    const cie = (data.Cie||'').toUpperCase();
+    const nvol = (data.NVol||'').toUpperCase();
+    const to = (data.To||'').toUpperCase();
+
+    let left = `${cie}${nvol||''}`.trim();
+    let label = left || to ? (to ? `${left} | ${to}`.trim() : left) : 'VOL';
+
     const btn=document.createElement('button');
-    btn.textContent=label+" "+parking;
+    btn.textContent=label || 'VOL';
     btn.style.fontWeight=id===currentTabId?'bold':'normal';
     btn.onclick=()=>switchTab(id);
     btn.ondblclick=()=>deleteTab(id);
@@ -828,7 +848,7 @@ function clearFormFields(){
     else if(el.tagName==='SELECT') el.selectedIndex=0;
     else el.value='';
   });
-  document.getElementById('Date').valueAsDate=new Date();
+  document.getElementById('Date').valueAsDate=new Date(); // date du jour par défaut
   document.getElementById('FNC').value='N';
   updateAllCalculations();
 }
@@ -873,6 +893,9 @@ function loadTabData(id){
 
   document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
   document.getElementById('utcToggle').checked  = isUTC;
+
+  // si la date est absente, la mettre à aujourd’hui
+  setDefaultDateToTodayIfEmpty();
 
   generateChargementFields();
   updateAllCalculations();
@@ -1012,7 +1035,7 @@ function updateAllCalculations() {
   renderTimeline();
 }
 
-/* TIMERS H-40/H-15 */
+/* TIMERS HLE/H-15 */
 function updateTimers() {
   const sobt = document.getElementById('SOBT').value;
   if (!sobt) {
@@ -1274,6 +1297,7 @@ function toExtended(t, min, max){
   const startMod = ((min % 1440) + 1440) % 1440;
   return (t < startMod) ? t + 1440 : t;
 }
+
 function computeTimelineWindow(allTimes){
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
@@ -1285,7 +1309,7 @@ function computeTimelineWindow(allTimes){
 
   if (haveStart && haveEnd) {
     let startRef = null;
-    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT;
+    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT; // HLE < SIBT ? HLE : SIBT
     else startRef = (H40 != null) ? H40 : SIBT;
     let min = startRef - 5;
     let endRef = (AOBT != null ? AOBT : TOBT);
@@ -1293,7 +1317,7 @@ function computeTimelineWindow(allTimes){
 
     if (max <= min) max += 1440;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'(H40<SIBT?H40:SIBT) → AOBT|TOBT'};
+    return {min, max, basis:'(HLE<SIBT?HLE:SIBT) → AOBT|TOBT'};
   }
 
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
@@ -1340,7 +1364,8 @@ function collectTimelineData(){
   addPoint('SIBT', SIBT, 'tl--std'); addPoint('AIBT', AIBT, 'tl--std');
   addPoint('SOBT', SOBT, 'tl--std'); addPoint('AOBT', AOBT, 'tl--std');
   addPoint('TOBT', TOBT, 'tl--tobt'); addPoint('CTOT', CTOT, 'tl--ctot');
-  addPoint('H-15', H15,  'tl--turn'); addPoint('H-40', H40,  'tl--turn');
+  addPoint('HLE',  H40,  'tl--turn'); // affichage HLE au lieu de H-40
+  addPoint('H-15', H15,  'tl--turn');
 
   const singles = [
     ['ArrPNT','Arrivée PNT avion'],
@@ -1530,7 +1555,7 @@ function clearAutoSave() {
 }
 
 /* ==========================================================
-   === BLOC-NOTE : état, dessin HiDPI, undo/redo, modern UI ===
+   === BLOC-NOTE (identique version moderne, avec undo/redo) ===
    ========================================================== */
 let noteOpen = false;
 let noteTool = 'pen';
@@ -1549,13 +1574,12 @@ const NOTE_UNDO_LIMIT = 100;
 
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
-/* Ouverture / fermeture */
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   if (!noteInited) initNotepadOnce();
   el.style.display = 'block';
-  ensureNoteOverlayInViewport();   // s’adapte à l’écran
+  ensureNoteOverlayInViewport();
   requestAnimationFrame(()=>{ el.classList.add('open'); });
   el.setAttribute('aria-hidden','false');
   noteOpen = true;
@@ -1572,30 +1596,20 @@ function closeNotepadOverlay(){
   noteOpen = false;
 }
 
-/* Toujours visible à l’écran (clamp taille/position) */
 function ensureNoteOverlayInViewport(){
   const overlay = document.getElementById('noteOverlay');
   if(!overlay) return;
   const margin = 10;
-
-  // contraindre la taille
   overlay.style.maxWidth  = `calc(100vw - ${margin*2}px)`;
   overlay.style.maxHeight = `calc(100vh - ${margin*2}px)`;
-
   const vw = window.innerWidth, vh = window.innerHeight;
   const rect = overlay.getBoundingClientRect();
-
-  // ajuster largeur/hauteur si trop grandes
   let w = Math.min(rect.width,  vw - margin*2);
   let h = Math.min(rect.height, vh - margin*2);
   if (Math.abs(w - rect.width) > 0.5) overlay.style.width  = w + 'px';
   if (Math.abs(h - rect.height) > 0.5) overlay.style.height = h + 'px';
-
-  // recalcul rect après éventuel changement taille
   const rect2 = overlay.getBoundingClientRect();
   w = rect2.width; h = rect2.height;
-
-  // clamp position
   let left = Math.min(Math.max(rect2.left,  margin), vw - margin - w);
   let top  = Math.min(Math.max(rect2.top,   margin), vh - margin - h);
   overlay.style.left = left + 'px';
@@ -1603,7 +1617,6 @@ function ensureNoteOverlayInViewport(){
   overlay.style.right = 'auto';
 }
 
-/* Init unique */
 function initNotepadOnce(){
   if (noteInited) return; noteInited = true;
 
@@ -1611,7 +1624,6 @@ function initNotepadOnce(){
   noteCtx = noteCanvas.getContext('2d', { willReadFrequently: false });
   noteCtx.lineJoin = 'round'; noteCtx.lineCap  = 'round';
 
-  // Drag de la fenêtre
   const dragBar = document.getElementById('noteDragBar');
   const overlay = document.getElementById('noteOverlay');
   dragBar.addEventListener('mousedown', (e)=>{
@@ -1640,22 +1652,17 @@ function initNotepadOnce(){
     ensureNoteOverlayInViewport();
   });
 
-  // ResizeObserver -> adapter canvas + garder la fenêtre à l’écran
   noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
   noteRO.observe(overlay);
   noteRO.observe(document.querySelector('.note-canvas-wrap'));
-
-  // S’adapte aussi quand la fenêtre (viewport) change
   window.addEventListener('resize', ensureNoteOverlayInViewport);
 
-  // Pointer events
   noteCanvas.addEventListener('pointerdown', notePointerDown);
   noteCanvas.addEventListener('pointermove', notePointerMove);
   noteCanvas.addEventListener('pointerup',   notePointerUp);
   noteCanvas.addEventListener('pointerleave',notePointerUp);
   noteCanvas.addEventListener('pointercancel',notePointerUp);
 
-  // Raccourcis Undo/Redo si bloc-note ouvert
   document.addEventListener('keydown', (e)=>{
     if(!noteOpen) return;
     const isMac = navigator.platform.toLowerCase().includes('mac');
@@ -1664,12 +1671,10 @@ function initNotepadOnce(){
     else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) { e.preventDefault(); noteRedo(); }
   });
 
-  // UI initiale
   updatePenSizeLabel(); updateEraserSizeLabel();
   const firstDot = document.querySelector('.note-color'); if(firstDot) firstDot.classList.add('selected');
 }
 
-/* HiDPI: dimension réelle + échelle unique */
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
@@ -1682,7 +1687,6 @@ function fitNoteCanvas(){
   noteCtx.lineCap  = 'round';
 }
 
-/* Outils & UI */
 function setNoteTool(tool){
   noteTool = tool;
   document.getElementById('toolPen').classList.toggle('active', tool==='pen');
@@ -1706,7 +1710,6 @@ function pickColor(el, color){
   setNoteTool('pen');
 }
 
-/* Persistance */
 function saveNotepad(){
   try{ localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes)); }
   catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000); }
@@ -1718,7 +1721,6 @@ function loadNotepad(){
   }catch(e){ noteStrokes = []; }
 }
 
-/* Undo/Redo helpers */
 function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
 function pushUndoState(){
   noteUndoStack.push(snapshotStrokes());
@@ -1733,10 +1735,8 @@ function updateUndoRedoBtns(){
   if (r) r.disabled = noteRedoStack.length === 0;
 }
 
-/* Coordonnées pointer en px CSS (sans décalage) */
 function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
 
-/* Dessin */
 function notePointerDown(e){
   e.preventDefault();
   noteCanvas.setPointerCapture(e.pointerId);
@@ -1775,16 +1775,12 @@ function notePointerUp(e){
   noteCurrentStroke = null;
 }
 
-/* Rendu complet (replay) */
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
-
-  // Effacer en device px
   noteCtx.save();
   noteCtx.setTransform(1,0,0,1,0,0);
   noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
   noteCtx.restore();
-  // Le contexte est déjà scalé pour dessiner en px CSS
 
   for(const s of noteStrokes){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
@@ -1798,7 +1794,6 @@ function renderNote(){
   }
 }
 
-/* Undo / Redo */
 function noteUndo(){
   if (noteUndoStack.length === 0) return;
   noteRedoStack.push(snapshotStrokes());
@@ -1812,14 +1807,12 @@ function noteRedo(){
   saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
 
-/* Tout effacer (annulable) */
 function noteClearAll(){
   if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
   pushUndoState();
   noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
 }
 
-/* Recharger traits si on change d’onglet alors que le bloc-note est ouvert */
 const _switchTabOrig = switchTab;
 switchTab = function(id){
   _switchTabOrig(id);
