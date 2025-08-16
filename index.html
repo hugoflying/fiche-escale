@@ -279,53 +279,28 @@ body.dark .tl-sep{ background:#3a3a3a; }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 .timeline-canvas{ position:relative; height:480px; min-width:600px; width:100%; }
 
-/* === BLOC-NOTE (overlay modernisé & démarqué) === */
+/* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{
   position: fixed; top: 6vh; left: 2vw;
   width: 96vw; height: 80vh;
   min-width: 320px; min-height: 260px;
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
-  /* Légère transparence, SANS blur */
-  background: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.9);
   color:#111;
   border-radius:16px;
-
-  /* Encadrement net */
-  border: 2px solid rgba(6,47,95,.65);
-  outline: 6px solid rgba(6,47,95,.06);
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.45),
-    0 0 0 1px rgba(0,0,0,.06) inset;
-
+  box-shadow: 0 20px 50px rgba(0,0,0,.35);
   z-index:2000; display:none; overflow:hidden; resize: both;
+  backdrop-filter: saturate(180%) blur(12px);
   opacity: 0; transform: translateY(10px) scale(.98);
-  transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease, border-color .2s ease;
+  transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
+  border: 1px solid rgba(0,0,0,.06);
 }
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
-.note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.55); }
-
+.note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 body.dark .note-overlay{
-  background: rgba(20,20,20,0.90);
-  color:#eee;
-  border-color: rgba(144,202,249,.75);
-  outline-color: rgba(144,202,249,.08);
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.7),
-    0 0 0 1px rgba(255,255,255,.06) inset;
+  background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08);
 }
-
-/* Liseré secondaire intérieur */
-.note-overlay::before{
-  content:"";
-  position:absolute; inset:8px;
-  border-radius:12px;
-  border:1px solid rgba(0,0,0,.08);
-  pointer-events:none;
-}
-body.dark .note-overlay::before{ border-color: rgba(255,255,255,.08); }
-
-/* Coin de redimensionnement (garde l’ancien indicateur) */
 .note-overlay::after{
   content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px;
   background:
@@ -341,19 +316,19 @@ body.dark .note-overlay::after{
     linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
 }
 
-/* Barre de titre contrastée */
+/* barre de titre */
 .note-titlebar{
   cursor:grab; user-select:none;
   display:flex; align-items:center; gap:10px;
   padding:10px 12px;
-  background: linear-gradient(180deg, rgba(3,78,162,.08), rgba(3,78,162,.02));
-  border-bottom: 1px solid rgba(0,0,0,.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
+  border-bottom: 1px solid rgba(0,0,0,.06);
 }
 .note-titlebar .spacer{ flex:1; }
 .note-titlebar:active{ cursor:grabbing; }
 body.dark .note-titlebar{
-  background: linear-gradient(180deg, rgba(144,202,249,.15), rgba(144,202,249,.05));
-  border-bottom-color: rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(30,30,30,.7), rgba(30,30,30,.45));
+  border-bottom-color: rgba(255,255,255,.08);
 }
 
 /* Toolbar */
@@ -385,49 +360,14 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-color:hover{ transform: scale(1.06); }
 .note-color.selected{ outline:3px solid #1976d2; }
 
-/* Zone scrollable avec fond "papier" discret */
-.note-canvas-wrap{
-  position:relative; width:100%; height:calc(100% - 100px); overflow:auto;
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,.04) 0 24px, transparent 24px 48px),
-    repeating-linear-gradient(90deg, rgba(0,0,0,.025) 0 24px, transparent 24px 48px);
-  border-top:1px solid rgba(0,0,0,.08);
-}
-body.dark .note-canvas-wrap{
-  background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 24px, transparent 24px 48px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 24px, transparent 24px 48px);
-  border-top-color: rgba(255,255,255,.08);
-}
-
-/* Grande “feuille” + relief doux */
-#noteCanvas{
-  width: 2400px;
-  height: 1800px;
-  display:block;
-  touch-action:none;
-  background:#fff;
-  border-radius: 8px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
-}
+.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); }
+#noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
 body.dark #noteCanvas{ background:#111; }
 
-/* Icône bloc-note dans le bandeau d’onglets — style distinct, sans blur */
-#tab-bar .note-icon{
-  margin-left:auto; border-radius:12px;
-  border: 2px solid rgba(25,118,210,.55);
-  background: rgba(25,118,210,.12);
-  box-shadow: 0 3px 10px rgba(25,118,210,.2);
-  opacity:.96;
-}
-#tab-bar .note-icon:hover{ background: rgba(25,118,210,.18); }
-body.dark #tab-bar .note-icon{
-  border-color: rgba(144,202,249,.75);
-  background: rgba(144,202,249,.12);
-  box-shadow: 0 3px 10px rgba(144,202,249,.25);
-  opacity:.94;
-}
-body.dark #tab-bar .note-icon:hover{ background: rgba(144,202,249,.18); }
+/* Icône bloc-note dans le bandeau d’onglets */
+#tab-bar .note-icon{ margin-left:auto; border-radius:12px; }
+#tab-bar .note-icon:hover{ background:#e9eef6; }
+body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
 </style>
 </head>
 <body onload="initForm()">
@@ -657,16 +597,14 @@ body.dark #tab-bar .note-icon:hover{ background: rgba(144,202,249,.18); }
   <div class="note-toolbar">
     <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
     <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
-    <button type="button" id="toolEraseStroke" class="note-btn"  onclick="setNoteTool('stroke-eraser')">🪄 Gomme-trait</button>
-
     <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
 
     <span style="margin-left:6px;">Taille crayon</span>
-    <input id="penSize" type="range" min="1" max="20" step="1" value="5" oninput="updatePenSizeLabel()">
-    <span id="penSizeVal">5</span>px
+    <input id="penSize" type="range" min="1" max="20" step="1" value="3" oninput="updatePenSizeLabel()">
+    <span id="penSizeVal">3</span>px
 
     <span style="margin-left:12px;">Taille gomme</span>
     <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
@@ -755,7 +693,7 @@ function initForm(){
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
 
-  // MAJ onglets + presets + Cie
+  // MAJ onglets + presets + Cie (éviter d'écraser l'attribut onchange inline)
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
     updateTabLabelInstant();
@@ -870,7 +808,7 @@ function renderTabs(){
     tabBar.appendChild(btn);
   });
 
-  // Bouton bloc-note (distinct)
+  // Bouton bloc-note
   const noteBtn = document.createElement('button');
   noteBtn.className = 'note-icon';
   noteBtn.title = 'Ouvrir le bloc-note';
@@ -1405,7 +1343,7 @@ function computeTimelineWindow(allTimes){
 
   if (haveStart && haveEnd) {
     let startRef = null;
-    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT;
+    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT; // HLE < SIBT ? HLE : SIBT
     else startRef = (H40 != null) ? H40 : SIBT;
     let min = startRef - 5;
     let endRef = (AOBT != null ? AOBT : TOBT);
@@ -1651,13 +1589,12 @@ function clearAutoSave() {
 }
 
 /* ==========================================================
-   === BLOC-NOTE (modernisé, undo/redo, gomme-trait, DPR) ===
+   === BLOC-NOTE (version moderne, avec undo/redo) ===
    ========================================================== */
 let noteOpen = false;
 let noteTool = 'pen';
 let noteColor = NOTE_DEFAULT_LIGHT;
-/* crayon par défaut 5px */
-let notePenSize = 5;
+let notePenSize = 3;
 let noteEraserSize = 22;
 let noteStrokes = [];
 let noteIsDrawing = false;
@@ -1669,14 +1606,12 @@ let noteUndoStack = [];
 let noteRedoStack = [];
 const NOTE_UNDO_LIMIT = 100;
 
-/* DPR & géométrie */
-let noteDPR = 1;
-let noteCssW = 0, noteCssH = 0;
-
 function getThemeDefaultPen(){
   return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
 }
+
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
+
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
@@ -1698,6 +1633,7 @@ function closeNotepadOverlay(){
   el.setAttribute('aria-hidden','true');
   noteOpen = false;
 }
+
 function ensureNoteOverlayInViewport(){
   const overlay = document.getElementById('noteOverlay');
   if(!overlay) return;
@@ -1724,6 +1660,7 @@ function initNotepadOnce(){
 
   noteCanvas = document.getElementById('noteCanvas');
   noteCtx = noteCanvas.getContext('2d', { willReadFrequently: false });
+  noteCtx.lineJoin = 'round'; noteCtx.lineCap  = 'round';
 
   const dragBar = document.getElementById('noteDragBar');
   const overlay = document.getElementById('noteOverlay');
@@ -1764,6 +1701,14 @@ function initNotepadOnce(){
   noteCanvas.addEventListener('pointerleave',notePointerUp);
   noteCanvas.addEventListener('pointercancel',notePointerUp);
 
+  document.addEventListener('keydown', (e)=>{
+    if(!noteOpen) return;
+    const isMac = navigator.platform.toLowerCase().includes('mac');
+    const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+    if (ctrlOrCmd && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? noteRedo() : noteUndo(); }
+    else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) { e.preventDefault(); noteRedo(); }
+  });
+
   updatePenSizeLabel(); updateEraserSizeLabel();
 
   // point de couleur par défaut selon thème
@@ -1772,85 +1717,47 @@ function initNotepadOnce(){
     defaultDot.style.background = getThemeDefaultPen();
     defaultDot.classList.add('selected');
   }
+  // couleur input selon thème
   document.getElementById('noteColorInput').value = rgbToHex(getThemeDefaultPen());
   noteColor = getThemeDefaultPen();
 }
 function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
 
-/* ====== DPR & dessin cohérents ====== */
-function noteSetDrawTransform(){
-  noteCtx.setTransform(noteDPR, 0, 0, noteDPR, 0, 0); // unités en px CSS
+function fitNoteCanvas(){
+  if(!noteCanvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = noteCanvas.getBoundingClientRect();
+  noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
+  noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  noteCtx.setTransform(1,0,0,1,0,0);
+  noteCtx.scale(dpr, dpr);
   noteCtx.lineJoin = 'round';
   noteCtx.lineCap  = 'round';
 }
-function noteClearCanvas(){
-  noteCtx.setTransform(1,0,0,1,0,0);
-  noteCtx.clearRect(0, 0, noteCanvas.width, noteCanvas.height);
-  noteSetDrawTransform();
+
+function setNoteTool(tool){
+  noteTool = tool;
+  document.getElementById('toolPen').classList.toggle('active', tool==='pen');
+  document.getElementById('toolErase').classList.toggle('active', tool==='eraser');
 }
-function fitNoteCanvas(){
-  if(!noteCanvas) return;
-  const rect = noteCanvas.getBoundingClientRect();   // taille CSS (2400x1800)
-  noteCssW = rect.width;
-  noteCssH = rect.height;
-  noteDPR  = window.devicePixelRatio || 1;
-
-  noteCanvas.width  = Math.max(1, Math.floor(noteCssW * noteDPR));
-  noteCanvas.height = Math.max(1, Math.floor(noteCssH * noteDPR));
-
-  noteSetDrawTransform();
+function updatePenSizeLabel(){
+  const v = parseInt(document.getElementById('penSize').value)||3;
+  notePenSize = v;
+  document.getElementById('penSizeVal').textContent = v;
 }
-
-/* Coordonnées exactes sous la pointe (sans drift) */
-function noteEventPoint(e){
-  const r = noteCanvas.getBoundingClientRect();
-  const x = e.clientX - r.left;
-  const y = e.clientY - r.top;
-  return { x, y };  // px CSS
+function updateEraserSizeLabel(){
+  const v = parseInt(document.getElementById('eraserSize').value)||22;
+  noteEraserSize = v;
+  document.getElementById('eraserSizeVal').textContent = v;
+}
+function pickColor(el, color){
+  noteColor = color;
+  document.getElementById('noteColorInput').value = color;
+  document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  setNoteTool('pen');
 }
 
-/* Distance point-segment & hit-test (gomme-trait) */
-function distPointToSegment(p, a, b){
-  const vx=b.x-a.x, vy=b.y-a.y;
-  const wx=p.x-a.x, wy=p.y-a.y;
-  const c1 = vx*wx + vy*wy;
-  const c2 = vx*vx + vy*vy;
-  let t = (c2>0) ? c1/c2 : 0;
-  t = Math.max(0, Math.min(1, t));
-  const px = a.x + t*vx, py = a.y + t*vy;
-  return Math.hypot(p.x - px, p.y - py);
-}
-function hitTestStroke(pt, tolerance){
-  let bestIdx=-1, bestDist=Infinity;
-  for(let i=0;i<noteStrokes.length;i++){
-    const s = noteStrokes[i];
-    if(!s || s.tool==='eraser' || !s.points || s.points.length<2) continue;
-    for(let j=1;j<s.points.length;j++){
-      const a = s.points[j-1], b = s.points[j];
-      const d = distPointToSegment(pt, a, b);
-      if(d < bestDist){ bestDist=d; bestIdx=i; }
-      if(bestDist <= tolerance) break;
-    }
-  }
-  return (bestDist<=tolerance) ? bestIdx : -1;
-}
-
-/* Undo/Redo */
-function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
-function pushUndoState(){
-  noteUndoStack.push(snapshotStrokes());
-  if (noteUndoStack.length > NOTE_UNDO_LIMIT) noteUndoStack.shift();
-  updateUndoRedoBtns();
-}
-function clearRedo(){ noteRedoStack = []; updateUndoRedoBtns(); }
-function updateUndoRedoBtns(){
-  const u = document.getElementById('noteUndoBtn');
-  const r = document.getElementById('noteRedoBtn');
-  if (u) u.disabled = noteUndoStack.length === 0;
-  if (r) r.disabled = noteRedoStack.length === 0;
-}
-
-/* Stockage */
 function saveNotepad(){
   try{ localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes)); }
   catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000); }
@@ -1862,44 +1769,37 @@ function loadNotepad(){
   }catch(e){ noteStrokes = []; }
 }
 
-/* Dessin */
+function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
+function pushUndoState(){
+  noteUndoStack.push(snapshotStrokes());
+  if (noteUndoStack.length > 100) noteUndoStack.shift();
+  updateUndoRedoBtns();
+}
+function clearRedo(){ noteRedoStack = []; updateUndoRedoBtns(); }
+function updateUndoRedoBtns(){
+  const u = document.getElementById('noteUndoBtn');
+  const r = document.getElementById('noteRedoBtn');
+  if (u) u.disabled = noteUndoStack.length === 0;
+  if (r) r.disabled = noteRedoStack.length === 0;
+}
+
+function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
+
 function notePointerDown(e){
   e.preventDefault();
-
-  // Gomme-trait : supprimer un trait entier au tap
-  if(noteTool === 'stroke-eraser'){
-    const pt = noteEventPoint(e);
-    const tol = Math.max(10, notePenSize*1.5);
-    pushUndoState(); clearRedo();
-    const idx = hitTestStroke(pt, tol);
-    if(idx >= 0){
-      noteStrokes.splice(idx, 1);
-      saveNotepad(); renderNote(); updateUndoRedoBtns();
-    }
-    return;
-  }
-
   noteCanvas.setPointerCapture(e.pointerId);
-  noteIsDrawing = true;
-
-  const pt = noteEventPoint(e);
-  noteCurrentStroke = {
-    tool: noteTool,
-    color: noteColor,
-    size: (noteTool==='pen' ? notePenSize : noteEraserSize), // px CSS
-    points: [pt]
-  };
-
   pushUndoState(); clearRedo();
 
-  noteSetDrawTransform();
-  noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = noteCurrentStroke.color;
-  noteCtx.lineWidth   = noteCurrentStroke.size;
-  noteCtx.beginPath();
-  noteCtx.moveTo(pt.x, pt.y);
-  noteCtx.lineTo(pt.x+0.01, pt.y+0.01);
-  noteCtx.stroke();
+  noteIsDrawing = true;
+  const pt = noteEventPoint(e);
+  const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
+  noteCurrentStroke = stroke;
+
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.strokeStyle = stroke.color; noteCtx.lineWidth = stroke.size;
+  noteCtx.beginPath(); noteCtx.moveTo(pt.x, pt.y); noteCtx.lineTo(pt.x+0.01, pt.y+0.01); noteCtx.stroke();
+  noteCtx.restore();
 }
 function notePointerMove(e){
   if(!noteIsDrawing || !noteCurrentStroke) return;
@@ -1907,14 +1807,11 @@ function notePointerMove(e){
   const prev = noteCurrentStroke.points[noteCurrentStroke.points.length-1];
   noteCurrentStroke.points.push(pt);
 
-  noteSetDrawTransform();
+  noteCtx.save();
   noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = noteCurrentStroke.color;
-  noteCtx.lineWidth   = noteCurrentStroke.size;
-  noteCtx.beginPath();
-  noteCtx.moveTo(prev.x, prev.y);
-  noteCtx.lineTo(pt.x, pt.y);
-  noteCtx.stroke();
+  noteCtx.strokeStyle = noteCurrentStroke.color; noteCtx.lineWidth = noteCurrentStroke.size;
+  noteCtx.beginPath(); noteCtx.moveTo(prev.x, prev.y); noteCtx.lineTo(pt.x, pt.y); noteCtx.stroke();
+  noteCtx.restore();
 }
 function notePointerUp(e){
   if(!noteIsDrawing) return;
@@ -1925,25 +1822,26 @@ function notePointerUp(e){
   }
   noteCurrentStroke = null;
 }
+
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
-  noteClearCanvas();
+  noteCtx.save();
+  noteCtx.setTransform(1,0,0,1,0,0);
+  noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
+  noteCtx.restore();
+
   for(const s of noteStrokes){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
     noteCtx.strokeStyle = s.color || getThemeDefaultPen();
-    noteCtx.lineWidth   = s.size || 5;  // px CSS
+    noteCtx.lineWidth = s.size || 3;
     if(!s.points || s.points.length===0) continue;
     noteCtx.beginPath();
     noteCtx.moveTo(s.points[0].x, s.points[0].y);
-    for(let i=1;i<s.points.length;i++){
-      const p = s.points[i];
-      noteCtx.lineTo(p.x, p.y);
-    }
+    for(let i=1;i<s.points.length;i++){ const p = s.points[i]; noteCtx.lineTo(p.x, p.y); }
     noteCtx.stroke();
   }
 }
 
-/* Undo/Redo actions */
 function noteUndo(){
   if (noteUndoStack.length === 0) return;
   noteRedoStack.push(snapshotStrokes());
@@ -1956,6 +1854,7 @@ function noteRedo(){
   noteStrokes = noteRedoStack.pop();
   saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
+
 function noteClearAll(){
   if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
   pushUndoState();
@@ -1977,12 +1876,13 @@ function adaptNotepadThemeColors(dark, fromInit){
   const colorInput = document.getElementById('noteColorInput');
   if (colorInput) colorInput.value = newDefault;
 
-  // Inversion globale des traits non-gomme
+  // Charge strokes du vol courant, remplace toutes les couleurs crayon par le défaut du thème
   try{
     const key = noteStorageKey();
     const raw = localStorage.getItem(key);
     let strokes = raw ? JSON.parse(raw) : [];
 
+    // Inversion globale demandée (tous les traits non-gomme)
     let changed = false;
     for(const s of strokes){
       if(s.tool !== 'eraser' && s.color !== newDefault){
@@ -1993,6 +1893,8 @@ function adaptNotepadThemeColors(dark, fromInit){
     if(changed){
       localStorage.setItem(key, JSON.stringify(strokes));
     }
+
+    // Si overlay ouvert, applique tout de suite
     if(noteOpen){
       noteStrokes = strokes;
       fitNoteCanvas();
