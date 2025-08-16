@@ -360,14 +360,35 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-color:hover{ transform: scale(1.06); }
 .note-color.selected{ outline:3px solid #1976d2; }
 
-.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); }
-#noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
+/* >>> NOTEPAD scrollable & large page <<< */
+.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); overflow:auto; }
+#noteCanvas{
+  /* Canvas plus grand que la fenêtre pour permettre le défilement */
+  width: 2400px;
+  height: 1800px;
+  display:block;
+  touch-action:none;
+  background:#fff;
+}
 body.dark #noteCanvas{ background:#111; }
 
-/* Icône bloc-note dans le bandeau d’onglets */
-#tab-bar .note-icon{ margin-left:auto; border-radius:12px; }
-#tab-bar .note-icon:hover{ background:#e9eef6; }
-body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
+/* Icône bloc-note dans le bandeau d’onglets — style dissocié */
+#tab-bar .note-icon{
+  margin-left:auto; border-radius:12px;
+  border: 2px solid rgba(25,118,210,.55);
+  background: rgba(25,118,210,.12);
+  backdrop-filter: saturate(180%) blur(6px);
+  box-shadow: 0 3px 10px rgba(25,118,210,.2);
+  opacity:.92;
+}
+#tab-bar .note-icon:hover{ background: rgba(25,118,210,.18); }
+body.dark #tab-bar .note-icon{
+  border-color: rgba(144,202,249,.75);
+  background: rgba(144,202,249,.12);
+  box-shadow: 0 3px 10px rgba(144,202,249,.25);
+  opacity:.9;
+}
+body.dark #tab-bar .note-icon:hover{ background: rgba(144,202,249,.18); }
 </style>
 </head>
 <body onload="initForm()">
@@ -597,14 +618,17 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
   <div class="note-toolbar">
     <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
     <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
+    <button type="button" id="toolEraseStroke" class="note-btn"  onclick="setNoteTool('stroke-eraser')">🪄 Gomme-trait</button>
+
     <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
 
     <span style="margin-left:6px;">Taille crayon</span>
-    <input id="penSize" type="range" min="1" max="20" step="1" value="3" oninput="updatePenSizeLabel()">
-    <span id="penSizeVal">3</span>px
+    <!-- valeur par défaut 5px -->
+    <input id="penSize" type="range" min="1" max="20" step="1" value="5" oninput="updatePenSizeLabel()">
+    <span id="penSizeVal">5</span>px
 
     <span style="margin-left:12px;">Taille gomme</span>
     <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
@@ -693,7 +717,7 @@ function initForm(){
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
 
-  // MAJ onglets + presets + Cie (éviter d'écraser l'attribut onchange inline)
+  // MAJ onglets + presets + Cie
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
     updateTabLabelInstant();
@@ -808,7 +832,7 @@ function renderTabs(){
     tabBar.appendChild(btn);
   });
 
-  // Bouton bloc-note
+  // Bouton bloc-note (onglet dissocié)
   const noteBtn = document.createElement('button');
   noteBtn.className = 'note-icon';
   noteBtn.title = 'Ouvrir le bloc-note';
@@ -1594,7 +1618,8 @@ function clearAutoSave() {
 let noteOpen = false;
 let noteTool = 'pen';
 let noteColor = NOTE_DEFAULT_LIGHT;
-let notePenSize = 3;
+/* crayon par défaut 5px */
+let notePenSize = 5;
 let noteEraserSize = 22;
 let noteStrokes = [];
 let noteIsDrawing = false;
@@ -1723,10 +1748,11 @@ function initNotepadOnce(){
 }
 function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
 
+/* Canvas interne : taille en pixels selon CSS (grande page) + DPR */
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
-  const rect = noteCanvas.getBoundingClientRect();
+  const rect = noteCanvas.getBoundingClientRect(); // prend la taille CSS (2400x1800)
   noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
   noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
   noteCtx.setTransform(1,0,0,1,0,0);
@@ -1735,13 +1761,15 @@ function fitNoteCanvas(){
   noteCtx.lineCap  = 'round';
 }
 
+/* Sélection d’outil + états bouton */
 function setNoteTool(tool){
   noteTool = tool;
   document.getElementById('toolPen').classList.toggle('active', tool==='pen');
   document.getElementById('toolErase').classList.toggle('active', tool==='eraser');
+  document.getElementById('toolEraseStroke').classList.toggle('active', tool==='stroke-eraser');
 }
 function updatePenSizeLabel(){
-  const v = parseInt(document.getElementById('penSize').value)||3;
+  const v = parseInt(document.getElementById('penSize').value)||5;
   notePenSize = v;
   document.getElementById('penSizeVal').textContent = v;
 }
@@ -1783,17 +1811,64 @@ function updateUndoRedoBtns(){
   if (r) r.disabled = noteRedoStack.length === 0;
 }
 
-function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
+/* >>> Coordonnées robustes (corrige les décalages stylet) <<< */
+function noteEventPoint(e){
+  const rect = noteCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  return { x, y };
+}
+
+/* Distance point-segment pour gomme-trait */
+function distPointToSegment(p, a, b){
+  const vx=b.x-a.x, vy=b.y-a.y;
+  const wx=p.x-a.x, wy=p.y-a.y;
+  const c1 = vx*wx + vy*wy;
+  const c2 = vx*vx + vy*vy;
+  let t = (c2>0) ? c1/c2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  const px = a.x + t*vx, py = a.y + t*vy;
+  return Math.hypot(p.x - px, p.y - py);
+}
+function hitTestStroke(pt, tolerance){
+  let bestIdx=-1, bestDist=Infinity;
+  for(let i=0;i<noteStrokes.length;i++){
+    const s = noteStrokes[i];
+    if(!s || s.tool==='eraser' || !s.points || s.points.length<2) continue;
+    for(let j=1;j<s.points.length;j++){
+      const a = s.points[j-1], b = s.points[j];
+      const d = distPointToSegment(pt, a, b);
+      if(d < bestDist){ bestDist=d; bestIdx=i; }
+      if(bestDist <= tolerance) break;
+    }
+  }
+  return (bestDist<=tolerance) ? bestIdx : -1;
+}
 
 function notePointerDown(e){
   e.preventDefault();
+
+  // Gomme-trait : suppression d'un trait complet au tap
+  if(noteTool === 'stroke-eraser'){
+    const pt = noteEventPoint(e);
+    const tol = Math.max(10, notePenSize*1.5);
+    pushUndoState(); clearRedo();
+    const idx = hitTestStroke(pt, tol);
+    if(idx >= 0){
+      noteStrokes.splice(idx, 1);
+      saveNotepad(); renderNote(); updateUndoRedoBtns();
+    }
+    return; // pas de capture ni de dessin continu
+  }
+
   noteCanvas.setPointerCapture(e.pointerId);
-  pushUndoState(); clearRedo();
 
   noteIsDrawing = true;
   const pt = noteEventPoint(e);
   const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
   noteCurrentStroke = stroke;
+
+  pushUndoState(); clearRedo();
 
   noteCtx.save();
   noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
@@ -1828,12 +1903,15 @@ function renderNote(){
   noteCtx.save();
   noteCtx.setTransform(1,0,0,1,0,0);
   noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
+  // revenir à l'échelle DPR
+  const dpr = window.devicePixelRatio || 1;
+  noteCtx.scale(dpr, dpr);
   noteCtx.restore();
 
   for(const s of noteStrokes){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
     noteCtx.strokeStyle = s.color || getThemeDefaultPen();
-    noteCtx.lineWidth = s.size || 3;
+    noteCtx.lineWidth = s.size || 5;
     if(!s.points || s.points.length===0) continue;
     noteCtx.beginPath();
     noteCtx.moveTo(s.points[0].x, s.points[0].y);
@@ -1876,13 +1954,12 @@ function adaptNotepadThemeColors(dark, fromInit){
   const colorInput = document.getElementById('noteColorInput');
   if (colorInput) colorInput.value = newDefault;
 
-  // Charge strokes du vol courant, remplace toutes les couleurs crayon par le défaut du thème
+  // Inversion globale demandée (tous les traits non-gomme)
   try{
     const key = noteStorageKey();
     const raw = localStorage.getItem(key);
     let strokes = raw ? JSON.parse(raw) : [];
 
-    // Inversion globale demandée (tous les traits non-gomme)
     let changed = false;
     for(const s of strokes){
       if(s.tool !== 'eraser' && s.color !== newDefault){
@@ -1894,7 +1971,6 @@ function adaptNotepadThemeColors(dark, fromInit){
       localStorage.setItem(key, JSON.stringify(strokes));
     }
 
-    // Si overlay ouvert, applique tout de suite
     if(noteOpen){
       noteStrokes = strokes;
       fitNoteCanvas();
