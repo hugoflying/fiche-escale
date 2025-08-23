@@ -208,16 +208,16 @@ body.dark #tab-bar { background: #121212; }
 
 /* === TIMELINE (base) === */
 .timeline-track {
-  position: absolute; left:6%; right:6%; top:50%;
+  position: absolute; left:6%; right:6%;
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
 }
 body.dark .timeline-track{ background:#2e2e2e; }
 
-.timeline-tick { position: absolute; width: 2px; background:#b0b6bd; }
+.timeline-tick { position: absolute; width: 1px; background:rgba(0,0,0,0.08); }
 body.dark .timeline-tick { background:#3e444b; }
 
 .timeline-tick-label {
-  position: absolute; top: calc(50% + 12px); transform: translateX(-50%);
+  position: absolute; transform: translateX(-50%);
   font-size: 14px; font-weight: 600; color:#444;
 }
 body.dark .timeline-tick-label { color:#cfd4da; }
@@ -244,7 +244,7 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 
 /* Barres de durées */
 .tl-range {
-  top:50%; height: 12px; background: color-mix(in srgb, var(--c) 50%, transparent);
+  height: 12px; background: color-mix(in srgb, var(--c) 50%, transparent);
   border: 2px solid var(--c); border-radius: 8px; z-index: 2;
 }
 .tl-range-label {
@@ -276,7 +276,7 @@ body.dark .tl-sep{ background:#3a3a3a; }
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-.timeline-canvas{ position:relative; height:520px; min-width:600px; width:100%; }
+.timeline-canvas{ position:relative; min-width:600px; width:100%; /* hauteur JS dynamique */ }
 
 /* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{
@@ -466,27 +466,6 @@ body.dark #chiffres-porte select{
 body.dark #chiffres-porte #TOB{
   background:#1b2636; border-color:#90caf9;
 }
-
-/* === INAD + RECHERCHE BAGAGE (optionnels) === */
-#inad-bag .option-grid{
-  display:grid; gap:12px;
-  grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
-}
-.opt-card{
-  background:#fff; border-radius:12px; padding:12px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
-}
-body.dark .opt-card{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
-.opt-card .card-head{
-  display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;
-  font-weight:800;
-}
-.card-fields{ display:none; }
-.card-fields .form-group{ margin-bottom:6px; }
-.card-fields .hint{ text-align:center; font-size:.9rem; opacity:.75; }
-
-/* Timeline canvas wrap */
-.timeline-canvas{ position:relative; height:520px; min-width:600px; width:100%; }
 </style>
 </head>
 <body onload="initForm()">
@@ -618,89 +597,6 @@ body.dark .opt-card{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,25
   <div id="timing-grid"></div>
 </section>
 
-<!-- INAD + RECHERCHE BAGAGE (optionnels) -->
-<section id="inad-bag">
-  <h2>INAD & RECHERCHE BAGAGE (optionnels)</h2>
-  <div class="option-grid">
-    <!-- INAD -->
-    <div class="opt-card">
-      <div class="card-head">
-        <span>INAD</span>
-        <label class="switch" title="Activer INAD">
-          <input type="checkbox" id="INADEnabled" onchange="toggleINAD(this.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div id="inad-fields" class="card-fields">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Arrivée INAD
-              <input type="time" id="ArriveeINAD" onchange="updateAllCalculations()">
-            </label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('ArriveeINAD',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('ArriveeINAD');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('ArriveeINAD',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Remise CAB au coordo
-              <input type="time" id="RemiseCABCoordo" onchange="updateAllCalculations()">
-            </label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('RemiseCABCoordo',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('RemiseCABCoordo');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('RemiseCABCoordo',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-        </div>
-        <div class="hint">Ces champs apparaissent uniquement si INAD est activé.</div>
-      </div>
-    </div>
-
-    <!-- RECHERCHE BAGAGE -->
-    <div class="opt-card">
-      <div class="card-head">
-        <span>Recherche bagage</span>
-        <label class="switch" title="Afficher/masquer la recherche bagage">
-          <input type="checkbox" id="BagSearchEnabled" onchange="toggleBagSearch(this.checked)">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div id="bag-search-fields" class="card-fields">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Début recherche bagage
-              <input type="time" id="DebutRechercheBagage" onchange="updateAllCalculations()">
-            </label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('DebutRechercheBagage',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('DebutRechercheBagage');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('DebutRechercheBagage',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Fin recherche bagage
-              <input type="time" id="FinRechercheBagage" onchange="updateAllCalculations()">
-            </label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('FinRechercheBagage',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('FinRechercheBagage');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('FinRechercheBagage',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Nombre de bagages déchargés
-              <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
-            </label>
-          </div>
-        </div>
-        <div class="hint">Ces champs n’apparaissent que si la recherche bagage est activée.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- TIMELINE -->
 <section>
   <h2>TIMELINE</h2>
@@ -722,9 +618,7 @@ body.dark .opt-card{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,25
   </div>
 
   <div class="timeline-scroll" id="timelineScroll">
-    <div id="timelineCanvas" class="timeline-canvas">
-      <div class="timeline-track"></div>
-    </div>
+    <div id="timelineCanvas" class="timeline-canvas"></div>
   </div>
 </section>
 
@@ -938,7 +832,7 @@ function initForm(){
 
   setDefaultDateToTodayIfEmpty();
 
-  // init toggles
+  // init toggles (intégrés dans TIMING → Départ)
   toggleBagSearch(document.getElementById('BagSearchEnabled')?.checked);
   toggleINAD(document.getElementById('INADEnabled')?.checked);
 
@@ -1116,7 +1010,7 @@ function loadTabData(id){
 /* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – séparés ARR / DEP */
+/* TIMING FIELDS – séparés ARR / DEP + intégration INAD/Bagage */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
@@ -1131,13 +1025,7 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ARRIVÉE – ordre par lignes
-     1) Premier/dernier débarqué
-     2) Arrivée Avitair (ArriveeFuel)
-     3) Arrivée lift / Départ lift (Arr)
-     4) Arrivée agent PMR / Débarquement PMR (nouveau)
-     5) Début/Fin déchargement bagages
-  */
+  /* ARRIVÉE */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
   arr += fieldHTML('PremierDebarque','Premier débarqué');
@@ -1161,16 +1049,7 @@ function generateTimingFields(){
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
   arr += `</div></div>`;
 
-  /* DÉPART – ordre par lignes
-     1) Arrivée PNT / Arrivée PNC
-     2) Premier embarqué / Dernier embarqué
-     3) Départ Avitair (DepartFuel)
-     4) Arrivée lift / Départ lift (Dep)
-     5) Arrivée agent PMR / Embarquement PMR (nouveau)
-     6) Début/Fin chargement bagages
-     7) Remise LID/LDS / Fermeture porte avion
-     (On supprime “Porte: ...”)
-  */
+  /* DÉPART */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
   dep += fieldHTML('ArrPNT','Arrivée PNT');
@@ -1198,6 +1077,70 @@ function generateTimingFields(){
 
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
+
+  /* INTÉGRATION OPTIONS (INAD + Recherche bagage) */
+  dep += `
+    <div class="form-group" style="flex:1 1 100%;display:flex;justify-content:center;align-items:center;gap:24px;">
+      <label style="font-weight:800;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="INADEnabled" onchange="toggleINAD(this.checked)"> INAD
+      </label>
+      <label style="font-weight:800;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="BagSearchEnabled" onchange="toggleBagSearch(this.checked)"> Recherche bagage
+      </label>
+    </div>
+
+    <div id="inad-fields" class="form-grid" style="display:none;">
+      <div class="form-group">
+        <label>Arrivée INAD
+          <input type="time" id="ArriveeINAD" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('ArriveeINAD',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('ArriveeINAD');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('ArriveeINAD',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Remise CAB au coordo
+          <input type="time" id="RemiseCABCoordo" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('RemiseCABCoordo',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('RemiseCABCoordo');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('RemiseCABCoordo',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="bag-search-fields" class="form-grid" style="display:none;">
+      <div class="form-group">
+        <label>Début recherche bagage
+          <input type="time" id="DebutRechercheBagage" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('DebutRechercheBagage',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('DebutRechercheBagage');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('DebutRechercheBagage',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Fin recherche bagage
+          <input type="time" id="FinRechercheBagage" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('FinRechercheBagage',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('FinRechercheBagage');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('FinRechercheBagage',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nombre de bagages déchargés
+          <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
+        </label>
+      </div>
+    </div>
+  `;
+
   dep += `</div></div>`;
 
   const toggle = `
@@ -1222,7 +1165,7 @@ function switchTimingPanel(mode){
   else { if(depPanel) depPanel.classList.add('active'); if(btnDep) btnDep.classList.add('active'); }
 }
 
-/* CHARGEMENT / TOB (lignes fixées) */
+/* CHARGEMENT / TOB */
 function generateChargementFields() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const container = document.getElementById('chargement-container');
@@ -1707,6 +1650,7 @@ function collectTimelineData(){
   addPoint('HLE',  H40,  'tl--turn');
   addPoint('H-15', H15,  'tl--turn');
 
+  /* Événements simples — Remise CAB coordo EXCLUE de la timeline */
   const singles = [
     ['ArrPNT','Arrivée PNT'],
     ['ArrPNC','Arrivée PNC'],
@@ -1715,7 +1659,7 @@ function collectTimelineData(){
     ['ArriveeAgentsPMRDep','Arrivée agent PMR (Dep)'],
     ['EmbarquementPMR','Embarquement PMR'],
     ['ArriveeINAD','Arrivée INAD'],
-    ['RemiseCABCoordo','Remise CAB coordo'],
+    // 'RemiseCABCoordo' non ajouté à la timeline
     ['RemiseLID','Remise LID/LDS'],
     ['FermeturePorteAvion','Fermeture porte avion'],
   ];
@@ -1724,6 +1668,7 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
+  /* Paires de durées (INAD SUPPRIMÉE) */
   const rows = [
     {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),                 cls:'tl--turn', color:null},
     {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),       cls:'tl--ops',  color:null},
@@ -1733,12 +1678,12 @@ function collectTimelineData(){
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
     {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
-    {key:'inad',    label:'INAD',                 pair:getPairWindow('ArriveeINAD','RemiseCABCoordo'),                      cls:'tl--std',  color:'#607d8b'},
+    // {key:'inad', label:'INAD', pair:getPairWindow('ArriveeINAD','RemiseCABCoordo'), ...} // SUPPRIMÉ
   ];
 
   const durations = rows
     .filter(r=>r.pair!=null)
-    .map((r,idx)=>({rowIndex: idx, label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
+    .map((r)=>({label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
   const allTimes = [ ...fixedPoints.map(p=>p.t), ...durations.flatMap(d=>[d.a,d.b]) ];
   const windowInfo = computeTimelineWindow(allTimes);
@@ -1746,6 +1691,7 @@ function collectTimelineData(){
   return {fixedPoints, durations, windowInfo};
 }
 
+/* === AFFICHAGE TIMELINE : hauteur dynamique + empilement === */
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -1764,61 +1710,17 @@ function renderTimeline(){
   const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
   canvas.style.width = canvasPx + 'px';
 
-  for(let t = Math.ceil(min); t <= Math.floor(max); t++){
-    const x = (t-min)/total;
-    const leftPct = 6 + x*88;
+  const MIN_HEIGHT = 120;
+  const PT_LANE_H  = 28;
+  const DUR_LANE_H = 24;
+  const TOP_PAD    = 12;
+  const AFTER_POINTS = 12;
+  const AFTER_TRACK  = 18;
+  const BOTTOM_PAD   = 28;
 
-    const vline = document.createElement('div');
-    vline.style.position = 'absolute';
-    vline.style.left = `${leftPct}%`;
-    vline.style.top = '12%';
-    vline.style.height = '78%';
-    vline.style.width = (t % 5 === 0) ? '1.5px' : '1px';
-    vline.style.background = (t % 5 === 0) ? '#bdbdbd' : 'rgba(0,0,0,0.08)';
-    canvas.appendChild(vline);
-
-    if(t % 5 === 0){
-      const lbl = document.createElement('div');
-      lbl.className = 'timeline-tick-label';
-      lbl.textContent = fmtHHMM(t);
-      lbl.style.left = `${leftPct}%`;
-      lbl.style.top = 'calc(100% - 18px)';
-      canvas.appendChild(lbl);
-    }
-  }
-
-  const baseTop = 56, endTop = 96;
-  const nRows = Math.max(1, durations.length);
-  const step = nRows > 1 ? (endTop - baseTop) / (nRows - 1) : 0;
-
-  durations.forEach((d, i)=>{
-    const aExt = toExtended(d.a, min, max);
-    const bExt = toExtended(d.b, min, max);
-    const start = Math.min(aExt, bExt);
-    const end   = Math.max(aExt, bExt);
-
-    const leftStartPct  = 6 + ((start-min)/total)*88;
-    const widthPct      = ((end-start)/total)*88;
-
-    const bar = document.createElement('div');
-    bar.className = `tl-range ${d.cls}`;
-    bar.style.left = `${leftStartPct}%`;
-    bar.style.width = `${widthPct}%`;
-    bar.style.top = `${(baseTop + i*step)}%`;
-    bar.style.transform = 'translateY(-50%)';
-    if(d.color){ bar.style.setProperty('--c', d.color); }
-    canvas.appendChild(bar);
-
-    const lab = document.createElement('div');
-    lab.className = 'tl-range-label';
-    const durMin = Math.max(0, d.b - d.a);
-    lab.textContent = `${d.label} : ${durMin} min`;
-    bar.appendChild(lab);
-  });
-
+  // 1) Placer les points pour compter les rangées nécessaires
   const lanesEndX = [];
-  const laneTopStart = 18; const laneGap = 10; const marginPx = 16;
-  const canvasWidth = canvas.getBoundingClientRect().width;
+  const pointEls = [];
 
   fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
     const tExt = toExtended(p.t, min, max);
@@ -1827,8 +1729,9 @@ function renderTimeline(){
     const el = document.createElement('div');
     el.className = `tl-event ${p.cls}`;
     el.style.left = `${leftPct}%`;
-    el.style.top  = '0%';
+    el.style.top  = `0px`;
     el.style.visibility = 'hidden';
+
     const dot = document.createElement('div'); dot.className = 'tl-dot';
     const label = document.createElement('div'); label.className='tl-label';
     label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
@@ -1836,24 +1739,110 @@ function renderTimeline(){
     canvas.appendChild(el);
 
     const w = Math.max(label.offsetWidth, 12);
-    const centerX = (leftPct/100) * canvasWidth;
-    const startX = centerX - (w/2) - marginPx;
-    const endX   = centerX + (w/2) + marginPx;
+    const centerX = (leftPct/100) * canvasPx;
+    const startX = centerX - (w/2) - 16;
+    const endX   = centerX + (w/2) + 16;
 
     let lane = 0;
     while(lanesEndX[lane] !== undefined && startX <= lanesEndX[lane]) lane++;
     lanesEndX[lane] = endX;
 
-    el.style.top = `${laneTopStart + lane*laneGap}%`;
+    pointEls.push({el, lane});
+  });
+
+  const pointLaneCount = lanesEndX.length || 0;
+  const trackY = TOP_PAD + pointLaneCount*PT_LANE_H + AFTER_POINTS;
+
+  // 2) Empilement des durées par chevauchement
+  const durItems = durations.map(d=>{
+    const aExt = toExtended(d.a, min, max);
+    const bExt = toExtended(d.b, min, max);
+    return { ...d, start: Math.min(aExt,bExt), end: Math.max(aExt,bExt) };
+  }).sort((x,y)=> x.start - y.start);
+
+  const durLanesEnd = [];
+  const durWithLane = durItems.map(it=>{
+    let lane = 0;
+    while(durLanesEnd[lane] !== undefined && it.start <= durLanesEnd[lane]) lane++;
+    durLanesEnd[lane] = it.end;
+    return { ...it, lane };
+  });
+  const durLaneCount = durLanesEnd.length || 0;
+
+  // 3) Hauteur finale dynamique
+  const finalHeight = Math.max(
+    MIN_HEIGHT,
+    trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
+  );
+  canvas.style.height = `${finalHeight}px`;
+
+  // 4) Grille & repères
+  for(let t = Math.ceil(min); t <= Math.floor(max); t++){
+    const x = (t-min)/total;
+    const leftPct = 6 + x*88;
+
+    const vline = document.createElement('div');
+    vline.className = 'timeline-tick';
+    vline.style.left = `${leftPct}%`;
+    vline.style.top = `${8}px`;
+    vline.style.height = `${finalHeight - 36}px`;
+    canvas.appendChild(vline);
+
+    if(t % 5 === 0){
+      const lbl = document.createElement('div');
+      lbl.className = 'timeline-tick-label';
+      lbl.textContent = fmtHHMM(t);
+      lbl.style.left = `${leftPct}%`;
+      lbl.style.top = `${finalHeight - 18}px`;
+      canvas.appendChild(lbl);
+    }
+  }
+
+  // Ligne centrale (track)
+  const track = document.createElement('div');
+  track.className = 'timeline-track';
+  track.style.top = `${trackY}px`;
+  canvas.appendChild(track);
+
+  // 5) Positionner les points
+  pointEls.forEach(({el,lane})=>{
+    el.style.top = `${TOP_PAD + lane*PT_LANE_H}px`;
     el.style.visibility = 'visible';
   });
 
+  // 6) Dessiner les durées empilées
+  const downStart = trackY + AFTER_TRACK;
+  durWithLane.forEach(d=>{
+    const leftStartPct = 6 + ((d.start-min)/total)*88;
+    const widthPct     = ((d.end-d.start)/total)*88;
+
+    const bar = document.createElement('div');
+    bar.className = `tl-range ${d.cls}`;
+    if(d.color){ bar.style.setProperty('--c', d.color); }
+    bar.style.left = `${leftStartPct}%`;
+    bar.style.width = `${widthPct}%`;
+    bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
+    bar.style.transform = 'translate(-50%, -50%)';
+    canvas.appendChild(bar);
+
+    const lab = document.createElement('div');
+    lab.className = 'tl-range-label';
+    const durMin = Math.max(0, d.b - d.a);
+    lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
+    bar.appendChild(lab);
+  });
+
+  // centrage auto si l’utilisateur n’a pas scrolé
   if(!timelineUserScrolled){
     const centerMin = (min + max) / 2;
     const midX = (centerMin - min) / total;
     const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
     scroller.scrollLeft = Math.max(0, centerLeft);
   }
+
+  // maj libellé zoom
+  const lbl = document.getElementById('timelineZoomLabel');
+  if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
 (function injectShowHoursToggle(){
