@@ -381,6 +381,18 @@ body.dark .timing-col{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,
 .timing-col.dep .timing-subtitle{ background:#e3f2fd; color:#0d47a1; }
 body.dark .timing-col.arr .timing-subtitle{ background:#1b2b1c; color:#c8e6c9; }
 body.dark .timing-col.dep .timing-subtitle{ background:#162331; color:#bbdefb; }
+
+/* TIMING – vue basculable (tabs) */
+.timing-toggle{ display:flex; justify-content:center; gap:8px; margin:6px 0 10px; }
+.timing-seg{ border:1px solid rgba(0,0,0,.12); background:#eef2f7; padding:8px 14px; border-radius:999px; font-weight:700; cursor:pointer; transition:background .15s ease, transform .12s ease, color .15s ease, border-color .15s ease; }
+.timing-seg:hover{ background:#e1e7f0; }
+.timing-seg:active{ transform: translateY(1px); }
+.timing-seg.active{ background:#1976d2; color:#fff; border-color:#1976d2; }
+body.dark .timing-seg{ background:#2a2a2a; color:#eee; border-color:#3a3a3a; }
+body.dark .timing-seg:hover{ background:#333; }
+body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90caf9; }
+.timing-panel{ display:none; }
+.timing-panel.active{ display:block; }
 </style>
 </head>
 <body onload="initForm()">
@@ -509,7 +521,7 @@ body.dark .timing-col.dep .timing-subtitle{ background:#162331; color:#bbdefb; }
 <!-- TIMING -->
 <section>
   <h2>TIMING</h2>
-  <div id="timing-grid" class="timing-split"></div>
+  <div id="timing-grid"></div>
 </section>
 
 <!-- TIMELINE -->
@@ -940,6 +952,7 @@ function generateTimingFields(){
       </div>
     </div>`;
 
+  // Colonne ARRIVÉE / DÉBARQUEMENT
   let arr = '';
   arr += `<div class="timing-col arr">`;
   arr += `<div class="timing-subtitle">Arrivée / Débarquement</div>`;
@@ -948,11 +961,12 @@ function generateTimingFields(){
   arr += fieldHTML('ArrPNC','Arrivée PNC avion');
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
-  /* Nouveau pair Lift (Arrivée) */
+  // Lift dédié arrivée
   arr += fieldHTML('ArriveeLiftArr','Arrivée Lift');
   arr += fieldHTML('DepartLiftArr','Départ Lift');
   arr += `</div></div>`;
 
+  // Colonne DÉPART / EMBARQUEMENT
   let dep = '';
   dep += `<div class="timing-col dep">`;
   dep += `<div class="timing-subtitle">Départ / Embarquement</div>`;
@@ -963,17 +977,36 @@ function generateTimingFields(){
   dep += fieldHTML('PorteDernierEmbarque','Porte : Dernier embarqué');
   dep += fieldHTML('ArriveeFuel','Arrivée Fuel');
   dep += fieldHTML('DepartFuel','Départ Fuel');
-  /* Lift existant = Lift (Départ) */
+  // Lift côté départ (champs existants)
   dep += fieldHTML('ArriveeLift','Arrivée Lift');
   dep += fieldHTML('DepartLift','Départ Lift');
-  /* Nouveau: Recherche bagage */
+  // Recherche bagage (nouveaux)
   dep += fieldHTML('DebutRechercheBagage','Début recherche bagage');
   dep += fieldHTML('FinRechercheBagage','Fin recherche bagage');
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
   dep += `</div></div>`;
 
-  container.innerHTML = arr + dep;
+  const toggle = `
+    <div class="timing-toggle">
+      <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
+      <button type="button" id="seg-dep" class="timing-seg active" onclick="switchTimingPanel('dep')">Départ</button>
+    </div>`;
+
+  container.innerHTML = toggle +
+    `<div class="timing-panel" id="panel-arr">${arr}</div>` +
+    `<div class="timing-panel active" id="panel-dep">${dep}</div>`;
+}
+
+function switchTimingPanel(mode){
+  const arrPanel=document.getElementById('panel-arr');
+  const depPanel=document.getElementById('panel-dep');
+  const btnArr=document.getElementById('seg-arr');
+  const btnDep=document.getElementById('seg-dep');
+  [arrPanel,depPanel].forEach(p=>p&&p.classList.remove('active'));
+  [btnArr,btnDep].forEach(b=>b&&b.classList.remove('active'));
+  if(mode==='arr'){ if(arrPanel) arrPanel.classList.add('active'); if(btnArr) btnArr.classList.add('active'); }
+  else { if(depPanel) depPanel.classList.add('active'); if(btnDep) btnDep.classList.add('active'); }
 }
 
 /* CHARGEMENT / TOB */
