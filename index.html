@@ -159,7 +159,7 @@ button.plus  { background: #555; color: white; }
     font-size: 1.1rem;
 }
 #timer-tobt { background: #2e7d32; }
-#timer-h8   { background: #ffd54f; color:#000; } /* LID jaune */
+#timer-h8   { background: #ffd54f; color:#000; }
 #timer-ctot { background: #455a64; }
 
 /* Toggles (barre du haut) */
@@ -289,20 +289,20 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
   min-width: 320px; min-height: 260px;
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
-  background: rgba(255,255,255,0.80); /* + transparence */
+  background: rgba(255,255,255,0.82); /* transparence légère */
   color:#111;
   border-radius:16px;
   box-shadow: 0 20px 50px rgba(0,0,0,.35);
   z-index:2000; display:none; overflow:hidden; resize: both;
-  backdrop-filter: saturate(180%) blur(16px); /* + blur pour détacher */
-  opacity: 0; transform: translateY(10px) scale(.98);
+  backdrop-filter: saturate(180%) blur(16px);
+  opacity: 0; transform: translateY(10px) scale(1); /* pas de scale<>1 pour éviter les surprises */
   transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
   border: 1px solid rgba(0,0,0,.06);
 }
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
 .note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 body.dark .note-overlay{
-  background: rgba(20,20,20,0.80); color:#eee; border-color: rgba(255,255,255,.08);
+  background: rgba(20,20,20,0.82); color:#eee; border-color: rgba(255,255,255,.08);
 }
 .note-overlay::after{
   content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px;
@@ -651,20 +651,20 @@ const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩
 let saveTimer=null;
 
 /* TIMELINE zoom & scroll */
-let timelineZoom = 1;       // 1 = 100%
+let timelineZoom = 1;
 const TL_ZOOM_MIN = 0.5;
-const TL_ZOOM_MAX = 8;      // 800%
+const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
 /* TOBT brut (hors CTOT) stocké en minutes pour LID */
 window._tobtRawMins = null;
 
-/* === Notepad theme defaults === */
+/* === Notepad defaults === */
 const NOTE_DEFAULT_LIGHT = '#111111';
 const NOTE_DEFAULT_DARK  = '#FFFFFF';
 
-/* Notepad options */
+/* Notepad options / state */
 let noteOpen = false;
 let noteTool = 'pen';
 let noteColor = NOTE_DEFAULT_LIGHT;
@@ -679,7 +679,7 @@ let noteInited = false;
 let noteUndoStack = [];
 let noteRedoStack = [];
 const NOTE_UNDO_LIMIT = 100;
-const NOTE_STROKE_HIT_EPS = 10; // tolérance gomme de trait
+const NOTE_STROKE_HIT_EPS = 10; // en CSS px (converti en device px)
 
 /* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
@@ -722,7 +722,6 @@ function initForm(){
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
 
-  // MAJ onglets + presets + Cie (éviter d'écraser l'attribut onchange inline)
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
     updateTabLabelInstant();
@@ -735,8 +734,8 @@ function initForm(){
   document.getElementById('From').addEventListener('input', applyPrestationsDefaults);
   document.getElementById('To').addEventListener('input', applyPrestationsDefaults);
 
-  setupUppercaseInputs(['NVol','From','To','Immat','RZA']); // on garde la sécu MAJ
-  enforceIATAInputs(); // filtre strict IATA
+  setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
+  enforceIATAInputs();
 
   const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
   const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
@@ -765,9 +764,7 @@ function initForm(){
 
   if (currentTabId) loadTabData(currentTabId);
 
-  // date par défaut si vide
   setDefaultDateToTodayIfEmpty();
-
   renderTimeline();
 
   // Raccourcis bloc-note
@@ -806,7 +803,6 @@ function sanitizeIATA(el){
   el.value = val;
   el.classList.toggle('invalid', val.length>0 && val.length<3);
 }
-/* attache aussi au cas où HTML change */
 function enforceIATAInputs(){
   ['From','To'].forEach(id=>{
     const el = document.getElementById(id);
@@ -903,7 +899,7 @@ function clearFormFields(){
     else if(el.tagName==='SELECT') el.selectedIndex=0;
     else el.value='';
   });
-  document.getElementById('Date').valueAsDate=new Date(); // date du jour par défaut
+  document.getElementById('Date').valueAsDate=new Date();
   document.getElementById('FNC').value='N';
   updateAllCalculations();
 }
@@ -949,7 +945,6 @@ function loadTabData(id){
   document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
   document.getElementById('utcToggle').checked  = isUTC;
 
-  // si la date est absente, la mettre à aujourd’hui
   setDefaultDateToTodayIfEmpty();
   enforceIATAInputs();
 
@@ -968,7 +963,6 @@ function generateTimingFields(){
     "PortePremierEmbarque","PorteDernierEmbarque",
     "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
     "RemiseLID","FermeturePorteAvion",
-    // === nouveaux champs demandés (arrivée) ===
     "ArriveeLift_ARR","DepartLift_ARR"
   ];
 
@@ -978,7 +972,6 @@ function generateTimingFields(){
     "Porte : Premier embarqué","Porte : Dernier embarqué",
     "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
     "Remise LID/LDS","Fermeture porte avion",
-    // libellés nouveaux
     "Arrivée : Arrivée Lift","Arrivée : Départ Lift"
   ];
 
@@ -1039,7 +1032,7 @@ function generateChargementFields() {
   container.innerHTML = html;
 
   updateTOB();
-  updateLIDVisibility(); // au cas où Cie change
+  updateLIDVisibility();
 }
 
 /* Affichage conditionnel LID (FR/RK uniquement) */
@@ -1225,7 +1218,7 @@ function updateCTOTDisplay(){
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
-/* DL CODES (mapping demandé) */
+/* DL CODES */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
@@ -1330,7 +1323,6 @@ function setDarkMode(enable, fromInit=false){
   document.getElementById('darkToggle').checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
 
-  // Adapter le bloc-note au thème (traits + couleur par défaut)
   adaptNotepadThemeColors(enable, fromInit);
 }
 
@@ -1399,7 +1391,7 @@ function computeTimelineWindow(allTimes){
 
   if (haveStart && haveEnd) {
     let startRef = null;
-    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT; // HLE < SIBT ? HLE : SIBT
+    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT;
     else startRef = (H40 != null) ? H40 : SIBT;
     let min = startRef - 5;
     let endRef = (AOBT != null ? AOBT : TOBT);
@@ -1645,7 +1637,7 @@ function clearAutoSave() {
 }
 
 /* ==========================================================
-   === BLOC-NOTE (version moderne, avec undo/redo) ===
+   === BLOC-NOTE (réécriture coord. pour supprimer décalage) ===
    ========================================================== */
 function getThemeDefaultPen(){ return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT; }
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
@@ -1654,6 +1646,9 @@ function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadO
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   if (!noteInited) initNotepadOnce();
+  // forcer 5px par défaut visuellement
+  const penRange = document.getElementById('penSize');
+  if (penRange) { penRange.value = '5'; updatePenSizeLabel(); }
   el.style.display = 'block';
   ensureNoteOverlayInViewport();
   requestAnimationFrame(()=>{ el.classList.add('open'); });
@@ -1661,6 +1656,7 @@ function openNotepadOverlay(){
   noteOpen = true;
   loadNotepad();
   fitNoteCanvas();
+  migrateOldStrokesIfNeeded(); // conversion css→device si besoin
   renderNote();
   noteUndoStack = []; noteRedoStack = []; updateUndoRedoBtns();
 }
@@ -1731,7 +1727,7 @@ function initNotepadOnce(){
   noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
   noteRO.observe(overlay);
   noteRO.observe(document.querySelector('.note-canvas-wrap'));
-  window.addEventListener('resize', ensureNoteOverlayInViewport);
+  window.addEventListener('resize', ()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
 
   noteCanvas.addEventListener('pointerdown', notePointerDown);
   noteCanvas.addEventListener('pointermove', notePointerMove);
@@ -1749,29 +1745,38 @@ function initNotepadOnce(){
 
   updatePenSizeLabel(); updateEraserSizeLabel();
 
-  // point de couleur par défaut selon thème
   const defaultDot = document.getElementById('noteColorDotDefault');
   if(defaultDot){
     defaultDot.style.background = getThemeDefaultPen();
     defaultDot.classList.add('selected');
   }
-  // couleur input selon thème
-  document.getElementById('noteColorInput').value = rgbToHex(getThemeDefaultPen());
+  document.getElementById('noteColorInput').value = getThemeDefaultPen();
   noteColor = getThemeDefaultPen();
-}
-function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
 
+  fitNoteCanvas(); // premier sizing
+}
+
+/* Canvas sizing : device pixels sans ctx.scale */
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
-  const rect = noteCanvas.getBoundingClientRect(); // tient compte de la hauteur CSS (scrollable)
-  // dimensionne le buffer interne en conséquence
-  noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
-  noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
-  noteCtx.setTransform(1,0,0,1,0,0);
-  noteCtx.scale(dpr, dpr);
-  noteCtx.lineJoin = 'round';
-  noteCtx.lineCap  = 'round';
+  const rect = noteCanvas.getBoundingClientRect();
+  const needResize = (noteCanvas.width !== Math.floor(rect.width*dpr) || noteCanvas.height !== Math.floor(rect.height*dpr));
+  if (needResize){
+    noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
+    noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  }
+  // on reste en transform identité
+}
+
+/* Coordonnées robustes (client → device px) */
+function noteEventPoint(e){
+  const rect = noteCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  return {
+    x: (e.clientX - rect.left) * dpr,
+    y: (e.clientY - rect.top)  * dpr
+  };
 }
 
 function setNoteTool(tool){
@@ -1809,10 +1814,34 @@ function loadNotepad(){
   }catch(e){ noteStrokes = []; }
 }
 
+/* Migration éventuelle des anciens traits (coord. CSS → device px) */
+function migrateOldStrokesIfNeeded(){
+  const dpr = window.devicePixelRatio || 1;
+  if (dpr === 1 || !noteStrokes.length) return;
+  const w = noteCanvas.width, h = noteCanvas.height;
+  const wCss = w / dpr, hCss = h / dpr;
+
+  // Heuristique : si on trouve des points qui “tiennent” dans wCss/hCss, on considère qu'ils sont en CSS px.
+  let looksCss = false;
+  outer: for (const s of noteStrokes){
+    if (!s.points) continue;
+    for (const p of s.points){
+      if (p && p.x <= wCss+0.5 && p.y <= hCss+0.5){ looksCss = true; break outer; }
+    }
+  }
+  if (looksCss){
+    for (const s of noteStrokes){
+      if (!s.points) continue;
+      for (const p of s.points){ p.x *= dpr; p.y *= dpr; }
+    }
+    saveNotepad();
+  }
+}
+
 function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
 function pushUndoState(){
   noteUndoStack.push(snapshotStrokes());
-  if (noteUndoStack.length > 100) noteUndoStack.shift();
+  if (noteUndoStack.length > NOTE_UNDO_LIMIT) noteUndoStack.shift();
   updateUndoRedoBtns();
 }
 function clearRedo(){ noteRedoStack = []; updateUndoRedoBtns(); }
@@ -1823,35 +1852,43 @@ function updateUndoRedoBtns(){
   if (r) r.disabled = noteRedoStack.length === 0;
 }
 
-function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
-
 function notePointerDown(e){
   e.preventDefault();
   noteCanvas.setPointerCapture(e.pointerId);
   pushUndoState(); clearRedo();
 
   const pt = noteEventPoint(e);
+  const dpr = window.devicePixelRatio || 1;
 
   if (noteTool === 'stroke-eraser') {
-    // Gomme de trait : supprime le trait le plus proche
     if (eraseStrokeAtPoint(pt)) { saveNotepad(); renderNote(); }
-    noteIsDrawing = true; // autoriser effacement continu en glissant
+    noteIsDrawing = true; // effacement continu
     return;
   }
 
   noteIsDrawing = true;
-  const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
+  const stroke = {
+    tool: noteTool,
+    color: noteColor,
+    size: (noteTool==='pen' ? notePenSize : noteEraserSize), // en CSS px (on multiplie par dpr au rendu)
+    points: [pt]
+  };
   noteCurrentStroke = stroke;
 
   noteCtx.save();
   noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = stroke.color; noteCtx.lineWidth = stroke.size;
-  noteCtx.beginPath(); noteCtx.moveTo(pt.x, pt.y); noteCtx.lineTo(pt.x+0.01, pt.y+0.01); noteCtx.stroke();
+  noteCtx.strokeStyle = stroke.color;
+  noteCtx.lineWidth = stroke.size * dpr;
+  noteCtx.beginPath();
+  noteCtx.moveTo(pt.x, pt.y);
+  noteCtx.lineTo(pt.x+0.01*dpr, pt.y+0.01*dpr);
+  noteCtx.stroke();
   noteCtx.restore();
 }
 function notePointerMove(e){
   if(!noteIsDrawing) return;
   const pt = noteEventPoint(e);
+  const dpr = window.devicePixelRatio || 1;
 
   if (noteTool === 'stroke-eraser') {
     if (eraseStrokeAtPoint(pt)) { saveNotepad(); renderNote(); }
@@ -1864,8 +1901,12 @@ function notePointerMove(e){
 
   noteCtx.save();
   noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = noteCurrentStroke.color; noteCtx.lineWidth = noteCurrentStroke.size;
-  noteCtx.beginPath(); noteCtx.moveTo(prev.x, prev.y); noteCtx.lineTo(pt.x, pt.y); noteCtx.stroke();
+  noteCtx.strokeStyle = noteCurrentStroke.color;
+  noteCtx.lineWidth = noteCurrentStroke.size * dpr;
+  noteCtx.beginPath();
+  noteCtx.moveTo(prev.x, prev.y);
+  noteCtx.lineTo(pt.x, pt.y);
+  noteCtx.stroke();
   noteCtx.restore();
 }
 function notePointerUp(e){
@@ -1881,14 +1922,16 @@ function notePointerUp(e){
   noteCurrentStroke = null;
 }
 
-/* suppression d’un trait si le pointeur passe suffisamment près */
+/* suppression d’un trait au voisinage du pointeur */
 function eraseStrokeAtPoint(pt){
   if (!noteStrokes.length) return false;
-  // parcourir du haut vers le bas (dernier dessiné = au-dessus)
+  const dpr = window.devicePixelRatio || 1;
+  const eps = NOTE_STROKE_HIT_EPS * dpr;
+
   for (let i = noteStrokes.length - 1; i >= 0; i--){
     const s = noteStrokes[i];
     if (!s.points || s.points.length < 2) continue;
-    if (strokeHitTest(s.points, pt, NOTE_STROKE_HIT_EPS)) {
+    if (strokeHitTest(s.points, pt, eps)) {
       noteStrokes.splice(i, 1);
       updateUndoRedoBtns();
       return true;
@@ -1917,15 +1960,13 @@ function distPointToSegment(p, a, b){
 
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
-  noteCtx.save();
-  noteCtx.setTransform(1,0,0,1,0,0);
   noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
-  noteCtx.restore();
 
+  const dpr = window.devicePixelRatio || 1;
   for(const s of noteStrokes){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
     noteCtx.strokeStyle = s.color || getThemeDefaultPen();
-    noteCtx.lineWidth = s.size || 3;
+    noteCtx.lineWidth = (s.size || 5) * dpr;
     if(!s.points || s.points.length===0) continue;
     noteCtx.beginPath();
     noteCtx.moveTo(s.points[0].x, s.points[0].y);
@@ -1953,11 +1994,10 @@ function noteClearAll(){
   noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
 }
 
-/* === Adaptation bloc-note au thème (inversion noir/blanc) === */
+/* Adaptation bloc-note au thème (mise à jour couleur par défaut) */
 function adaptNotepadThemeColors(dark, fromInit){
   const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
 
-  // Met à jour le point de couleur par défaut et la sélection
   const defaultDot = document.getElementById('noteColorDotDefault');
   if (defaultDot) {
     defaultDot.style.background = newDefault;
@@ -1968,12 +2008,10 @@ function adaptNotepadThemeColors(dark, fromInit){
   const colorInput = document.getElementById('noteColorInput');
   if (colorInput) colorInput.value = newDefault;
 
-  // Inversion globale (on conserve la logique existante)
   try{
     const key = noteStorageKey();
     const raw = localStorage.getItem(key);
     let strokes = raw ? JSON.parse(raw) : [];
-
     let changed = false;
     for(const s of strokes){
       if(s.tool !== 'eraser' && s.color !== newDefault){
@@ -1984,10 +2022,10 @@ function adaptNotepadThemeColors(dark, fromInit){
     if(changed){
       localStorage.setItem(key, JSON.stringify(strokes));
     }
-
     if(noteOpen){
       noteStrokes = strokes;
       fitNoteCanvas();
+      migrateOldStrokesIfNeeded();
       renderNote();
     }
   }catch(e){}
@@ -1999,7 +2037,7 @@ switchTab = function(id){
   _switchTabOrig(id);
   if(noteOpen){
     loadNotepad(); noteUndoStack = []; noteRedoStack = [];
-    fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
+    fitNoteCanvas(); migrateOldStrokesIfNeeded(); renderNote(); updateUndoRedoBtns();
     ensureNoteOverlayInViewport();
   }
 };
