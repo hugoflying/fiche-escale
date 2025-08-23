@@ -92,9 +92,6 @@ textarea {
 /* Affichage visuel en MAJ pour certains champs */
 input.uppercase { text-transform: uppercase; }
 
-/* Indication invalid IATA */
-input.invalid { border: 2px solid #d32f2f !important; }
-
 /* Champ horaire + boutons */
 .form-group input[type="time"] {
     width: 100%;
@@ -159,7 +156,7 @@ button.plus  { background: #555; color: white; }
     font-size: 1.1rem;
 }
 #timer-tobt { background: #2e7d32; }
-#timer-h8   { background: #ffd54f; color:#000; }
+#timer-h8   { background: #ffd54f; color:#000; } /* LID jaune */
 #timer-ctot { background: #455a64; }
 
 /* Toggles (barre du haut) */
@@ -289,13 +286,13 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
   min-width: 320px; min-height: 260px;
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
-  background: rgba(255,255,255,0.82); /* transparence légère */
+  background: rgba(255,255,255,0.88); /* + transparence */
   color:#111;
   border-radius:16px;
   box-shadow: 0 20px 50px rgba(0,0,0,.35);
   z-index:2000; display:none; overflow:hidden; resize: both;
-  backdrop-filter: saturate(180%) blur(16px);
-  opacity: 0; transform: translateY(10px) scale(1); /* pas de scale<>1 pour éviter les surprises */
+  backdrop-filter: saturate(180%) blur(12px);
+  opacity: 0; transform: translateY(10px) scale(.98);
   transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
   border: 1px solid rgba(0,0,0,.06);
 }
@@ -315,8 +312,8 @@ body.dark .note-overlay{
 body.dark .note-overlay::after{
   background:
     linear-gradient(135deg, rgba(255,255,255,.3) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
-    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px  no-repeat,
-    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px  no-repeat;
+    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
 }
 
 /* barre de titre */
@@ -349,7 +346,6 @@ body.dark .note-toolbar{ border-bottom-color: rgba(255,255,255,.08); }
 body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-btn.active{ outline: 2px solid #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,.15); }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
-
 .note-btn-danger{ background:#e53935 !important; color:#fff !important; }
 .note-btn-danger:hover{ filter: brightness(0.95); }
 .note-btn-danger:active{ transform: translateY(1px); }
@@ -362,14 +358,14 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-color:hover{ transform: scale(1.06); }
 .note-color.selected{ outline:3px solid #1976d2; }
 
-/* zone scrollable + canvas du bloc-note */
-.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); overflow:auto; }
+/* Zone de dessin défilable */
+.note-canvas-wrap{
+  position:relative; width:100%; height:calc(100% - 108px);
+  overflow:auto; /* permet de défiler le "papier" */
+}
 #noteCanvas{
-  width:100%;
-  height:1600px; /* permet de défiler pour écrire plus */
-  display:block;
-  touch-action:none;
-  background:#fff;
+  width:100%; /* s'ajuste à la largeur, hauteur contrôlée en JS */
+  display:block; touch-action:none; background:#fff;
 }
 body.dark #noteCanvas{ background:#111; }
 
@@ -436,10 +432,10 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
       <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
     </label></div>
     <div class="form-group"><label>Provenance
-      <input class="uppercase" type="text" id="From" maxlength="3" pattern="[A-Z]{1,3}" inputmode="latin" autocomplete="off" oninput="sanitizeIATA(this)">
+      <input class="uppercase" type="text" id="From" maxlength="3" inputmode="latin" autocomplete="off" autocapitalize="characters">
     </label></div>
     <div class="form-group"><label>Destination
-      <input class="uppercase" type="text" id="To" maxlength="3" pattern="[A-Z]{1,3}" inputmode="latin" autocomplete="off" oninput="sanitizeIATA(this); updateTabLabelInstant()">
+      <input class="uppercase" type="text" id="To" maxlength="3" inputmode="latin" autocomplete="off" autocapitalize="characters" oninput="updateTabLabelInstant()">
     </label></div>
     <div class="form-group"><label>Immat<input class="uppercase" type="text" id="Immat" maxlength="5"></label></div>
     <div class="form-group"><label>Parking
@@ -609,6 +605,7 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
     <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
     <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
     <button type="button" id="toolStrokeErase" class="note-btn"  onclick="setNoteTool('stroke-eraser')">✂️ Gomme de trait</button>
+
     <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
@@ -629,6 +626,12 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
       <div class="note-color" style="background:#2e7d32" onclick="pickColor(this,'#2e7d32')"></div>
       <div class="note-color" style="background:#ff9800" onclick="pickColor(this,'#ff9800')"></div>
       <input id="noteColorInput" type="color" value="#111111" onchange="pickColor(null,this.value)">
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-left:12px;">
+      <button type="button" class="note-btn" onclick="increaseNotePage()" title="Augmenter la hauteur du papier">📄 +</button>
+      <button type="button" class="note-btn" onclick="decreaseNotePage()" title="Diminuer la hauteur du papier">📄 −</button>
+      <span id="notePageInfo" style="font-weight:600;"></span>
     </div>
   </div>
 
@@ -651,35 +654,18 @@ const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩
 let saveTimer=null;
 
 /* TIMELINE zoom & scroll */
-let timelineZoom = 1;
+let timelineZoom = 1;       // 1 = 100%
 const TL_ZOOM_MIN = 0.5;
-const TL_ZOOM_MAX = 8;
+const TL_ZOOM_MAX = 8;      // 800%
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
 /* TOBT brut (hors CTOT) stocké en minutes pour LID */
 window._tobtRawMins = null;
 
-/* === Notepad defaults === */
+/* === Notepad theme defaults === */
 const NOTE_DEFAULT_LIGHT = '#111111';
 const NOTE_DEFAULT_DARK  = '#FFFFFF';
-
-/* Notepad options / state */
-let noteOpen = false;
-let noteTool = 'pen';
-let noteColor = NOTE_DEFAULT_LIGHT;
-let notePenSize = 5;          // défaut demandé: 5
-let noteEraserSize = 22;
-let noteStrokes = [];
-let noteIsDrawing = false;
-let noteCurrentStroke = null;
-let noteCanvas, noteCtx, noteRO;
-let noteDrag = {active:false, dx:0, dy:0};
-let noteInited = false;
-let noteUndoStack = [];
-let noteRedoStack = [];
-const NOTE_UNDO_LIMIT = 100;
-const NOTE_STROKE_HIT_EPS = 10; // en CSS px (converti en device px)
 
 /* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
@@ -722,6 +708,7 @@ function initForm(){
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
 
+  // MAJ onglets + presets + Cie
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
     updateTabLabelInstant();
@@ -731,11 +718,15 @@ function initForm(){
   document.getElementById('NVol').addEventListener('input', updateTabLabelInstant);
   document.getElementById('To').addEventListener('input', updateTabLabelInstant);
 
+  // IATA strict A-Z, max 3, en MAJ
+  enforceIATA('From');
+  enforceIATA('To');
+
+  // Autres MAJUSCULES
+  setupUppercaseInputs(['NVol','Immat','RZA']);
+
   document.getElementById('From').addEventListener('input', applyPrestationsDefaults);
   document.getElementById('To').addEventListener('input', applyPrestationsDefaults);
-
-  setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
-  enforceIATAInputs();
 
   const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
   const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
@@ -764,7 +755,9 @@ function initForm(){
 
   if (currentTabId) loadTabData(currentTabId);
 
+  // date par défaut si vide
   setDefaultDateToTodayIfEmpty();
+
   renderTimeline();
 
   // Raccourcis bloc-note
@@ -786,6 +779,17 @@ function setDefaultDateToTodayIfEmpty(){
   if(d && !d.value){ d.valueAsDate = new Date(); }
 }
 
+/* IATA A-Z max 3, MAJ */
+function enforceIATA(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const f = ()=>{
+    el.value = (el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
+  };
+  el.addEventListener('input', f);
+  el.addEventListener('blur', f);
+}
+
 /* Forcer MAJUSCULE */
 function setupUppercaseInputs(ids){
   ids.forEach(id=>{
@@ -794,22 +798,6 @@ function setupUppercaseInputs(ids){
     const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
     el.addEventListener('input', toUpper);
     el.addEventListener('blur', toUpper);
-  });
-}
-
-/* IATA strict : A-Z uniquement, max 3, MAJ, et signaler si <3 */
-function sanitizeIATA(el){
-  const val = ((el.value||'').toUpperCase().replace(/[^A-Z]/g,'')).slice(0,3);
-  el.value = val;
-  el.classList.toggle('invalid', val.length>0 && val.length<3);
-}
-function enforceIATAInputs(){
-  ['From','To'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){
-      el.addEventListener('input', ()=>sanitizeIATA(el));
-      sanitizeIATA(el);
-    }
   });
 }
 
@@ -899,7 +887,7 @@ function clearFormFields(){
     else if(el.tagName==='SELECT') el.selectedIndex=0;
     else el.value='';
   });
-  document.getElementById('Date').valueAsDate=new Date();
+  document.getElementById('Date').valueAsDate=new Date(); // date du jour par défaut
   document.getElementById('FNC').value='N';
   updateAllCalculations();
 }
@@ -945,8 +933,8 @@ function loadTabData(id){
   document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
   document.getElementById('utcToggle').checked  = isUTC;
 
+  // si la date est absente, la mettre à aujourd’hui
   setDefaultDateToTodayIfEmpty();
-  enforceIATAInputs();
 
   generateChargementFields();
   updateAllCalculations();
@@ -957,23 +945,17 @@ function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS */
 function generateTimingFields(){
-  const timings=[
-    "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
+  const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
     "AvionPremierEmbarque","AvionDernierEmbarque",
     "PortePremierEmbarque","PorteDernierEmbarque",
     "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
-    "RemiseLID","FermeturePorteAvion",
-    "ArriveeLift_ARR","DepartLift_ARR"
-  ];
+    "RemiseLID","FermeturePorteAvion"];
 
-  const labels=[
-    "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
+  const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
     "Avion : Premier embarqué","Avion : Dernier embarqué",
     "Porte : Premier embarqué","Porte : Dernier embarqué",
     "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
-    "Remise LID/LDS","Fermeture porte avion",
-    "Arrivée : Arrivée Lift","Arrivée : Départ Lift"
-  ];
+    "Remise LID/LDS","Fermeture porte avion"];
 
   const container=document.getElementById('timing-grid');
   container.innerHTML="";
@@ -1032,7 +1014,7 @@ function generateChargementFields() {
   container.innerHTML = html;
 
   updateTOB();
-  updateLIDVisibility();
+  updateLIDVisibility(); // au cas où Cie change
 }
 
 /* Affichage conditionnel LID (FR/RK uniquement) */
@@ -1218,7 +1200,7 @@ function updateCTOTDisplay(){
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
-/* DL CODES */
+/* DL CODES (mapping demandé) */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
@@ -1323,6 +1305,7 @@ function setDarkMode(enable, fromInit=false){
   document.getElementById('darkToggle').checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
 
+  // Adapter le bloc-note au thème (traits + couleur par défaut)
   adaptNotepadThemeColors(enable, fromInit);
 }
 
@@ -1391,7 +1374,7 @@ function computeTimelineWindow(allTimes){
 
   if (haveStart && haveEnd) {
     let startRef = null;
-    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT;
+    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT; // HLE < SIBT ? HLE : SIBT
     else startRef = (H40 != null) ? H40 : SIBT;
     let min = startRef - 5;
     let endRef = (AOBT != null ? AOBT : TOBT);
@@ -1618,8 +1601,18 @@ function renderTimeline(){
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
   let missing = required.some(id => !document.getElementById(id).value);
-  if (missing) showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-  else showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
+  // IATA : exactement 3 lettres
+  const fromOk = /^[A-Z]{3}$/.test((document.getElementById('From').value||'').toUpperCase());
+  const toOk   = /^[A-Z]{3}$/.test((document.getElementById('To').value||'').toUpperCase());
+
+  if (missing || !fromOk || !toOk){
+    let msg = "Vérifiez les informations manquantes !";
+    if (!fromOk) msg = "PROVENANCE doit être 3 lettres (A-Z).";
+    if (!toOk)   msg = "DESTINATION doit être 3 lettres (A-Z).";
+    showPopup(msg, "#d32f2f", 4000);
+  } else {
+    showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
+  }
 }
 
 /* SAUVEGARDE MANUELLE */
@@ -1637,18 +1630,51 @@ function clearAutoSave() {
 }
 
 /* ==========================================================
-   === BLOC-NOTE (réécriture coord. pour supprimer décalage) ===
+   === BLOC-NOTE — moteur "encre" lissé & réactif (GoodNotes-like) ===
    ========================================================== */
-function getThemeDefaultPen(){ return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT; }
-function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
+let noteOpen = false;
+let noteTool = 'pen';
+let noteColor = NOTE_DEFAULT_LIGHT;
+let notePenSize = 5;          // défaut demandé
+let noteEraserSize = 22;
+let noteStrokes = [];
+let noteIsDrawing = false;
+let noteCurrentStroke = null;
+let noteCanvas, noteCtx, noteRO;
+let noteDrag = {active:false, dx:0, dy:0};
+let noteInited = false;
+let noteUndoStack = [];
+let noteRedoStack = [];
+const NOTE_UNDO_LIMIT = 100;
+const NOTE_STROKE_HIT_EPS = 10; // tolérance gomme de trait (CSS px -> converti en device px)
 
+// état "live" pour le tracé en cours
+let livePrevPoint = null;
+let livePrevWidth = null;
+let livePoints = [];
+
+// papier (hauteur défilable)
+let notePaperHeightCss = 1600;
+function notePaperKey(){ return currentTabId ? `notePaperH-${currentTabId}` : 'notePaperH-default'; }
+
+/* Ouverture/fermeture */
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   if (!noteInited) initNotepadOnce();
-  // forcer 5px par défaut visuellement
+
+  // hauteur papier depuis stockage
+  try{
+    const savedH = parseInt(localStorage.getItem(notePaperKey())||'');
+    if (!isNaN(savedH) && savedH>=600 && savedH<=20000) notePaperHeightCss = savedH;
+  }catch(e){}
+  document.getElementById('noteCanvas').style.height = notePaperHeightCss+'px';
+  updateNotePageInfo();
+
+  // forcer 5px visibles
   const penRange = document.getElementById('penSize');
   if (penRange) { penRange.value = '5'; updatePenSizeLabel(); }
+
   el.style.display = 'block';
   ensureNoteOverlayInViewport();
   requestAnimationFrame(()=>{ el.classList.add('open'); });
@@ -1656,7 +1682,7 @@ function openNotepadOverlay(){
   noteOpen = true;
   loadNotepad();
   fitNoteCanvas();
-  migrateOldStrokesIfNeeded(); // conversion css→device si besoin
+  migrateOldStrokesIfNeeded();
   renderNote();
   noteUndoStack = []; noteRedoStack = []; updateUndoRedoBtns();
 }
@@ -1668,6 +1694,7 @@ function closeNotepadOverlay(){
   noteOpen = false;
 }
 
+/* Position & taille overlay */
 function ensureNoteOverlayInViewport(){
   const overlay = document.getElementById('noteOverlay');
   if(!overlay) return;
@@ -1689,13 +1716,16 @@ function ensureNoteOverlayInViewport(){
   overlay.style.right = 'auto';
 }
 
+/* Init unique */
 function initNotepadOnce(){
   if (noteInited) return; noteInited = true;
 
   noteCanvas = document.getElementById('noteCanvas');
-  noteCtx = noteCanvas.getContext('2d', { willReadFrequently: false });
-  noteCtx.lineJoin = 'round'; noteCtx.lineCap  = 'round';
+  noteCtx = noteCanvas.getContext('2d');
+  noteCtx.lineJoin = 'round';
+  noteCtx.lineCap  = 'round';
 
+  // Drag overlay
   const dragBar = document.getElementById('noteDragBar');
   const overlay = document.getElementById('noteOverlay');
   dragBar.addEventListener('mousedown', (e)=>{
@@ -1729,12 +1759,15 @@ function initNotepadOnce(){
   noteRO.observe(document.querySelector('.note-canvas-wrap'));
   window.addEventListener('resize', ()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
 
-  noteCanvas.addEventListener('pointerdown', notePointerDown);
-  noteCanvas.addEventListener('pointermove', notePointerMove);
-  noteCanvas.addEventListener('pointerup',   notePointerUp);
-  noteCanvas.addEventListener('pointerleave',notePointerUp);
-  noteCanvas.addEventListener('pointercancel',notePointerUp);
+  // Entrées stylet/coalescées très haute fréquence
+  noteCanvas.addEventListener('pointerdown', notePointerDown, {passive:false});
+  noteCanvas.addEventListener('pointermove', notePointerMove, {passive:false});
+  noteCanvas.addEventListener('pointerrawupdate', notePointerMove, {passive:false});
+  noteCanvas.addEventListener('pointerup',   notePointerUp, {passive:false});
+  noteCanvas.addEventListener('pointerleave',notePointerUp, {passive:false});
+  noteCanvas.addEventListener('pointercancel',notePointerUp, {passive:false});
 
+  // Raccourcis
   document.addEventListener('keydown', (e)=>{
     if(!noteOpen) return;
     const isMac = navigator.platform.toLowerCase().includes('mac');
@@ -1745,6 +1778,7 @@ function initNotepadOnce(){
 
   updatePenSizeLabel(); updateEraserSizeLabel();
 
+  // couleur par défaut selon thème
   const defaultDot = document.getElementById('noteColorDotDefault');
   if(defaultDot){
     defaultDot.style.background = getThemeDefaultPen();
@@ -1753,10 +1787,13 @@ function initNotepadOnce(){
   document.getElementById('noteColorInput').value = getThemeDefaultPen();
   noteColor = getThemeDefaultPen();
 
-  fitNoteCanvas(); // premier sizing
+  // hauteur papier par défaut (sera surchargée à l'ouverture)
+  noteCanvas.style.height = notePaperHeightCss+'px';
+
+  fitNoteCanvas();
 }
 
-/* Canvas sizing : device pixels sans ctx.scale */
+/* Canvas → device pixels sans ctx.scale() (zéro décalage/pixelisation) */
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
@@ -1766,19 +1803,21 @@ function fitNoteCanvas(){
     noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
     noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
   }
-  // on reste en transform identité
 }
 
-/* Coordonnées robustes (client → device px) */
-function noteEventPoint(e){
+/* Coords robustes + pression */
+function toPoint(ev){
   const rect = noteCanvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   return {
-    x: (e.clientX - rect.left) * dpr,
-    y: (e.clientY - rect.top)  * dpr
+    x: (ev.clientX - rect.left) * dpr,
+    y: (ev.clientY - rect.top)  * dpr,
+    t: ev.timeStamp || performance.now(),
+    p: (typeof ev.pressure === 'number' ? ev.pressure : 0)
   };
 }
 
+/* UI boutons */
 function setNoteTool(tool){
   noteTool = tool;
   document.getElementById('toolPen').classList.toggle('active', tool==='pen');
@@ -1803,6 +1842,25 @@ function pickColor(el, color){
   setNoteTool('pen');
 }
 
+/* Paper height controls */
+function updateNotePageInfo(){
+  const el = document.getElementById('notePageInfo');
+  if (el) el.textContent = `Hauteur: ${notePaperHeightCss}px`;
+}
+function increaseNotePage(){
+  notePaperHeightCss = Math.min(20000, notePaperHeightCss + 800);
+  noteCanvas.style.height = notePaperHeightCss+'px';
+  localStorage.setItem(notePaperKey(), String(notePaperHeightCss));
+  fitNoteCanvas(); renderNote(); updateNotePageInfo();
+}
+function decreaseNotePage(){
+  notePaperHeightCss = Math.max(600, notePaperHeightCss - 800);
+  noteCanvas.style.height = notePaperHeightCss+'px';
+  localStorage.setItem(notePaperKey(), String(notePaperHeightCss));
+  fitNoteCanvas(); renderNote(); updateNotePageInfo();
+}
+
+/* Storage */
 function saveNotepad(){
   try{ localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes)); }
   catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000); }
@@ -1814,14 +1872,13 @@ function loadNotepad(){
   }catch(e){ noteStrokes = []; }
 }
 
-/* Migration éventuelle des anciens traits (coord. CSS → device px) */
+/* Migration éventuelle CSS→device px */
 function migrateOldStrokesIfNeeded(){
   const dpr = window.devicePixelRatio || 1;
   if (dpr === 1 || !noteStrokes.length) return;
   const w = noteCanvas.width, h = noteCanvas.height;
   const wCss = w / dpr, hCss = h / dpr;
 
-  // Heuristique : si on trouve des points qui “tiennent” dans wCss/hCss, on considère qu'ils sont en CSS px.
   let looksCss = false;
   outer: for (const s of noteStrokes){
     if (!s.points) continue;
@@ -1838,6 +1895,7 @@ function migrateOldStrokesIfNeeded(){
   }
 }
 
+/* Undo/Redo */
 function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
 function pushUndoState(){
   noteUndoStack.push(snapshotStrokes());
@@ -1852,77 +1910,171 @@ function updateUndoRedoBtns(){
   if (r) r.disabled = noteRedoStack.length === 0;
 }
 
+/* === Tracé réactif & lissé === */
+function baseWidthDevice(tool){
+  const dpr = window.devicePixelRatio || 1;
+  return (tool==='pen' ? notePenSize : noteEraserSize) * dpr;
+}
+function mix(a,b,t){ return a + (b-a)*t; }
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+function calcWidthDevice(prev, curr, tool, prevW){
+  const dpr = window.devicePixelRatio || 1;
+  const baseCss = (tool==='pen' ? notePenSize : noteEraserSize);
+  const base = baseCss * dpr;
+
+  if (tool !== 'pen') return base; // gomme : largeur constante
+
+  const distDev = Math.hypot(curr.x - prev.x, curr.y - prev.y);
+  const distCss = distDev / dpr;
+  const dt = Math.max(1, (curr.t - prev.t)); // ms
+  const vel = distCss / dt; // px/ms
+
+  // mappage vitesse → largeur (lent = plus large, rapide = plus fin)
+  const v = clamp(vel / 1.2, 0, 1);
+  const velWidthCss = baseCss * (1.6 - 0.8*v); // 1.6x .. 0.8x
+  let targetCss = velWidthCss;
+
+  // pression si dispo
+  const hasP = (typeof curr.p === 'number' && curr.p > 0);
+  if (hasP){
+    const presWidthCss = baseCss * (0.5 + 0.9*curr.p); // 0.5x .. 1.4x
+    targetCss = 0.6*presWidthCss + 0.4*velWidthCss;
+  }
+
+  const targetDev = targetCss * dpr;
+  const smoothed = (prevW==null) ? targetDev : mix(prevW, targetDev, 0.3);
+  return smoothed;
+}
+
+/* Bézier lissé entre 3 points : m(p0,p1) -> m(p1,p2) avec p1 comme contrôle */
+function drawBezierSegment(p0, p1, p2, width, tool, color){
+  const m1x = (p0.x + p1.x)/2, m1y = (p0.y + p1.y)/2;
+  const m2x = (p1.x + p2.x)/2, m2y = (p1.y + p2.y)/2;
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.strokeStyle = color;
+  noteCtx.lineWidth = Math.max(0.5, width);
+  noteCtx.lineCap = 'round';
+  noteCtx.lineJoin = 'round';
+  noteCtx.beginPath();
+  noteCtx.moveTo(m1x, m1y);
+  noteCtx.quadraticCurveTo(p1.x, p1.y, m2x, m2y);
+  noteCtx.stroke();
+  noteCtx.restore();
+}
+
+/* Point "dot" (début/fin très lent/pression) */
+function drawDot(point, width, tool, color){
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.fillStyle = color;
+  noteCtx.beginPath();
+  noteCtx.arc(point.x, point.y, Math.max(0.5, width/2), 0, Math.PI*2);
+  noteCtx.fill();
+  noteCtx.restore();
+}
+
+/* Pointer handlers (coalescés) */
+function addCoalescedPoints(e, outArr){
+  const list = (typeof e.getCoalescedEvents === 'function') ? e.getCoalescedEvents() : [e];
+  for (const ev of list) outArr.push(toPoint(ev));
+}
+
 function notePointerDown(e){
   e.preventDefault();
   noteCanvas.setPointerCapture(e.pointerId);
   pushUndoState(); clearRedo();
 
-  const pt = noteEventPoint(e);
-  const dpr = window.devicePixelRatio || 1;
-
   if (noteTool === 'stroke-eraser') {
-    if (eraseStrokeAtPoint(pt)) { saveNotepad(); renderNote(); }
-    noteIsDrawing = true; // effacement continu
+    const pts = []; addCoalescedPoints(e, pts);
+    if (pts.length && eraseStrokeAtPoint(pts[0])) { saveNotepad(); renderNote(); }
+    noteIsDrawing = true; // effacement continu tant que pressé
     return;
   }
 
+  // Init trait
   noteIsDrawing = true;
-  const stroke = {
+  livePoints = [];
+  livePrevPoint = null;
+  livePrevWidth = null;
+
+  noteCurrentStroke = {
     tool: noteTool,
     color: noteColor,
-    size: (noteTool==='pen' ? notePenSize : noteEraserSize), // en CSS px (on multiplie par dpr au rendu)
-    points: [pt]
+    size: (noteTool==='pen' ? notePenSize : noteEraserSize), // stocké en CSS px
+    points: []
   };
-  noteCurrentStroke = stroke;
 
-  noteCtx.save();
-  noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = stroke.color;
-  noteCtx.lineWidth = stroke.size * dpr;
-  noteCtx.beginPath();
-  noteCtx.moveTo(pt.x, pt.y);
-  noteCtx.lineTo(pt.x+0.01*dpr, pt.y+0.01*dpr);
-  noteCtx.stroke();
-  noteCtx.restore();
+  const co = []; addCoalescedPoints(e, co);
+  for (const p of co){
+    noteCurrentStroke.points.push({x:p.x, y:p.y, t:p.t, p:p.p});
+    livePoints.push(p);
+    if (!livePrevPoint){
+      // Premier point : poser un dot immédiat
+      const w = baseWidthDevice(noteTool);
+      drawDot(p, w, noteTool, noteColor);
+      livePrevPoint = p;
+      livePrevWidth = w;
+    }
+  }
 }
+
 function notePointerMove(e){
   if(!noteIsDrawing) return;
-  const pt = noteEventPoint(e);
-  const dpr = window.devicePixelRatio || 1;
+  e.preventDefault();
+
+  const co = []; addCoalescedPoints(e, co);
 
   if (noteTool === 'stroke-eraser') {
-    if (eraseStrokeAtPoint(pt)) { saveNotepad(); renderNote(); }
+    for (const p of co){ eraseStrokeAtPoint(p); }
+    saveNotepad(); renderNote();
     return;
   }
 
-  if(!noteCurrentStroke) return;
-  const prev = noteCurrentStroke.points[noteCurrentStroke.points.length-1];
-  noteCurrentStroke.points.push(pt);
+  // Ajout & tracé lissé au fil de l'eau
+  for (const p of co){
+    noteCurrentStroke.points.push({x:p.x, y:p.y, t:p.t, p:p.p});
+    livePoints.push(p);
 
-  noteCtx.save();
-  noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = noteCurrentStroke.color;
-  noteCtx.lineWidth = noteCurrentStroke.size * dpr;
-  noteCtx.beginPath();
-  noteCtx.moveTo(prev.x, prev.y);
-  noteCtx.lineTo(pt.x, pt.y);
-  noteCtx.stroke();
-  noteCtx.restore();
+    const n = livePoints.length;
+    if (n >= 3){
+      const p0 = livePoints[n-3], p1 = livePoints[n-2], p2 = livePoints[n-1];
+      const width = calcWidthDevice(p1, p2, noteTool, livePrevWidth);
+      drawBezierSegment(p0, p1, p2, width, noteTool, noteColor);
+      livePrevWidth = width;
+      livePrevPoint = p2;
+    } else if (n === 2){
+      const w = calcWidthDevice(livePoints[0], livePoints[1], noteTool, livePrevWidth);
+      drawBezierSegment(livePoints[0], livePoints[0], livePoints[1], w, noteTool, noteColor);
+      livePrevWidth = w;
+    }
+  }
 }
+
 function notePointerUp(e){
   if(!noteIsDrawing) return;
   noteIsDrawing = false;
 
-  if (noteTool === 'stroke-eraser') { return; }
+  if (noteTool === 'stroke-eraser') {
+    saveNotepad(); renderNote();
+    return;
+  }
 
+  // Finalisation
   if(noteCurrentStroke && noteCurrentStroke.points.length>0){
     noteStrokes.push(noteCurrentStroke);
-    saveNotepad(); renderNote(); updateUndoRedoBtns();
+    saveNotepad();
+    renderNote();
+    updateUndoRedoBtns();
   }
   noteCurrentStroke = null;
+  livePoints = [];
+  livePrevPoint = null;
+  livePrevWidth = null;
 }
 
-/* suppression d’un trait au voisinage du pointeur */
+/* Effacement d’un trait au voisinage */
 function eraseStrokeAtPoint(pt){
   if (!noteStrokes.length) return false;
   const dpr = window.devicePixelRatio || 1;
@@ -1930,8 +2082,9 @@ function eraseStrokeAtPoint(pt){
 
   for (let i = noteStrokes.length - 1; i >= 0; i--){
     const s = noteStrokes[i];
-    if (!s.points || s.points.length < 2) continue;
-    if (strokeHitTest(s.points, pt, eps)) {
+    const pts = s.points||[];
+    if (pts.length < 2) continue;
+    if (strokeHitTest(pts, pt, eps)) {
       noteStrokes.splice(i, 1);
       updateUndoRedoBtns();
       return true;
@@ -1958,23 +2111,42 @@ function distPointToSegment(p, a, b){
   return Math.hypot(p.x - projx, p.y - projy);
 }
 
+/* Relecture complète */
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
+  fitNoteCanvas();
   noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
 
-  const dpr = window.devicePixelRatio || 1;
   for(const s of noteStrokes){
-    noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
-    noteCtx.strokeStyle = s.color || getThemeDefaultPen();
-    noteCtx.lineWidth = (s.size || 5) * dpr;
-    if(!s.points || s.points.length===0) continue;
-    noteCtx.beginPath();
-    noteCtx.moveTo(s.points[0].x, s.points[0].y);
-    for(let i=1;i<s.points.length;i++){ const p = s.points[i]; noteCtx.lineTo(p.x, p.y); }
-    noteCtx.stroke();
+    replayStrokeSmooth(s);
+  }
+  if (noteCurrentStroke && noteCurrentStroke.points && noteCurrentStroke.points.length){
+    replayStrokeSmooth(noteCurrentStroke);
   }
 }
 
+function replayStrokeSmooth(stroke){
+  const pts = stroke.points||[];
+  if (!pts.length) return;
+
+  const tool = stroke.tool;
+  const color = stroke.color || getThemeDefaultPen();
+
+  if (pts.length === 1){
+    drawDot(pts[0], baseWidthDevice(tool), tool, color);
+    return;
+  }
+
+  let prevW = null;
+  for (let i=2; i<pts.length; i++){
+    const p0 = pts[i-2], p1 = pts[i-1], p2 = pts[i];
+    const w = calcWidthDevice(p1, p2, tool, prevW);
+    drawBezierSegment(p0, p1, p2, w, tool, color);
+    prevW = w;
+  }
+}
+
+/* Undo/Redo */
 function noteUndo(){
   if (noteUndoStack.length === 0) return;
   noteRedoStack.push(snapshotStrokes());
@@ -1994,7 +2166,10 @@ function noteClearAll(){
   noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
 }
 
-/* Adaptation bloc-note au thème (mise à jour couleur par défaut) */
+/* Thème (couleur stylo par défaut) */
+function getThemeDefaultPen(){
+  return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+}
 function adaptNotepadThemeColors(dark, fromInit){
   const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
 
@@ -2015,28 +2190,30 @@ function adaptNotepadThemeColors(dark, fromInit){
     let changed = false;
     for(const s of strokes){
       if(s.tool !== 'eraser' && s.color !== newDefault){
-        s.color = newDefault;
-        changed = true;
+        s.color = newDefault; changed = true;
       }
     }
-    if(changed){
-      localStorage.setItem(key, JSON.stringify(strokes));
-    }
+    if(changed){ localStorage.setItem(key, JSON.stringify(strokes)); }
     if(noteOpen){
       noteStrokes = strokes;
-      fitNoteCanvas();
-      migrateOldStrokesIfNeeded();
-      renderNote();
+      fitNoteCanvas(); migrateOldStrokesIfNeeded(); renderNote();
     }
   }catch(e){}
 }
 
-/* Maintien bloc-note lors du switch d’onglet */
+/* Conserve le bloc-note ouvert lors d’un switch d’onglet */
 const _switchTabOrig = switchTab;
 switchTab = function(id){
   _switchTabOrig(id);
   if(noteOpen){
     loadNotepad(); noteUndoStack = []; noteRedoStack = [];
+    // recharger la hauteur papier par onglet
+    try{
+      const savedH = parseInt(localStorage.getItem(notePaperKey())||'');
+      if (!isNaN(savedH) && savedH>=600 && savedH<=20000) notePaperHeightCss = savedH;
+      noteCanvas.style.height = notePaperHeightCss+'px';
+      updateNotePageInfo();
+    }catch(e){}
     fitNoteCanvas(); migrateOldStrokesIfNeeded(); renderNote(); updateUndoRedoBtns();
     ensureNoteOverlayInViewport();
   }
