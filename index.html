@@ -277,7 +277,7 @@ body.dark .tl-sep{ background:#3a3a3a; }
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-.timeline-canvas{ position:relative; height:480px; min-width:600px; width:100%; }
+.timeline-canvas{ position:relative; height:520px; min-width:600px; width:100%; }
 
 /* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{
@@ -368,6 +368,19 @@ body.dark #noteCanvas{ background:#111; }
 #tab-bar .note-icon{ margin-left:auto; border-radius:12px; }
 #tab-bar .note-icon:hover{ background:#e9eef6; }
 body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
+
+/* === TIMING – split arrivée / départ === */
+.timing-split{ display:grid; grid-template-columns: repeat(2, minmax(260px,1fr)); gap:12px; }
+@media (max-width: 800px){ .timing-split{ grid-template-columns: 1fr; } }
+.timing-col{ background:#fff; border-radius:12px; padding:10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
+body.dark .timing-col{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.timing-col.arr{ border-left:6px solid #2e7d32; }
+.timing-col.dep{ border-left:6px solid #1976d2; }
+.timing-subtitle{ font-weight:800; text-align:center; margin:4px 0 10px; padding:6px 10px; border-radius:10px; }
+.timing-col.arr .timing-subtitle{ background:#e8f5e9; color:#1b5e20; }
+.timing-col.dep .timing-subtitle{ background:#e3f2fd; color:#0d47a1; }
+body.dark .timing-col.arr .timing-subtitle{ background:#1b2b1c; color:#c8e6c9; }
+body.dark .timing-col.dep .timing-subtitle{ background:#162331; color:#bbdefb; }
 </style>
 </head>
 <body onload="initForm()">
@@ -496,7 +509,7 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
 <!-- TIMING -->
 <section>
   <h2>TIMING</h2>
-  <div class="form-grid" id="timing-grid"></div>
+  <div id="timing-grid" class="timing-split"></div>
 </section>
 
 <!-- TIMELINE -->
@@ -912,34 +925,55 @@ function loadTabData(id){
 /* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS */
+/* TIMING FIELDS – séparés ARR / DEP */
 function generateTimingFields(){
-  const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
-    "AvionPremierEmbarque","AvionDernierEmbarque",
-    "PortePremierEmbarque","PorteDernierEmbarque",
-    "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
-    "RemiseLID","FermeturePorteAvion"];
-
-  const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
-    "Avion : Premier embarqué","Avion : Dernier embarqué",
-    "Porte : Premier embarqué","Porte : Dernier embarqué",
-    "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
-    "Remise LID/LDS","Fermeture porte avion"];
-
   const container=document.getElementById('timing-grid');
-  container.innerHTML="";
-  timings.forEach((id,i)=>{
-    const div=document.createElement('div');
-    div.className='form-group';
-    div.innerHTML=`
-      <label>${labels[i]}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
+  if(!container) return;
+
+  const fieldHTML = (id,label)=>`
+    <div class="form-group">
+      <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
       <div class="btn-actions">
         <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
         <button class="action now" onclick="setNow('${id}');updateAllCalculations()">Now</button>
         <button class="action plus" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-      </div>`;
-    container.appendChild(div);
-  });
+      </div>
+    </div>`;
+
+  let arr = '';
+  arr += `<div class="timing-col arr">`;
+  arr += `<div class="timing-subtitle">Arrivée / Débarquement</div>`;
+  arr += `<div class="form-grid">`;
+  arr += fieldHTML('ArrPNT','Arrivée PNT avion');
+  arr += fieldHTML('ArrPNC','Arrivée PNC avion');
+  arr += fieldHTML('PremierDebarque','Premier débarqué');
+  arr += fieldHTML('DernierDebarque','Dernier débarqué');
+  /* Nouveau pair Lift (Arrivée) */
+  arr += fieldHTML('ArriveeLiftArr','Arrivée Lift');
+  arr += fieldHTML('DepartLiftArr','Départ Lift');
+  arr += `</div></div>`;
+
+  let dep = '';
+  dep += `<div class="timing-col dep">`;
+  dep += `<div class="timing-subtitle">Départ / Embarquement</div>`;
+  dep += `<div class="form-grid">`;
+  dep += fieldHTML('AvionPremierEmbarque','Avion : Premier embarqué');
+  dep += fieldHTML('AvionDernierEmbarque','Avion : Dernier embarqué');
+  dep += fieldHTML('PortePremierEmbarque','Porte : Premier embarqué');
+  dep += fieldHTML('PorteDernierEmbarque','Porte : Dernier embarqué');
+  dep += fieldHTML('ArriveeFuel','Arrivée Fuel');
+  dep += fieldHTML('DepartFuel','Départ Fuel');
+  /* Lift existant = Lift (Départ) */
+  dep += fieldHTML('ArriveeLift','Arrivée Lift');
+  dep += fieldHTML('DepartLift','Départ Lift');
+  /* Nouveau: Recherche bagage */
+  dep += fieldHTML('DebutRechercheBagage','Début recherche bagage');
+  dep += fieldHTML('FinRechercheBagage','Fin recherche bagage');
+  dep += fieldHTML('RemiseLID','Remise LID/LDS');
+  dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
+  dep += `</div></div>`;
+
+  container.innerHTML = arr + dep;
 }
 
 /* CHARGEMENT / TOB */
@@ -995,7 +1029,7 @@ function updateLIDVisibility(){
 }
 
 function updateTOB() {
-  const cie = (document.getElementById('Cie').value||'').toUpperCase();
+  const cie = document.getElementById('Cie').value;
   let mainTotal = 0;
   let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
 
@@ -1413,11 +1447,13 @@ function collectTimelineData(){
   });
 
   const rows = [
-    {key:'debarq', label:'Débarquement',       pair:getPairWindow('PremierDebarque','DernierDebarque'),           cls:'tl--turn', color:null},
-    {key:'emb',    label:'Embarquement',       pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
-    {key:'porte',  label:'Embarquement porte', pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'), cls:'tl--std',  color:null},
-    {key:'fuel',   label:'Fuel',               pair:getPairWindow('ArriveeFuel','DepartFuel'),                     cls:'tl--std',  color:'#ff9800'},
-    {key:'lift',   label:'Lift',               pair:getPairWindow('ArriveeLift','DepartLift'),                     cls:'tl--std',  color:'#2e7d32'},
+    {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),             cls:'tl--turn', color:null},
+    {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),   cls:'tl--ops',  color:null},
+    {key:'porte',   label:'Embarquement porte',   pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'),   cls:'tl--std',  color:null},
+    {key:'fuel',    label:'Fuel',                 pair:getPairWindow('ArriveeFuel','DepartFuel'),                       cls:'tl--std',  color:'#ff9800'},
+    {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                 cls:'tl--std',  color:'#8e24aa'},
+    {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                       cls:'tl--std',  color:'#2e7d32'},
+    {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),     cls:'tl--std',  color:'#9c27b0'},
   ];
 
   const durations = rows
@@ -1471,8 +1507,12 @@ function renderTimeline(){
     }
   }
 
-  const rowTops = [56, 66, 76, 86, 96];
-  durations.forEach(d=>{
+  // Positionnement dynamique des barres en fonction du nombre de lignes
+  const baseTop = 56, endTop = 96;
+  const nRows = Math.max(1, durations.length);
+  const step = nRows > 1 ? (endTop - baseTop) / (nRows - 1) : 0;
+
+  durations.forEach((d, i)=>{
     const aExt = toExtended(d.a, min, max);
     const bExt = toExtended(d.b, min, max);
     const start = Math.min(aExt, bExt);
@@ -1485,7 +1525,7 @@ function renderTimeline(){
     bar.className = `tl-range ${d.cls}`;
     bar.style.left = `${leftStartPct}%`;
     bar.style.width = `${widthPct}%`;
-    bar.style.top = `${rowTops[d.rowIndex]}%`;
+    bar.style.top = `${(baseTop + i*step)}%`;
     bar.style.transform = 'translateY(-50%)';
     if(d.color){ bar.style.setProperty('--c', d.color); }
     canvas.appendChild(bar);
