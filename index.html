@@ -89,7 +89,7 @@ textarea {
     overflow: auto;
 }
 
-/* Affichage visuel en MAJ pour certains champs */
+/* Affichage visuel en MAJ */
 input.uppercase { text-transform: uppercase; }
 
 /* Champ horaire + boutons */
@@ -207,7 +207,6 @@ body.dark #tab-bar { background: #121212; }
 }
 
 /* === TIMELINE (base) === */
-.timeline-wrap { padding: 8px 4px 2px; }
 .timeline-track {
   position: absolute; left:6%; right:6%; top:50%;
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
@@ -346,7 +345,6 @@ body.dark .note-toolbar{ border-bottom-color: rgba(255,255,255,.08); }
 body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-btn.active{ outline: 2px solid #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,.15); }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
-
 .note-btn-danger{ background:#e53935 !important; color:#fff !important; }
 .note-btn-danger:hover{ filter: brightness(0.95); }
 .note-btn-danger:active{ transform: translateY(1px); }
@@ -387,6 +385,9 @@ body.dark .timing-seg:hover{ background:#333; }
 body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90caf9; }
 .timing-panel{ display:none; }
 .timing-panel.active{ display:block; }
+
+/* Now VERTS uniquement dans la colonne ARRIVÉE */
+#panel-arr .btn-actions .now { background: #2e7d32; }
 
 /* === CHIFFRES PORTE — esthétique + lignes figées === */
 #chiffres-porte .form-grid{
@@ -466,28 +467,26 @@ body.dark #chiffres-porte #TOB{
   background:#1b2636; border-color:#90caf9;
 }
 
-/* === RECHERCHE BAGAGE (optionnel) === */
-#bag-search-section .bag-toggle{
-  display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px;
-}
-#bag-search-fields{
-  display:none;
-}
-#bag-search-fields .bag-card{
+/* === INAD + RECHERCHE BAGAGE (optionnels) === */
+#inad-bag .option-grid{
   display:grid; gap:12px;
-  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+}
+.opt-card{
   background:#fff; border-radius:12px; padding:12px;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
 }
-body.dark #bag-search-fields .bag-card{
-  background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+body.dark .opt-card{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.opt-card .card-head{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;
+  font-weight:800;
 }
-#bag-search-fields .hint{
-  grid-column: 1 / -1; text-align:center; font-size:.9rem; opacity:.75; margin-top:2px;
-}
+.card-fields{ display:none; }
+.card-fields .form-group{ margin-bottom:6px; }
+.card-fields .hint{ text-align:center; font-size:.9rem; opacity:.75; }
 
-/* Now VERTS uniquement dans la colonne ARRIVÉE du TIMING */
-#panel-arr .btn-actions .now { background: #2e7d32; }
+/* Timeline canvas wrap */
+.timeline-canvas{ position:relative; height:520px; min-width:600px; width:100%; }
 </style>
 </head>
 <body onload="initForm()">
@@ -619,48 +618,85 @@ body.dark #bag-search-fields .bag-card{
   <div id="timing-grid"></div>
 </section>
 
-<!-- RECHERCHE BAGAGE (optionnel) -->
-<section id="bag-search-section">
-  <h2>RECHERCHE BAGAGE (optionnel)</h2>
-  <div class="bag-toggle">
-    <span>Activer</span>
-    <label class="switch" title="Afficher/masquer la recherche bagage">
-      <input type="checkbox" id="BagSearchEnabled" onchange="toggleBagSearch(this.checked)">
-      <span class="slider"></span>
-    </label>
-  </div>
-
-  <div id="bag-search-fields">
-    <div class="bag-card">
-      <div class="form-group">
-        <label>Début recherche bagage
-          <input type="time" id="DebutRechercheBagage" onchange="updateAllCalculations()">
+<!-- INAD + RECHERCHE BAGAGE (optionnels) -->
+<section id="inad-bag">
+  <h2>INAD & RECHERCHE BAGAGE (optionnels)</h2>
+  <div class="option-grid">
+    <!-- INAD -->
+    <div class="opt-card">
+      <div class="card-head">
+        <span>INAD</span>
+        <label class="switch" title="Activer INAD">
+          <input type="checkbox" id="INADEnabled" onchange="toggleINAD(this.checked)">
+          <span class="slider"></span>
         </label>
-        <div class="btn-actions">
-          <button class="action minus" onclick="adjustTime('DebutRechercheBagage',-1);updateAllCalculations()">-1</button>
-          <button class="action now" onclick="setNow('DebutRechercheBagage');updateAllCalculations()">Now</button>
-          <button class="action plus" onclick="adjustTime('DebutRechercheBagage',1);updateAllCalculations()">+1</button>
+      </div>
+      <div id="inad-fields" class="card-fields">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Arrivée INAD
+              <input type="time" id="ArriveeINAD" onchange="updateAllCalculations()">
+            </label>
+            <div class="btn-actions">
+              <button class="action minus" onclick="adjustTime('ArriveeINAD',-1);updateAllCalculations()">-1</button>
+              <button class="action now" onclick="setNow('ArriveeINAD');updateAllCalculations()">Now</button>
+              <button class="action plus" onclick="adjustTime('ArriveeINAD',1);updateAllCalculations()">+1</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Remise CAB au coordo
+              <input type="time" id="RemiseCABCoordo" onchange="updateAllCalculations()">
+            </label>
+            <div class="btn-actions">
+              <button class="action minus" onclick="adjustTime('RemiseCABCoordo',-1);updateAllCalculations()">-1</button>
+              <button class="action now" onclick="setNow('RemiseCABCoordo');updateAllCalculations()">Now</button>
+              <button class="action plus" onclick="adjustTime('RemiseCABCoordo',1);updateAllCalculations()">+1</button>
+            </div>
+          </div>
         </div>
+        <div class="hint">Ces champs apparaissent uniquement si INAD est activé.</div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label>Fin recherche bagage
-          <input type="time" id="FinRechercheBagage" onchange="updateAllCalculations()">
+    <!-- RECHERCHE BAGAGE -->
+    <div class="opt-card">
+      <div class="card-head">
+        <span>Recherche bagage</span>
+        <label class="switch" title="Afficher/masquer la recherche bagage">
+          <input type="checkbox" id="BagSearchEnabled" onchange="toggleBagSearch(this.checked)">
+          <span class="slider"></span>
         </label>
-        <div class="btn-actions">
-          <button class="action minus" onclick="adjustTime('FinRechercheBagage',-1);updateAllCalculations()">-1</button>
-          <button class="action now" onclick="setNow('FinRechercheBagage');updateAllCalculations()">Now</button>
-          <button class="action plus" onclick="adjustTime('FinRechercheBagage',1);updateAllCalculations()">+1</button>
+      </div>
+      <div id="bag-search-fields" class="card-fields">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Début recherche bagage
+              <input type="time" id="DebutRechercheBagage" onchange="updateAllCalculations()">
+            </label>
+            <div class="btn-actions">
+              <button class="action minus" onclick="adjustTime('DebutRechercheBagage',-1);updateAllCalculations()">-1</button>
+              <button class="action now" onclick="setNow('DebutRechercheBagage');updateAllCalculations()">Now</button>
+              <button class="action plus" onclick="adjustTime('DebutRechercheBagage',1);updateAllCalculations()">+1</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Fin recherche bagage
+              <input type="time" id="FinRechercheBagage" onchange="updateAllCalculations()">
+            </label>
+            <div class="btn-actions">
+              <button class="action minus" onclick="adjustTime('FinRechercheBagage',-1);updateAllCalculations()">-1</button>
+              <button class="action now" onclick="setNow('FinRechercheBagage');updateAllCalculations()">Now</button>
+              <button class="action plus" onclick="adjustTime('FinRechercheBagage',1);updateAllCalculations()">+1</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Nombre de bagages déchargés
+              <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
+            </label>
+          </div>
         </div>
+        <div class="hint">Ces champs n’apparaissent que si la recherche bagage est activée.</div>
       </div>
-
-      <div class="form-group">
-        <label>Nombre de bagages déchargés
-          <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
-        </label>
-      </div>
-
-      <div class="hint">Ces champs n’apparaissent que si la recherche bagage est activée.</div>
     </div>
   </div>
 </section>
@@ -805,9 +841,9 @@ const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩
 let saveTimer=null;
 
 /* TIMELINE zoom & scroll */
-let timelineZoom = 1;       // 1 = 100%
+let timelineZoom = 1;
 const TL_ZOOM_MIN = 0.5;
-const TL_ZOOM_MAX = 8;      // 800%
+const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
@@ -902,8 +938,9 @@ function initForm(){
 
   setDefaultDateToTodayIfEmpty();
 
-  const bagToggle = document.getElementById('BagSearchEnabled');
-  toggleBagSearch(bagToggle && bagToggle.checked);
+  // init toggles
+  toggleBagSearch(document.getElementById('BagSearchEnabled')?.checked);
+  toggleINAD(document.getElementById('INADEnabled')?.checked);
 
   renderTimeline();
 
@@ -1069,17 +1106,17 @@ function loadTabData(id){
 
   setDefaultDateToTodayIfEmpty();
 
-  const bagToggle = document.getElementById('BagSearchEnabled');
-  toggleBagSearch(bagToggle && bagToggle.checked);
-
   generateChargementFields();
   updateAllCalculations();
+
+  toggleBagSearch(document.getElementById('BagSearchEnabled')?.checked);
+  toggleINAD(document.getElementById('INADEnabled')?.checked);
 }
 
 /* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – séparés ARR / DEP (sans sous-titres) */
+/* TIMING FIELDS – séparés ARR / DEP */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
@@ -1094,37 +1131,71 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  // Colonne ARRIVÉE
+  /* ARRIVÉE – ordre par lignes
+     1) Premier/dernier débarqué
+     2) Arrivée Avitair (ArriveeFuel)
+     3) Arrivée lift / Départ lift (Arr)
+     4) Arrivée agent PMR / Débarquement PMR (nouveau)
+     5) Début/Fin déchargement bagages
+  */
   let arr = '';
-  arr += `<div class="timing-col arr">`;
-  arr += `<div class="form-grid">`;
-  arr += fieldHTML('ArrPNT','Arrivée PNT avion');
-  arr += fieldHTML('ArrPNC','Arrivée PNC avion');
+  arr += `<div class="timing-col arr"><div class="form-grid">`;
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
-  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agents PMR');
+
+  arr += `<div class="form-group" style="flex:1 1 100%;">` +
+         `<label>Arrivée Avitair<input type="time" id="ArriveeFuel" onchange="updateAllCalculations()"></label>` +
+         `<div class="btn-actions">` +
+         `<button class="action minus" onclick="adjustTime('ArriveeFuel',-1);updateAllCalculations()">-1</button>` +
+         `<button class="action now" onclick="setNow('ArriveeFuel');updateAllCalculations()">Now</button>` +
+         `<button class="action plus" onclick="adjustTime('ArriveeFuel',1);updateAllCalculations()">+1</button>` +
+         `</div></div>`;
+
+  arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
+  arr += fieldHTML('DepartLiftArr','Départ lift');
+
+  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR');
+  arr += fieldHTML('DebarquementPMR','Débarquement PMR');
+
   arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
-  arr += fieldHTML('ArriveeLiftArr','Arrivée Lift');
-  arr += fieldHTML('DepartLiftArr','Départ Lift');
   arr += `</div></div>`;
 
-  // Colonne DÉPART
+  /* DÉPART – ordre par lignes
+     1) Arrivée PNT / Arrivée PNC
+     2) Premier embarqué / Dernier embarqué
+     3) Départ Avitair (DepartFuel)
+     4) Arrivée lift / Départ lift (Dep)
+     5) Arrivée agent PMR / Embarquement PMR (nouveau)
+     6) Début/Fin chargement bagages
+     7) Remise LID/LDS / Fermeture porte avion
+     (On supprime “Porte: ...”)
+  */
   let dep = '';
-  dep += `<div class="timing-col dep">`;
-  dep += `<div class="form-grid">`;
-  dep += fieldHTML('AvionPremierEmbarque','Avion : Premier embarqué');
-  dep += fieldHTML('AvionDernierEmbarque','Avion : Dernier embarqué');
-  dep += fieldHTML('PortePremierEmbarque','Porte : Premier embarqué');
-  dep += fieldHTML('PorteDernierEmbarque','Porte : Dernier embarqué');
-  dep += fieldHTML('ArriveeFuel','Arrivée Fuel');
-  dep += fieldHTML('DepartFuel','Départ Fuel');
-  dep += fieldHTML('ArriveeLift','Arrivée Lift');
-  dep += fieldHTML('DepartLift','Départ Lift');
+  dep += `<div class="timing-col dep"><div class="form-grid">`;
+  dep += fieldHTML('ArrPNT','Arrivée PNT');
+  dep += fieldHTML('ArrPNC','Arrivée PNC');
+
+  dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
+  dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
+
+  dep += `<div class="form-group" style="flex:1 1 100%;">` +
+         `<label>Départ Avitair<input type="time" id="DepartFuel" onchange="updateAllCalculations()"></label>` +
+         `<div class="btn-actions">` +
+         `<button class="action minus" onclick="adjustTime('DepartFuel',-1);updateAllCalculations()">-1</button>` +
+         `<button class="action now" onclick="setNow('DepartFuel');updateAllCalculations()">Now</button>` +
+         `<button class="action plus" onclick="adjustTime('DepartFuel',1);updateAllCalculations()">+1</button>` +
+         `</div></div>`;
+
+  dep += fieldHTML('ArriveeLift','Arrivée lift');
+  dep += fieldHTML('DepartLift','Départ lift');
+
+  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
+  dep += fieldHTML('EmbarquementPMR','Embarquement PMR');
+
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agents PMR');
-  dep += fieldHTML('ArriveeINAD','Arrivée INAD');
+
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
   dep += `</div></div>`;
@@ -1217,9 +1288,14 @@ function updateLIDVisibility(){
   lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
 }
 
-/* Afficher/masquer la section recherche bagage */
+/* Toggles optionnels */
 function toggleBagSearch(enable){
   const wrap = document.getElementById('bag-search-fields');
+  if(!wrap) return;
+  wrap.style.display = enable ? 'block' : 'none';
+}
+function toggleINAD(enable){
+  const wrap = document.getElementById('inad-fields');
   if(!wrap) return;
   wrap.style.display = enable ? 'block' : 'none';
 }
@@ -1632,11 +1708,14 @@ function collectTimelineData(){
   addPoint('H-15', H15,  'tl--turn');
 
   const singles = [
-    ['ArrPNT','Arrivée PNT avion'],
-    ['ArrPNC','Arrivée PNC avion'],
-    ['ArriveeAgentsPMRArr','Arrivée agents PMR (Arr)'],
-    ['ArriveeAgentsPMRDep','Arrivée agents PMR (Dep)'],
+    ['ArrPNT','Arrivée PNT'],
+    ['ArrPNC','Arrivée PNC'],
+    ['ArriveeAgentsPMRArr','Arrivée agent PMR (Arr)'],
+    ['DebarquementPMR','Débarquement PMR'],
+    ['ArriveeAgentsPMRDep','Arrivée agent PMR (Dep)'],
+    ['EmbarquementPMR','Embarquement PMR'],
     ['ArriveeINAD','Arrivée INAD'],
+    ['RemiseCABCoordo','Remise CAB coordo'],
     ['RemiseLID','Remise LID/LDS'],
     ['FermeturePorteAvion','Fermeture porte avion'],
   ];
@@ -1646,15 +1725,15 @@ function collectTimelineData(){
   });
 
   const rows = [
-    {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),             cls:'tl--turn', color:null},
-    {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),   cls:'tl--ops',  color:null},
-    {key:'porte',   label:'Embarquement porte',   pair:getPairWindow('PortePremierEmbarque','PorteDernierEmbarque'),   cls:'tl--std',  color:null},
-    {key:'fuel',    label:'Fuel',                 pair:getPairWindow('ArriveeFuel','DepartFuel'),                       cls:'tl--std',  color:'#ff9800'},
-    {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                 cls:'tl--std',  color:'#8e24aa'},
-    {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                       cls:'tl--std',  color:'#2e7d32'},
-    {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),     cls:'tl--std',  color:'#9c27b0'},
-    {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std', color:'#795548'},
-    {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops', color:'#009688'},
+    {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),                 cls:'tl--turn', color:null},
+    {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),       cls:'tl--ops',  color:null},
+    {key:'avit',    label:'Avitair',              pair:getPairWindow('ArriveeFuel','DepartFuel'),                           cls:'tl--std',  color:'#ff9800'},
+    {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
+    {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},
+    {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
+    {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
+    {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
+    {key:'inad',    label:'INAD',                 pair:getPairWindow('ArriveeINAD','RemiseCABCoordo'),                      cls:'tl--std',  color:'#607d8b'},
   ];
 
   const durations = rows
