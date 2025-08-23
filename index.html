@@ -92,6 +92,9 @@ textarea {
 /* Affichage visuel en MAJ pour certains champs */
 input.uppercase { text-transform: uppercase; }
 
+/* Indication invalid IATA */
+input.invalid { border: 2px solid #d32f2f !important; }
+
 /* Champ horaire + boutons */
 .form-group input[type="time"] {
     width: 100%;
@@ -286,12 +289,12 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
   min-width: 320px; min-height: 260px;
   max-width: calc(100vw - 20px);
   max-height: calc(100vh - 20px);
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.80); /* + transparence */
   color:#111;
   border-radius:16px;
   box-shadow: 0 20px 50px rgba(0,0,0,.35);
   z-index:2000; display:none; overflow:hidden; resize: both;
-  backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(16px); /* + blur pour détacher */
   opacity: 0; transform: translateY(10px) scale(.98);
   transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
   border: 1px solid rgba(0,0,0,.06);
@@ -299,7 +302,7 @@ body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
 .note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 body.dark .note-overlay{
-  background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08);
+  background: rgba(20,20,20,0.80); color:#eee; border-color: rgba(255,255,255,.08);
 }
 .note-overlay::after{
   content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px;
@@ -312,8 +315,8 @@ body.dark .note-overlay{
 body.dark .note-overlay::after{
   background:
     linear-gradient(135deg, rgba(255,255,255,.3) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
-    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
-    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
+    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px  no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px  no-repeat;
 }
 
 /* barre de titre */
@@ -347,7 +350,6 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-btn.active{ outline: 2px solid #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,.15); }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
 
-/* bouton danger (croix rouge) */
 .note-btn-danger{ background:#e53935 !important; color:#fff !important; }
 .note-btn-danger:hover{ filter: brightness(0.95); }
 .note-btn-danger:active{ transform: translateY(1px); }
@@ -360,8 +362,15 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-color:hover{ transform: scale(1.06); }
 .note-color.selected{ outline:3px solid #1976d2; }
 
-.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); }
-#noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
+/* zone scrollable + canvas du bloc-note */
+.note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); overflow:auto; }
+#noteCanvas{
+  width:100%;
+  height:1600px; /* permet de défiler pour écrire plus */
+  display:block;
+  touch-action:none;
+  background:#fff;
+}
 body.dark #noteCanvas{ background:#111; }
 
 /* Icône bloc-note dans le bandeau d’onglets */
@@ -426,9 +435,11 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
     <div class="form-group"><label>N° VOL
       <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
     </label></div>
-    <div class="form-group"><label>Provenance<input class="uppercase" type="text" id="From" maxlength="3"></label></div>
+    <div class="form-group"><label>Provenance
+      <input class="uppercase" type="text" id="From" maxlength="3" pattern="[A-Z]{1,3}" inputmode="latin" autocomplete="off" oninput="sanitizeIATA(this)">
+    </label></div>
     <div class="form-group"><label>Destination
-      <input class="uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
+      <input class="uppercase" type="text" id="To" maxlength="3" pattern="[A-Z]{1,3}" inputmode="latin" autocomplete="off" oninput="sanitizeIATA(this); updateTabLabelInstant()">
     </label></div>
     <div class="form-group"><label>Immat<input class="uppercase" type="text" id="Immat" maxlength="5"></label></div>
     <div class="form-group"><label>Parking
@@ -597,14 +608,15 @@ body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
   <div class="note-toolbar">
     <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
     <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
+    <button type="button" id="toolStrokeErase" class="note-btn"  onclick="setNoteTool('stroke-eraser')">✂️ Gomme de trait</button>
     <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
 
     <span style="margin-left:6px;">Taille crayon</span>
-    <input id="penSize" type="range" min="1" max="20" step="1" value="3" oninput="updatePenSizeLabel()">
-    <span id="penSizeVal">3</span>px
+    <input id="penSize" type="range" min="1" max="20" step="1" value="5" oninput="updatePenSizeLabel()">
+    <span id="penSizeVal">5</span>px
 
     <span style="margin-left:12px;">Taille gomme</span>
     <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
@@ -651,6 +663,23 @@ window._tobtRawMins = null;
 /* === Notepad theme defaults === */
 const NOTE_DEFAULT_LIGHT = '#111111';
 const NOTE_DEFAULT_DARK  = '#FFFFFF';
+
+/* Notepad options */
+let noteOpen = false;
+let noteTool = 'pen';
+let noteColor = NOTE_DEFAULT_LIGHT;
+let notePenSize = 5;          // défaut demandé: 5
+let noteEraserSize = 22;
+let noteStrokes = [];
+let noteIsDrawing = false;
+let noteCurrentStroke = null;
+let noteCanvas, noteCtx, noteRO;
+let noteDrag = {active:false, dx:0, dy:0};
+let noteInited = false;
+let noteUndoStack = [];
+let noteRedoStack = [];
+const NOTE_UNDO_LIMIT = 100;
+const NOTE_STROKE_HIT_EPS = 10; // tolérance gomme de trait
 
 /* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
@@ -706,7 +735,8 @@ function initForm(){
   document.getElementById('From').addEventListener('input', applyPrestationsDefaults);
   document.getElementById('To').addEventListener('input', applyPrestationsDefaults);
 
-  setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
+  setupUppercaseInputs(['NVol','From','To','Immat','RZA']); // on garde la sécu MAJ
+  enforceIATAInputs(); // filtre strict IATA
 
   const storedDark = (localStorage.getItem('modeDark')||'0')==='1';
   const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
@@ -767,6 +797,23 @@ function setupUppercaseInputs(ids){
     const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
     el.addEventListener('input', toUpper);
     el.addEventListener('blur', toUpper);
+  });
+}
+
+/* IATA strict : A-Z uniquement, max 3, MAJ, et signaler si <3 */
+function sanitizeIATA(el){
+  const val = ((el.value||'').toUpperCase().replace(/[^A-Z]/g,'')).slice(0,3);
+  el.value = val;
+  el.classList.toggle('invalid', val.length>0 && val.length<3);
+}
+/* attache aussi au cas où HTML change */
+function enforceIATAInputs(){
+  ['From','To'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+      el.addEventListener('input', ()=>sanitizeIATA(el));
+      sanitizeIATA(el);
+    }
   });
 }
 
@@ -904,6 +951,7 @@ function loadTabData(id){
 
   // si la date est absente, la mettre à aujourd’hui
   setDefaultDateToTodayIfEmpty();
+  enforceIATAInputs();
 
   generateChargementFields();
   updateAllCalculations();
@@ -914,17 +962,25 @@ function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS */
 function generateTimingFields(){
-  const timings=["ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
+  const timings=[
+    "ArrPNT","ArrPNC","PremierDebarque","DernierDebarque",
     "AvionPremierEmbarque","AvionDernierEmbarque",
     "PortePremierEmbarque","PorteDernierEmbarque",
     "ArriveeFuel","DepartFuel","ArriveeLift","DepartLift",
-    "RemiseLID","FermeturePorteAvion"];
+    "RemiseLID","FermeturePorteAvion",
+    // === nouveaux champs demandés (arrivée) ===
+    "ArriveeLift_ARR","DepartLift_ARR"
+  ];
 
-  const labels=["Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
+  const labels=[
+    "Arrivée PNT avion","Arrivée PNC avion","Premier débarqué","Dernier débarqué",
     "Avion : Premier embarqué","Avion : Dernier embarqué",
     "Porte : Premier embarqué","Porte : Dernier embarqué",
     "Arrivée Fuel","Départ Fuel","Arrivée Lift","Départ Lift",
-    "Remise LID/LDS","Fermeture porte avion"];
+    "Remise LID/LDS","Fermeture porte avion",
+    // libellés nouveaux
+    "Arrivée : Arrivée Lift","Arrivée : Départ Lift"
+  ];
 
   const container=document.getElementById('timing-grid');
   container.innerHTML="";
@@ -1591,25 +1647,7 @@ function clearAutoSave() {
 /* ==========================================================
    === BLOC-NOTE (version moderne, avec undo/redo) ===
    ========================================================== */
-let noteOpen = false;
-let noteTool = 'pen';
-let noteColor = NOTE_DEFAULT_LIGHT;
-let notePenSize = 3;
-let noteEraserSize = 22;
-let noteStrokes = [];
-let noteIsDrawing = false;
-let noteCurrentStroke = null;
-let noteCanvas, noteCtx, noteRO;
-let noteDrag = {active:false, dx:0, dy:0};
-let noteInited = false;
-let noteUndoStack = [];
-let noteRedoStack = [];
-const NOTE_UNDO_LIMIT = 100;
-
-function getThemeDefaultPen(){
-  return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
-}
-
+function getThemeDefaultPen(){ return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT; }
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
@@ -1726,7 +1764,8 @@ function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
-  const rect = noteCanvas.getBoundingClientRect();
+  const rect = noteCanvas.getBoundingClientRect(); // tient compte de la hauteur CSS (scrollable)
+  // dimensionne le buffer interne en conséquence
   noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
   noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
   noteCtx.setTransform(1,0,0,1,0,0);
@@ -1739,9 +1778,10 @@ function setNoteTool(tool){
   noteTool = tool;
   document.getElementById('toolPen').classList.toggle('active', tool==='pen');
   document.getElementById('toolErase').classList.toggle('active', tool==='eraser');
+  document.getElementById('toolStrokeErase').classList.toggle('active', tool==='stroke-eraser');
 }
 function updatePenSizeLabel(){
-  const v = parseInt(document.getElementById('penSize').value)||3;
+  const v = parseInt(document.getElementById('penSize').value)||5;
   notePenSize = v;
   document.getElementById('penSizeVal').textContent = v;
 }
@@ -1790,8 +1830,16 @@ function notePointerDown(e){
   noteCanvas.setPointerCapture(e.pointerId);
   pushUndoState(); clearRedo();
 
-  noteIsDrawing = true;
   const pt = noteEventPoint(e);
+
+  if (noteTool === 'stroke-eraser') {
+    // Gomme de trait : supprime le trait le plus proche
+    if (eraseStrokeAtPoint(pt)) { saveNotepad(); renderNote(); }
+    noteIsDrawing = true; // autoriser effacement continu en glissant
+    return;
+  }
+
+  noteIsDrawing = true;
   const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
   noteCurrentStroke = stroke;
 
@@ -1802,8 +1850,15 @@ function notePointerDown(e){
   noteCtx.restore();
 }
 function notePointerMove(e){
-  if(!noteIsDrawing || !noteCurrentStroke) return;
+  if(!noteIsDrawing) return;
   const pt = noteEventPoint(e);
+
+  if (noteTool === 'stroke-eraser') {
+    if (eraseStrokeAtPoint(pt)) { saveNotepad(); renderNote(); }
+    return;
+  }
+
+  if(!noteCurrentStroke) return;
   const prev = noteCurrentStroke.points[noteCurrentStroke.points.length-1];
   noteCurrentStroke.points.push(pt);
 
@@ -1816,11 +1871,48 @@ function notePointerMove(e){
 function notePointerUp(e){
   if(!noteIsDrawing) return;
   noteIsDrawing = false;
+
+  if (noteTool === 'stroke-eraser') { return; }
+
   if(noteCurrentStroke && noteCurrentStroke.points.length>0){
     noteStrokes.push(noteCurrentStroke);
     saveNotepad(); renderNote(); updateUndoRedoBtns();
   }
   noteCurrentStroke = null;
+}
+
+/* suppression d’un trait si le pointeur passe suffisamment près */
+function eraseStrokeAtPoint(pt){
+  if (!noteStrokes.length) return false;
+  // parcourir du haut vers le bas (dernier dessiné = au-dessus)
+  for (let i = noteStrokes.length - 1; i >= 0; i--){
+    const s = noteStrokes[i];
+    if (!s.points || s.points.length < 2) continue;
+    if (strokeHitTest(s.points, pt, NOTE_STROKE_HIT_EPS)) {
+      noteStrokes.splice(i, 1);
+      updateUndoRedoBtns();
+      return true;
+    }
+  }
+  return false;
+}
+function strokeHitTest(points, p, eps){
+  for (let i=1;i<points.length;i++){
+    const a = points[i-1], b = points[i];
+    if (distPointToSegment(p, a, b) <= eps) return true;
+  }
+  return false;
+}
+function distPointToSegment(p, a, b){
+  const vx = b.x - a.x, vy = b.y - a.y;
+  const wx = p.x - a.x, wy = p.y - a.y;
+  const c1 = vx*wx + vy*wy;
+  if (c1 <= 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const c2 = vx*vx + vy*vy;
+  if (c2 <= c1) return Math.hypot(p.x - b.x, p.y - b.y);
+  const t = c1 / c2;
+  const projx = a.x + t*vx, projy = a.y + t*vy;
+  return Math.hypot(p.x - projx, p.y - projy);
 }
 
 function renderNote(){
@@ -1876,13 +1968,12 @@ function adaptNotepadThemeColors(dark, fromInit){
   const colorInput = document.getElementById('noteColorInput');
   if (colorInput) colorInput.value = newDefault;
 
-  // Charge strokes du vol courant, remplace toutes les couleurs crayon par le défaut du thème
+  // Inversion globale (on conserve la logique existante)
   try{
     const key = noteStorageKey();
     const raw = localStorage.getItem(key);
     let strokes = raw ? JSON.parse(raw) : [];
 
-    // Inversion globale demandée (tous les traits non-gomme)
     let changed = false;
     for(const s of strokes){
       if(s.tool !== 'eraser' && s.color !== newDefault){
@@ -1894,7 +1985,6 @@ function adaptNotepadThemeColors(dark, fromInit){
       localStorage.setItem(key, JSON.stringify(strokes));
     }
 
-    // Si overlay ouvert, applique tout de suite
     if(noteOpen){
       noteStrokes = strokes;
       fitNoteCanvas();
