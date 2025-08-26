@@ -466,6 +466,23 @@ body.dark #chiffres-porte select{
 body.dark #chiffres-porte #TOB{
   background:#1b2636; border-color:#90caf9;
 }
+
+/* === PATCH: INAD & Recherche bagage — colonnes fixes sur 1 ligne === */
+#inad-fields, #bag-search-fields { display: none; } /* cachés par défaut */
+#inad-fields.grid-2 {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
+}
+#bag-search-fields.grid-3 {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+/* === PATCH: Timeline plus aérée (barres + étiquettes) === */
+.tl-range { height: 16px; }     /* barres plus épaisses */
+.tl-range-label { top: -30px; } /* étiquette plus haut au-dessus de la barre */
 </style>
 </head>
 <body onload="initForm()">
@@ -1231,16 +1248,28 @@ function updateLIDVisibility(){
   lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
 }
 
-/* Toggles optionnels */
-function toggleBagSearch(enable){
-  const wrap = document.getElementById('bag-search-fields');
-  if(!wrap) return;
-  wrap.style.display = enable ? 'block' : 'none';
-}
+/* Toggles optionnels (modifiés pour gérer les colonnes fixes) */
 function toggleINAD(enable){
   const wrap = document.getElementById('inad-fields');
   if(!wrap) return;
-  wrap.style.display = enable ? 'block' : 'none';
+  if (enable) {
+    wrap.classList.add('grid-2');
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+    wrap.classList.remove('grid-2');
+  }
+}
+function toggleBagSearch(enable){
+  const wrap = document.getElementById('bag-search-fields');
+  if(!wrap) return;
+  if (enable) {
+    wrap.classList.add('grid-3');
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+    wrap.classList.remove('grid-3');
+  }
 }
 
 /* TOB + cohérence */
@@ -1678,7 +1707,6 @@ function collectTimelineData(){
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
     {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
-    // {key:'inad', label:'INAD', pair:getPairWindow('ArriveeINAD','RemiseCABCoordo'), ...} // SUPPRIMÉ
   ];
 
   const durations = rows
@@ -1710,13 +1738,14 @@ function renderTimeline(){
   const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
   canvas.style.width = canvasPx + 'px';
 
-  const MIN_HEIGHT = 120;
-  const PT_LANE_H  = 28;
-  const DUR_LANE_H = 24;
-  const TOP_PAD    = 12;
-  const AFTER_POINTS = 12;
-  const AFTER_TRACK  = 18;
-  const BOTTOM_PAD   = 28;
+  /* PATCH: espacement vertical généreux */
+  const MIN_HEIGHT = 180;  // hauteur de base plus généreuse
+  const PT_LANE_H  = 36;   // espace entre rangées de points
+  const DUR_LANE_H = 40;   // espace entre barres de durées
+  const TOP_PAD    = 20;   // marge haute
+  const AFTER_POINTS = 28; // espace sous points avant la piste
+  const AFTER_TRACK  = 36; // espace entre piste et 1ère barre
+  const BOTTOM_PAD   = 40; // marge basse
 
   // 1) Placer les points pour compter les rangées nécessaires
   const lanesEndX = [];
@@ -1980,16 +2009,8 @@ function initNotepadOnce(){
     noteDrag.dy = e.clientY - r.top;
     e.preventDefault();
   });
-  document.addEventListener('mousemove', (e)=>{
+  document.addEventListener('mousemove', ()=>{
     if(!noteDrag.active) return;
-    let left = e.clientX - noteDrag.dx;
-    let top  = e.clientY - noteDrag.dy;
-    const vw = window.innerWidth, vh = window.innerHeight, margin=10;
-    left = Math.max(margin, Math.min(vw - margin - overlay.offsetWidth,  left));
-    top  = Math.max(margin, Math.min(vh - margin - overlay.offsetHeight, top));
-    overlay.style.left = left + 'px';
-    overlay.style.top  = top  + 'px';
-    overlay.style.right = 'auto';
   });
   document.addEventListener('mouseup', ()=>{
     if(!noteDrag.active) return;
@@ -2119,7 +2140,7 @@ function notePointerMove(e){
   noteCtx.beginPath(); noteCtx.moveTo(prev.x, prev.y); noteCtx.lineTo(pt.x, pt.y); noteCtx.stroke();
   noteCtx.restore();
 }
-function notePointerUp(e){
+function notePointerUp(){
   if(!noteIsDrawing) return;
   noteIsDrawing = false;
   if(noteCurrentStroke && noteCurrentStroke.points.length>0){
