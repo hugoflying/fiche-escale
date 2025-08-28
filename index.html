@@ -56,8 +56,6 @@ section.collapsed > *:not(h2) { display: none; }
 .form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
 .form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
 .form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
-/* helper pour forcer un élément sur toute la ligne */
-.full-line { flex: 1 1 100% !important; }
 
 /* Labels en gras */
 .form-group label,
@@ -246,11 +244,11 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 
 /* Barres de durées */
 .tl-range {
-  height: 16px; background: color-mix(in srgb, var(--c) 50%, transparent);
+  height: 12px; background: color-mix(in srgb, var(--c) 50%, transparent);
   border: 2px solid var(--c); border-radius: 8px; z-index: 2;
 }
 .tl-range-label {
-  position:absolute; top: -30px; left:50%; transform: translateX(-50%);
+  position:absolute; top: -22px; left:50%; transform: translateX(-50%);
   font-size: 14px; background: rgba(255,255,255,.9);
   padding: 2px 8px; border-radius:6px; font-weight: 600;
 }
@@ -469,13 +467,22 @@ body.dark #chiffres-porte #TOB{
   background:#1b2636; border-color:#90caf9;
 }
 
-/* === INAD & Recherche bagage — alignés comme les autres timings === */
-#inad-fields, #bag-search-fields { display: none; flex: 1 1 100%; }
-#bag-search-fields .full-line { flex: 1 1 100%; }
+/* === PATCH: INAD & Recherche bagage — colonnes fixes sur 1 ligne === */
+#inad-fields, #bag-search-fields { display: none; } /* cachés par défaut */
+#inad-fields.grid-2 {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
+}
+#bag-search-fields.grid-3 {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+}
 
 /* === PATCH: Timeline plus aérée (barres + étiquettes) === */
-.tl-range { height: 16px; }
-.tl-range-label { top: -30px; }
+.tl-range { height: 16px; }     /* barres plus épaisses */
+.tl-range-label { top: -30px; } /* étiquette plus haut au-dessus de la barre */
 </style>
 </head>
 <body onload="initForm()">
@@ -709,9 +716,8 @@ body.dark #chiffres-porte #TOB{
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
 
     <span style="margin-left:6px;">Taille crayon</span>
-    <!-- défaut 5px -->
-    <input id="penSize" type="range" min="1" max="20" step="1" value="5" oninput="updatePenSizeLabel()">
-    <span id="penSizeVal">5</span>px
+    <input id="penSize" type="range" min="1" max="20" step="1" value="3" oninput="updatePenSizeLabel()">
+    <span id="penSizeVal">3</span>px
 
     <span style="margin-left:12px;">Taille gomme</span>
     <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
@@ -1091,7 +1097,7 @@ function generateTimingFields(){
 
   /* INTÉGRATION OPTIONS (INAD + Recherche bagage) */
   dep += `
-    <div class="form-group full-line" style="display:flex;justify-content:center;align-items:center;gap:24px;">
+    <div class="form-group" style="flex:1 1 100%;display:flex;justify-content:center;align-items:center;gap:24px;">
       <label style="font-weight:800;display:flex;align-items:center;gap:8px;">
         <input type="checkbox" id="INADEnabled" onchange="toggleINAD(this.checked)"> INAD
       </label>
@@ -1100,17 +1106,51 @@ function generateTimingFields(){
       </label>
     </div>
 
-    <!-- INAD : mêmes largeurs/placement que les autres timings -->
     <div id="inad-fields" class="form-grid" style="display:none;">
-      ${fieldHTML('ArriveeINAD','Arrivée INAD')}
-      ${fieldHTML('RemiseCABCoordo','Remise CAB au coordo')}
+      <div class="form-group">
+        <label>Arrivée INAD
+          <input type="time" id="ArriveeINAD" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('ArriveeINAD',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('ArriveeINAD');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('ArriveeINAD',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Remise CAB au coordo
+          <input type="time" id="RemiseCABCoordo" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('RemiseCABCoordo',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('RemiseCABCoordo');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('RemiseCABCoordo',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Recherche bagage : Début/Fin sur la même ligne, nombre en dessous -->
     <div id="bag-search-fields" class="form-grid" style="display:none;">
-      ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
-      ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-      <div class="form-group full-line">
+      <div class="form-group">
+        <label>Début recherche bagage
+          <input type="time" id="DebutRechercheBagage" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('DebutRechercheBagage',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('DebutRechercheBagage');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('DebutRechercheBagage',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Fin recherche bagage
+          <input type="time" id="FinRechercheBagage" onchange="updateAllCalculations()">
+        </label>
+        <div class="btn-actions">
+          <button class="action minus" onclick="adjustTime('FinRechercheBagage',-1);updateAllCalculations()">-1</button>
+          <button class="action now" onclick="setNow('FinRechercheBagage');updateAllCalculations()">Now</button>
+          <button class="action plus" onclick="adjustTime('FinRechercheBagage',1);updateAllCalculations()">+1</button>
+        </div>
+      </div>
+      <div class="form-group">
         <label>Nombre de bagages déchargés
           <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
         </label>
@@ -1208,16 +1248,35 @@ function updateLIDVisibility(){
   lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
 }
 
-/* Toggles optionnels (INAD + Recherche bagage) */
+/* Toggles optionnels */
+function toggleBagSearch(enable){
+  const wrap = document.getElementById('bag-search-fields');
+  if(!wrap) return;
+  wrap.style.display = enable ? 'block' : 'none';
+}
+/* Toggles optionnels (modifiés pour gérer les colonnes fixes) */
 function toggleINAD(enable){
   const wrap = document.getElementById('inad-fields');
   if(!wrap) return;
-  wrap.style.display = enable ? '' : 'none';
+  wrap.style.display = enable ? 'block' : 'none';
+  if (enable) {
+    wrap.classList.add('grid-2');
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+    wrap.classList.remove('grid-2');
+  }
 }
 function toggleBagSearch(enable){
   const wrap = document.getElementById('bag-search-fields');
   if(!wrap) return;
-  wrap.style.display = enable ? '' : 'none';
+  if (enable) {
+    wrap.classList.add('grid-3');
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+    wrap.classList.remove('grid-3');
+  }
 }
 
 /* TOB + cohérence */
@@ -1655,6 +1714,7 @@ function collectTimelineData(){
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
     {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
+    // {key:'inad', label:'INAD', pair:getPairWindow('ArriveeINAD','RemiseCABCoordo'), ...} // SUPPRIMÉ
   ];
 
   const durations = rows
@@ -1686,6 +1746,13 @@ function renderTimeline(){
   const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
   canvas.style.width = canvasPx + 'px';
 
+  const MIN_HEIGHT = 120;
+  const PT_LANE_H  = 28;
+  const DUR_LANE_H = 24;
+  const TOP_PAD    = 12;
+  const AFTER_POINTS = 12;
+  const AFTER_TRACK  = 18;
+  const BOTTOM_PAD   = 28;
   /* PATCH: espacement vertical généreux */
   const MIN_HEIGHT = 180;  // hauteur de base plus généreuse
   const PT_LANE_H  = 36;   // espace entre rangées de points
@@ -1957,8 +2024,17 @@ function initNotepadOnce(){
     noteDrag.dy = e.clientY - r.top;
     e.preventDefault();
   });
+  document.addEventListener('mousemove', (e)=>{
   document.addEventListener('mousemove', ()=>{
     if(!noteDrag.active) return;
+    let left = e.clientX - noteDrag.dx;
+    let top  = e.clientY - noteDrag.dy;
+    const vw = window.innerWidth, vh = window.innerHeight, margin=10;
+    left = Math.max(margin, Math.min(vw - margin - overlay.offsetWidth,  left));
+    top  = Math.max(margin, Math.min(vh - margin - overlay.offsetHeight, top));
+    overlay.style.left = left + 'px';
+    overlay.style.top  = top  + 'px';
+    overlay.style.right = 'auto';
   });
   document.addEventListener('mouseup', ()=>{
     if(!noteDrag.active) return;
@@ -2088,6 +2164,7 @@ function notePointerMove(e){
   noteCtx.beginPath(); noteCtx.moveTo(prev.x, prev.y); noteCtx.lineTo(pt.x, pt.y); noteCtx.stroke();
   noteCtx.restore();
 }
+function notePointerUp(e){
 function notePointerUp(){
   if(!noteIsDrawing) return;
   noteIsDrawing = false;
