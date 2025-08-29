@@ -48,7 +48,7 @@ body.dark h2 {
     border-bottom-color: #3a3a3a;
 }
 
-/* Collapse section (click titre) */
+/* Collapse */
 section.collapsed > *:not(h2) { display: none; }
 
 /* Grilles */
@@ -56,8 +56,6 @@ section.collapsed > *:not(h2) { display: none; }
 .form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
 .form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
 .form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
-/* plein largeur pour forcer une ligne unique */
-.form-group.full { flex: 1 1 100% !important; }
 
 /* Labels en gras */
 .form-group label,
@@ -95,7 +93,12 @@ textarea {
 input.uppercase { text-transform: uppercase; }
 
 /* Champ horaire + boutons */
-.form-group input[type="time"] { width: 100%; box-sizing: border-box; text-align: center; display: block; }
+.form-group input[type="time"] {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    display: block;
+}
 
 /* Boutons horaires */
 .btn-actions {
@@ -134,11 +137,24 @@ button.plus  { background: #555; color: white; }
 #reset { background: #d32f2f; color: white; }
 
 /* Timers (2 groupes) */
-.timer-box { display: flex; justify-content: center; gap: 40px; margin-bottom: 32px; flex-wrap: wrap; }
+.timer-box {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
 .timer-group { display: flex; gap: 20px; align-items: center; }
 .timer { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .timer-label { font-weight: bold; font-size: 1rem; }
-.timer-value { background: #d32f2f; color: #fff; font-weight: bold; padding: 10px 20px; border-radius: 6px; font-size: 1.1rem; }
+.timer-value {
+    background: #d32f2f;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+}
 #timer-tobt { background: #2e7d32; }
 #timer-h8   { background: #ffd54f; color:#000; }
 #timer-ctot { background: #455a64; }
@@ -162,7 +178,7 @@ button.plus  { background: #555; color: white; }
 .switch input:checked + .slider { background: #1976d2; }
 .switch input:checked + .slider:before { transform: translateX(32px); }
 
-/* Légendes interrupteurs */
+/* Légendes des interrupteurs */
 .toggle-caption { font-size: .9rem; user-select: none; }
 
 /* Onglets */
@@ -179,7 +195,9 @@ button.plus  { background: #555; color: white; }
 #tab-bar button:hover { background: #e1e7f0; }
 #tab-bar button:active { transform: translateY(1px); }
 body.dark #tab-bar { background: #121212; }
-#tab-bar button:first-child { font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff; }
+#tab-bar button:first-child {
+    font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
+}
 
 /* Popup notifications */
 #popup {
@@ -189,23 +207,34 @@ body.dark #tab-bar { background: #121212; }
 }
 
 /* === TIMELINE (base) === */
-.timeline-track { position: absolute; left:6%; right:6%; height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px; }
+.timeline-track {
+  position: absolute; left:6%; right:6%;
+  height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
+}
 body.dark .timeline-track{ background:#2e2e2e; }
 
 .timeline-tick { position: absolute; width: 1px; background:rgba(0,0,0,0.08); }
 body.dark .timeline-tick { background:#3e444b; }
 
-.timeline-tick-label { position: absolute; transform: translateX(-50%); font-size: 14px; font-weight: 600; color:#444; }
+.timeline-tick-label {
+  position: absolute; transform: translateX(-50%);
+  font-size: 14px; font-weight: 600; color:#444;
+}
 body.dark .timeline-tick-label { color:#cfd4da; }
 
 .tl-event, .tl-range { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height:1; z-index: 1; }
 
 /* Points (événements) */
-.tl-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); margin: 0 auto 4px; }
-.tl-label { padding: 3px 8px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07); }
+.tl-dot {
+  width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+  margin: 0 auto 4px;
+}
+.tl-label {
+  padding: 3px 8px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+}
 body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.07); }
 
-/* couleurs pour timeline */
+/* couleurs */
 .tl--std  { --c:#607d8b; }
 .tl--tobt { --c:#2e7d32; }
 .tl--ctot { --c:#455a64; }
@@ -214,13 +243,23 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 .tl-event .tl-dot { background: var(--c); }
 
 /* Barres de durées */
-.tl-range { height: 16px; background: color-mix(in srgb, var(--c) 50%, transparent); border: 2px solid var(--c); border-radius: 8px; z-index: 2; }
-.tl-range-label { position:absolute; top: -30px; left:50%; transform: translateX(-50%); font-size: 14px; background: rgba(255,255,255,.9); padding: 2px 8px; border-radius:6px; font-weight: 600; }
+.tl-range {
+  height: 16px; background: color-mix(in srgb, var(--c) 50%, transparent);
+  border: 2px solid var(--c); border-radius: 8px; z-index: 2;
+}
+.tl-range-label {
+  position:absolute; top: -30px; left:50%; transform: translateX(-50%);
+  font-size: 14px; background: rgba(255,255,255,.9);
+  padding: 2px 8px; border-radius:6px; font-weight: 600;
+}
 body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 
 /* --- Toolbar timeline --- */
 .timeline-toolbar{ display:flex; align-items:center; gap:8px; margin: 4px 0 8px; }
-.tl-btn{ padding:6px 10px; border:0; border-radius:10px; cursor:pointer; background:#e7ebf0; font-weight:600; transition: transform .12s ease, background .15s ease; }
+.tl-btn{
+  padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
+  background:#e7ebf0; font-weight:600; transition: transform .12s ease, background .15s ease;
+}
 .tl-btn:hover{ background:#dde3ea; }
 .tl-btn:active{ transform: translateY(1px); }
 body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
@@ -231,15 +270,28 @@ body.dark .tl-sep{ background:#3a3a3a; }
 .tl-toggle { display:inline-flex; align-items:center; gap:6px; margin-left:8px; font-size: 14px; }
 
 /* --- zone scrollable + canvas --- */
-.timeline-scroll{ overflow-x:auto; overflow-y:hidden; border-radius:12px; background:#ffffff; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.timeline-scroll{
+  overflow-x:auto; overflow-y:hidden;
+  border-radius:12px; background:#ffffff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+}
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-.timeline-canvas{ position:relative; min-width:600px; width:100%; }
+.timeline-canvas{ position:relative; min-width:600px; width:100%; /* hauteur JS dynamique */ }
 
-/* === BLOC-NOTE (overlay) === */
+/* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{ position: fixed; top: 6vh; left: 2vw; width: 96vw; height: 80vh; min-width: 320px; min-height: 260px; max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); background: rgba(255,255,255,0.9); color:#111; border-radius:16px; box-shadow: 0 20px 50px rgba(0,0,0,.35); z-index:2000; display:none; overflow:hidden; resize: both; backdrop-filter: saturate(180%) blur(12px); opacity: 0; transform: translateY(10px) scale(.98); transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease; border: 1px solid rgba(0,0,0,.06); }
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
 .note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 body.dark .note-overlay{ background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08); }
+.note-overlay::after{ content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px; background:
+    linear-gradient(135deg, rgba(0,0,0,.25) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(0,0,0,.15) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(0,0,0,.10) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
+  pointer-events:none; opacity:.6; }
+body.dark .note-overlay::after{ background:
+    linear-gradient(135deg, rgba(255,255,255,.3) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat; }
 
 /* barre de titre */
 .note-titlebar{ cursor:grab; user-select:none; display:flex; align-items:center; gap:10px; padding:10px 12px; background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35)); border-bottom: 1px solid rgba(0,0,0,.06); }
@@ -268,7 +320,7 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 #noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
 body.dark #noteCanvas{ background:#111; }
 
-/* Icône bloc-note dans la barre d’onglets */
+/* Icône bloc-note dans le bandeau d’onglets */
 #tab-bar .note-icon{ margin-left:auto; border-radius:12px; }
 #tab-bar .note-icon:hover{ background:#e9eef6; }
 body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
@@ -362,8 +414,12 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 details.timing-collapse summary { list-style: none; }
 details.timing-collapse summary::-webkit-details-marker { display: none; }
 details.timing-collapse > summary.timing-seg { display:inline-block; }
-details.timing-collapse[open] > summary.timing-seg { background:#1976d2; color:#fff; border-color:#1976d2; }
-body.dark details.timing-collapse[open] > summary.timing-seg { background:#90caf9; color:#111; border-color:#90caf9; }
+details.timing-collapse[open] > summary.timing-seg {
+  background:#1976d2; color:#fff; border-color:#1976d2;
+}
+body.dark details.timing-collapse[open] > summary.timing-seg {
+  background:#90caf9; color:#111; border-color:#90caf9;
+}
 </style>
 </head>
 <body onload="initForm()">
@@ -753,7 +809,7 @@ function setDefaultDateToTodayIfEmpty(){
   if(d && !d.value){ d.valueAsDate = new Date(); }
 }
 
-/* MAJUSCULE */
+/* Forcer MAJUSCULE */
 function setupUppercaseInputs(ids){
   ids.forEach(id=>{
     const el = document.getElementById(id);
@@ -765,9 +821,14 @@ function setupUppercaseInputs(ids){
 }
 
 /* Empêcher négatifs / non-entiers */
-function sanitizePositiveInt(inputEl){ inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,''); }
-/* Chiffres uniquement */
-function sanitizeDigitsOnly(inputEl){ inputEl.value = (inputEl.value || '').replace(/\D/g, ''); }
+function sanitizePositiveInt(inputEl){
+  inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
+}
+
+/* Chiffres uniquement (préserve zéros en tête) */
+function sanitizeDigitsOnly(inputEl){
+  inputEl.value = (inputEl.value || '').replace(/\D/g, '');
+}
 
 /* Autosave */
 function attachAutoSave(){
@@ -917,8 +978,8 @@ function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label,full=false)=>`
-    <div class="form-group ${full ? 'full' : ''}">
+  const fieldHTML = (id,label)=>`
+    <div class="form-group">
       <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
       <div class="btn-actions">
         <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
@@ -927,56 +988,53 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ARRIVÉE — ordre & lignes demandées */
+  /* ARRIVÉE */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
-
-  // 1) Arrivée Avitair seule
-  arr += fieldHTML('ArriveeFuel','Arrivée Avitair', true);
-
-  // 2) Premier / Dernier débarqué (même ligne)
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  // 3) Arrivée agent PMR seule
-  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR', true);
+  /* SUPPR: Début GPU */
+  arr += fieldHTML('ArriveeFuel','Arrivée Avitair');
 
-  // 4) Arrivée lift / Départ lift (même ligne)
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
-  // 5) Début / Fin déchargement bagages (même ligne)
+  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR');
+  /* SUPPR: Débarquement PMR */
+
   arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
-
   arr += `</div></div>`;
 
-  /* DÉPART — ordre & lignes demandées */
+  /* DÉPART (réorganisation + collapsibles) */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
+  dep += fieldHTML('ArrPNT','Arrivée PNT');
+  dep += fieldHTML('ArrPNC','Arrivée PNC');
 
-  // 1) Arrivée agent PMR seule
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR', true);
+  dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
+  dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  // 2) Arrivée lift / Départ lift (même ligne)
+  dep += fieldHTML('DepartFuel','Départ Avitair');
+
   dep += fieldHTML('ArriveeLift','Arrivée lift');
   dep += fieldHTML('DepartLift','Départ lift');
 
-  // 3) Départ Avitair seule
-  dep += fieldHTML('DepartFuel','Départ Avitair', true);
+  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
+  /* SUPPR: Embarquement PMR */
 
-  // Autres champs de départ (inchangés)
-  dep += fieldHTML('ArrPNT','Arrivée PNT');
-  dep += fieldHTML('ArrPNC','Arrivée PNC');
-  dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
-  dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
+
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
+
+  /* SUPPR: Mise TPX/TMX + Fin GPU */
+  /* Fermeture porte avion — PAS de séparateur au-dessus */
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
   /* --- Séparateur puis bloc INAD repliable (fermé par défaut) --- */
-  dep += `<div class="form-group full"><div class="timing-divider"></div></div>`;
+  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
   dep += `
     <details class="timing-collapse" style="flex:1 1 100%;">
       <summary class="timing-seg">INAD (déplier si besoin)</summary>
@@ -991,20 +1049,20 @@ function generateTimingFields(){
     </details>`;
 
   /* --- Séparateur puis bloc Recherche bagage repliable (fermé par défaut) --- */
-  dep += `<div class="form-group full"><div class="timing-divider"></div></div>`;
+  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
   dep += `
     <details class="timing-collapse" style="flex:1 1 100%;">
       <summary class="timing-seg">Recherche bagage (déplier si besoin)</summary>
       <div class="form-grid" style="margin-top:8px;">
         ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
         ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-        <div class="form-group full">
+        <div class="form-group" style="flex:1 1 100%;">
           <label>Quantité bagage(s) déchargé(s)
             <input type="number" id="NbBagagesDecharges" min="0" step="1"
                    oninput="sanitizePositiveInt(this); updateTagInputs()">
           </label>
         </div>
-        <!-- Conteneur dynamique des Numéro tag i (3 par ligne) -->
+        <!-- Conteneur dynamique des Numéro tag i (affichés UNIQUEMENT sous le champ ci-dessus) -->
         <div id="TagsContainer" class="form-grid" style="margin-top:6px;"></div>
       </div>
     </details>`;
@@ -1168,7 +1226,7 @@ function updateAllCalculations() {
   updateSOBTDefault();
   updateTOBT();
   updateDLCode();
-  redistributeDL();
+  redistributeDL();   // <-- nouvelle logique DL
   updateLID();
   updateCTOTDisplay();
   applyPrestationsDefaults();
@@ -1332,14 +1390,20 @@ function redistributeDL(){
   let d2 = parseInt(f2.value)||0;
   let d3 = parseInt(f3.value)||0;
 
-  if(total==null){ clearDLBorders(); return; }
+  // si total inconnu, on nettoie juste l'alerte visuelle et sort
+  if(total==null){
+    clearDLBorders();
+    return;
+  }
 
+  // clamp de base
   d1 = Math.max(0, Math.min(d1, total));
 
   if(lastDLChanged === 1){
+    // le reste part en 2 puis 3
     let remain = total - d1;
-    d2 = Math.min(remain, Math.max(0, d2));
-    d2 = Math.min(remain, d2 + (remain - d2));
+    d2 = Math.min(remain, Math.max(0, d2)); // garde d2 si déjà saisi mais pas au-delà
+    d2 = Math.min(remain, d2 + (remain - d2)); // => d2 = remain
     remain = total - d1 - d2;
     d3 = Math.max(0, remain);
   } else if (lastDLChanged === 2){
@@ -1356,8 +1420,13 @@ function redistributeDL(){
   f3.value = d3 || '';
 
   const sum = d1 + d2 + d3;
-  if (sum > total){ markLastFilledDLError(); } else { clearDLBorders(); }
+  if (sum > total){
+    markLastFilledDLError();
+  } else {
+    clearDLBorders();
+  }
 }
+
 function markLastFilledDLError(){
   clearDLBorders();
   const f1 = document.getElementById('DLduree1');
@@ -1370,7 +1439,13 @@ function markLastFilledDLError(){
   else if (d2 > 0) f2.classList.add('dl-error');
   else if (d1 > 0) f1.classList.add('dl-error');
 }
-function clearDLBorders(){ ['DLduree1','DLduree2','DLduree3'].forEach(id=>{ const el = document.getElementById(id); if(el) el.classList.remove('dl-error'); }); }
+
+function clearDLBorders(){
+  ['DLduree1','DLduree2','DLduree3'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('dl-error');
+  });
+}
 
 /* PRESTATIONS AUTO */
 function applyPrestationsDefaults() {
@@ -1396,6 +1471,7 @@ function setNow(fieldId) {
   const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
   document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
+
 function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
   if (!input.value) return;
@@ -1418,6 +1494,7 @@ function setDarkMode(enable, fromInit=false){
 
   adaptNotepadThemeColors(enable, fromInit);
 }
+
 function setTimeModeUTC(enable, fromInit=false){
   const offsetHours = -new Date().getTimezoneOffset() / 60;
 
@@ -1455,8 +1532,16 @@ function showPopup(message, color = "#2196f3", duration = 2000) {
 let showTimeLabels = true;
 let timelineUserScrolled = false;
 
-function parseHHMM(str){ if(!str || !/^\d{2}:\d{2}$/.test(str)) return null; const [h,m] = str.split(':').map(Number); return h*60 + m; }
-function fmtHHMM(mins){ mins = ((mins % 1440) + 1440) % 1440; const h = Math.floor(mins/60), m = mins%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+function parseHHMM(str){
+  if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
+  const [h,m] = str.split(':').map(Number);
+  return h*60 + m;
+}
+function fmtHHMM(mins){
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
 function toExtended(t, min, max){
   const wraps = (max > 1440);
   if (!wraps) return t;
@@ -1538,9 +1623,12 @@ function collectTimelineData(){
     ['ArrPNT','Arrivée PNT'],
     ['ArrPNC','Arrivée PNC'],
     ['ArriveeAgentsPMRArr','Arrivée agent PMR (Arr)'],
+    /* SUPPR: Débarquement PMR */
     ['ArriveeAgentsPMRDep','Arrivée agent PMR (Dep)'],
+    /* SUPPR: Embarquement PMR */
     ['ArriveeINAD','Arrivée INAD'],
     ['RemiseLID','Remise LID/LDS'],
+    /* SUPPR: Mise en place TPX/TMX */
     ['FermeturePorteAvion','Fermeture porte avion'],
   ];
   singles.forEach(([id,label])=>{
@@ -1552,9 +1640,10 @@ function collectTimelineData(){
   const rows = [
     {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),                 cls:'tl--turn', color:null},
     {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),       cls:'tl--ops',  color:null},
-    {key:'avit',    label:'Avitair (Arr→Dep)',    pair:getPairWindow('ArriveeFuel','DepartFuel'),                           cls:'tl--std',  color:'#ff9800'},
+    {key:'avit',    label:'Avitair',              pair:getPairWindow('ArriveeFuel','DepartFuel'),                           cls:'tl--std',  color:'#ff9800'},
     {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
     {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},
+    /* SUPPR: GPU */
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
     {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
@@ -1618,8 +1707,8 @@ function renderTimeline(){
 
     const w = Math.max(label.offsetWidth, 12);
     const centerX = (leftPct/100) * canvasPx;
-    const startX = centerX - (w/2) + 6;
-    const endX   = centerX + (w/2) + 6;
+    const startX = centerX - (w/2) - 16;
+    const endX   = centerX + (w/2) + 16;
 
     let lane = 0;
     while(lanesEndX[lane] !== undefined && startX <= lanesEndX[lane]) lane++;
@@ -1744,7 +1833,7 @@ function renderTimeline(){
   });}
 })();
 
-/* Génération dynamique des champs "Numéro tag i" → 3 par ligne */
+/* Génération dynamique des champs "Numéro tag i" */
 function updateTagInputs(){
   const nb = parseInt(document.getElementById('NbBagagesDecharges')?.value) || 0;
   const wrap = document.getElementById('TagsContainer');
@@ -1754,7 +1843,7 @@ function updateTagInputs(){
   let html = '';
   for(let i=1; i<=count; i++){
     html += `
-      <div class="form-group-3col">
+      <div class="form-group" style="flex:1 1 100%;">
         <label>Numéro tag ${i}
           <input type="text" id="TagNumero${i}" inputmode="numeric" pattern="[0-9]*"
                  oninput="sanitizeDigitsOnly(this)">
@@ -1795,9 +1884,9 @@ function clearAutoSave() {
   }
 }
 
-/* =========================
-   === BLOC-NOTE (undo/redo)
-   ========================= */
+/* ==========================================================
+   === BLOC-NOTE (version moderne, avec undo/redo) ===
+   ========================================================== */
 let noteOpen = false;
 let noteTool = 'pen';
 let noteColor = NOTE_DEFAULT_LIGHT;
@@ -1813,7 +1902,10 @@ let noteUndoStack = [];
 let noteRedoStack = [];
 const NOTE_UNDO_LIMIT = 100;
 
-function getThemeDefaultPen(){ return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT; }
+function getThemeDefaultPen(){
+  return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+}
+
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
@@ -1837,6 +1929,7 @@ function closeNotepadOverlay(){
   el.setAttribute('aria-hidden','true');
   noteOpen = false;
 }
+
 function ensureNoteOverlayInViewport(){
   const overlay = document.getElementById('noteOverlay');
   if(!overlay) return;
@@ -1857,6 +1950,7 @@ function ensureNoteOverlayInViewport(){
   overlay.style.top  = top  + 'px';
   overlay.style.right = 'auto';
 }
+
 function initNotepadOnce(){
   if (noteInited) return; noteInited = true;
 
@@ -1868,22 +1962,20 @@ function initNotepadOnce(){
   const overlay = document.getElementById('noteOverlay');
   dragBar.addEventListener('mousedown', (e)=>{
     overlay.classList.add('dragging');
+    noteDrag.active = true;
     const r = overlay.getBoundingClientRect();
-    const dx = e.clientX - r.left;
-    const dy = e.clientY - r.top;
-    function mm(ev){
-      overlay.style.left = (ev.clientX - dx) + 'px';
-      overlay.style.top  = (ev.clientY - dy) + 'px';
-    }
-    function up(){
-      document.removeEventListener('mousemove', mm);
-      document.removeEventListener('mouseup', up);
-      overlay.classList.remove('dragging');
-      ensureNoteOverlayInViewport();
-    }
-    document.addEventListener('mousemove', mm);
-    document.addEventListener('mouseup', up);
+    noteDrag.dx = e.clientX - r.left;
+    noteDrag.dy = e.clientY - r.top;
     e.preventDefault();
+  });
+  document.addEventListener('mousemove', ()=>{
+    if(!noteDrag.active) return;
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(!noteDrag.active) return;
+    noteDrag.active=false;
+    overlay.classList.remove('dragging');
+    ensureNoteOverlayInViewport();
   });
 
   noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
@@ -1912,9 +2004,11 @@ function initNotepadOnce(){
     defaultDot.style.background = getThemeDefaultPen();
     defaultDot.classList.add('selected');
   }
-  document.getElementById('noteColorInput').value = '#111111';
+  document.getElementById('noteColorInput').value = rgbToHex(getThemeDefaultPen());
   noteColor = getThemeDefaultPen();
 }
+function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
+
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
@@ -1926,6 +2020,7 @@ function fitNoteCanvas(){
   noteCtx.lineJoin = 'round';
   noteCtx.lineCap  = 'round';
 }
+
 function setNoteTool(tool){
   noteTool = tool;
   document.getElementById('toolPen').classList.toggle('active', tool==='pen');
@@ -1948,6 +2043,7 @@ function pickColor(el, color){
   if(el) el.classList.add('selected');
   setNoteTool('pen');
 }
+
 function saveNotepad(){
   try{ localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes)); }
   catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000); }
@@ -1958,6 +2054,7 @@ function loadNotepad(){
     noteStrokes = raw ? JSON.parse(raw) : [];
   }catch(e){ noteStrokes = []; }
 }
+
 function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
 function pushUndoState(){
   noteUndoStack.push(snapshotStrokes());
@@ -1971,7 +2068,9 @@ function updateUndoRedoBtns(){
   if (u) u.disabled = noteUndoStack.length === 0;
   if (r) r.disabled = noteRedoStack.length === 0;
 }
+
 function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
+
 function notePointerDown(e){
   e.preventDefault();
   noteCanvas.setPointerCapture(e.pointerId);
@@ -2009,6 +2108,7 @@ function notePointerUp(){
   }
   noteCurrentStroke = null;
 }
+
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
   noteCtx.save();
@@ -2027,6 +2127,7 @@ function renderNote(){
     noteCtx.stroke();
   }
 }
+
 function noteUndo(){
   if (noteUndoStack.length === 0) return;
   noteRedoStack.push(snapshotStrokes());
@@ -2039,10 +2140,46 @@ function noteRedo(){
   noteStrokes = noteRedoStack.pop();
   saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
+
 function noteClearAll(){
   if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
   pushUndoState();
   noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
+}
+
+/* === Adaptation bloc-note au thème === */
+function adaptNotepadThemeColors(dark, fromInit){
+  const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+  const defaultDot = document.getElementById('noteColorDotDefault');
+  if (defaultDot) {
+    defaultDot.style.background = newDefault;
+    document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
+    defaultDot.classList.add('selected');
+  }
+  noteColor = newDefault;
+  const colorInput = document.getElementById('noteColorInput');
+  if (colorInput) colorInput.value = newDefault;
+
+  try{
+    const key = noteStorageKey();
+    const raw = localStorage.getItem(key);
+    let strokes = raw ? JSON.parse(raw) : [];
+    let changed = false;
+    for(const s of strokes){
+      if(s.tool !== 'eraser' && s.color !== newDefault){
+        s.color = newDefault;
+        changed = true;
+      }
+    }
+    if(changed){
+      localStorage.setItem(key, JSON.stringify(strokes));
+    }
+    if(noteOpen){
+      noteStrokes = strokes;
+      fitNoteCanvas();
+      renderNote();
+    }
+  }catch(e){}
 }
 
 /* Maintien bloc-note lors du switch d’onglet */
@@ -2055,10 +2192,6 @@ switchTab = function(id){
     ensureNoteOverlayInViewport();
   }
 };
-
-/* === Divers === */
-let showTimeLabels = true;
-let timelineUserScrolled = false;
 </script>
 </body>
 </html>
