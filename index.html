@@ -994,14 +994,14 @@ function generateTimingFields(){
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  arr += fieldHTML('DebutGPU','Début GPU');
+  /* SUPPR: Début GPU */
   arr += fieldHTML('ArriveeFuel','Arrivée Avitair');
 
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
   arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR');
-  arr += fieldHTML('DebarquementPMR','Débarquement PMR');
+  /* SUPPR: Débarquement PMR */
 
   arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
@@ -1022,17 +1022,14 @@ function generateTimingFields(){
   dep += fieldHTML('DepartLift','Départ lift');
 
   dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
-  dep += fieldHTML('EmbarquementPMR','Embarquement PMR');
+  /* SUPPR: Embarquement PMR */
 
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
 
-  /* Mise TPX/TMX + Fin GPU */
-  dep += fieldHTML('MiseTPXTMX','Mise en place du TPX/TMX');
-  dep += fieldHTML('FinGPU','Fin GPU');
-
+  /* SUPPR: Mise TPX/TMX + Fin GPU */
   /* Fermeture porte avion — PAS de séparateur au-dessus */
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
@@ -1044,8 +1041,8 @@ function generateTimingFields(){
       <div class="form-grid" style="margin-top:8px;">
         ${fieldHTML('ArriveeINAD','Arrivée INAD')}
         <div class="form-group">
-          <label>Nombre INAD
-            <input type="number" id="NombreINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
+          <label>Quantité INAD
+            <input type="number" id="QuantiteINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
           </label>
         </div>
       </div>
@@ -1059,13 +1056,13 @@ function generateTimingFields(){
       <div class="form-grid" style="margin-top:8px;">
         ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
         ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-        <div class="form-group">
-          <label>Nombre de bagages déchargés
+        <div class="form-group" style="flex:1 1 100%;">
+          <label>Quantité bagage(s) déchargé(s)
             <input type="number" id="NbBagagesDecharges" min="0" step="1"
                    oninput="sanitizePositiveInt(this); updateTagInputs()">
           </label>
         </div>
-        <!-- Conteneur dynamique des Numéro tag i -->
+        <!-- Conteneur dynamique des Numéro tag i (affichés UNIQUEMENT sous le champ ci-dessus) -->
         <div id="TagsContainer" class="form-grid" style="margin-top:6px;"></div>
       </div>
     </details>`;
@@ -1406,27 +1403,22 @@ function redistributeDL(){
     // le reste part en 2 puis 3
     let remain = total - d1;
     d2 = Math.min(remain, Math.max(0, d2)); // garde d2 si déjà saisi mais pas au-delà
-    // on met le maximum possible dans d2, puis d3 prend le reste
     d2 = Math.min(remain, d2 + (remain - d2)); // => d2 = remain
     remain = total - d1 - d2;
-    d3 = Math.max(0, remain); // s'il reste quelque chose, en 3
+    d3 = Math.max(0, remain);
   } else if (lastDLChanged === 2){
-    // on garde d1, on ajuste d2 dans la limite, puis d3 prend le reste
     const maxD2 = Math.max(0, total - d1);
     d2 = Math.max(0, Math.min(d2, maxD2));
     d3 = Math.max(0, total - d1 - d2);
   } else {
-    // lastDLChanged === 3 : clamp d3 seulement, sans toucher d1/d2
     const maxD3 = Math.max(0, total - d1 - d2);
     d3 = Math.max(0, Math.min(d3, maxD3));
   }
 
-  // applique dans les champs
   f1.value = d1 || '';
   f2.value = d2 || '';
   f3.value = d3 || '';
 
-  // contrôle & bordure rouge si dépassement
   const sum = d1 + d2 + d3;
   if (sum > total){
     markLastFilledDLError();
@@ -1443,7 +1435,6 @@ function markLastFilledDLError(){
   const d1 = parseInt(f1.value)||0;
   const d2 = parseInt(f2.value)||0;
   const d3 = parseInt(f3.value)||0;
-  // dernière case remplie (3 > 2 > 1)
   if (d3 > 0) f3.classList.add('dl-error');
   else if (d2 > 0) f2.classList.add('dl-error');
   else if (d1 > 0) f1.classList.add('dl-error');
@@ -1632,12 +1623,12 @@ function collectTimelineData(){
     ['ArrPNT','Arrivée PNT'],
     ['ArrPNC','Arrivée PNC'],
     ['ArriveeAgentsPMRArr','Arrivée agent PMR (Arr)'],
-    ['DebarquementPMR','Débarquement PMR'],
+    /* SUPPR: Débarquement PMR */
     ['ArriveeAgentsPMRDep','Arrivée agent PMR (Dep)'],
-    ['EmbarquementPMR','Embarquement PMR'],
+    /* SUPPR: Embarquement PMR */
     ['ArriveeINAD','Arrivée INAD'],
     ['RemiseLID','Remise LID/LDS'],
-    ['MiseTPXTMX','Mise en place TPX/TMX'],
+    /* SUPPR: Mise en place TPX/TMX */
     ['FermeturePorteAvion','Fermeture porte avion'],
   ];
   singles.forEach(([id,label])=>{
@@ -1652,7 +1643,7 @@ function collectTimelineData(){
     {key:'avit',    label:'Avitair',              pair:getPairWindow('ArriveeFuel','DepartFuel'),                           cls:'tl--std',  color:'#ff9800'},
     {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
     {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},
-    {key:'gpu',     label:'GPU',                  pair:getPairWindow('DebutGPU','FinGPU'),                                  cls:'tl--std',  color:'#607d8b'},
+    /* SUPPR: GPU */
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
     {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
@@ -1852,7 +1843,7 @@ function updateTagInputs(){
   let html = '';
   for(let i=1; i<=count; i++){
     html += `
-      <div class="form-group">
+      <div class="form-group" style="flex:1 1 100%;">
         <label>Numéro tag ${i}
           <input type="text" id="TagNumero${i}" inputmode="numeric" pattern="[0-9]*"
                  oninput="sanitizeDigitsOnly(this)">
