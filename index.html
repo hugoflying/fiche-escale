@@ -348,7 +348,7 @@ body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90ca
 /* Now VERTS uniquement dans la colonne ARRIVÉE */
 #panel-arr .btn-actions .now { background: #2e7d32; }
 
-/* Séparateur (peut rester pour d’autres cas) */
+/* Séparateur pour la zone recherche bagage / INAD / fermeture */
 .timing-divider{ border-top:1px dashed #aaa; margin:6px 0 2px; }
 body.dark .timing-divider{ border-top-color:#555; }
 
@@ -410,50 +410,16 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 /* Bordure d'erreur DL */
 .dl-error { border: 2px solid #d32f2f !important; border-radius: 4px; }
 
-/* =========================
-   VOLETS REPLIABLES (pills)
-   ========================= */
-.fold { 
-  width:100%; 
-  background: linear-gradient(180deg,#ffffff,#f8fafc);
-  border-radius:12px; 
-  box-shadow: 0 2px 10px rgba(0,0,0,.06), inset 0 0 0 1px rgba(0,0,0,.06); 
-  overflow: hidden;
+/* --- Détails repliables (INAD / Recherche bagage) --- */
+details.timing-collapse summary { list-style: none; }
+details.timing-collapse summary::-webkit-details-marker { display: none; }
+details.timing-collapse > summary.timing-seg { display:inline-block; }
+details.timing-collapse[open] > summary.timing-seg {
+  background:#1976d2; color:#fff; border-color:#1976d2;
 }
-body.dark .fold{
-  background: linear-gradient(180deg,#1a1a1a,#161616);
-  box-shadow: 0 2px 14px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06);
+body.dark details.timing-collapse[open] > summary.timing-seg {
+  background:#90caf9; color:#111; border-color:#90caf9;
 }
-.fold-head{
-  width:100%; display:flex; align-items:center; gap:10px;
-  padding:10px 12px; background:transparent; border:0; cursor:pointer; text-align:left;
-}
-.fold-head:hover{ filter: brightness(1.02); }
-.fold-title{ font-weight:800; }
-.fold-status{ margin-left:auto; font-size:.9rem; opacity:.8; }
-.fold .chev{
-  width:18px; height:18px; border-radius:50%;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
-  position: relative; flex: 0 0 18px;
-}
-.fold .chev::before{
-  content:""; position:absolute; inset:5px 4px 5px 6px;
-  border-style: solid; border-width: 4px 0 4px 6px; border-color: transparent transparent transparent #1976d2;
-  transform-origin:center; transition: transform .18s ease;
-}
-body.dark .fold .chev{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.15); }
-body.dark .fold .chev::before{ border-color: transparent transparent transparent #90caf9; }
-
-.fold-body{
-  padding: 0 10px 10px;
-  display: grid; grid-template-columns: repeat(2, minmax(150px,1fr)); gap:10px;
-  max-height: 500px; opacity:1; transition: max-height .22s ease, opacity .22s ease;
-}
-.fold.closed .fold-body{ max-height:0; opacity:0; padding-bottom:0; }
-.fold.closed .chev::before{ transform: rotate(-90deg); }
-
-/* pleine largeur du pli dans la grille de timing */
-.fold-wrap { flex:1 1 100%; }
 </style>
 </head>
 <body onload="initForm()">
@@ -739,80 +705,6 @@ const NOTE_DEFAULT_DARK  = '#FFFFFF';
 /* === DL auto tracking === */
 let lastDLChanged = 1;
 
-/* =========== VOLETS (état par onglet) =========== */
-function foldStateKey(){ return currentTabId ? `foldState-${currentTabId}` : 'foldState-default'; }
-function readFoldState(){ try{ return JSON.parse(localStorage.getItem(foldStateKey())||'{}'); }catch(e){ return {}; } }
-function writeFoldState(s){ try{ localStorage.setItem(foldStateKey(), JSON.stringify(s||{})); }catch(e){} }
-function setFoldOpen(id, open){
-  const el = document.getElementById(id); if(!el) return;
-  el.classList.toggle('closed', !open);
-  const st = readFoldState(); st[id] = !!open; writeFoldState(st);
-}
-function toggleFold(id){
-  const el = document.getElementById(id); if(!el) return;
-  const open = el.classList.contains('closed');
-  setFoldOpen(id, open);
-  refreshFoldSummary(id);
-}
-function refreshAllFoldSummaries(){
-  ['fold-inad','fold-recherche'].forEach(refreshFoldSummary);
-}
-function refreshFoldSummary(id){
-  const status = document.getElementById(id+'-status'); if(!status) return;
-
-  if(id==='fold-inad'){
-    const v = document.getElementById('ArriveeINAD')?.value || '';
-    status.textContent = v ? `→ ${v}` : 'Optionnel';
-  }
-  if(id==='fold-recherche'){
-    const d1 = document.getElementById('DebutRechercheBagage')?.value || '';
-    const d2 = document.getElementById('FinRechercheBagage')?.value || '';
-    const nb = document.getElementById('NbBagagesDecharges')?.value || '';
-    let parts = [];
-    if(d1 && d2){
-      const a = parseHHMM(d1), b = parseHHMM(d2);
-      let dur = null;
-      if(a!=null && b!=null){ dur = b - a; if(dur<0) dur += 1440; }
-      if(dur!=null) parts.push(`${dur} min`);
-    } else if (d1 || d2){
-      parts.push(d1 ? `Déb. ${d1}` : `Fin ${d2}`);
-    }
-    if(nb) parts.push(`${nb} bag.`);
-    status.textContent = parts.length ? `→ ${parts.join(' • ')}` : 'Optionnel';
-  }
-}
-function initOptionalFolds(){
-  // appliquer état stocké (sinon fermé par défaut)
-  const st = readFoldState();
-  ['fold-inad','fold-recherche'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    const hasValues = Array.from(el.querySelectorAll('input')).some(i=>i.value && i.value.trim()!=='');
-    const open = (st[id] !== undefined) ? !!st[id] : !!hasValues ? true : false;
-    el.classList.toggle('closed', !open);
-  });
-
-  // auto-ouverture si on saisit une valeur
-  const inad = document.getElementById('ArriveeINAD');
-  if(inad){
-    inad.addEventListener('input', ()=>{
-      if(inad.value){ setFoldOpen('fold-inad', true); }
-      refreshFoldSummary('fold-inad');
-    });
-  }
-  ['DebutRechercheBagage','FinRechercheBagage','NbBagagesDecharges'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){
-      el.addEventListener('input', ()=>{
-        if(el.value){ setFoldOpen('fold-recherche', true); }
-        refreshFoldSummary('fold-recherche');
-      });
-    }
-  });
-
-  refreshAllFoldSummaries();
-}
-
 /* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
@@ -933,11 +825,16 @@ function sanitizePositiveInt(inputEl){
   inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
+/* Chiffres uniquement (préserve zéros en tête) */
+function sanitizeDigitsOnly(inputEl){
+  inputEl.value = (inputEl.value || '').replace(/\D/g, '');
+}
+
 /* Autosave */
 function attachAutoSave(){
   const handler=()=>{
     clearTimeout(saveTimer);
-    saveTimer=setTimeout(()=>{ saveCurrentTabData(); renderTimeline(); refreshAllFoldSummaries(); }, 300);
+    saveTimer=setTimeout(()=>{ saveCurrentTabData(); renderTimeline(); }, 300);
   };
   document.addEventListener('input', handler, true);
   document.addEventListener('change', handler, true);
@@ -982,7 +879,6 @@ function createNewTab(){
   clearFormFields();
   currentTabId=newId;
   localStorage.setItem('lastTabId',newId);
-  writeFoldState({}); // reset états volets
   saveCurrentTabData();
   renderTabs();
 }
@@ -994,7 +890,6 @@ function switchTab(id){
   loadTabData(id);
   renderTabs();
   renderTimeline();
-  refreshAllFoldSummaries();
 }
 
 function deleteTab(id){
@@ -1003,7 +898,6 @@ function deleteTab(id){
   tabs=tabs.filter(t=>t!==id);
   localStorage.setItem('flightTabs',JSON.stringify(tabs));
   localStorage.removeItem('tab-'+id);
-  localStorage.removeItem('foldState-'+id);
   if(tabs.length>0) switchTab(tabs[0]);
   else createNewTab();
   renderTabs();
@@ -1071,6 +965,9 @@ function loadTabData(id){
   // Restaurer le panneau TIMING choisi
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
+
+  // Régénérer les champs tags selon nombre sauvegardé
+  updateTagInputs();
 }
 
 /* Mise à jour label onglet */
@@ -1110,80 +1007,86 @@ function generateTimingFields(){
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
   arr += `</div></div>`;
 
-/* DÉPART (réorganisation demandée) */
-let dep = '';
-dep += `<div class="timing-col dep"><div class="form-grid">`;
-dep += fieldHTML('ArrPNT','Arrivée PNT');
-dep += fieldHTML('ArrPNC','Arrivée PNC');
+  /* DÉPART (réorganisation + collapsibles) */
+  let dep = '';
+  dep += `<div class="timing-col dep"><div class="form-grid">`;
+  dep += fieldHTML('ArrPNT','Arrivée PNT');
+  dep += fieldHTML('ArrPNC','Arrivée PNC');
 
-dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
-dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
+  dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
+  dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-dep += fieldHTML('DepartFuel','Départ Avitair');
+  dep += fieldHTML('DepartFuel','Départ Avitair');
 
-dep += fieldHTML('ArriveeLift','Arrivée lift');
-dep += fieldHTML('DepartLift','Départ lift');
+  dep += fieldHTML('ArriveeLift','Arrivée lift');
+  dep += fieldHTML('DepartLift','Départ lift');
 
-dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
-dep += fieldHTML('EmbarquementPMR','Embarquement PMR');
+  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
+  dep += fieldHTML('EmbarquementPMR','Embarquement PMR');
 
-dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
-dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
+  dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
+  dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
-dep += fieldHTML('RemiseLID','Remise LID/LDS');
+  dep += fieldHTML('RemiseLID','Remise LID/LDS');
 
-/* Mise TPX/TMX + Fin GPU */
-dep += fieldHTML('MiseTPXTMX','Mise en place du TPX/TMX');
-dep += fieldHTML('FinGPU','Fin GPU');
+  /* Mise TPX/TMX + Fin GPU */
+  dep += fieldHTML('MiseTPXTMX','Mise en place du TPX/TMX');
+  dep += fieldHTML('FinGPU','Fin GPU');
 
-/* Fermeture porte avion — PAS de séparateur au-dessus */
-dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
+  /* Fermeture porte avion — PAS de séparateur au-dessus */
+  dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
-/* --- Séparateur puis bloc INAD repliable (fermé par défaut) --- */
-dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
-dep += `
-  <details class="timing-collapse" style="flex:1 1 100%;">
-    <summary class="timing-seg">INAD (déplier si besoin)</summary>
-    <div class="form-grid" style="margin-top:8px;">
-      ${fieldHTML('ArriveeINAD','Arrivée INAD')}
-      <div class="form-group">
-        <label>Nombre INAD
-          <input type="number" id="NombreINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
-        </label>
+  /* --- Séparateur puis bloc INAD repliable (fermé par défaut) --- */
+  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+  dep += `
+    <details class="timing-collapse" style="flex:1 1 100%;">
+      <summary class="timing-seg">INAD (déplier si besoin)</summary>
+      <div class="form-grid" style="margin-top:8px;">
+        ${fieldHTML('ArriveeINAD','Arrivée INAD')}
+        <div class="form-group">
+          <label>Nombre INAD
+            <input type="number" id="NombreINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
+          </label>
+        </div>
       </div>
-    </div>
-  </details>`;
+    </details>`;
 
-/* --- Séparateur puis bloc Recherche bagage repliable (fermé par défaut) --- */
-dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
-dep += `
-  <details class="timing-collapse" style="flex:1 1 100%;">
-    <summary class="timing-seg">Recherche bagage (déplier si besoin)</summary>
-    <div class="form-grid" style="margin-top:8px;">
-      ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
-      ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-      <div class="form-group">
-        <label>Nombre de bagages déchargés
-          <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
-        </label>
+  /* --- Séparateur puis bloc Recherche bagage repliable (fermé par défaut) --- */
+  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+  dep += `
+    <details class="timing-collapse" style="flex:1 1 100%;">
+      <summary class="timing-seg">Recherche bagage (déplier si besoin)</summary>
+      <div class="form-grid" style="margin-top:8px;">
+        ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
+        ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
+        <div class="form-group">
+          <label>Nombre de bagages déchargés
+            <input type="number" id="NbBagagesDecharges" min="0" step="1"
+                   oninput="sanitizePositiveInt(this); updateTagInputs()">
+          </label>
+        </div>
+        <!-- Conteneur dynamique des Numéro tag i -->
+        <div id="TagsContainer" class="form-grid" style="margin-top:6px;"></div>
       </div>
-    </div>
-  </details>`;
+    </details>`;
 
-dep += `</div></div>`;
+  dep += `</div></div>`;
 
-const toggle = `
-  <div class="timing-toggle">
-    <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
-    <button type="button" id="seg-dep" class="timing-seg" onclick="switchTimingPanel('dep')">Départ</button>
-  </div>`;
+  const toggle = `
+    <div class="timing-toggle">
+      <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
+      <button type="button" id="seg-dep" class="timing-seg" onclick="switchTimingPanel('dep')">Départ</button>
+    </div>`;
 
-container.innerHTML = toggle +
-  `<div class="timing-panel" id="panel-arr">${arr}</div>` +
-  `<div class="timing-panel" id="panel-dep">${dep}</div>`;
+  container.innerHTML = toggle +
+    `<div class="timing-panel" id="panel-arr">${arr}</div>` +
+    `<div class="timing-panel" id="panel-dep">${dep}</div>`;
 
-const saved = localStorage.getItem('timingPanel') || 'dep';
-switchTimingPanel(saved);
+  const saved = localStorage.getItem('timingPanel') || 'dep';
+  switchTimingPanel(saved);
+
+  // Init champs tags si valeur déjà présente
+  updateTagInputs();
 }
 
 function switchTimingPanel(mode){
@@ -1326,13 +1229,12 @@ function updateAllCalculations() {
   updateSOBTDefault();
   updateTOBT();
   updateDLCode();
-  redistributeDL();
+  redistributeDL();   // <-- nouvelle logique DL
   updateLID();
   updateCTOTDisplay();
   applyPrestationsDefaults();
   updateLIDVisibility();
   renderTimeline();
-  refreshAllFoldSummaries(); // <-- met à jour les pastilles des volets
 }
 
 /* TIMERS HLE/H-15 */
@@ -1491,32 +1393,40 @@ function redistributeDL(){
   let d2 = parseInt(f2.value)||0;
   let d3 = parseInt(f3.value)||0;
 
+  // si total inconnu, on nettoie juste l'alerte visuelle et sort
   if(total==null){
     clearDLBorders();
     return;
   }
 
+  // clamp de base
   d1 = Math.max(0, Math.min(d1, total));
 
   if(lastDLChanged === 1){
+    // le reste part en 2 puis 3
     let remain = total - d1;
-    d2 = Math.min(remain, Math.max(0, d2));
-    d2 = Math.min(remain, d2 + (remain - d2));
+    d2 = Math.min(remain, Math.max(0, d2)); // garde d2 si déjà saisi mais pas au-delà
+    // on met le maximum possible dans d2, puis d3 prend le reste
+    d2 = Math.min(remain, d2 + (remain - d2)); // => d2 = remain
     remain = total - d1 - d2;
-    d3 = Math.max(0, remain);
+    d3 = Math.max(0, remain); // s'il reste quelque chose, en 3
   } else if (lastDLChanged === 2){
+    // on garde d1, on ajuste d2 dans la limite, puis d3 prend le reste
     const maxD2 = Math.max(0, total - d1);
     d2 = Math.max(0, Math.min(d2, maxD2));
     d3 = Math.max(0, total - d1 - d2);
   } else {
+    // lastDLChanged === 3 : clamp d3 seulement, sans toucher d1/d2
     const maxD3 = Math.max(0, total - d1 - d2);
     d3 = Math.max(0, Math.min(d3, maxD3));
   }
 
+  // applique dans les champs
   f1.value = d1 || '';
   f2.value = d2 || '';
   f3.value = d3 || '';
 
+  // contrôle & bordure rouge si dépassement
   const sum = d1 + d2 + d3;
   if (sum > total){
     markLastFilledDLError();
@@ -1533,6 +1443,7 @@ function markLastFilledDLError(){
   const d1 = parseInt(f1.value)||0;
   const d2 = parseInt(f2.value)||0;
   const d3 = parseInt(f3.value)||0;
+  // dernière case remplie (3 > 2 > 1)
   if (d3 > 0) f3.classList.add('dl-error');
   else if (d2 > 0) f2.classList.add('dl-error');
   else if (d1 > 0) f1.classList.add('dl-error');
@@ -1931,6 +1842,35 @@ function renderTimeline(){
   });}
 })();
 
+/* Génération dynamique des champs "Numéro tag i" */
+function updateTagInputs(){
+  const nb = parseInt(document.getElementById('NbBagagesDecharges')?.value) || 0;
+  const wrap = document.getElementById('TagsContainer');
+  if(!wrap) return;
+
+  const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
+  let html = '';
+  for(let i=1; i<=count; i++){
+    html += `
+      <div class="form-group">
+        <label>Numéro tag ${i}
+          <input type="text" id="TagNumero${i}" inputmode="numeric" pattern="[0-9]*"
+                 oninput="sanitizeDigitsOnly(this)">
+        </label>
+      </div>`;
+  }
+  wrap.innerHTML = html;
+
+  // Réinjecter les valeurs sauvegardées (si présentes)
+  try{
+    const data = JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}');
+    for(let i=1; i<=count; i++){
+      const f = document.getElementById('TagNumero'+i);
+      if(f && data['TagNumero'+i] !== undefined) f.value = data['TagNumero'+i];
+    }
+  }catch(e){}
+}
+
 /* VALIDATION */
 function validateForm() {
   const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
@@ -2037,8 +1977,15 @@ function initNotepadOnce(){
     noteDrag.dy = e.clientY - r.top;
     e.preventDefault();
   });
-  document.addEventListener('mousemove', ()=>{ if(!noteDrag.active) return; });
-  document.addEventListener('mouseup', ()=>{ if(!noteDrag.active) return; noteDrag.active=false; overlay.classList.remove('dragging'); ensureNoteOverlayInViewport(); });
+  document.addEventListener('mousemove', ()=>{
+    if(!noteDrag.active) return;
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(!noteDrag.active) return;
+    noteDrag.active=false;
+    overlay.classList.remove('dragging');
+    ensureNoteOverlayInViewport();
+  });
 
   noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
   noteRO.observe(overlay);
