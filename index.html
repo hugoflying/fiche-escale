@@ -1139,14 +1139,12 @@ dep += fieldHTML('FinGPU','Fin GPU');
 /* Fermeture porte avion — PAS de séparateur au-dessus */
 dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
-/* --- Séparateur puis bloc INAD repliable (fermée par défaut) --- */
+/* --- Séparateur puis bloc INAD repliable (fermé par défaut) --- */
 dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
 dep += `
-  <div class="form-group" style="flex:1 1 100%;">
-    <button type="button" class="timing-seg" onclick="this.classList.toggle('active'); const blk=this.nextElementSibling; blk.hidden=!blk.hidden;">
-      Arrivée INAD (déplier si besoin)
-    </button>
-    <div hidden class="form-grid" style="margin-top:8px;">
+  <details class="timing-collapse" style="flex:1 1 100%;">
+    <summary class="timing-seg">Arrivée INAD (déplier si besoin)</summary>
+    <div class="form-grid" style="margin-top:8px;">
       ${fieldHTML('ArriveeINAD','Arrivée INAD')}
       <div class="form-group">
         <label>Nombre INAD
@@ -1154,16 +1152,14 @@ dep += `
         </label>
       </div>
     </div>
-  </div>`;
+  </details>`;
 
-/* --- Séparateur puis bloc Recherche bagage repliable (fermée par défaut) --- */
+/* --- Séparateur puis bloc Recherche bagage repliable (fermé par défaut) --- */
 dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
 dep += `
-  <div class="form-group" style="flex:1 1 100%;">
-    <button type="button" class="timing-seg" onclick="this.classList.toggle('active'); const blk=this.nextElementSibling; blk.hidden=!blk.hidden;">
-      Recherche bagage (déplier si besoin)
-    </button>
-    <div hidden class="form-grid" style="margin-top:8px;">
+  <details class="timing-collapse" style="flex:1 1 100%;">
+    <summary class="timing-seg">Recherche bagage (déplier si besoin)</summary>
+    <div class="form-grid" style="margin-top:8px;">
       ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
       ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
       <div class="form-group">
@@ -1172,7 +1168,7 @@ dep += `
         </label>
       </div>
     </div>
-  </div>`;
+  </details>`;
 
 dep += `</div></div>`;
 
