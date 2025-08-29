@@ -1110,88 +1110,84 @@ function generateTimingFields(){
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
   arr += `</div></div>`;
 
-  /* DÉPART (réorganisation) */
-  let dep = '';
-  dep += `<div class="timing-col dep"><div class="form-grid">`;
-  dep += fieldHTML('ArrPNT','Arrivée PNT');
-  dep += fieldHTML('ArrPNC','Arrivée PNC');
+/* DÉPART (réorganisation demandée) */
+let dep = '';
+dep += `<div class="timing-col dep"><div class="form-grid">`;
+dep += fieldHTML('ArrPNT','Arrivée PNT');
+dep += fieldHTML('ArrPNC','Arrivée PNC');
 
-  dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
-  dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
+dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
+dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  dep += fieldHTML('DepartFuel','Départ Avitair');
+dep += fieldHTML('DepartFuel','Départ Avitair');
 
-  dep += fieldHTML('ArriveeLift','Arrivée lift');
-  dep += fieldHTML('DepartLift','Départ lift');
+dep += fieldHTML('ArriveeLift','Arrivée lift');
+dep += fieldHTML('DepartLift','Départ lift');
 
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
-  dep += fieldHTML('EmbarquementPMR','Embarquement PMR');
+dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
+dep += fieldHTML('EmbarquementPMR','Embarquement PMR');
 
-  dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
-  dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
+dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
+dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
-  dep += fieldHTML('RemiseLID','Remise LID/LDS');
+dep += fieldHTML('RemiseLID','Remise LID/LDS');
 
-  /* Mise TPX/TMX + Fin GPU */
-  dep += fieldHTML('MiseTPXTMX','Mise en place du TPX/TMX');
-  dep += fieldHTML('FinGPU','Fin GPU');
+/* Mise TPX/TMX + Fin GPU */
+dep += fieldHTML('MiseTPXTMX','Mise en place du TPX/TMX');
+dep += fieldHTML('FinGPU','Fin GPU');
 
-  /* Fermeture porte avion — SANS séparateur au-dessus (demandé) */
-  dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
+/* Fermeture porte avion — PAS de séparateur au-dessus */
+dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
-  /* === INAD — volet repliable (fermé par défaut) === */
-  dep += `
-    <div class="fold-wrap">
-      <div class="fold closed" id="fold-inad">
-        <button type="button" class="fold-head" onclick="toggleFold('fold-inad')">
-          <span class="chev"></span>
-          <span class="fold-title">Arrivée INAD</span>
-          <span class="fold-status" id="fold-inad-status">Optionnel</span>
-        </button>
-        <div class="fold-body">
-          ${fieldHTML('ArriveeINAD','Arrivée INAD')}
-        </div>
+/* --- Séparateur puis bloc INAD repliable (fermée par défaut) --- */
+dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+dep += `
+  <div class="form-group" style="flex:1 1 100%;">
+    <button type="button" class="timing-seg" onclick="this.classList.toggle('active'); const blk=this.nextElementSibling; blk.hidden=!blk.hidden;">
+      Arrivée INAD (déplier si besoin)
+    </button>
+    <div hidden class="form-grid" style="margin-top:8px;">
+      ${fieldHTML('ArriveeINAD','Arrivée INAD')}
+      <div class="form-group">
+        <label>Nombre INAD
+          <input type="number" id="NombreINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
+        </label>
       </div>
-    </div>`;
+    </div>
+  </div>`;
 
-  /* === Recherche bagage — volet repliable (fermé par défaut) === */
-  dep += `
-    <div class="fold-wrap">
-      <div class="fold closed" id="fold-recherche">
-        <button type="button" class="fold-head" onclick="toggleFold('fold-recherche')">
-          <span class="chev"></span>
-          <span class="fold-title">Recherche bagage & déchargement</span>
-          <span class="fold-status" id="fold-recherche-status">Optionnel</span>
-        </button>
-        <div class="fold-body">
-          ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
-          ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-          <div class="form-group">
-            <label>Nombre de bagages déchargés
-              <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this); updateAllCalculations()">
-            </label>
-          </div>
-        </div>
+/* --- Séparateur puis bloc Recherche bagage repliable (fermée par défaut) --- */
+dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+dep += `
+  <div class="form-group" style="flex:1 1 100%;">
+    <button type="button" class="timing-seg" onclick="this.classList.toggle('active'); const blk=this.nextElementSibling; blk.hidden=!blk.hidden;">
+      Recherche bagage (déplier si besoin)
+    </button>
+    <div hidden class="form-grid" style="margin-top:8px;">
+      ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
+      ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
+      <div class="form-group">
+        <label>Nombre de bagages déchargés
+          <input type="number" id="NbBagagesDecharges" min="0" step="1" oninput="sanitizePositiveInt(this)">
+        </label>
       </div>
-    </div>`;
+    </div>
+  </div>`;
 
-  dep += `</div></div>`;
+dep += `</div></div>`;
 
-  const toggle = `
-    <div class="timing-toggle">
-      <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
-      <button type="button" id="seg-dep" class="timing-seg" onclick="switchTimingPanel('dep')">Départ</button>
-    </div>`;
+const toggle = `
+  <div class="timing-toggle">
+    <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
+    <button type="button" id="seg-dep" class="timing-seg" onclick="switchTimingPanel('dep')">Départ</button>
+  </div>`;
 
-  container.innerHTML = toggle +
-    `<div class="timing-panel" id="panel-arr">${arr}</div>` +
-    `<div class="timing-panel" id="panel-dep">${dep}</div>`;
+container.innerHTML = toggle +
+  `<div class="timing-panel" id="panel-arr">${arr}</div>` +
+  `<div class="timing-panel" id="panel-dep">${dep}</div>`;
 
-  const saved = localStorage.getItem('timingPanel') || 'dep';
-  switchTimingPanel(saved);
-
-  // init des volets optionnels
-  initOptionalFolds();
+const saved = localStorage.getItem('timingPanel') || 'dep';
+switchTimingPanel(saved);
 }
 
 function switchTimingPanel(mode){
