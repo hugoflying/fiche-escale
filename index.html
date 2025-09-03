@@ -420,6 +420,30 @@ details.timing-collapse[open] > summary.timing-seg {
 body.dark details.timing-collapse[open] > summary.timing-seg {
   background:#90caf9; color:#111; border-color:#90caf9;
 }
+
+/* === FIX responsive + overflow pour CHIFFRES PORTE === */
+#chiffres-porte .form-group,
+#chiffres-porte .form-group-3col,
+#chiffres-porte .form-group-4col {
+  min-width: 0; /* évite le débordement des items en grid */
+}
+#chiffres-porte .cp-cols-2,
+#chiffres-porte .cp-cols-3,
+#chiffres-porte .cp-cols-4 {
+  /* au lieu d'imposer 2/3/4 colonnes, on s'adapte à la largeur dispo */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+@media (max-width: 900px) {
+  #chiffres-porte .cp-cols-2,
+  #chiffres-porte .cp-cols-3,
+  #chiffres-porte .cp-cols-4 {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+#chiffres-porte input,
+#chiffres-porte select {
+  max-width: 100%;
+}
 </style>
 </head>
 <body onload="initForm()">
@@ -745,6 +769,10 @@ function initForm(){
   document.querySelectorAll("section h2").forEach(h2=>{
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
   });
+
+  /* Force l’attache sur CHIFFRES PORTE (sécurité) */
+  const cpH2 = document.querySelector('#chiffres-porte > h2');
+  if (cpH2) cpH2.onclick = () => cpH2.parentElement.classList.toggle('collapsed');
 
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
