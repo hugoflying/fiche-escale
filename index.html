@@ -413,7 +413,6 @@ body.dark .timing-divider{ border-top-color:#555; }
 #chiffres-porte #TOB{
   font-size: 1.25rem; letter-spacing: .5px; background: #e8f0fe; border: 2px solid #1976d2; border-radius: 10px;
 }
-/* Dark mode */
 body.dark #chiffres-porte .form-group,
 body.dark #chiffres-porte .form-group-3col,
 body.dark #chiffres-porte .form-group-4col{
@@ -471,6 +470,25 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 #chiffres-porte input,
 #chiffres-porte select {
   max-width: 100%;
+}
+
+/* === TAGS: grille 2 colonnes, pleine largeur === */
+#TagsContainer{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+#TagsContainer .form-group{
+  margin-bottom: 0; /* géré par le gap */
+}
+/* Si nombre impair, le dernier s'étale sur toute la ligne */
+#TagsContainer .form-group:nth-last-child(1):nth-child(odd){
+  grid-column: 1 / -1;
+}
+/* Sur petit écran: 1 colonne */
+@media (max-width: 700px){
+  #TagsContainer{ grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -1018,11 +1036,9 @@ function loadTabData(id){
   generateChargementFields();
   updateAllCalculations();
 
-  // Restaurer le panneau TIMING choisi
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
 
-  // Régénérer les champs tags selon nombre sauvegardé
   updateTagInputs();
 }
 
@@ -1119,7 +1135,7 @@ function generateTimingFields(){
           </label>
         </div>
         <!-- Conteneur dynamique des Numéro tag i (affichés UNIQUEMENT sous le champ ci-dessus) -->
-        <div id="TagsContainer" class="form-grid" style="margin-top:6px;"></div>
+        <div id="TagsContainer" style="margin-top:6px;"></div>
       </div>
     </details>`;
 
@@ -1879,7 +1895,6 @@ function renderTimeline(){
       const cb = document.getElementById('showTimesToggle'); cb.checked = true; showTimeLabels = true;
       const wrap = cb.closest('label');
       if (wrap) {
-        /* IMPORTANT: pas de nowrap -> autorise le passage à la ligne */
         wrap.style.display = 'flex';
         wrap.style.alignItems = 'center';
         wrap.style.gap = '6px';
@@ -1905,7 +1920,7 @@ function updateTagInputs(){
   let html = '';
   for(let i=1; i<=count; i++){
     html += `
-      <div class="form-group" style="flex:1 1 100%;">
+      <div class="form-group">
         <label>Numéro tag ${i}
           <input type="text" id="TagNumero${i}" inputmode="numeric" pattern="[0-9]*"
                  oninput="sanitizeDigitsOnly(this)">
