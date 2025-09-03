@@ -12,8 +12,6 @@ body {
     background: #ffffff;
     color: #222;
     padding: 10px;
-    /* Empêche tout scroll horizontal de la page */
-    overflow-x: hidden;
 }
 body.dark { background: #121212; color: #f8f9f9; }
 
@@ -259,10 +257,10 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 /* --- Toolbar timeline --- */
 .timeline-toolbar{
   display:flex; align-items:center; gap:8px; margin: 4px 0 8px;
-  /* Empêche le dépassement en petit écran */
-  flex-wrap: wrap;
+  flex-wrap: wrap;                 /* ✅ évite le débordement en petit écran */
 }
-.timeline-toolbar > * { min-width: 0; } /* autorise la réduction des enfants */
+.timeline-toolbar > * { min-width: 0; }
+
 .tl-btn{
   padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
   background:#e7ebf0; font-weight:600; transition: transform .12s ease, background .15s ease;
@@ -273,22 +271,16 @@ body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
 
-/* Coche “Heure sur étiquettes” — rend responsive et non-débordant */
-.tl-toggle {
-  display:flex; align-items:center; gap:6px;
-  margin-left:auto; font-size:14px;
-  flex: 1 1 280px;           /* prend la place dispo, peut passer sur la ligne suivante */
-  min-width: 220px;
-  max-width: 100%;
-  white-space: normal;       /* autorise le retour à la ligne du texte long */
-  overflow-wrap: anywhere;   /* casse si nécessaire */
-}
-@media (max-width: 700px){
+/* Coche “Heure sur étiquettes” – base */
+.tl-toggle { display:inline-flex; align-items:center; gap:6px; margin-left:8px; font-size: 14px; }
+
+/* Toggle compact à droite sur desktop, passe à la ligne sur mobile */
+.timeline-toolbar .tl-toggle{ margin-left:auto; white-space:nowrap; }
+@media (max-width:700px){
   .timeline-toolbar .tl-toggle{
-    order: 99;               /* pousse le toggle à la ligne suivante si besoin */
-    margin-left: 0;
-    flex-basis: 100%;
-    min-width: 0;
+    flex: 1 1 100%;
+    margin-left:0;
+    white-space:normal;
   }
 }
 
@@ -453,7 +445,6 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 #chiffres-porte .cp-cols-2,
 #chiffres-porte .cp-cols-3,
 #chiffres-porte .cp-cols-4 {
-  /* au lieu d'imposer 2/3/4 colonnes, on s'adapte à la largeur dispo */
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 @media (max-width: 900px) {
@@ -957,16 +948,15 @@ function deleteTab(id){
 
 function clearFormFields(){
   document.querySelectorAll('input, select, textarea').forEach(el=>{
-    if(el.type==='checkbox'||el.type==='radio'){
-      /* NE PAS décocher l'option de la timeline : on la laisse cochée par défaut */
-      if(el.id==='showTimesToggle'){ el.checked = true; }
-      else { el.checked=false; }
-    } else if(el.tagName==='SELECT') {
-      el.selectedIndex=0;
-    } else {
-      el.value='';
-    }
+    if(el.id==='showTimesToggle') return;          // ✅ ne pas décocher le toggle
+    if(el.type==='checkbox'||el.type==='radio') el.checked=false;
+    else if(el.tagName==='SELECT') el.selectedIndex=0;
+    else el.value='';
   });
+  // ✅ forcer la case "Afficher heure/durée..." cochée par défaut
+  const cb = document.getElementById('showTimesToggle');
+  if (cb) { cb.checked = true; showTimeLabels = true; }
+
   document.getElementById('Date').valueAsDate=new Date();
   document.getElementById('FNC').value='N';
   updateAllCalculations();
@@ -1002,9 +992,9 @@ function loadTabData(id){
     else el.value = data[el.id];
   });
 
-  /* Sécurité : forcer l'option à true si rien en mémoire */
-  const st = document.getElementById('showTimesToggle');
-  if(st && data['showTimesToggle']===undefined){ st.checked = true; }
+  // Si l’onglet ne stockait pas le toggle, on le force coché
+  const cb = document.getElementById('showTimesToggle');
+  if (cb && data['showTimesToggle']===undefined){ cb.checked = true; showTimeLabels = true; }
 
   if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
   isUTC=data.modeUTC==='1';
@@ -1451,20 +1441,17 @@ function redistributeDL(){
   let d2 = parseInt(f2.value)||0;
   let d3 = parseInt(f3.value)||0;
 
-  // si total inconnu, on nettoie juste l'alerte visuelle et sort
   if(total==null){
     clearDLBorders();
     return;
   }
 
-  // clamp de base
   d1 = Math.max(0, Math.min(d1, total));
 
   if(lastDLChanged === 1){
-    // le reste part en 2 puis 3
     let remain = total - d1;
-    d2 = Math.min(remain, Math.max(0, d2)); // garde d2 si déjà saisi mais pas au-delà
-    d2 = Math.min(remain, d2 + (remain - d2)); // => d2 = remain
+    d2 = Math.min(remain, Math.max(0, d2));
+    d2 = Math.min(remain, d2 + (remain - d2));
     remain = total - d1 - d2;
     d3 = Math.max(0, remain);
   } else if (lastDLChanged === 2){
@@ -1865,28 +1852,10 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
-(function injectShowHoursToggle(){
-  const bar = document.querySelector('.timeline-toolbar');
-  if (bar) {
-    if (!document.getElementById('showTimesToggle')) {
-      const wrap = document.createElement('label');
-      wrap.style.display = 'inline-flex'; wrap.style.alignItems = 'center';
-      wrap.style.gap = '6px'; wrap.style.marginLeft = '8px'; wrap.style.whiteSpace = 'nowrap';
-
-      const cb = document.createElement('input');
-      cb.type = 'checkbox'; cb.id = 'showTimesToggle'; cb.checked = true; showTimeLabels = true;
-      cb.addEventListener('change', () => { showTimeLabels = cb.checked; renderTimeline(); });
-
-      const span = document.createElement('span'); span.textContent = 'Heure sur étiquettes';
-      wrap.appendChild(cb); wrap.appendChild(span); bar.appendChild(wrap);
-    } else {
-      const cb = document.getElementById('showTimesToggle'); cb.checked = true; showTimeLabels = true;
-      const wrap = cb.closest('label');
-      if (wrap) {
-        /* on laisse la mise en forme CSS reprendre la main, rien de spécial ici */
-      }
-    }
-  }
+/* Injection/initialisation du toggle – simplifiée et responsive */
+(function ensureShowHoursToggle(){
+  const cb = document.getElementById('showTimesToggle');
+  if (cb) { cb.checked = true; showTimeLabels = true; }
   const scroller = document.getElementById('timelineScroll');
   if (scroller) { ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
     scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
@@ -1899,7 +1868,7 @@ function updateTagInputs(){
   const wrap = document.getElementById('TagsContainer');
   if(!wrap) return;
 
-  const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
+  const count = Math.max(0, Math.min(nb, 50));
   let html = '';
   for(let i=1; i<=count; i++){
     html += `
@@ -1912,7 +1881,6 @@ function updateTagInputs(){
   }
   wrap.innerHTML = html;
 
-  // Réinjecter les valeurs sauvegardées (si présentes)
   try{
     const data = JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}');
     for(let i=1; i<=count; i++){
