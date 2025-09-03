@@ -12,6 +12,8 @@ body {
     background: #ffffff;
     color: #222;
     padding: 10px;
+    /* Empêche tout scroll horizontal de la page */
+    overflow-x: hidden;
 }
 body.dark { background: #121212; color: #f8f9f9; }
 
@@ -255,7 +257,12 @@ body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px r
 body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 
 /* --- Toolbar timeline --- */
-.timeline-toolbar{ display:flex; align-items:center; gap:8px; margin: 4px 0 8px; }
+.timeline-toolbar{
+  display:flex; align-items:center; gap:8px; margin: 4px 0 8px;
+  /* Empêche le dépassement en petit écran */
+  flex-wrap: wrap;
+}
+.timeline-toolbar > * { min-width: 0; } /* autorise la réduction des enfants */
 .tl-btn{
   padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
   background:#e7ebf0; font-weight:600; transition: transform .12s ease, background .15s ease;
@@ -266,8 +273,24 @@ body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
 
-/* Coche “Heure sur étiquettes” */
-.tl-toggle { display:inline-flex; align-items:center; gap:6px; margin-left:8px; font-size: 14px; }
+/* Coche “Heure sur étiquettes” — rend responsive et non-débordant */
+.tl-toggle {
+  display:flex; align-items:center; gap:6px;
+  margin-left:auto; font-size:14px;
+  flex: 1 1 280px;           /* prend la place dispo, peut passer sur la ligne suivante */
+  min-width: 220px;
+  max-width: 100%;
+  white-space: normal;       /* autorise le retour à la ligne du texte long */
+  overflow-wrap: anywhere;   /* casse si nécessaire */
+}
+@media (max-width: 700px){
+  .timeline-toolbar .tl-toggle{
+    order: 99;               /* pousse le toggle à la ligne suivante si besoin */
+    margin-left: 0;
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}
 
 /* --- zone scrollable + canvas --- */
 .timeline-scroll{
@@ -934,9 +957,15 @@ function deleteTab(id){
 
 function clearFormFields(){
   document.querySelectorAll('input, select, textarea').forEach(el=>{
-    if(el.type==='checkbox'||el.type==='radio') el.checked=false;
-    else if(el.tagName==='SELECT') el.selectedIndex=0;
-    else el.value='';
+    if(el.type==='checkbox'||el.type==='radio'){
+      /* NE PAS décocher l'option de la timeline : on la laisse cochée par défaut */
+      if(el.id==='showTimesToggle'){ el.checked = true; }
+      else { el.checked=false; }
+    } else if(el.tagName==='SELECT') {
+      el.selectedIndex=0;
+    } else {
+      el.value='';
+    }
   });
   document.getElementById('Date').valueAsDate=new Date();
   document.getElementById('FNC').value='N';
@@ -972,6 +1001,10 @@ function loadTabData(id){
     if(el.type==='checkbox') el.checked = data[el.id]==='1';
     else el.value = data[el.id];
   });
+
+  /* Sécurité : forcer l'option à true si rien en mémoire */
+  const st = document.getElementById('showTimesToggle');
+  if(st && data['showTimesToggle']===undefined){ st.checked = true; }
 
   if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
   isUTC=data.modeUTC==='1';
@@ -1850,8 +1883,7 @@ function renderTimeline(){
       const cb = document.getElementById('showTimesToggle'); cb.checked = true; showTimeLabels = true;
       const wrap = cb.closest('label');
       if (wrap) {
-        wrap.style.whiteSpace = 'nowrap'; wrap.style.display = 'inline-flex';
-        wrap.style.alignItems = 'center'; wrap.style.gap = '6px'; wrap.style.marginLeft = '8px';
+        /* on laisse la mise en forme CSS reprendre la main, rien de spécial ici */
       }
     }
   }
