@@ -469,32 +469,49 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 #TagsContainer .form-group:nth-last-child(1):nth-child(odd){ grid-column: 1 / -1; }
 @media (max-width: 700px){ #TagsContainer{ grid-template-columns: 1fr; } }
 
-/* === AJOUTS — bulle flottante & calculatrice === */
+/* === AJOUTS — remplace la bulle + intègre une barre d’outils === */
 
-/* Bulle flottante Bloc-note (FAB) */
-.note-fab{
-  position: fixed; right: 18px; bottom: 18px;
-  width: 64px; height: 64px; border-radius: 50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size: 28px; background:#1976d2; color:#fff;
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
-  z-index: 2200; cursor: grab; user-select:none;
-  transition: transform .12s ease, box-shadow .15s ease, background .15s ease;
+/* Bulle flottante Bloc-note (désactivée, remplacée par la barre d’outils) */
+.note-fab{ display:none !important; }
+
+/* Barre d’outils dépliable (dock) */
+.dock {
+  position: fixed; right: 18px; bottom: 18px; z-index: 2300;
+  display: flex; align-items: center; gap: 8px;
 }
-.note-fab:active{ cursor: grabbing; transform: scale(0.98); }
-body.dark .note-fab{ background:#90caf9; color:#111; }
-.note-fab::after{
-  content:""; position:absolute; inset:0; border-radius:50%;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
-  pointer-events:none;
+.dock-actions{
+  display:flex; gap:8px; padding:8px; border-radius:999px;
+  background:#ffffff; border:1px solid rgba(0,0,0,.08);
+  box-shadow: 0 10px 24px rgba(0,0,0,.2);
 }
+body.dark .dock-actions{
+  background:#1e1e1e; border-color: rgba(255,255,255,.08); box-shadow: 0 10px 24px rgba(0,0,0,.5);
+}
+.dock.collapsed .dock-actions{ display:none; }
+
+.dock-btn, .dock-toggle{
+  width:44px; height:44px; border-radius:50%; border:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  background:#e7ebf0; transition: transform .12s ease, background .15s ease;
+}
+.dock-btn:hover, .dock-toggle:hover{ background:#dde3ea; }
+.dock-btn:active, .dock-toggle:active{ transform: translateY(1px); }
+body.dark .dock-btn, body.dark .dock-toggle{ background:#2a2a2a; color:#eee; }
+body.dark .dock-btn:hover, body.dark .dock-toggle:hover{ background:#333; }
+
+/* Bouton bascule (toujours visible) */
+.dock-toggle{
+  background:#1976d2; color:#fff; box-shadow: 0 8px 18px rgba(0,0,0,.25);
+}
+body.dark .dock-toggle{ background:#90caf9; color:#111; }
 
 /* Calculatrice latérale */
 .calc-widget{
-  position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
+  position: fixed; right: 18px; bottom: 86px;  /* collée au dessus du dock */
   width: 280px; background: #fff; color:#111;
   border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.28);
   z-index: 2100; overflow: hidden; border:1px solid rgba(0,0,0,.06);
+  display:none; /* masquée par défaut, contrôlée par le dock */
 }
 body.dark .calc-widget{ background:#1e1e1e; color:#eee; border-color: rgba(255,255,255,.08); }
 .calc-header{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; font-weight:700; background: #eef2f7; }
@@ -520,9 +537,10 @@ body.dark .calc-grid button:hover, body.dark .calc-quick button:hover{ backgroun
   position:absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
 }
 @media (max-width: 900px){
-  .calc-widget{ right: 12px; top: auto; bottom: 96px; transform:none; }
+  .calc-widget{ right: 12px; bottom: 96px; }
   .calc-quick{ position:static; transform:none; grid-template-columns: repeat(4,1fr); margin-top: 8px; }
 }
+.hidden{ display:none !important; }
 </style>
 </head>
 <body onload="initForm()">
@@ -789,14 +807,20 @@ body.dark .calc-grid button:hover, body.dark .calc-quick button:hover{ backgroun
   </div>
 </div>
 
-<!-- Bulle flottante Bloc-note -->
-<div id="noteFab" class="note-fab" title="Bloc-note (Ctrl+N)">📝</div>
+<!-- === BARRE D’OUTILS (NOUVEAU) === -->
+<div id="dock" class="dock collapsed" role="toolbar" aria-label="Outils rapides">
+  <div class="dock-actions" aria-hidden="true">
+    <button id="dockCalc" class="dock-btn" title="Calculatrice">🧮</button>
+    <button id="dockNote" class="dock-btn" title="Bloc-note">📝</button>
+  </div>
+  <button id="dockToggle" class="dock-toggle" title="Afficher/Masquer les outils" aria-expanded="false">⋯</button>
+</div>
 
-<!-- Calculatrice latérale -->
+<!-- Calculatrice latérale (affichée/masquée par le dock) -->
 <div id="calcWidget" class="calc-widget" role="region" aria-label="Calculatrice">
   <div class="calc-header">
     <span>Calculatrice</span>
-    <button type="button" title="Réduire/afficher" onclick="toggleCalc()">▾</button>
+    <button type="button" title="Réduire/afficher le clavier" onclick="toggleCalc()">▾</button>
   </div>
   <div class="calc-body" id="calcBody">
     <input id="calcDisplay" type="text" inputmode="decimal" placeholder="0">
@@ -863,6 +887,11 @@ const NOTE_DEFAULT_DARK  = '#FFFFFF';
 
 /* === DL auto tracking === */
 let lastDLChanged = 1;
+
+/* === Nouveaux états pour la barre d’outils flottante === */
+let toolDockCollapsed = true;     // barre repliée/dépliée
+let calcVisible = false;          // affichage du widget calculatrice (panneau)
+let _calcCollapsed = false;       // état interne: corps de la calculatrice réduit/affiché
 
 /* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
@@ -957,11 +986,23 @@ function initForm(){
       e.preventDefault();
       toggleNotepadOverlay();
     }
+    // Raccourci calc: Ctrl+Alt+C
+    if((e.ctrlKey || e.metaKey) && e.altKey && (e.key.toLowerCase()==='c')){
+      e.preventDefault();
+      toggleCalcVisibility();
+    }
     if(e.key==='Escape' && noteOpen){
       e.preventDefault();
       closeNotepadOverlay();
     }
   });
+
+  // Anciennes bulles/Widget -> masquées (remplacées par la barre d’outils)
+  const oldFab = document.getElementById('noteFab');
+  if(oldFab) oldFab.style.display = 'none';
+
+  setupCalc();          // initialise l'état réduit/affiché du corps de la calculatrice
+  setupToolDock();      // nouvelle barre d’outils flottante (🧮 & 📝)
 }
 
 /* date par défaut = aujourd’hui si vide */
@@ -1001,7 +1042,7 @@ function attachAutoSave(){
   document.addEventListener('change', handler, true);
 }
 
-/* Tabs — SANS icône bloc-note dans la barre (utilise la bulle flottante) */
+/* Tabs — SANS icône bloc-note dans la barre (utilise la barre d’outils) */
 function renderTabs(){
   const tabBar=document.getElementById('tab-bar');
   tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
@@ -2387,53 +2428,119 @@ switchTab = function(id){
   }
 };
 
-/* Bulle flottante : ouverture + drag + mémorisation */
-function setupNoteFab(){
-  const fab = document.getElementById('noteFab');
-  if(!fab) return;
-  try{
-    const pos = JSON.parse(localStorage.getItem('noteFabPos')||'null');
-    if(pos && typeof pos.x==='number' && typeof pos.y==='number'){
-      fab.style.left = pos.x+'px';
-      fab.style.top  = pos.y+'px';
-      fab.style.right='auto'; fab.style.bottom='auto';
-    }
-  }catch(e){}
-  let dragging=false, sx=0, sy=0, ox=0, oy=0, moved=false;
-  fab.addEventListener('pointerdown', (e)=>{
-    dragging=true; moved=false; fab.setPointerCapture(e.pointerId);
-    const r = fab.getBoundingClientRect(); ox=r.left; oy=r.top; sx=e.clientX; sy=e.clientY;
-  });
-  fab.addEventListener('pointermove', (e)=>{
-    if(!dragging) return;
-    const dx = e.clientX - sx; const dy = e.clientY - sy;
-    if(Math.abs(dx)+Math.abs(dy) > 2) moved=true;
-    fab.style.left = (ox+dx)+'px'; fab.style.top = (oy+dy)+'px';
-    fab.style.right='auto'; fab.style.bottom='auto';
-  });
-  fab.addEventListener('pointerup', ()=>{
-    if(!dragging) return; dragging=false;
-    const rect = fab.getBoundingClientRect();
-    localStorage.setItem('noteFabPos', JSON.stringify({x: rect.left, y: rect.top}));
-    if(!moved) toggleNotepadOverlay();
-  });
+/* ===========================
+   === Barre d’outils dockée ==
+   =========================== */
+/* On remplace la bulle flottante par une barre d’outils repliable
+   avec deux icônes : Calculatrice 🧮 et Bloc-note 📝 */
+function injectDockStyles(){
+  if (document.getElementById('qtDockStyles')) return;
+  const css = `
+  .qt-dock{position:fixed; right:12px; top:50%; transform:translateY(-50%);
+    display:flex; flex-direction:column; gap:8px; z-index:2300;
+    background:rgba(255,255,255,.85); border:1px solid rgba(0,0,0,.08);
+    border-radius:14px; padding:8px; box-shadow:0 12px 28px rgba(0,0,0,.25); backdrop-filter:saturate(180%) blur(10px)}
+  body.dark .qt-dock{background:rgba(20,20,20,.8); border-color:rgba(255,255,255,.08)}
+  .qt-btn, .qt-toggle{border:0; cursor:pointer; border-radius:12px; padding:10px; font-size:20px;
+    background:#e7ebf0; transition:transform .12s ease, background .15s ease}
+  .qt-btn:hover, .qt-toggle:hover{background:#dde3ea}
+  body.dark .qt-btn, body.dark .qt-toggle{background:#2a2a2a; color:#eee}
+  body.dark .qt-btn:hover, body.dark .qt-toggle:hover{background:#333}
+  .qt-tools{display:flex; flex-direction:column; gap:8px; overflow:hidden}
+  .qt-dock.qt-collapsed .qt-tools{display:none}
+  .qt-dock.qt-collapsed{padding:8px}
+  `;
+  const style = document.createElement('style');
+  style.id = 'qtDockStyles';
+  style.textContent = css;
+  document.head.appendChild(style);
 }
 
-/* Calculatrice */
-let _calcCollapsed = false;
-function setupCalc(){
-  try{
-    _calcCollapsed = localStorage.getItem('calcCollapsed')==='1';
-    if(_calcCollapsed) document.getElementById('calcBody').style.display='none';
-  }catch(e){}
+function setupQuickToolsDock(){
+  injectDockStyles();
+
+  // Cacher l’ancienne bulle si présente
+  const oldFab = document.getElementById('noteFab');
+  if (oldFab) oldFab.style.display = 'none';
+
+  // Construire le dock si absent
+  if (!document.getElementById('qtDock')){
+    const dock = document.createElement('div');
+    dock.id = 'qtDock';
+    dock.className = 'qt-dock';
+    const collapsed = localStorage.getItem('dockCollapsed') === '1';
+    if (collapsed) dock.classList.add('qt-collapsed');
+
+    dock.innerHTML = `
+      <button class="qt-toggle" id="qtToggle" title="Outils">🧰</button>
+      <div class="qt-tools">
+        <button class="qt-btn" id="qtCalc" title="Calculatrice">🧮</button>
+        <button class="qt-btn" id="qtNote" title="Bloc-note">📝</button>
+      </div>
+    `;
+    document.body.appendChild(dock);
+
+    // Actions
+    dock.querySelector('#qtToggle').addEventListener('click', ()=>{
+      dock.classList.toggle('qt-collapsed');
+      localStorage.setItem('dockCollapsed', dock.classList.contains('qt-collapsed') ? '1' : '0');
+    });
+    dock.querySelector('#qtCalc').addEventListener('click', ()=> toggleCalcWidgetVisibility(true));
+    dock.querySelector('#qtNote').addEventListener('click', ()=> toggleNotepadOverlay());
+  }
 }
+
+/* ===========================
+   === Calculatrice – widget ==
+   =========================== */
+let _calcBodyCollapsed = false;
+
+function setupCalc(){
+  // État du corps (clavier) réduit/étendu
+  try{
+    _calcBodyCollapsed = localStorage.getItem('calcCollapsed')==='1';
+    const body = document.getElementById('calcBody');
+    if (body) body.style.display = _calcBodyCollapsed ? 'none' : '';
+  }catch(e){}
+
+  // Visibilité du panneau (entier) contrôlée par le dock
+  const w = document.getElementById('calcWidget');
+  if (w){
+    const visible = localStorage.getItem('calcVisible') === '1';
+    w.style.display = visible ? '' : 'none';
+  }
+}
+
+// Bouton dans l’en-tête de la calculatrice (réduit/affiche le clavier)
 function toggleCalc(){
   const body = document.getElementById('calcBody');
   if(!body) return;
-  _calcCollapsed = !_calcCollapsed;
-  body.style.display = _calcCollapsed ? 'none' : '';
-  localStorage.setItem('calcCollapsed', _calcCollapsed?'1':'0');
+  _calcBodyCollapsed = !_calcBodyCollapsed;
+  body.style.display = _calcBodyCollapsed ? 'none' : '';
+  localStorage.setItem('calcCollapsed', _calcBodyCollapsed ? '1' : '0');
 }
+
+// Affichage global du panneau (utilisé par la barre d’outils)
+function openCalcWidget(){
+  const w = document.getElementById('calcWidget');
+  if (!w) return;
+  w.style.display = '';
+  localStorage.setItem('calcVisible', '1');
+}
+function closeCalcWidget(){
+  const w = document.getElementById('calcWidget');
+  if (!w) return;
+  w.style.display = 'none';
+  localStorage.setItem('calcVisible', '0');
+}
+function toggleCalcWidgetVisibility(forceOpen){
+  const w = document.getElementById('calcWidget');
+  if (!w) return;
+  const isHidden = (w.style.display === 'none' || getComputedStyle(w).display === 'none');
+  if (forceOpen) { if (isHidden) openCalcWidget(); else w.focus?.(); return; }
+  if (isHidden) openCalcWidget(); else closeCalcWidget();
+}
+
 function calcDisplayEl(){ return document.getElementById('calcDisplay'); }
 function calcIns(ch){ const el=calcDisplayEl(); el.value=(el.value||'')+ch; }
 function calcOp(op){ const el=calcDisplayEl(); if(!el.value) el.value='0'; el.value += op; }
@@ -2455,9 +2562,22 @@ function calcApplyDelta(d){
 
 /* Hooks */
 window.addEventListener('load', ()=>{
-  setupNoteFab();
+  setupQuickToolsDock();
   setupCalc();
+
+  // Raccourcis clavier déjà gérés dans initNotepadOnce + ici pour ouverture
+  document.addEventListener('keydown', (e)=>{
+    if(e.key==='n' && (e.ctrlKey || e.metaKey)){
+      e.preventDefault();
+      toggleNotepadOverlay();
+    }
+    if(e.key==='Escape' && noteOpen){
+      e.preventDefault();
+      closeNotepadOverlay();
+    }
+  });
 });
+
 </script>
 </body>
 </html>
