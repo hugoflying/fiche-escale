@@ -525,41 +525,6 @@ body.dark .note-fab{ background:#90caf9; color:#111; }
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
   pointer-events:none;
 }
-
-/* Calculatrice latérale */
-.calc-widget{
-  position: fixed; right: 18px; top: 50%; transform: translateY(-50%);
-  width: 280px; background: #fff; color:#111;
-  border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.28);
-  z-index: 2100; overflow: hidden; border:1px solid rgba(0,0,0,.06);
-}
-body.dark .calc-widget{ background:#1e1e1e; color:#eee; border-color: rgba(255,255,255,.08); }
-.calc-header{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; font-weight:700; background: #eef2f7; }
-body.dark .calc-header{ background:#2a2a2a; }
-.calc-header button{ border:0; background:transparent; font-size:18px; cursor:pointer; }
-.calc-body{ padding:10px; display:grid; gap:8px; position: relative; }
-#calcDisplay{
-  width:100%; padding:10px; font-size:1.2rem; text-align:right;
-  border:1px solid #d7dde5; border-radius:10px; background:#fff; color:#111;
-}
-body.dark #calcDisplay{ background:#111; color:#eee; border-color:#2e2e2e; }
-.calc-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
-.calc-grid button, .calc-quick button{
-  padding:10px; border:0; border-radius:10px; cursor:pointer; font-weight:700;
-  background:#e7ebf0; transition: transform .12s ease, background .15s ease;
-}
-.calc-grid button:active, .calc-quick button:active{ transform: translateY(1px); }
-.calc-grid button:hover, .calc-quick button:hover{ background:#dde3ea; }
-body.dark .calc-grid button, body.dark .calc-quick button{ background:#2a2a2a; color:#eee; }
-body.dark .calc-grid button:hover, body.dark .calc-quick button:hover{ background:#333; }
-.calc-quick{
-  display:grid; grid-auto-flow:row; gap:8px;
-  position:absolute; right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
-}
-@media (max-width: 900px){
-  .calc-widget{ right: 12px; top: auto; bottom: 96px; transform:none; }
-  .calc-quick{ position:static; transform:none; grid-template-columns: repeat(4,1fr); margin-top: 8px; }
-}
 </style>
 </head>
 <body onload="initForm()">
@@ -830,48 +795,6 @@ body.dark .calc-grid button:hover, body.dark .calc-quick button:hover{ backgroun
 
 <!-- Bulle flottante Bloc-note -->
 <div id="noteFab" class="note-fab" title="Bloc-note (Ctrl+N)">📝</div>
-
-<!-- Calculatrice latérale -->
-<div id="calcWidget" class="calc-widget" role="region" aria-label="Calculatrice">
-  <div class="calc-header">
-    <span>Calculatrice</span>
-    <button type="button" title="Réduire/afficher" onclick="toggleCalc()">▾</button>
-  </div>
-  <div class="calc-body" id="calcBody">
-    <input id="calcDisplay" type="text" inputmode="decimal" placeholder="0">
-    <div class="calc-grid">
-      <button onclick="calcIns('7')">7</button>
-      <button onclick="calcIns('8')">8</button>
-      <button onclick="calcIns('9')">9</button>
-      <button onclick="calcOp('/')">÷</button>
-
-      <button onclick="calcIns('4')">4</button>
-      <button onclick="calcIns('5')">5</button>
-      <button onclick="calcIns('6')">6</button>
-      <button onclick="calcOp('*')">×</button>
-
-      <button onclick="calcIns('1')">1</button>
-      <button onclick="calcIns('2')">2</button>
-      <button onclick="calcIns('3')">3</button>
-      <button onclick="calcOp('-')">−</button>
-
-      <button onclick="calcIns('0')">0</button>
-      <button onclick="calcIns('.')">.</button>
-      <button onclick="calcClear()">C</button>
-      <button onclick="calcOp('+')">+</button>
-
-      <button style="grid-column: 1 / -1;" onclick="calcEval()">=</button>
-    </div>
-
-    <!-- Raccourcis rapides à côté -->
-    <div class="calc-quick">
-      <button onclick="calcApplyDelta(13)">+13</button>
-      <button onclick="calcApplyDelta(11)">+11</button>
-      <button onclick="calcApplyDelta(-11)">−11</button>
-      <button onclick="calcApplyDelta(-13)">−13</button>
-    </div>
-  </div>
-</div>
 
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
@@ -2615,40 +2538,6 @@ function setupNoteFab(){
     localStorage.setItem('noteFabPos', JSON.stringify({x: rect.left, y: rect.top}));
     if(!moved) toggleNotepadOverlay();
   });
-}
-
-/* Calculatrice */
-let _calcCollapsed = false;
-function setupCalc(){
-  try{
-    _calcCollapsed = localStorage.getItem('calcCollapsed')==='1';
-    if(_calcCollapsed) document.getElementById('calcBody').style.display='none';
-  }catch(e){}
-}
-function toggleCalc(){
-  const body = document.getElementById('calcBody');
-  if(!body) return;
-  _calcCollapsed = !_calcCollapsed;
-  body.style.display = _calcCollapsed ? 'none' : '';
-  localStorage.setItem('calcCollapsed', _calcCollapsed?'1':'0');
-}
-function calcDisplayEl(){ return document.getElementById('calcDisplay'); }
-function calcIns(ch){ const el=calcDisplayEl(); el.value=(el.value||'')+ch; }
-function calcOp(op){ const el=calcDisplayEl(); if(!el.value) el.value='0'; el.value += op; }
-function calcClear(){ calcDisplayEl().value=''; }
-function calcEval(){
-  const el=calcDisplayEl(); const expr=(el.value||'').trim();
-  if(!expr){ el.value='0'; return; }
-  if(!/^[0-9+\-*/().\s]+$/.test(expr)){ showPopup("Expression invalide", "#d32f2f", 2000); return; }
-  try{
-    const v = Function('"use strict";return('+expr+')')();
-    el.value = (Number.isFinite(v)? v : 0).toString();
-  }catch(_){ showPopup("Erreur de calcul", "#d32f2f", 2000); }
-}
-function calcApplyDelta(d){
-  const el=calcDisplayEl(); const cur=parseFloat(el.value||'0');
-  const base = Number.isFinite(cur)? cur : 0;
-  el.value = (base + d).toString();
 }
 
 /* Hooks */
