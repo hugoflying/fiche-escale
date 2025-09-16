@@ -851,8 +851,6 @@ body.dark .calc-grid button:hover, body.dark .calc-quick button:hover{ backgroun
     <!-- Raccourcis rapides à côté -->
     <div class="calc-quick">
       <button onclick="calcApplyDelta(13)">+13</button>
-      <button onclick="calcApplyDelta(11)">+11</button>
-      <button onclick="calcApplyDelta(-11)">−11</button>
       <button onclick="calcApplyDelta(-13)">−13</button>
     </div>
   </div>
@@ -989,7 +987,7 @@ function initForm(){
     // Raccourci calc: Ctrl+Alt+C
     if((e.ctrlKey || e.metaKey) && e.altKey && (e.key.toLowerCase()==='c')){
       e.preventDefault();
-      toggleCalcVisibility();
+      toggleCalcWidgetVisibility();
     }
     if(e.key==='Escape' && noteOpen){
       e.preventDefault();
@@ -1001,8 +999,8 @@ function initForm(){
   const oldFab = document.getElementById('noteFab');
   if(oldFab) oldFab.style.display = 'none';
 
-  setupCalc();          // initialise l'état réduit/affiché du corps de la calculatrice
-  setupToolDock();      // nouvelle barre d’outils flottante (🧮 & 📝)
+  setupCalc();          // initialise l'état de la calculatrice + force mode minimal
+  setupDock();          // branche le bouton bleu "⋯" + icônes 🧮 / 📝
 }
 
 /* date par défaut = aujourd’hui si vide */
@@ -2073,19 +2071,37 @@ let noteUndoStacks = [];       // Array<Array<Stroke[]>>
 let noteRedoStacks = [];       // Array<Array<Stroke[]>>
 const NOTE_UNDO_LIMIT = 100;
 
+/* ==========================================================
+   === BLOC-NOTE refondu : bulle, pages, fix stylet Android ===
+   ========================================================== */
+let noteOpen = false;
+let noteTool = 'pen';
+let noteColor = getThemeDefaultPen ? getThemeDefaultPen() : '#111111';
+let notePenSize = 3;
+let noteEraserSize = 22;
+
+let noteCanvas, noteCtx, noteRO;
+
+/* Pages */
+let notePages = [];            // Array<Stroke[]>
+let notePageIndex = 0;         // page courante
+let noteUndoStacks = [];       // Array<Array<Stroke[]>>
+let noteRedoStacks = [];       // Array<Array<Stroke[]>>
+const NOTE_UNDO_LIMIT = 100;
+
 function getThemeDefaultPen(){
-  return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+  return document.body.classList.contains('dark') ? '#FFFFFF' : '#111111';
 }
 
 /* Storage v2 + migration v1 */
-function noteStorageKey(){ return currentTabId ? `notepad2-${currentTabId}` : 'notepad2-default'; }
-function noteStorageKeyV1(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
+function noteStorageKey(){ return (typeof currentTabId!=='undefined' && currentTabId) ? `notepad2-${currentTabId}` : 'notepad2-default'; }
+function noteStorageKeyV1(){ return (typeof currentTabId!=='undefined' && currentTabId) ? `notepad-${currentTabId}` : 'notepad-default'; }
 
 function saveNotepad(){
   try{
     const payload = { v:2, pageIndex: notePageIndex, pages: notePages };
     localStorage.setItem(noteStorageKey(), JSON.stringify(payload));
-  }catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota ?)", "#d32f2f", 3000); }
+  }catch(e){ showPopup && showPopup("Sauvegarde du bloc-note impossible (quota ?)", "#d32f2f", 3000); }
 }
 
 function loadNotepad(){
@@ -2150,7 +2166,7 @@ function updateUndoRedoBtns(){
   if (r) r.disabled = noteRedoStacks[notePageIndex].length === 0;
 }
 
-/* Overlay open/close */
+/* Overlay open/close — plein écran (géré par CSS) */
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
@@ -2170,56 +2186,32 @@ function closeNotepadOverlay(){
   noteOpen = false;
 }
 
-/* Déplacement et dimensionnement de l’overlay */
+/* (Conservé) sécuriser la position/taille si jamais l’overlay n’est pas plein écran */
 function ensureNoteOverlayInViewport(){
   const overlay = document.getElementById('noteOverlay');
   if(!overlay) return;
-  const margin = 10;
-  overlay.style.maxWidth  = `calc(100vw - ${margin*2}px)`;
-  overlay.style.maxHeight = `calc(100vh - ${margin*2}px)`;
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const rect = overlay.getBoundingClientRect();
-  let w = Math.min(rect.width,  vw - margin*2);
-  let h = Math.min(rect.height, vh - margin*2);
-  if (Math.abs(w - rect.width) > 0.5) overlay.style.width  = w + 'px';
-  if (Math.abs(h - rect.height) > 0.5) overlay.style.height = h + 'px';
-  const rect2 = overlay.getBoundingClientRect();
-  w = rect2.width; h = rect2.height;
-  let left = Math.min(Math.max(rect2.left,  margin), vw - margin - w);
-  let top  = Math.min(Math.max(rect2.top,   margin), vh - margin - h);
-  overlay.style.left = left + 'px';
-  overlay.style.top  = top  + 'px';
-  overlay.style.right = 'auto';
+  // en plein écran via CSS — rien à faire ; garde la logique si le style change
 }
 
-/* Init canvas + drag overlay + pointer */
+/* Init canvas + (drag noop) + pointer */
 function initNotepadOnce(){
   noteCanvas = document.getElementById('noteCanvas');
   noteCtx = noteCanvas.getContext('2d', { willReadFrequently:false });
   noteCtx.lineJoin='round'; noteCtx.lineCap='round';
 
-  // Drag overlay
+  // (drag désactivé en plein écran, on garde juste la classe pour compat)
   const dragBar = document.getElementById('noteDragBar');
   const overlay = document.getElementById('noteOverlay');
-  let dragging=false, dx=0, dy=0;
-  dragBar.addEventListener('mousedown', (e)=>{
-    dragging=true; overlay.classList.add('dragging');
-    const r=overlay.getBoundingClientRect(); dx=e.clientX-r.left; dy=e.clientY-r.top; e.preventDefault();
-  });
-  document.addEventListener('mousemove', (e)=>{
-    if(!dragging) return;
-    overlay.style.left=(e.clientX-dx)+'px';
-    overlay.style.top =(e.clientY-dy)+'px';
-  });
-  document.addEventListener('mouseup', ()=>{
-    if(!dragging) return; dragging=false; overlay.classList.remove('dragging'); ensureNoteOverlayInViewport();
-  });
+  if (dragBar && overlay){
+    let dragging=false;
+    dragBar.addEventListener('mousedown', (e)=>{ dragging=true; overlay.classList.add('dragging'); e.preventDefault(); });
+    document.addEventListener('mouseup', ()=>{ if(!dragging) return; dragging=false; overlay.classList.remove('dragging'); });
+  }
 
   // Resize
-  noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
-  noteRO.observe(overlay);
+  noteRO = new ResizeObserver(()=>{ fitNoteCanvas(); renderNote(); });
   noteRO.observe(document.querySelector('.note-canvas-wrap'));
-  window.addEventListener('resize', ensureNoteOverlayInViewport);
+  window.addEventListener('resize', ()=>{ fitNoteCanvas(); renderNote(); });
 
   // Pointer events — FIX Android offset: clientX/Y - rect
   noteCanvas.addEventListener('pointerdown', notePointerDown);
@@ -2243,7 +2235,8 @@ function initNotepadOnce(){
     defaultDot.style.background = getThemeDefaultPen();
     defaultDot.classList.add('selected');
   }
-  document.getElementById('noteColorInput').value = getThemeDefaultPen();
+  const input = document.getElementById('noteColorInput');
+  if (input) input.value = getThemeDefaultPen();
   noteColor = getThemeDefaultPen();
 
   updatePenSizeLabel(); updateEraserSizeLabel();
@@ -2264,20 +2257,27 @@ function fitNoteCanvas(){
 /* Tools UI */
 function setNoteTool(tool){
   noteTool = tool;
-  document.getElementById('toolPen').classList.toggle('active', tool==='pen');
-  document.getElementById('toolErase').classList.toggle('active', tool==='eraser');
+  const penBtn = document.getElementById('toolPen');
+  const erBtn  = document.getElementById('toolErase');
+  if (penBtn) penBtn.classList.toggle('active', tool==='pen');
+  if (erBtn)  erBtn.classList.toggle('active',  tool==='eraser');
 }
 function updatePenSizeLabel(){
-  const v = parseInt(document.getElementById('penSize').value)||3;
-  notePenSize=v; document.getElementById('penSizeVal').textContent=v;
+  const rng = document.getElementById('penSize');
+  const val = document.getElementById('penSizeVal');
+  const v = parseInt(rng?.value)||3;
+  notePenSize=v; if(val) val.textContent=v;
 }
 function updateEraserSizeLabel(){
-  const v = parseInt(document.getElementById('eraserSize').value)||22;
-  noteEraserSize=v; document.getElementById('eraserSizeVal').textContent=v;
+  const rng = document.getElementById('eraserSize');
+  const val = document.getElementById('eraserSizeVal');
+  const v = parseInt(rng?.value)||22;
+  noteEraserSize=v; if(val) val.textContent=v;
 }
 function pickColor(el, color){
   noteColor = color;
-  document.getElementById('noteColorInput').value=color;
+  const input = document.getElementById('noteColorInput');
+  if (input) input.value=color;
   document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
   if(el) el.classList.add('selected');
   setNoteTool('pen');
@@ -2389,7 +2389,7 @@ function noteNewPage(){
   notePageIndex++; updatePageUI(); renderNote(); saveNotepad(); updateUndoRedoBtns();
 }
 function noteDeletePage(){
-  if(notePages.length<=1){ showPopup("Impossible de supprimer l’unique page.", "#d32f2f", 2000); return; }
+  if(notePages.length<=1){ showPopup && showPopup("Impossible de supprimer l’unique page.", "#d32f2f", 2000); return; }
   if(!confirm("Supprimer cette page ?")) return;
   notePages.splice(notePageIndex,1);
   noteUndoStacks.splice(notePageIndex,1);
@@ -2405,8 +2405,9 @@ function noteClearAll(){
 }
 
 /* Adaptation au thème */
-function adaptNotepadThemeColors(dark){
-  const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+function adaptNotepadThemeColors(){
+  const dark = document.body.classList.contains('dark');
+  const newDefault = dark ? '#FFFFFF' : '#111111';
   const defaultDot = document.getElementById('noteColorDotDefault');
   if(defaultDot){
     defaultDot.style.background=newDefault;
@@ -2420,74 +2421,39 @@ function adaptNotepadThemeColors(dark){
 }
 
 /* Maintien bloc-note lors du switch d’onglet */
-const _switchTabOrig = switchTab;
-switchTab = function(id){
-  _switchTabOrig(id);
-  if(noteOpen){
-    loadNotepad(); fitNoteCanvas(); renderNote(); updateUndoRedoBtns(); ensureNoteOverlayInViewport();
-  }
-};
-
-/* ===========================
-   === Barre d’outils dockée ==
-   =========================== */
-/* On remplace la bulle flottante par une barre d’outils repliable
-   avec deux icônes : Calculatrice 🧮 et Bloc-note 📝 */
-function injectDockStyles(){
-  if (document.getElementById('qtDockStyles')) return;
-  const css = `
-  .qt-dock{position:fixed; right:12px; top:50%; transform:translateY(-50%);
-    display:flex; flex-direction:column; gap:8px; z-index:2300;
-    background:rgba(255,255,255,.85); border:1px solid rgba(0,0,0,.08);
-    border-radius:14px; padding:8px; box-shadow:0 12px 28px rgba(0,0,0,.25); backdrop-filter:saturate(180%) blur(10px)}
-  body.dark .qt-dock{background:rgba(20,20,20,.8); border-color:rgba(255,255,255,.08)}
-  .qt-btn, .qt-toggle{border:0; cursor:pointer; border-radius:12px; padding:10px; font-size:20px;
-    background:#e7ebf0; transition:transform .12s ease, background .15s ease}
-  .qt-btn:hover, .qt-toggle:hover{background:#dde3ea}
-  body.dark .qt-btn, body.dark .qt-toggle{background:#2a2a2a; color:#eee}
-  body.dark .qt-btn:hover, body.dark .qt-toggle:hover{background:#333}
-  .qt-tools{display:flex; flex-direction:column; gap:8px; overflow:hidden}
-  .qt-dock.qt-collapsed .qt-tools{display:none}
-  .qt-dock.qt-collapsed{padding:8px}
-  `;
-  const style = document.createElement('style');
-  style.id = 'qtDockStyles';
-  style.textContent = css;
-  document.head.appendChild(style);
+const _switchTabOrig = (typeof switchTab==='function') ? switchTab : null;
+if (_switchTabOrig){
+  switchTab = function(id){
+    _switchTabOrig(id);
+    if(noteOpen){
+      loadNotepad(); fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
+    }
+  };
 }
 
-function setupQuickToolsDock(){
-  injectDockStyles();
+/* ================================
+   === Barre d’outils (bouton ⋯) ==
+   ================================ */
+function setupDock(){
+  const dock = document.getElementById('dock');
+  if(!dock) return;
 
-  // Cacher l’ancienne bulle si présente
-  const oldFab = document.getElementById('noteFab');
-  if (oldFab) oldFab.style.display = 'none';
+  const toggle = document.getElementById('dockToggle');
+  const actions = dock.querySelector('.dock-actions');
+  const calcBtn = document.getElementById('dockCalc');
+  const noteBtn = document.getElementById('dockNote');
 
-  // Construire le dock si absent
-  if (!document.getElementById('qtDock')){
-    const dock = document.createElement('div');
-    dock.id = 'qtDock';
-    dock.className = 'qt-dock';
-    const collapsed = localStorage.getItem('dockCollapsed') === '1';
-    if (collapsed) dock.classList.add('qt-collapsed');
+  // Ouvrir/fermer la barre d'outils
+  toggle?.addEventListener('click', ()=>{
+    dock.classList.toggle('collapsed');
+    const expanded = !dock.classList.contains('collapsed');
+    toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    if(actions) actions.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+  });
 
-    dock.innerHTML = `
-      <button class="qt-toggle" id="qtToggle" title="Outils">🧰</button>
-      <div class="qt-tools">
-        <button class="qt-btn" id="qtCalc" title="Calculatrice">🧮</button>
-        <button class="qt-btn" id="qtNote" title="Bloc-note">📝</button>
-      </div>
-    `;
-    document.body.appendChild(dock);
-
-    // Actions
-    dock.querySelector('#qtToggle').addEventListener('click', ()=>{
-      dock.classList.toggle('qt-collapsed');
-      localStorage.setItem('dockCollapsed', dock.classList.contains('qt-collapsed') ? '1' : '0');
-    });
-    dock.querySelector('#qtCalc').addEventListener('click', ()=> toggleCalcWidgetVisibility(true));
-    dock.querySelector('#qtNote').addEventListener('click', ()=> toggleNotepadOverlay());
-  }
+  // Ouvrir les outils en plein écran
+  calcBtn?.addEventListener('click', ()=> openCalcWidget());
+  noteBtn?.addEventListener('click', ()=> openNotepadOverlay());
 }
 
 /* ===========================
@@ -2496,14 +2462,25 @@ function setupQuickToolsDock(){
 let _calcBodyCollapsed = false;
 
 function setupCalc(){
-  // État du corps (clavier) réduit/étendu
+  // Masquer le clavier complet et ne garder que +13 / −13
+  try{
+    const quick = document.querySelector('#calcWidget .calc-quick');
+    if (quick) quick.innerHTML = `
+      <button onclick="calcApplyDelta(13)">+13</button>
+      <button onclick="calcApplyDelta(-13)">−13</button>
+    `;
+    const grid = document.querySelector('#calcWidget .calc-grid');
+    if (grid) grid.style.display = 'none';
+  }catch(_){}
+
+  // État du corps (clavier) réduit/étendu — conservé pour compat
   try{
     _calcBodyCollapsed = localStorage.getItem('calcCollapsed')==='1';
     const body = document.getElementById('calcBody');
     if (body) body.style.display = _calcBodyCollapsed ? 'none' : '';
   }catch(e){}
 
-  // Visibilité du panneau (entier) contrôlée par le dock
+  // Visibilité du panneau contrôlée par le dock
   const w = document.getElementById('calcWidget');
   if (w){
     const visible = localStorage.getItem('calcVisible') === '1';
@@ -2511,7 +2488,7 @@ function setupCalc(){
   }
 }
 
-// Bouton dans l’en-tête de la calculatrice (réduit/affiche le clavier)
+// Bouton dans l’en-tête de la calculatrice (conserve l’action réduire/afficher)
 function toggleCalc(){
   const body = document.getElementById('calcBody');
   if(!body) return;
@@ -2520,7 +2497,7 @@ function toggleCalc(){
   localStorage.setItem('calcCollapsed', _calcBodyCollapsed ? '1' : '0');
 }
 
-// Affichage global du panneau (utilisé par la barre d’outils)
+// Affichage global du panneau (plein écran via CSS)
 function openCalcWidget(){
   const w = document.getElementById('calcWidget');
   if (!w) return;
@@ -2542,31 +2519,34 @@ function toggleCalcWidgetVisibility(forceOpen){
 }
 
 function calcDisplayEl(){ return document.getElementById('calcDisplay'); }
-function calcIns(ch){ const el=calcDisplayEl(); el.value=(el.value||'')+ch; }
-function calcOp(op){ const el=calcDisplayEl(); if(!el.value) el.value='0'; el.value += op; }
-function calcClear(){ calcDisplayEl().value=''; }
+function calcIns(ch){ const el=calcDisplayEl(); if(!el) return; el.value=(el.value||'')+ch; }
+function calcOp(op){ const el=calcDisplayEl(); if(!el) return; if(!el.value) el.value='0'; el.value += op; }
+function calcClear(){ const el=calcDisplayEl(); if(el) el.value=''; }
 function calcEval(){
-  const el=calcDisplayEl(); const expr=(el.value||'').trim();
+  const el=calcDisplayEl(); if(!el) return;
+  const expr=(el.value||'').trim();
   if(!expr){ el.value='0'; return; }
-  if(!/^[0-9+\-*/().\s]+$/.test(expr)){ showPopup("Expression invalide", "#d32f2f", 2000); return; }
+  if(!/^[0-9+\-*/().\s]+$/.test(expr)){ showPopup && showPopup("Expression invalide", "#d32f2f", 2000); return; }
   try{
     const v = Function('"use strict";return('+expr+')')();
     el.value = (Number.isFinite(v)? v : 0).toString();
-  }catch(_){ showPopup("Erreur de calcul", "#d32f2f", 2000); }
+  }catch(_){ showPopup && showPopup("Erreur de calcul", "#d32f2f", 2000); }
 }
 function calcApplyDelta(d){
-  const el=calcDisplayEl(); const cur=parseFloat(el.value||'0');
+  const el=calcDisplayEl(); if(!el) return;
+  const cur=parseFloat(el.value||'0');
   const base = Number.isFinite(cur)? cur : 0;
   el.value = (base + d).toString();
 }
 
-/* Hooks */
+/* Raccourcis & boot */
 window.addEventListener('load', ()=>{
-  setupQuickToolsDock();
+  setupDock();
   setupCalc();
 
-  // Raccourcis clavier déjà gérés dans initNotepadOnce + ici pour ouverture
+  // Raccourcis globaux
   document.addEventListener('keydown', (e)=>{
+    // Bloc-note
     if(e.key==='n' && (e.ctrlKey || e.metaKey)){
       e.preventDefault();
       toggleNotepadOverlay();
@@ -2574,6 +2554,11 @@ window.addEventListener('load', ()=>{
     if(e.key==='Escape' && noteOpen){
       e.preventDefault();
       closeNotepadOverlay();
+    }
+    // Calculatrice
+    if((e.ctrlKey || e.metaKey) && e.altKey && (e.key.toLowerCase()==='c')){
+      e.preventDefault();
+      toggleCalcWidgetVisibility();
     }
   });
 });
