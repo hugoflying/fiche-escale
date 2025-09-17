@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -260,9 +260,6 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
   flex-wrap: wrap;            /* autorise le passage sur la ligne suivante */
   min-width: 0;               /* évite les débordements flex */
   overflow-x: hidden;         /* pas de scroll horizontal sur la toolbar */
-  flex-wrap: wrap;
-  min-width: 0;
-  overflow-x: hidden;
 }
 .tl-btn{
   padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
@@ -279,7 +276,6 @@ body.dark .tl-sep{ background:#3a3a3a; }
   display:flex; align-items:center; gap:6px; margin-left:8px; font-size:14px;
   max-width: 100%;
   flex-wrap: wrap;            /* laisse le texte passer à la ligne si besoin */
-  flex-wrap: wrap;
 }
 .tl-toggle input { flex: 0 0 auto; }
 
@@ -291,7 +287,6 @@ body.dark .tl-sep{ background:#3a3a3a; }
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 .timeline-canvas{ position:relative; min-width:600px; width:100%; /* hauteur JS dynamique */ }
-.timeline-canvas{ position:relative; min-width:600px; width:100%; }
 
 /* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{ position: fixed; top: 6vh; left: 2vw; width: 96vw; height: 80vh; min-width: 320px; min-height: 260px; max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); background: rgba(255,255,255,0.9); color:#111; border-radius:16px; box-shadow: 0 20px 50px rgba(0,0,0,.35); z-index:2000; display:none; overflow:hidden; resize: both; backdrop-filter: saturate(180%) blur(12px); opacity: 0; transform: translateY(10px) scale(.98); transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease; border: 1px solid rgba(0,0,0,.06); }
@@ -431,13 +426,11 @@ body.dark #chiffres-porte input, body.dark #chiffres-porte select{
 body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 
 /* === CHIFFRES PORTE via <details> : rétractable */
-/* CHIFFRES PORTE via <details> : rétractable */
 #chiffres-porte summary { list-style: none; cursor: pointer; }
 #chiffres-porte summary::-webkit-details-marker { display: none; }
 #chiffres-porte summary h2 { cursor: pointer; }
 
 /* === PATCH: Timeline plus aérée (barres + étiquettes) === */
-/* PATCH: Timeline plus aérée */
 .tl-range { height: 16px; }
 .tl-range-label { top: -30px; }
 
@@ -445,7 +438,6 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 .dl-error { border: 2px solid #d32f2f !important; border-radius: 4px; }
 
 /* --- Détails repliables (INAD / Recherche bagage) --- */
-/* Détails repliables (INAD / Recherche bagage) */
 details.timing-collapse summary { list-style: none; }
 details.timing-collapse summary::-webkit-details-marker { display: none; }
 details.timing-collapse > summary.timing-seg { display:inline-block; }
@@ -457,13 +449,11 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 }
 
 /* === FIX responsive + overflow pour CHIFFRES PORTE === */
-/* FIX responsive + overflow pour CHIFFRES PORTE */
 #chiffres-porte .form-group,
 #chiffres-porte .form-group-3col,
 #chiffres-porte .form-group-4col {
   min-width: 0; /* évite le débordement des items en grid */
 }
-#chiffres-porte .form-group-4col { min-width: 0; }
 #chiffres-porte .cp-cols-2,
 #chiffres-porte .cp-cols-3,
 #chiffres-porte .cp-cols-4 {
@@ -480,12 +470,9 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 #chiffres-porte input,
 #chiffres-porte select {
   max-width: 100%;
-  #chiffres-porte .cp-cols-4 { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
 }
-#chiffres-porte input, #chiffres-porte select { max-width: 100%; }
 
 /* === TAGS: grille 2 colonnes, pleine largeur === */
-/* TAGS: grille 2 colonnes, pleine largeur */
 #TagsContainer{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -502,28 +489,6 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 /* Sur petit écran: 1 colonne */
 @media (max-width: 700px){
   #TagsContainer{ grid-template-columns: 1fr; }
-#TagsContainer .form-group{ margin-bottom: 0; }
-#TagsContainer .form-group:nth-last-child(1):nth-child(odd){ grid-column: 1 / -1; }
-@media (max-width: 700px){ #TagsContainer{ grid-template-columns: 1fr; } }
-
-/* === AJOUTS — bulle flottante & calculatrice === */
-
-/* Bulle flottante Bloc-note (FAB) */
-.note-fab{
-  position: fixed; right: 18px; bottom: 18px;
-  width: 64px; height: 64px; border-radius: 50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size: 28px; background:#1976d2; color:#fff;
-  box-shadow: 0 12px 28px rgba(0,0,0,.35);
-  z-index: 2200; cursor: grab; user-select:none;
-  transition: transform .12s ease, box-shadow .15s ease, background .15s ease;
-}
-.note-fab:active{ cursor: grabbing; transform: scale(0.98); }
-body.dark .note-fab{ background:#90caf9; color:#111; }
-.note-fab::after{
-  content:""; position:absolute; inset:0; border-radius:50%;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
-  pointer-events:none;
 }
 </style>
 </head>
@@ -682,7 +647,6 @@ body.dark .note-fab{ background:#90caf9; color:#111; }
 </section>
 
 <!-- CHIFFRES PORTE (rétractable – version <details>) -->
-<!-- CHIFFRES PORTE -->
 <section id="chiffres-porte">
   <details id="cp-details" open>
     <summary><h2>CHIFFRES PORTE</h2></summary>
@@ -756,7 +720,6 @@ body.dark .note-fab{ background:#90caf9; color:#111; }
     <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
     <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
     <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
-    <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Effacer la page">🧹 Effacer page</button>
 
     <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
     <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
@@ -777,24 +740,12 @@ body.dark .note-fab{ background:#90caf9; color:#111; }
       <div class="note-color" style="background:#ff9800" onclick="pickColor(this,'#ff9800')"></div>
       <input id="noteColorInput" type="color" value="#111111" onchange="pickColor(null,this.value)">
     </div>
-
-    <!-- Contrôles de pages -->
-    <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-      <button type="button" class="note-btn" id="notePrev" onclick="notePrevPage()" title="Page précédente">◀</button>
-      <strong id="notePageLabel">Page 1/1</strong>
-      <button type="button" class="note-btn" id="noteNext" onclick="noteNextPage()" title="Page suivante">▶</button>
-      <button type="button" class="note-btn" onclick="noteNewPage()" title="Nouvelle page">＋</button>
-      <button type="button" class="note-btn note-btn-danger" onclick="noteDeletePage()" title="Supprimer la page">🗑</button>
-    </div>
   </div>
 
   <div class="note-canvas-wrap">
     <canvas id="noteCanvas"></canvas>
   </div>
 </div>
-
-<!-- Bulle flottante Bloc-note -->
-<div id="noteFab" class="note-fab" title="Bloc-note (Ctrl+N)">📝</div>
 
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
@@ -820,7 +771,6 @@ window._timelineCurrentRange = null;
 window._tobtRawMins = null;
 
 /* === Notepad theme defaults === */
-/* === Notepad theme defaults (utilisées par le bloc-note) === */
 const NOTE_DEFAULT_LIGHT = '#111111';
 const NOTE_DEFAULT_DARK  = '#FFFFFF';
 
@@ -950,7 +900,6 @@ function sanitizePositiveInt(inputEl){
 }
 
 /* Chiffres uniquement (préserve zéros en tête) */
-/* Chiffres uniquement */
 function sanitizeDigitsOnly(inputEl){
   inputEl.value = (inputEl.value || '').replace(/\D/g, '');
 }
@@ -966,7 +915,6 @@ function attachAutoSave(){
 }
 
 /* Tabs */
-/* Tabs — SANS icône bloc-note dans la barre (utilise la bulle flottante) */
 function renderTabs(){
   const tabBar=document.getElementById('tab-bar');
   tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
@@ -1132,7 +1080,6 @@ function generateTimingFields(){
   arr += `</div></div>`;
 
   /* DÉPART (réorganisation + collapsibles) */
-  /* DÉPART */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
   dep += fieldHTML('ArrPNT','Arrivée PNT');
@@ -1466,7 +1413,6 @@ function updateCTOTDisplay(){
 }
 
 /* DL CODES (mapping demandé) */
-/* DL CODES */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
@@ -1971,7 +1917,6 @@ function updateTagInputs(){
   if(!wrap) return;
 
   const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
-  const count = Math.max(0, Math.min(nb, 50));
   let html = '';
   for(let i=1; i<=count; i++){
     html += `
@@ -2018,7 +1963,6 @@ function clearAutoSave() {
 
 /* ==========================================================
    === BLOC-NOTE (version moderne, avec undo/redo) ===
-   === BLOC-NOTE refondu : bulle, pages, fix stylet Android ===
    ========================================================== */
 let noteOpen = false;
 let noteTool = 'pen';
@@ -2028,18 +1972,11 @@ let noteEraserSize = 22;
 let noteStrokes = [];
 let noteIsDrawing = false;
 let noteCurrentStroke = null;
-
 let noteCanvas, noteCtx, noteRO;
 let noteDrag = {active:false, dx:0, dy:0};
 let noteInited = false;
 let noteUndoStack = [];
 let noteRedoStack = [];
-
-/* Pages */
-let notePages = [];            // Array<Stroke[]>
-let notePageIndex = 0;         // page courante
-let noteUndoStacks = [];       // Array<Array<Stroke[]>>
-let noteRedoStacks = [];       // Array<Array<Stroke[]>>
 const NOTE_UNDO_LIMIT = 100;
 
 function getThemeDefaultPen(){
@@ -2047,88 +1984,13 @@ function getThemeDefaultPen(){
 }
 
 function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
-/* Storage v2 + migration v1 */
-function noteStorageKey(){ return currentTabId ? `notepad2-${currentTabId}` : 'notepad2-default'; }
-function noteStorageKeyV1(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
 
-function saveNotepad(){
-  try{
-    const payload = { v:2, pageIndex: notePageIndex, pages: notePages };
-    localStorage.setItem(noteStorageKey(), JSON.stringify(payload));
-  }catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota ?)", "#d32f2f", 3000); }
-}
-
-function loadNotepad(){
-  try{
-    const raw = localStorage.getItem(noteStorageKey());
-    if(raw){
-      const obj = JSON.parse(raw);
-      if (obj && obj.v===2 && Array.isArray(obj.pages)){
-        notePages = obj.pages;
-        notePageIndex = Math.min(Math.max(0, obj.pageIndex||0), Math.max(0, notePages.length-1));
-        initStacksForAllPages();
-        updatePageUI(); renderNote(); updateUndoRedoBtns();
-        return;
-      }
-    }
-  }catch(e){}
-
-  /* migration v1 */
-  try{
-    const raw1 = localStorage.getItem(noteStorageKeyV1());
-    if(raw1){
-      const strokes = JSON.parse(raw1);
-      notePages = [ Array.isArray(strokes) ? strokes : [] ];
-    }else{
-      notePages = [ [] ];
-    }
-  }catch(e){ notePages = [ [] ]; }
-  notePageIndex = 0;
-  initStacksForAllPages();
-  updatePageUI(); renderNote(); updateUndoRedoBtns();
-  saveNotepad();
-}
-
-function currentStrokes(){ return notePages[notePageIndex] || (notePages[notePageIndex]=[]); }
-function snapshotStrokes(arr){ return JSON.parse(JSON.stringify(arr)); }
-
-function ensureStacksForPage(i){
-  if(!noteUndoStacks[i]) noteUndoStacks[i]=[];
-  if(!noteRedoStacks[i]) noteRedoStacks[i]=[];
-}
-function initStacksForAllPages(){
-  noteUndoStacks = new Array(notePages.length).fill(0).map(()=>[]);
-  noteRedoStacks = new Array(notePages.length).fill(0).map(()=>[]);
-}
-function pushUndoState(){
-  ensureStacksForPage(notePageIndex);
-  const stack = noteUndoStacks[notePageIndex];
-  stack.push(snapshotStrokes(currentStrokes()));
-  if(stack.length>NOTE_UNDO_LIMIT) stack.shift();
-  updateUndoRedoBtns();
-}
-function clearRedo(){
-  ensureStacksForPage(notePageIndex);
-  noteRedoStacks[notePageIndex] = [];
-  updateUndoRedoBtns();
-}
-function updateUndoRedoBtns(){
-  const u = document.getElementById('noteUndoBtn');
-  const r = document.getElementById('noteRedoBtn');
-  ensureStacksForPage(notePageIndex);
-  if (u) u.disabled = noteUndoStacks[notePageIndex].length === 0;
-  if (r) r.disabled = noteRedoStacks[notePageIndex].length === 0;
-}
-
-/* Overlay open/close */
 function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
 function openNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   if (!noteInited) initNotepadOnce();
   el.style.display = 'block';
   ensureNoteOverlayInViewport();
-  if(!noteCanvas) initNotepadOnce();
-  el.style.display='block';
   requestAnimationFrame(()=>{ el.classList.add('open'); });
   el.setAttribute('aria-hidden','false');
   noteOpen = true;
@@ -2136,18 +1998,15 @@ function openNotepadOverlay(){
   fitNoteCanvas();
   renderNote();
   noteUndoStack = []; noteRedoStack = []; updateUndoRedoBtns();
-  fitNoteCanvas(); renderNote();
 }
 function closeNotepadOverlay(){
   const el = document.getElementById('noteOverlay');
   el.classList.remove('open');
   el.style.display = 'none';
-  el.style.display='none';
   el.setAttribute('aria-hidden','true');
   noteOpen = false;
 }
 
-/* Déplacement et dimensionnement de l’overlay */
 function ensureNoteOverlayInViewport(){
   const overlay = document.getElementById('noteOverlay');
   if(!overlay) return;
@@ -2169,20 +2028,15 @@ function ensureNoteOverlayInViewport(){
   overlay.style.right = 'auto';
 }
 
-/* Init canvas + drag overlay + pointer */
 function initNotepadOnce(){
   if (noteInited) return; noteInited = true;
 
   noteCanvas = document.getElementById('noteCanvas');
   noteCtx = noteCanvas.getContext('2d', { willReadFrequently: false });
   noteCtx.lineJoin = 'round'; noteCtx.lineCap  = 'round';
-  noteCtx = noteCanvas.getContext('2d', { willReadFrequently:false });
-  noteCtx.lineJoin='round'; noteCtx.lineCap='round';
 
-  // Drag overlay
   const dragBar = document.getElementById('noteDragBar');
   const overlay = document.getElementById('noteOverlay');
-  let dragging=false, dx=0, dy=0;
   dragBar.addEventListener('mousedown', (e)=>{
     overlay.classList.add('dragging');
     noteDrag.active = true;
@@ -2190,65 +2044,48 @@ function initNotepadOnce(){
     noteDrag.dx = e.clientX - r.left;
     noteDrag.dy = e.clientY - r.top;
     e.preventDefault();
-    dragging=true; overlay.classList.add('dragging');
-    const r=overlay.getBoundingClientRect(); dx=e.clientX-r.left; dy=e.clientY-r.top; e.preventDefault();
   });
   document.addEventListener('mousemove', ()=>{
     if(!noteDrag.active) return;
-  document.addEventListener('mousemove', (e)=>{
-    if(!dragging) return;
-    overlay.style.left=(e.clientX-dx)+'px';
-    overlay.style.top =(e.clientY-dy)+'px';
   });
   document.addEventListener('mouseup', ()=>{
     if(!noteDrag.active) return;
     noteDrag.active=false;
     overlay.classList.remove('dragging');
     ensureNoteOverlayInViewport();
-    if(!dragging) return; dragging=false; overlay.classList.remove('dragging'); ensureNoteOverlayInViewport();
   });
 
-  // Resize
   noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
   noteRO.observe(overlay);
   noteRO.observe(document.querySelector('.note-canvas-wrap'));
   window.addEventListener('resize', ensureNoteOverlayInViewport);
 
-  // Pointer events — FIX Android offset: clientX/Y - rect
   noteCanvas.addEventListener('pointerdown', notePointerDown);
   noteCanvas.addEventListener('pointermove', notePointerMove);
   noteCanvas.addEventListener('pointerup',   notePointerUp);
   noteCanvas.addEventListener('pointerleave',notePointerUp);
   noteCanvas.addEventListener('pointercancel',notePointerUp);
 
-  // Raccourcis
   document.addEventListener('keydown', (e)=>{
     if(!noteOpen) return;
     const isMac = navigator.platform.toLowerCase().includes('mac');
     const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
     if (ctrlOrCmd && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? noteRedo() : noteUndo(); }
     else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) { e.preventDefault(); noteRedo(); }
-    if (ctrlOrCmd && e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey ? noteRedo() : noteUndo(); }
-    else if (ctrlOrCmd && e.key.toLowerCase()==='y'){ e.preventDefault(); noteRedo(); }
   });
 
   updatePenSizeLabel(); updateEraserSizeLabel();
 
-  // Thème couleur par défaut
   const defaultDot = document.getElementById('noteColorDotDefault');
   if(defaultDot){
     defaultDot.style.background = getThemeDefaultPen();
     defaultDot.classList.add('selected');
   }
   document.getElementById('noteColorInput').value = rgbToHex(getThemeDefaultPen());
-  document.getElementById('noteColorInput').value = getThemeDefaultPen();
   noteColor = getThemeDefaultPen();
-
-  updatePenSizeLabel(); updateEraserSizeLabel();
 }
 function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
 
-/* Canvas sizing */
 function fitNoteCanvas(){
   if(!noteCanvas) return;
   const dpr = window.devicePixelRatio || 1;
@@ -2259,10 +2096,8 @@ function fitNoteCanvas(){
   noteCtx.scale(dpr, dpr);
   noteCtx.lineJoin = 'round';
   noteCtx.lineCap  = 'round';
-  noteCtx.lineJoin='round'; noteCtx.lineCap='round';
 }
 
-/* Tools UI */
 function setNoteTool(tool){
   noteTool = tool;
   document.getElementById('toolPen').classList.toggle('active', tool==='pen');
@@ -2272,18 +2107,15 @@ function updatePenSizeLabel(){
   const v = parseInt(document.getElementById('penSize').value)||3;
   notePenSize = v;
   document.getElementById('penSizeVal').textContent = v;
-  notePenSize=v; document.getElementById('penSizeVal').textContent=v;
 }
 function updateEraserSizeLabel(){
   const v = parseInt(document.getElementById('eraserSize').value)||22;
   noteEraserSize = v;
   document.getElementById('eraserSizeVal').textContent = v;
-  noteEraserSize=v; document.getElementById('eraserSizeVal').textContent=v;
 }
 function pickColor(el, color){
   noteColor = color;
   document.getElementById('noteColorInput').value = color;
-  document.getElementById('noteColorInput').value=color;
   document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
   if(el) el.classList.add('selected');
   setNoteTool('pen');
@@ -2312,14 +2144,9 @@ function updateUndoRedoBtns(){
   const r = document.getElementById('noteRedoBtn');
   if (u) u.disabled = noteUndoStack.length === 0;
   if (r) r.disabled = noteRedoStack.length === 0;
-/* Pointer helpers (FIX coord. Android) */
-function noteEventPoint(e){
-  const rect = noteCanvas.getBoundingClientRect();
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 }
 
 function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
-let noteIsDrawing=false, noteCurrentStroke=null;
 
 function notePointerDown(e){
   e.preventDefault();
@@ -2330,19 +2157,10 @@ function notePointerDown(e){
   const pt = noteEventPoint(e);
   const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
   noteCurrentStroke = stroke;
-  noteCurrentStroke = {
-    tool: noteTool,
-    color: noteColor,
-    size: (noteTool==='pen' ? notePenSize : noteEraserSize),
-    points: [pt]
-  };
 
   noteCtx.save();
   noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
   noteCtx.strokeStyle = stroke.color; noteCtx.lineWidth = stroke.size;
-  noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
-  noteCtx.strokeStyle = noteCurrentStroke.color;
-  noteCtx.lineWidth = noteCurrentStroke.size;
   noteCtx.beginPath(); noteCtx.moveTo(pt.x, pt.y); noteCtx.lineTo(pt.x+0.01, pt.y+0.01); noteCtx.stroke();
   noteCtx.restore();
 }
@@ -2361,28 +2179,21 @@ function notePointerMove(e){
 function notePointerUp(){
   if(!noteIsDrawing) return;
   noteIsDrawing = false;
-  noteIsDrawing=false;
   if(noteCurrentStroke && noteCurrentStroke.points.length>0){
     noteStrokes.push(noteCurrentStroke);
-    currentStrokes().push(noteCurrentStroke);
     saveNotepad(); renderNote(); updateUndoRedoBtns();
   }
   noteCurrentStroke = null;
-  noteCurrentStroke=null;
 }
 
-/* Render */
 function renderNote(){
   if(!noteCtx || !noteCanvas) return;
   noteCtx.save();
   noteCtx.setTransform(1,0,0,1,0,0);
   noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
   noteCtx.restore();
-  noteCtx.save(); noteCtx.setTransform(1,0,0,1,0,0);
-  noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height); noteCtx.restore();
 
   for(const s of noteStrokes){
-  for(const s of currentStrokes()){
     noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
     noteCtx.strokeStyle = s.color || getThemeDefaultPen();
     noteCtx.lineWidth = s.size || 3;
@@ -2390,82 +2201,35 @@ function renderNote(){
     noteCtx.beginPath();
     noteCtx.moveTo(s.points[0].x, s.points[0].y);
     for(let i=1;i<s.points.length;i++){ const p = s.points[i]; noteCtx.lineTo(p.x, p.y); }
-    for(let i=1;i<s.points.length;i++){ const p=s.points[i]; noteCtx.lineTo(p.x, p.y); }
     noteCtx.stroke();
   }
 }
 
-/* Undo / Redo (par page) */
 function noteUndo(){
   if (noteUndoStack.length === 0) return;
   noteRedoStack.push(snapshotStrokes());
   noteStrokes = noteUndoStack.pop();
-  ensureStacksForPage(notePageIndex);
-  const u = noteUndoStacks[notePageIndex];
-  if(u.length===0) return;
-  noteRedoStacks[notePageIndex].push(snapshotStrokes(currentStrokes()));
-  notePages[notePageIndex] = u.pop();
   saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
 function noteRedo(){
   if (noteRedoStack.length === 0) return;
   noteUndoStack.push(snapshotStrokes());
   noteStrokes = noteRedoStack.pop();
-  ensureStacksForPage(notePageIndex);
-  const r = noteRedoStacks[notePageIndex];
-  if(r.length===0) return;
-  noteUndoStacks[notePageIndex].push(snapshotStrokes(currentStrokes()));
-  notePages[notePageIndex] = r.pop();
   saveNotepad(); renderNote(); updateUndoRedoBtns();
 }
 
-/* Pages */
-function updatePageUI(){
-  const lab = document.getElementById('notePageLabel');
-  const prev = document.getElementById('notePrev');
-  const next = document.getElementById('noteNext');
-  const total = Math.max(1, notePages.length);
-  if(lab) lab.textContent = `Page ${notePageIndex+1}/${total}`;
-  if(prev) prev.disabled = (notePageIndex===0);
-  if(next) next.disabled = (notePageIndex>=total-1);
-}
-function notePrevPage(){ if(notePageIndex>0){ notePageIndex--; updatePageUI(); renderNote(); saveNotepad(); updateUndoRedoBtns(); } }
-function noteNextPage(){ if(notePageIndex<notePages.length-1){ notePageIndex++; updatePageUI(); renderNote(); saveNotepad(); updateUndoRedoBtns(); } }
-function noteNewPage(){
-  notePages.splice(notePageIndex+1,0,[]);
-  noteUndoStacks.splice(notePageIndex+1,0,[]);
-  noteRedoStacks.splice(notePageIndex+1,0,[]);
-  notePageIndex++; updatePageUI(); renderNote(); saveNotepad(); updateUndoRedoBtns();
-}
-function noteDeletePage(){
-  if(notePages.length<=1){ showPopup("Impossible de supprimer l’unique page.", "#d32f2f", 2000); return; }
-  if(!confirm("Supprimer cette page ?")) return;
-  notePages.splice(notePageIndex,1);
-  noteUndoStacks.splice(notePageIndex,1);
-  noteRedoStacks.splice(notePageIndex,1);
-  if(notePageIndex>=notePages.length) notePageIndex = notePages.length-1;
-  updatePageUI(); renderNote(); saveNotepad(); updateUndoRedoBtns();
-}
-
-/* Effacer page actuelle */
 function noteClearAll(){
   if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
   pushUndoState();
   noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
-  if(!confirm('Effacer tous les traits de la page ?')) return;
-  pushUndoState(); currentStrokes().length = 0; clearRedo(); saveNotepad(); renderNote();
 }
 
 /* === Adaptation bloc-note au thème === */
 function adaptNotepadThemeColors(dark, fromInit){
-/* Adaptation au thème */
-function adaptNotepadThemeColors(dark){
   const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
   const defaultDot = document.getElementById('noteColorDotDefault');
   if (defaultDot) {
     defaultDot.style.background = newDefault;
-  if(defaultDot){
-    defaultDot.style.background=newDefault;
     document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
     defaultDot.classList.add('selected');
   }
@@ -2493,7 +2257,6 @@ function adaptNotepadThemeColors(dark){
       renderNote();
     }
   }catch(e){}
-  if(noteOpen){ fitNoteCanvas(); renderNote(); }
 }
 
 /* Maintien bloc-note lors du switch d’onglet */
@@ -2504,47 +2267,8 @@ switchTab = function(id){
     loadNotepad(); noteUndoStack = []; noteRedoStack = [];
     fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
     ensureNoteOverlayInViewport();
-    loadNotepad(); fitNoteCanvas(); renderNote(); updateUndoRedoBtns(); ensureNoteOverlayInViewport();
   }
 };
-
-/* Bulle flottante : ouverture + drag + mémorisation */
-function setupNoteFab(){
-  const fab = document.getElementById('noteFab');
-  if(!fab) return;
-  try{
-    const pos = JSON.parse(localStorage.getItem('noteFabPos')||'null');
-    if(pos && typeof pos.x==='number' && typeof pos.y==='number'){
-      fab.style.left = pos.x+'px';
-      fab.style.top  = pos.y+'px';
-      fab.style.right='auto'; fab.style.bottom='auto';
-    }
-  }catch(e){}
-  let dragging=false, sx=0, sy=0, ox=0, oy=0, moved=false;
-  fab.addEventListener('pointerdown', (e)=>{
-    dragging=true; moved=false; fab.setPointerCapture(e.pointerId);
-    const r = fab.getBoundingClientRect(); ox=r.left; oy=r.top; sx=e.clientX; sy=e.clientY;
-  });
-  fab.addEventListener('pointermove', (e)=>{
-    if(!dragging) return;
-    const dx = e.clientX - sx; const dy = e.clientY - sy;
-    if(Math.abs(dx)+Math.abs(dy) > 2) moved=true;
-    fab.style.left = (ox+dx)+'px'; fab.style.top = (oy+dy)+'px';
-    fab.style.right='auto'; fab.style.bottom='auto';
-  });
-  fab.addEventListener('pointerup', ()=>{
-    if(!dragging) return; dragging=false;
-    const rect = fab.getBoundingClientRect();
-    localStorage.setItem('noteFabPos', JSON.stringify({x: rect.left, y: rect.top}));
-    if(!moved) toggleNotepadOverlay();
-  });
-}
-
-/* Hooks */
-window.addEventListener('load', ()=>{
-  setupNoteFab();
-  setupCalc();
-});
 </script>
 </body>
 </html>
