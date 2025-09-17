@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
 <style>
+<style>
 /* RESET & BASE */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -17,6 +18,7 @@ body.dark { background: #121212; color: #f8f9f9; }
 
 h1 { text-align: center; margin: 10px 0 15px; }
 
+/* Sections */
 /* Sections (blocs) */
 section {
     background: #f5f5f5;
@@ -57,6 +59,7 @@ section.collapsed > *:not(h2) { display: none; }
 .form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
 .form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
 
+/* Labels */
 /* Labels en gras */
 .form-group label,
 .form-group-3col label,
@@ -68,6 +71,7 @@ section.collapsed > *:not(h2) { display: none; }
     text-align: center;
 }
 
+/* Inputs */
 /* Champs */
 input, select {
     width: 100%;
@@ -92,6 +96,7 @@ textarea {
 /* Affichage visuel en MAJ */
 input.uppercase { text-transform: uppercase; }
 
+/* Inputs time */
 /* Champ horaire + boutons */
 .form-group input[type="time"] {
     width: 100%;
@@ -100,6 +105,7 @@ input.uppercase { text-transform: uppercase; }
     display: block;
 }
 
+/* Actions horaires */
 /* Boutons horaires */
 .btn-actions {
     display: grid;
@@ -136,6 +142,7 @@ button.plus  { background: #555; color: white; }
 #save { background: #2196f3; color: white; margin: 15px 0; }
 #reset { background: #d32f2f; color: white; }
 
+/* Timers */
 /* Timers (2 groupes) */
 .timer-box {
     display: flex;
@@ -199,6 +206,54 @@ body.dark #tab-bar { background: #121212; }
     font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
 }
 
+/* === TIMING === */
+.timing-split{ display:grid; grid-template-columns: repeat(2, minmax(260px,1fr)); gap:12px; }
+@media (max-width: 800px){ .timing-split{ grid-template-columns: 1fr; } }
+.timing-col{ background:#fff; border-radius:12px; padding:10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
+body.dark .timing-col{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.timing-col.arr{ border-left:6px solid #2e7d32; }
+.timing-col.dep{ border-left:6px solid #1976d2; }
+.form-group.full-row { flex: 1 1 100% !important; }
+
+.timing-toggle{ display:flex; justify-content:center; gap:8px; margin:6px 0 10px; }
+.timing-seg{ border:1px solid rgba(0,0,0,.12); background:#eef2f7; padding:8px 14px; border-radius:999px; font-weight:700; cursor:pointer; }
+.timing-seg.active{ background:#1976d2; color:#fff; border-color:#1976d2; }
+.timing-panel{ display:none; }
+.timing-panel.active{ display:block; }
+
+/* Dépliés modernes */
+details.nice-collapse {
+  border: 1px solid #d7dde5;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  overflow: hidden;
+  margin-top: 10px;
+}
+body.dark details.nice-collapse {
+  background:#151515; border-color:#2e2e2e; box-shadow: 0 6px 16px rgba(0,0,0,.45);
+}
+details.nice-collapse > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  font-weight: 800;
+  background: #eef2f7;
+  color: #123;
+  border-bottom: 1px solid #e6ebf2;
+}
+body.dark details.nice-collapse > summary {
+  background:#222; color:#f5f5f5; border-bottom-color:#2e2e2e;
+}
+details.nice-collapse > summary .chev {
+  display:inline-block; transition: transform .18s ease;
+}
+details.nice-collapse[open] > summary .chev { transform: rotate(90deg); }
+details.nice-collapse .collapse-body {
+  padding: 10px 12px 14px;
+}
+
 /* Popup notifications */
 #popup {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
@@ -257,6 +312,9 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 /* --- Toolbar timeline --- */
 .timeline-toolbar{
   display:flex; align-items:center; gap:8px; margin: 4px 0 8px;
+  flex-wrap: wrap;            /* autorise le passage sur la ligne suivante */
+  min-width: 0;               /* évite les débordements flex */
+  overflow-x: hidden;         /* pas de scroll horizontal sur la toolbar */
   flex-wrap: wrap;
   min-width: 0;
   overflow-x: hidden;
@@ -275,6 +333,7 @@ body.dark .tl-sep{ background:#3a3a3a; }
 .tl-toggle {
   display:flex; align-items:center; gap:6px; margin-left:8px; font-size:14px;
   max-width: 100%;
+  flex-wrap: wrap;            /* laisse le texte passer à la ligne si besoin */
   flex-wrap: wrap;
 }
 .tl-toggle input { flex: 0 0 auto; }
@@ -361,11 +420,20 @@ body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90ca
   border-color: #2e7d32;
   color: #fff;
 }
+/* Option dark mode (même vert) */
+body.dark #seg-arr.timing-seg.active {
+  background: #2e7d32;
+  border-color: #2e7d32;
+  color: #fff;
+}
 body.dark #seg-arr.timing-seg.active { background: #2e7d32; border-color: #2e7d32; color: #fff; }
 
 /* Now VERTS uniquement dans la colonne ARRIVÉE */
 #panel-arr .btn-actions .now { background: #2e7d32; }
 
+/* Séparateur pour la zone recherche bagage / INAD / fermeture */
+.timing-divider{ border-top:1px dashed #aaa; margin:6px 0 2px; }
+body.dark .timing-divider{ border-top-color:#555; }
 /* Séparateur (désactivé visuellement) */
 .timing-divider{ display:none !important; }
 
@@ -431,6 +499,7 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 /* Bordure d'erreur DL */
 .dl-error { border: 2px solid #d32f2f !important; border-radius: 4px; }
 
+/* --- Détails repliables (INAD / Recherche bagage) --- */
 /* --- Détails repliables (ANCIEN style) -> laissé pour compat mais plus utilisé --- */
 details.timing-collapse summary { list-style: none; }
 details.timing-collapse summary::-webkit-details-marker { display: none; }
@@ -446,11 +515,13 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 #chiffres-porte .form-group,
 #chiffres-porte .form-group-3col,
 #chiffres-porte .form-group-4col {
+  min-width: 0; /* évite le débordement des items en grid */
   min-width: 0;
 }
 #chiffres-porte .cp-cols-2,
 #chiffres-porte .cp-cols-3,
 #chiffres-porte .cp-cols-4 {
+  /* au lieu d'imposer 2/3/4 colonnes, on s'adapte à la largeur dispo */
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 }
 @media (max-width: 900px) {
@@ -473,11 +544,14 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
   align-items: start;
 }
 #TagsContainer .form-group{
+  margin-bottom: 0; /* géré par le gap */
   margin-bottom: 0;
 }
+/* Si nombre impair, le dernier s'étale sur toute la ligne */
 #TagsContainer .form-group:nth-last-child(1):nth-child(odd){
   grid-column: 1 / -1;
 }
+/* Sur petit écran: 1 colonne */
 @media (max-width: 700px){
   #TagsContainer{ grid-template-columns: 1fr; }
 }
@@ -1071,11 +1145,13 @@ function loadTabData(id){
 /* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
+/* TIMING FIELDS – ARR / DEP */
 /* ====== TIMING FIELDS – ARR / DEP (modifié selon tes règles) ====== */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
+  // permet d’ajouter des attributs à l’enveloppe .form-group (ex: full-row)
   const fieldHTML = (id,label, extra='')=>`
     <div class="form-group" ${extra}>
       <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
@@ -1086,19 +1162,27 @@ function generateTimingFields(){
       </div>
     </div>`;
 
+  /* ================== ARRIVÉE ================== */
+  // Exigences :
+  // - "Arrivée Lift" et "Départ Lift" sur la même ligne (par défaut c’est déjà 2 colonnes, on laisse)
+  // - "Arrivée Avitair" seule sur la ligne
+  // - "Arrivée agent PMR" seule sur la ligne
   /* ARRIVÉE */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
+  // seule sur la ligne
   /* seule sur la ligne */
   arr += fieldHTML('ArriveeFuel','Arrivée Avitair','class="full-row"');
 
+  // ces deux-là se placeront côte à côte
   /* côte à côte */
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
+  // seule sur la ligne
   /* seule sur la ligne */
   arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','class="full-row"');
 
@@ -1106,6 +1190,11 @@ function generateTimingFields(){
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
   arr += `</div></div>`;
 
+  /* ================== DÉPART ================== */
+  // Exigences :
+  // - "Départ Avitair" seule sur la ligne
+  // - "Arrivée lift" + "Départ lift" sur la même ligne
+  // - "Arrivée agent PMR" seule sur la ligne
   /* DÉPART */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
@@ -1115,13 +1204,16 @@ function generateTimingFields(){
   dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
   dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
+  // seule sur la ligne
   /* seule sur la ligne */
   dep += fieldHTML('DepartFuel','Départ Avitair','class="full-row"');
 
+  // côte à côte
   /* côte à côte */
   dep += fieldHTML('ArriveeLift','Arrivée lift');
   dep += fieldHTML('DepartLift','Départ lift');
 
+  // seule sur la ligne
   /* seule sur la ligne */
   dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','class="full-row"');
 
@@ -1132,11 +1224,13 @@ function generateTimingFields(){
 
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
+  /* === INAD (nouveau look) === */
   /* INAD (nouveau style “carte”) */
   dep += `
     <details class="nice-collapse" style="flex:1 1 100%;">
       <summary><span class="chev">▸</span> INAD (déplier si besoin)</summary>
       <div class="collapse-body">
+        <div class="form-grid">
         <div class="form-grid" style="margin-top:8px;">
           ${fieldHTML('ArriveeINAD','Arrivée INAD')}
           <div class="form-group">
@@ -1148,11 +1242,13 @@ function generateTimingFields(){
       </div>
     </details>`;
 
+  /* === Recherche bagage (nouveau look) === */
   /* Recherche bagage (nouveau style “carte”) */
   dep += `
     <details class="nice-collapse" style="flex:1 1 100%;">
       <summary><span class="chev">▸</span> Recherche bagage (déplier si besoin)</summary>
       <div class="collapse-body">
+        <div class="form-grid">
         <div class="form-grid" style="margin-top:8px;">
           ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
           ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
@@ -1169,6 +1265,7 @@ function generateTimingFields(){
 
   dep += `</div></div>`;
 
+  /* ==== Toggle ARR / DEP (inchangé) ==== */
   const toggle = `
     <div class="timing-toggle">
       <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
@@ -1182,6 +1279,7 @@ function generateTimingFields(){
   const saved = localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(saved);
 
+  // Init champs tags si valeur déjà présente
   updateTagInputs();
 }
 
@@ -1197,6 +1295,7 @@ function switchTimingPanel(mode){
   localStorage.setItem('timingPanel', mode);
 }
 
+/* CHARGEMENT / TOB */
 /* CHARGEMENT / TOB (inchangé) */
 function generateChargementFields() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
@@ -1464,8 +1563,6 @@ function updateDLCode() {
 }
 
 /* ====== DL DURÉES — répartition auto & contrôle ====== */
-let lastDLChanged = 1;
-
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
 
 function totalDelayMinutes(){
