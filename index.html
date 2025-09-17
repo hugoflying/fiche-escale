@@ -1464,6 +1464,8 @@ function updateDLCode() {
 }
 
 /* ====== DL DURÉES — répartition auto & contrôle ====== */
+let lastDLChanged = 1;
+
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
 
 function totalDelayMinutes(){
