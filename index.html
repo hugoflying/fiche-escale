@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
 <style>
+<style>
 /* RESET & BASE */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -17,7 +18,7 @@ body.dark { background: #121212; color: #f8f9f9; }
 
 h1 { text-align: center; margin: 10px 0 15px; }
 
-/* Sections (blocs) */
+/* Sections */
 section {
     background: #f5f5f5;
     border-radius: 8px;
@@ -27,7 +28,6 @@ section {
 }
 body.dark section { background: #1e1e1e; }
 
-/* Titres de sections */
 h2 {
     font-size: 1.2rem;
     margin: -12px -12px 10px -12px;
@@ -47,8 +47,6 @@ body.dark h2 {
     border-left: 6px solid #90caf9;
     border-bottom-color: #3a3a3a;
 }
-
-/* Collapse */
 section.collapsed > *:not(h2) { display: none; }
 
 /* Grilles */
@@ -57,7 +55,7 @@ section.collapsed > *:not(h2) { display: none; }
 .form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
 .form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
 
-/* Labels en gras */
+/* Labels */
 .form-group label,
 .form-group-3col label,
 .form-group-4col label {
@@ -68,7 +66,7 @@ section.collapsed > *:not(h2) { display: none; }
     text-align: center;
 }
 
-/* Champs */
+/* Inputs */
 input, select {
     width: 100%;
     padding: 6px;
@@ -88,11 +86,9 @@ textarea {
     text-align: left;
     overflow: auto;
 }
-
-/* Affichage visuel en MAJ */
 input.uppercase { text-transform: uppercase; }
 
-/* Champ horaire + boutons */
+/* Inputs time */
 .form-group input[type="time"] {
     width: 100%;
     box-sizing: border-box;
@@ -100,7 +96,7 @@ input.uppercase { text-transform: uppercase; }
     display: block;
 }
 
-/* Boutons horaires */
+/* Actions horaires */
 .btn-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -136,7 +132,7 @@ button.plus  { background: #555; color: white; }
 #save { background: #2196f3; color: white; margin: 15px 0; }
 #reset { background: #d32f2f; color: white; }
 
-/* Timers (2 groupes) */
+/* Timers */
 .timer-box {
     display: flex;
     justify-content: center;
@@ -159,28 +155,6 @@ button.plus  { background: #555; color: white; }
 #timer-h8   { background: #ffd54f; color:#000; }
 #timer-ctot { background: #455a64; }
 
-/* Toggles (barre du haut) */
-.toggle-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.toggle-group { display: flex; align-items: center; gap: 8px; }
-
-/* Interrupteurs */
-.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background: #cfd4da; transition: .2s; border-radius: 999px;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
-}
-.slider:before {
-    position: absolute; content: ""; height: 22px; width: 22px; left: 3px; top: 3px;
-    background: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.3);
-}
-.switch input:checked + .slider { background: #1976d2; }
-.switch input:checked + .slider:before { transform: translateX(32px); }
-
-/* Légendes des interrupteurs */
-.toggle-caption { font-size: .9rem; user-select: none; }
-
 /* Onglets */
 #tab-bar {
     display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;
@@ -197,6 +171,54 @@ button.plus  { background: #555; color: white; }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
     font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
+}
+
+/* === TIMING === */
+.timing-split{ display:grid; grid-template-columns: repeat(2, minmax(260px,1fr)); gap:12px; }
+@media (max-width: 800px){ .timing-split{ grid-template-columns: 1fr; } }
+.timing-col{ background:#fff; border-radius:12px; padding:10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
+body.dark .timing-col{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.timing-col.arr{ border-left:6px solid #2e7d32; }
+.timing-col.dep{ border-left:6px solid #1976d2; }
+.form-group.full-row { flex: 1 1 100% !important; }
+
+.timing-toggle{ display:flex; justify-content:center; gap:8px; margin:6px 0 10px; }
+.timing-seg{ border:1px solid rgba(0,0,0,.12); background:#eef2f7; padding:8px 14px; border-radius:999px; font-weight:700; cursor:pointer; }
+.timing-seg.active{ background:#1976d2; color:#fff; border-color:#1976d2; }
+.timing-panel{ display:none; }
+.timing-panel.active{ display:block; }
+
+/* Dépliés modernes */
+details.nice-collapse {
+  border: 1px solid #d7dde5;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 14px rgba(0,0,0,.06);
+  overflow: hidden;
+  margin-top: 10px;
+}
+body.dark details.nice-collapse {
+  background:#151515; border-color:#2e2e2e; box-shadow: 0 6px 16px rgba(0,0,0,.45);
+}
+details.nice-collapse > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  font-weight: 800;
+  background: #eef2f7;
+  color: #123;
+  border-bottom: 1px solid #e6ebf2;
+}
+body.dark details.nice-collapse > summary {
+  background:#222; color:#f5f5f5; border-bottom-color:#2e2e2e;
+}
+details.nice-collapse > summary .chev {
+  display:inline-block; transition: transform .18s ease;
+}
+details.nice-collapse[open] > summary .chev { transform: rotate(90deg); }
+details.nice-collapse .collapse-body {
+  padding: 10px 12px 14px;
 }
 
 /* Popup notifications */
@@ -1050,8 +1072,9 @@ function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label)=>`
-    <div class="form-group">
+  // permet d’ajouter des attributs à l’enveloppe .form-group (ex: full-row)
+  const fieldHTML = (id,label, extra='')=>`
+    <div class="form-group" ${extra}>
       <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
       <div class="btn-actions">
         <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
@@ -1060,26 +1083,35 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ARRIVÉE */
+  /* ================== ARRIVÉE ================== */
+  // Exigences :
+  // - "Arrivée Lift" et "Départ Lift" sur la même ligne (par défaut c’est déjà 2 colonnes, on laisse)
+  // - "Arrivée Avitair" seule sur la ligne
+  // - "Arrivée agent PMR" seule sur la ligne
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  /* SUPPR: Début GPU */
-  arr += fieldHTML('ArriveeFuel','Arrivée Avitair');
+  // seule sur la ligne
+  arr += fieldHTML('ArriveeFuel','Arrivée Avitair','class="full-row"');
 
+  // ces deux-là se placeront côte à côte
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
-  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR');
-  /* SUPPR: Débarquement PMR */
+  // seule sur la ligne
+  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','class="full-row"');
 
   arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
   arr += `</div></div>`;
 
-  /* DÉPART (réorganisation + collapsibles) */
+  /* ================== DÉPART ================== */
+  // Exigences :
+  // - "Départ Avitair" seule sur la ligne
+  // - "Arrivée lift" + "Départ lift" sur la même ligne
+  // - "Arrivée agent PMR" seule sur la ligne
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
   dep += fieldHTML('ArrPNT','Arrivée PNT');
@@ -1088,59 +1120,60 @@ function generateTimingFields(){
   dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
   dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  dep += fieldHTML('DepartFuel','Départ Avitair');
+  // seule sur la ligne
+  dep += fieldHTML('DepartFuel','Départ Avitair','class="full-row"');
 
+  // côte à côte
   dep += fieldHTML('ArriveeLift','Arrivée lift');
   dep += fieldHTML('DepartLift','Départ lift');
 
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
-  /* SUPPR: Embarquement PMR */
+  // seule sur la ligne
+  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','class="full-row"');
 
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
-
-  /* SUPPR: Mise TPX/TMX + Fin GPU */
-  /* Fermeture porte avion — PAS de séparateur au-dessus */
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
-  /* --- Séparateur puis bloc INAD repliable (fermé par défaut) --- */
-  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+  /* === INAD (nouveau look) === */
   dep += `
-    <details class="timing-collapse" style="flex:1 1 100%;">
-      <summary class="timing-seg">INAD (déplier si besoin)</summary>
-      <div class="form-grid" style="margin-top:8px;">
-        ${fieldHTML('ArriveeINAD','Arrivée INAD')}
-        <div class="form-group">
-          <label>Quantité INAD
-            <input type="number" id="QuantiteINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
-          </label>
+    <details class="nice-collapse" style="flex:1 1 100%;">
+      <summary><span class="chev">▸</span> INAD (déplier si besoin)</summary>
+      <div class="collapse-body">
+        <div class="form-grid">
+          ${fieldHTML('ArriveeINAD','Arrivée INAD')}
+          <div class="form-group">
+            <label>Quantité INAD
+              <input type="number" id="QuantiteINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
+            </label>
+          </div>
         </div>
       </div>
     </details>`;
 
-  /* --- Séparateur puis bloc Recherche bagage repliable (fermé par défaut) --- */
-  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+  /* === Recherche bagage (nouveau look) === */
   dep += `
-    <details class="timing-collapse" style="flex:1 1 100%;">
-      <summary class="timing-seg">Recherche bagage (déplier si besoin)</summary>
-      <div class="form-grid" style="margin-top:8px;">
-        ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
-        ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-        <div class="form-group" style="flex:1 1 100%;">
-          <label>Quantité bagage(s) déchargé(s)
-            <input type="number" id="NbBagagesDecharges" min="0" step="1"
-                   oninput="sanitizePositiveInt(this); updateTagInputs()">
-          </label>
+    <details class="nice-collapse" style="flex:1 1 100%;">
+      <summary><span class="chev">▸</span> Recherche bagage (déplier si besoin)</summary>
+      <div class="collapse-body">
+        <div class="form-grid">
+          ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
+          ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
+          <div class="form-group full-row">
+            <label>Quantité bagage(s) déchargé(s)
+              <input type="number" id="NbBagagesDecharges" min="0" step="1"
+                     oninput="sanitizePositiveInt(this); updateTagInputs()">
+            </label>
+          </div>
+          <div id="TagsContainer" class="full-row" style="margin-top:6px;"></div>
         </div>
-        <!-- Conteneur dynamique des Numéro tag i (affichés UNIQUEMENT sous le champ ci-dessus) -->
-        <div id="TagsContainer" style="margin-top:6px;"></div>
       </div>
     </details>`;
 
   dep += `</div></div>`;
 
+  /* ==== Toggle ARR / DEP (inchangé) ==== */
   const toggle = `
     <div class="timing-toggle">
       <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
