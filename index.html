@@ -1861,7 +1861,7 @@ const durLanesEnd = [];
 const LANE_PAD_MIN = 2; // augmente à 3/4 si besoin
 
 function packLanes(items, pad = LANE_PAD_MIN){
-  const lanes = []; // minute "libre à partir de" pour chaque voie
+  const lanes = [2]; // minute "libre à partir de" pour chaque voie
   return items.map(it => {
     let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
     if (laneIdx === -1) {
