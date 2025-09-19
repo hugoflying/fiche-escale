@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -222,8 +223,7 @@ body.dark .timeline-tick { background:#3e444b; }
 }
 body.dark .timeline-tick-label { color:#cfd4da; }
 
-.tl-event { transform: translate(-50%, -50%); }
-.tl-range { transform: translateX(-50%); }
+.tl-event, .tl-range { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height:1; z-index: 1; }
 
 /* Points (événements) */
 .tl-dot {
@@ -540,6 +540,7 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
 
 /* On n’utilise plus la ligne pointillée pour séparer ces blocs */
 .timing-divider { display: none; }
+}
 
 </style>
 </head>
@@ -1656,16 +1657,14 @@ function setTimeModeUTC(enable, fromInit=false){
 /* POPUP */
 function showPopup(message, color = "#2196f3", duration = 2000) {
   const popup = document.createElement('div');
-  popup.className = "popup-msg";
+  popup.id = "popup";
   popup.textContent = message;
-  popup.style.cssText = `
-    position:fixed;top:20px;left:50%;transform:translateX(-50%);
-    padding:12px 20px;border-radius:10px;font-size:1rem;color:#fff;z-index:1000;
-    background:${color};box-shadow:0 6px 20px rgba(0,0,0,.25)`;
+  popup.style.background = color;
   document.body.appendChild(popup);
+  popup.style.display = "block";
   setTimeout(() => popup.remove(), duration);
 }
-    
+
 /* TIMELINE helpers */
 let showTimeLabels = true;
 let timelineUserScrolled = false;
@@ -1864,6 +1863,7 @@ const LANE_PAD_MIN = 2; // augmente à 3/4 si besoin
 
 function packLanes(items, pad = LANE_PAD_MIN){
   const lanes = []; // minute "libre à partir de" pour chaque voie
+  const lanes = [2]; // minute "libre à partir de" pour chaque voie
   return items.map(it => {
     let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
     if (laneIdx === -1) {
@@ -1884,6 +1884,7 @@ const finalHeight = Math.max(
   trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
 );
 canvas.style.height = `${finalHeight}px`;
+  canvas.style.height = `${finalHeight}px`;
 
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
