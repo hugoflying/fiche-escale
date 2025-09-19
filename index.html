@@ -1863,12 +1863,16 @@ function renderTimeline(){
   }).sort((x,y)=> x.start - y.start);
 
   const durLanesEnd = [];
+    const LANE_PAD_MIN = 0.5; // minutes de tampon pour éviter les collisions visuelles
+ 
   const durWithLane = durItems.map(it=>{
     let lane = 0;
-    while(durLanesEnd[lane] !== undefined && it.start <= durLanesEnd[lane]) lane++;
-    durLanesEnd[lane] = it.end;
+    while (durLanesEnd[lane] !== undefined && it.start < (durLanesEnd[lane] + LANE_PAD_MIN)) {
+      lane++;
+    }
+    durLanesEnd[lane] = it.end; // on peut aussi faire it.end + LANE_PAD_MIN si tu veux plus d’air
     return { ...it, lane };
-  });
+});
   const durLaneCount = durLanesEnd.length || 0;
 
   const finalHeight = Math.max(
