@@ -1112,62 +1112,65 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ===== ARRIVÉE ===== */
+  /* ===== ARRIVÉE ===== (ordre demandé) */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
 
-  // premier/dernier débarqué (la grille les met naturellement côte à côte)
+  // 1) Arrivée AVITAIR (seul sur la ligne)
+  arr += fieldHTML('ArriveeFuel','Arrivée Avitair','full');
+
+  // 2) Premier débarqué / Dernier débarqué (même ligne)
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  // Arrivée Avitair : pleine largeur (seul sur sa ligne)
-  arr += fieldHTML('ArriveeFuel','Arrivée Avitair','full');
+  // 3) Arrivée Lift / Départ Lift (même ligne)
+  arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
+  arr += fieldHTML('DepartLiftArr','Départ lift');
 
-  // Lift ARR : Arrivée + Départ sur la même ligne
-  arr += `<div class="form-row-2">`;
-  arr += fieldHTML('ArriveeLiftArr','Arrivée lift');   // 50%
-  arr += fieldHTML('DepartLiftArr','Départ lift');     // 50%
-  arr += `</div>`;
-
-  // Arrivée agent PMR : pleine largeur
+  // 4) Arrivée agent PMR (seul sur la ligne)
   arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','full');
 
-  // Déchargement bagages
+  // 5) Début/Fin déchargement bagages (même ligne)
   arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
 
   arr += `</div></div>`;
 
-  /* ===== DÉPART ===== */
+  /* ===== DÉPART ===== (ordre demandé) */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
 
+  // 1) Arrivée PNT / Arrivée PNC
   dep += fieldHTML('ArrPNT','Arrivée PNT');
   dep += fieldHTML('ArrPNC','Arrivée PNC');
 
+  // 2) Premier / Dernier embarqué
   dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
   dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  // Départ Avitair : pleine largeur (seul)
-  dep += fieldHTML('DepartFuel','Départ Avitair','full');
+  // 3) Arrivée Lift / Départ Lift
+  dep += fieldHTML('ArriveeLift','Arrivée lift');
+  dep += fieldHTML('DepartLift','Départ lift');
 
-  // Lift DEP : Arrivée + Départ sur la même ligne
-  dep += `<div class="form-row-2">`;
-  dep += fieldHTML('ArriveeLift','Arrivée lift');   // 50%
-  dep += fieldHTML('DepartLift','Départ lift');     // 50%
-  dep += `</div>`;
-
-  // Arrivée agent PMR : pleine largeur
+  // 4) Arrivée agent PMR (seul)
   dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','full');
 
-  // Chargement bagages
+  // 5) Début/Fin chargement bagages
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
+  // 6) Départ AVITAIR (seul)
+  dep += fieldHTML('DepartFuel','Départ Avitair','full');
+
+  // 7) Arrivée NAYAK / Départ NAYAK (nouveaux champs)
+  dep += fieldHTML('ArriveeNayak','Arrivée NAYAK');
+  dep += fieldHTML('DepartNayak','Départ NAYAK');
+
+  // 8) Remise LID/LDS / Fermeture porte avion (même ligne)
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
-  /* ==== Accordéon INAD (clean) ==== */
+  /* --- Accordéon INAD --- */
   dep += `
     <details class="accordion">
       <summary>INAD (si besoin)</summary>
@@ -1183,7 +1186,7 @@ function generateTimingFields(){
       </div>
     </details>`;
 
-  /* ==== Accordéon Recherche bagage (clean) ==== */
+  /* --- Accordéon Recherche bagage --- */
   dep += `
     <details class="accordion">
       <summary>Recherche bagage (si besoin)</summary>
@@ -1218,7 +1221,8 @@ function generateTimingFields(){
   const saved = localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(saved);
 
-  updateTagInputs(); // si déjà des valeurs
+  // Init champs tags si valeur déjà présente
+  updateTagInputs();
 }
 
 function switchTimingPanel(mode){
