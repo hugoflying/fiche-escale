@@ -540,6 +540,67 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
 /* On n’utilise plus la ligne pointillée pour séparer ces blocs */
 .timing-divider { display: none; }
 }
+/* === CALCULATRICE (overlay plein écran) === */
+.calc-overlay {
+  position: fixed; top: 6vh; left: 2vw; width: 96vw; height: 80vh;
+  min-width: 320px; min-height: 260px; max-width: calc(100vw - 20px); max-height: calc(100vh - 20px);
+  background: rgba(255,255,255,0.92); color:#111; border-radius:16px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.35); z-index:2000; display:none; overflow:hidden; resize: both;
+  backdrop-filter: saturate(180%) blur(12px);
+  opacity: 0; transform: translateY(10px) scale(.98);
+  transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease;
+  border: 1px solid rgba(0,0,0,.06);
+}
+.calc-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
+.calc-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
+body.dark .calc-overlay{
+  background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08);
+}
+
+/* barre de titre */
+.calc-titlebar{
+  cursor:grab; user-select:none; display:flex; align-items:center; gap:10px;
+  padding:10px 12px; background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35));
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.calc-titlebar:active{ cursor:grabbing; }
+.calc-titlebar .spacer{ flex:1; }
+body.dark .calc-titlebar{
+  background: linear-gradient(180deg, rgba(30,30,30,.7), rgba(30,30,30,.45));
+  border-bottom-color: rgba(255,255,255,.08);
+}
+
+/* contenu */
+.calc-wrap{ display:grid; grid-template-rows: auto 1fr; height: calc(100% - 44px); }
+.calc-display{
+  padding: 12px; display:flex; flex-direction:column; gap:6px; background: transparent;
+}
+.calc-input{
+  width:100%; font-size: 2rem; font-weight:700; border:0; outline:none;
+  background: transparent; color: inherit;
+}
+.calc-sub{ opacity:.8; font-family: monospace; font-size: .95rem; }
+
+.calc-pad{
+  display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; padding: 12px;
+}
+.calc-btn{
+  border:0; border-radius:12px; padding:14px 10px; font-size:1.15rem; font-weight:800; cursor:pointer;
+  background:#e7ebf0; transition: transform .12s ease, background .15s ease, filter .15s ease;
+}
+.calc-btn:hover{ background:#dde3ea; }
+.calc-btn:active{ transform: translateY(1px); filter: brightness(.97); }
+body.dark .calc-btn{ background:#2a2a2a; color:#eee; }
+.calc-btn.op{ font-weight:900; }
+.calc-btn.wide{ grid-column: span 2; }
+.calc-btn.danger{ background:#e53935; color:#fff; }
+.calc-btn.accent{ background:#1976d2; color:#fff; }
+.calc-btn.ghost{ background:transparent; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+body.dark .calc-btn.ghost{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+
+@media (prefers-reduced-motion: reduce){
+  .calc-overlay{ transition: none; }
+}
 
 </style>
 </head>
@@ -798,6 +859,48 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
   </div>
 </div>
 
+<!-- === CALCULATRICE SUPERPOSÉE === -->
+<div id="calcOverlay" class="calc-overlay" aria-hidden="true">
+  <div id="calcDragBar" class="calc-titlebar">
+    <strong>Calculatrice</strong>
+    <div class="spacer"></div>
+    <button type="button" class="calc-btn danger" onclick="closeCalcOverlay()" title="Fermer (ESC)" aria-label="Fermer">❌</button>
+  </div>
+
+  <div class="calc-body">
+    <div id="calcDisplay" class="calc-display">0</div>
+    <div class="calc-grid">
+      <button class="calc-btn danger" onclick="calcClear()">AC</button>
+      <button class="calc-btn" onclick="calcBack()">⌫</button>
+      <button class="calc-btn" onclick="calcPlus13()">+13</button>
+      <button class="calc-btn" onclick="calcMinus13()">-13</button>
+
+      <button class="calc-btn" onclick="calcInput('7')">7</button>
+      <button class="calc-btn" onclick="calcInput('8')">8</button>
+      <button class="calc-btn" onclick="calcInput('9')">9</button>
+      <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+
+      <button class="calc-btn" onclick="calcInput('4')">4</button>
+      <button class="calc-btn" onclick="calcInput('5')">5</button>
+      <button class="calc-btn" onclick="calcInput('6')">6</button>
+      <button class="calc-btn op" onclick="calcInput('*')">×</button>
+
+      <button class="calc-btn" onclick="calcInput('1')">1</button>
+      <button class="calc-btn" onclick="calcInput('2')">2</button>
+      <button class="calc-btn" onclick="calcInput('3')">3</button>
+      <button class="calc-btn op" onclick="calcInput('-')">−</button>
+
+      <button class="calc-btn w2" onclick="calcInput('0')">0</button>
+      <button class="calc-btn" onclick="calcInput('.')">.</button>
+      <button class="calc-btn op" onclick="calcInput('+')">+</button>
+
+      <button class="calc-btn w2 op" onclick="calcEval()">=</button>
+      <button class="calc-btn" onclick="toggleSign()">±</button>
+      <button class="calc-btn" onclick="calcPercent()">%</button>
+    </div>
+  </div>
+</div>
+
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
@@ -994,6 +1097,14 @@ function renderTabs(){
   noteBtn.textContent = '📝';
   noteBtn.onclick = toggleNotepadOverlay;
   tabBar.appendChild(noteBtn);
+
+  const calcBtn = document.createElement('button');
+  calcBtn.className = 'note-icon';
+  calcBtn.title = 'Ouvrir la calculatrice';
+  calcBtn.textContent = '🧮';
+  calcBtn.type = 'button';
+  calcBtn.onclick = toggleCalcOverlay;   // fonction fournie dans la partie JS de la calculatrice
+  tabBar.appendChild(calcBtn);
 }
 
 function createNewTab(){
@@ -2342,6 +2453,122 @@ switchTab = function(id){
     ensureNoteOverlayInViewport();
   }
 };
+
+    /* === CALCULATRICE OVERLAY (+13 / -13) === */
+let calcOpen = false;
+let calcExpression = "0";
+const CALC_STORE_KEY = "calcState";
+
+function loadCalcState(){
+  try{ const s = JSON.parse(localStorage.getItem(CALC_STORE_KEY)||"{}");
+       calcExpression = s.expr || "0"; }catch(e){ calcExpression="0"; }
+  updateCalcDisplay();
+}
+function saveCalcState(){
+  try{ localStorage.setItem(CALC_STORE_KEY, JSON.stringify({expr: calcExpression})); }catch(e){}
+}
+function updateCalcDisplay(){
+  const d = document.getElementById('calcDisplay');
+  if (d) d.textContent = calcExpression || "0";
+}
+function sanitizeExpr(s){ return (s||"").replace(/[^0-9+\-*/().% ]/g, ""); }
+function calcInput(tok){
+  if(calcExpression==="0" && /[0-9.]/.test(tok)) calcExpression = tok;
+  else calcExpression += tok;
+  updateCalcDisplay(); saveCalcState();
+}
+function calcClear(){ calcExpression="0"; updateCalcDisplay(); saveCalcState(); }
+function calcBack(){
+  calcExpression = calcExpression.length>1 ? calcExpression.slice(0,-1) : "0";
+  updateCalcDisplay(); saveCalcState();
+}
+function calcEval(){
+  const safe = sanitizeExpr(calcExpression);
+  try{
+    const percentOK = safe.replace(/(\d+(\.\d+)?)%/g, "($1/100)");
+    const res = Function(`"use strict"; return (${percentOK})`)();
+    calcExpression = (res==null || isNaN(res)) ? "0" : String(res);
+  }catch(e){ calcExpression = "Erreur"; }
+  updateCalcDisplay(); saveCalcState();
+}
+function calcPercent(){ calcExpression += "%"; updateCalcDisplay(); saveCalcState(); }
+function toggleSign(){
+  const m = calcExpression.match(/(-?\d+(\.\d+)?)\s*$/);
+  if(!m) return;
+  const full = m[0], num = parseFloat(m[1]);
+  const swapped = (num===0)?0:-num;
+  calcExpression = calcExpression.slice(0, -full.length) + String(swapped);
+  updateCalcDisplay(); saveCalcState();
+}
+function getLastNumberInfo(){
+  const m = calcExpression.match(/(-?\d+(\.\d+)?)(?!.*-?\d)/);
+  if(!m) return null;
+  return {text:m[1], index: m.index};
+}
+function applyDelta(n){
+  const info = getLastNumberInfo();
+  if(!info){ calcExpression = String(n); }
+  else{
+    const current = parseFloat(info.text);
+    const out = (isNaN(current) ? 0 : current) + n;
+    calcExpression = calcExpression.slice(0, info.index) + String(out) + calcExpression.slice(info.index + info.text.length);
+  }
+  updateCalcDisplay(); saveCalcState();
+}
+function calcPlus13(){ applyDelta(13); }
+function calcMinus13(){ applyDelta(-13); }
+
+function toggleCalcOverlay(){ calcOpen ? closeCalcOverlay() : openCalcOverlay(); }
+function openCalcOverlay(){
+  const el = document.getElementById('calcOverlay');
+  if(!el) return;
+  el.style.display = 'block';
+  requestAnimationFrame(()=> el.classList.add('open'));
+  el.setAttribute('aria-hidden','false');
+  calcOpen = true; loadCalcState();
+}
+function closeCalcOverlay(){
+  const el = document.getElementById('calcOverlay');
+  if(!el) return;
+  el.classList.remove('open');
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden','true');
+  calcOpen = false;
+}
+
+/* Drag par la barre de titre */
+(function initCalcDrag(){
+  const bar = document.getElementById('calcDragBar');
+  const overlay = document.getElementById('calcOverlay');
+  if(!bar || !overlay) return;
+  let dragging=false, dx=0, dy=0;
+  bar.addEventListener('mousedown', (e)=>{
+    dragging=true; const r=overlay.getBoundingClientRect(); dx=e.clientX-r.left; dy=e.clientY-r.top; e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e)=>{
+    if(!dragging) return;
+    overlay.style.left = (e.clientX-dx)+'px';
+    overlay.style.top  = (e.clientY-dy)+'px';
+  });
+  document.addEventListener('mouseup', ()=> dragging=false);
+})();
+
+/* Raccourcis clavier dans la calculatrice */
+document.addEventListener('keydown', (e)=>{
+  if(!calcOpen) return;
+  if(e.key === 'Enter'){ e.preventDefault(); calcEval(); }
+  else if(e.key === 'Escape'){ e.preventDefault(); closeCalcOverlay(); }
+  else if(/[0-9+\-*/().%]/.test(e.key)){ calcInput(e.key); }
+  else if(e.key === 'Backspace'){ e.preventDefault(); calcBack(); }
+});
+
+/* Ouvrir avec Ctrl/Cmd+Shift+C (facultatif) */
+document.addEventListener('keydown', (e)=>{
+  if((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==='c'){
+    e.preventDefault(); toggleCalcOverlay();
+  }
+});
+
 </script>
 </body>
 </html>
