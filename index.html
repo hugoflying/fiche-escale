@@ -490,6 +490,57 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
 @media (max-width: 700px){
   #TagsContainer{ grid-template-columns: 1fr; }
 }
+
+/* === Helpers de largeur pour forcer la mise en ligne === */
+.form-group.full { flex: 1 1 100% !important; }   /* occupe toute la ligne */
+.form-row-2 { display: contents; } /* en flex-wrap, on laisse les .form-group à 50% */
+
+/* === Accordéon moderne pour INAD / Recherche bagage === */
+details.accordion {
+  flex: 1 1 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08), inset 0 0 0 1px rgba(0,0,0,.06);
+  padding: 0;
+  overflow: hidden;
+}
+body.dark details.accordion {
+  background: #161616;
+  box-shadow: 0 8px 20px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+details.accordion > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(180deg, #f7faff, #eef2f7);
+}
+body.dark details.accordion > summary {
+  background: linear-gradient(180deg, #1d1d1d, #171717);
+}
+details.accordion > summary::marker,
+details.accordion summary::-webkit-details-marker { display: none; }
+details.accordion > summary::after {
+  content: "▸";
+  margin-left: auto;
+  transition: transform .15s ease;
+  font-weight: 900;
+  opacity: .7;
+}
+details.accordion[open] > summary::after { transform: rotate(90deg); opacity: 1; }
+details.accordion .accordion-body {
+  padding: 12px 14px 14px 14px;
+  background: transparent;
+}
+details.accordion .accordion-body .form-grid { margin-top: 4px; }
+
+/* On n’utilise plus la ligne pointillée pour séparer ces blocs */
+.timing-divider { display: none; }
+}
+
 </style>
 </head>
 <body onload="initForm()">
@@ -1050,8 +1101,9 @@ function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label)=>`
-    <div class="form-group">
+  // helper : demi-largeur par défaut ; "full" pour toute la ligne
+  const fieldHTML = (id,label,variant='half')=>`
+    <div class="form-group ${variant==='full' ? 'full' : ''}">
       <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
       <div class="btn-actions">
         <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
@@ -1060,87 +1112,99 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ARRIVÉE */
+  /* ===== ARRIVÉE ===== */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
+
+  // premier/dernier débarqué (la grille les met naturellement côte à côte)
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  /* SUPPR: Début GPU */
-  arr += fieldHTML('ArriveeFuel','Arrivée Avitair');
+  // Arrivée Avitair : pleine largeur (seul sur sa ligne)
+  arr += fieldHTML('ArriveeFuel','Arrivée Avitair','full');
 
-  arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
-  arr += fieldHTML('DepartLiftArr','Départ lift');
+  // Lift ARR : Arrivée + Départ sur la même ligne
+  arr += `<div class="form-row-2">`;
+  arr += fieldHTML('ArriveeLiftArr','Arrivée lift');   // 50%
+  arr += fieldHTML('DepartLiftArr','Départ lift');     // 50%
+  arr += `</div>`;
 
-  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR');
-  /* SUPPR: Débarquement PMR */
+  // Arrivée agent PMR : pleine largeur
+  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','full');
 
+  // Déchargement bagages
   arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
   arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
+
   arr += `</div></div>`;
 
-  /* DÉPART (réorganisation + collapsibles) */
+  /* ===== DÉPART ===== */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
+
   dep += fieldHTML('ArrPNT','Arrivée PNT');
   dep += fieldHTML('ArrPNC','Arrivée PNC');
 
   dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
   dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  dep += fieldHTML('DepartFuel','Départ Avitair');
+  // Départ Avitair : pleine largeur (seul)
+  dep += fieldHTML('DepartFuel','Départ Avitair','full');
 
-  dep += fieldHTML('ArriveeLift','Arrivée lift');
-  dep += fieldHTML('DepartLift','Départ lift');
+  // Lift DEP : Arrivée + Départ sur la même ligne
+  dep += `<div class="form-row-2">`;
+  dep += fieldHTML('ArriveeLift','Arrivée lift');   // 50%
+  dep += fieldHTML('DepartLift','Départ lift');     // 50%
+  dep += `</div>`;
 
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR');
-  /* SUPPR: Embarquement PMR */
+  // Arrivée agent PMR : pleine largeur
+  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','full');
 
+  // Chargement bagages
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
-
-  /* SUPPR: Mise TPX/TMX + Fin GPU */
-  /* Fermeture porte avion — PAS de séparateur au-dessus */
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
-  /* --- Séparateur puis bloc INAD repliable (fermé par défaut) --- */
-  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+  /* ==== Accordéon INAD (clean) ==== */
   dep += `
-    <details class="timing-collapse" style="flex:1 1 100%;">
-      <summary class="timing-seg">INAD (déplier si besoin)</summary>
-      <div class="form-grid" style="margin-top:8px;">
-        ${fieldHTML('ArriveeINAD','Arrivée INAD')}
-        <div class="form-group">
-          <label>Quantité INAD
-            <input type="number" id="QuantiteINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
-          </label>
+    <details class="accordion">
+      <summary>INAD (si besoin)</summary>
+      <div class="accordion-body">
+        <div class="form-grid">
+          ${fieldHTML('ArriveeINAD','Arrivée INAD')}
+          <div class="form-group">
+            <label>Quantité INAD
+              <input type="number" id="QuantiteINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
+            </label>
+          </div>
         </div>
       </div>
     </details>`;
 
-  /* --- Séparateur puis bloc Recherche bagage repliable (fermé par défaut) --- */
-  dep += `<div class="form-group" style="flex:1 1 100%;"><div class="timing-divider"></div></div>`;
+  /* ==== Accordéon Recherche bagage (clean) ==== */
   dep += `
-    <details class="timing-collapse" style="flex:1 1 100%;">
-      <summary class="timing-seg">Recherche bagage (déplier si besoin)</summary>
-      <div class="form-grid" style="margin-top:8px;">
-        ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
-        ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-        <div class="form-group" style="flex:1 1 100%;">
-          <label>Quantité bagage(s) déchargé(s)
-            <input type="number" id="NbBagagesDecharges" min="0" step="1"
-                   oninput="sanitizePositiveInt(this); updateTagInputs()">
-          </label>
+    <details class="accordion">
+      <summary>Recherche bagage (si besoin)</summary>
+      <div class="accordion-body">
+        <div class="form-grid">
+          ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
+          ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
+          <div class="form-group full">
+            <label>Quantité bagage(s) déchargé(s)
+              <input type="number" id="NbBagagesDecharges" min="0" step="1"
+                     oninput="sanitizePositiveInt(this); updateTagInputs()">
+            </label>
+          </div>
+          <div id="TagsContainer" style="margin-top:6px;" class="full"></div>
         </div>
-        <!-- Conteneur dynamique des Numéro tag i (affichés UNIQUEMENT sous le champ ci-dessus) -->
-        <div id="TagsContainer" style="margin-top:6px;"></div>
       </div>
     </details>`;
 
   dep += `</div></div>`;
 
+  /* ===== Toggle Arr/Dep + panneaux ===== */
   const toggle = `
     <div class="timing-toggle">
       <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
@@ -1154,8 +1218,7 @@ function generateTimingFields(){
   const saved = localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(saved);
 
-  // Init champs tags si valeur déjà présente
-  updateTagInputs();
+  updateTagInputs(); // si déjà des valeurs
 }
 
 function switchTimingPanel(mode){
