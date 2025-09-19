@@ -1857,23 +1857,31 @@ function renderTimeline(){
   }).sort((x,y)=> x.start - y.start);
 
 const durLanesEnd = [];
-const LANE_PAD_MIN = 1; // minutes de tampon pour éviter les collisions visuelles
+// Empilage strict avec tampon
+const LANE_PAD_MIN = 2; // augmente à 3/4 si besoin
 
-const durWithLane = durItems.map(it=>{
-  let lane = 0;
-  while (durLanesEnd[lane] !== undefined && it.start < (durLanesEnd[lane] + LANE_PAD_MIN)) {
-    lane++;
-  }
-  durLanesEnd[lane] = it.end; // on peut aussi faire it.end + LANE_PAD_MIN si tu veux plus d’air
-  return { ...it, lane };
-});
+function packLanes(items, pad = LANE_PAD_MIN){
+  const lanes = []; // minute "libre à partir de" pour chaque voie
+  return items.map(it => {
+    let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
+    if (laneIdx === -1) {
+      laneIdx = lanes.length;
+      lanes.push(it.end + pad);
+    } else {
+      lanes[laneIdx] = it.end + pad;
+    }
+    return { ...it, lane: laneIdx };
+  });
+}
 
-  const durLaneCount = durLanesEnd.length || 0;
+const durWithLane = packLanes(durItems);
+const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
 
-  const finalHeight = Math.max(
-    MIN_HEIGHT,
-    trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
-  );
+const finalHeight = Math.max(
+  MIN_HEIGHT,
+  trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
+);
+canvas.style.height = `${finalHeight}px`;
   canvas.style.height = `${finalHeight}px`;
 
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
@@ -1907,26 +1915,26 @@ const durWithLane = durItems.map(it=>{
     el.style.visibility = 'visible';
   });
 
-  const downStart = trackY + AFTER_TRACK;
-  durWithLane.forEach(d=>{
-    const leftStartPct = 6 + ((d.start-min)/total)*88;
-    const widthPct     = ((d.end-d.start)/total)*88;
+const downStart = trackY + AFTER_TRACK;
+durWithLane.forEach(d=>{
+  const leftStartPct = 6 + ((d.start-min)/total)*88;
+  const widthPct     = ((d.end-d.start)/total)*88;
 
-    const bar = document.createElement('div');
-    bar.className = `tl-range ${d.cls}`;
-    if(d.color){ bar.style.setProperty('--c', d.color); }
-    bar.style.left = `${leftStartPct}%`;
-    bar.style.width = `${widthPct}%`;
-    bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
-    bar.style.transform = 'translate(-50%, -50%)';
-    canvas.appendChild(bar);
+  const bar = document.createElement('div');
+  bar.className = `tl-range ${d.cls}`;
+  if(d.color){ bar.style.setProperty('--c', d.color); }
+  bar.style.left = `${leftStartPct}%`;
+  bar.style.width = `${widthPct}%`;
+  bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
+  bar.style.transform = 'translateX(-50%)'; // ✅ plus de centrage vertical
+  canvas.appendChild(bar);
 
-    const lab = document.createElement('div');
-    lab.className = 'tl-range-label';
-    const durMin = Math.max(0, d.b - d.a);
-    lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
-    bar.appendChild(lab);
-  });
+  const lab = document.createElement('div');
+  lab.className = 'tl-range-label';
+  const durMin = Math.max(0, d.b - d.a);
+  lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
+  bar.appendChild(lab);
+});
 
   if(!timelineUserScrolled){
     const centerMin = (min + max) / 2;
