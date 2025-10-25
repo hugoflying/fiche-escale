@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
-<!-- jsPDF pour l’export PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" referrerpolicy="no-referrer"></script>
 <style>
 /* RESET & BASE */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -125,7 +123,7 @@ button.now   { background: #1976d2; color: white; }
 button.plus  { background: #555; color: white; }
 
 /* Boutons principaux */
-#validate, #save, #reset, #exportPdf, #sendMail {
+#validate, #save, #reset {
     width: 100%;
     padding: 12px;
     font-size: 1.2rem;
@@ -137,8 +135,6 @@ button.plus  { background: #555; color: white; }
 #validate { background: #4caf50; color: white; }
 #save { background: #2196f3; color: white; margin: 15px 0; }
 #reset { background: #d32f2f; color: white; }
-#exportPdf { background: #6a1b9a; color: #fff; }
-#sendMail { background: #00897b; color: #fff; }
 
 /* Timers (2 groupes) */
 .timer-box {
@@ -261,9 +257,9 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 /* --- Toolbar timeline --- */
 .timeline-toolbar{
   display:flex; align-items:center; gap:8px; margin: 4px 0 8px;
-  flex-wrap: wrap;
-  min-width: 0;
-  overflow-x: hidden;
+  flex-wrap: wrap;            /* autorise le passage sur la ligne suivante */
+  min-width: 0;               /* évite les débordements flex */
+  overflow-x: hidden;         /* pas de scroll horizontal sur la toolbar */
 }
 .tl-btn{
   padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
@@ -275,11 +271,11 @@ body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
 
-/* Coche */
+/* Coche “Heure sur étiquettes” */
 .tl-toggle {
   display:flex; align-items:center; gap:6px; margin-left:8px; font-size:14px;
   max-width: 100%;
-  flex-wrap: wrap;
+  flex-wrap: wrap;            /* laisse le texte passer à la ligne si besoin */
 }
 .tl-toggle input { flex: 0 0 auto; }
 
@@ -290,19 +286,30 @@ body.dark .tl-sep{ background:#3a3a3a; }
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-.timeline-canvas{ position:relative; min-width:600px; width:100%; }
+.timeline-canvas{ position:relative; min-width:600px; width:100%; /* hauteur JS dynamique */ }
 
-/* === BLOC-NOTE (overlay) === */
+/* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{ position: fixed; top: 6vh; left: 2vw; width: 96vw; height: 80vh; min-width: 320px; min-height: 260px; max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); background: rgba(255,255,255,0.9); color:#111; border-radius:16px; box-shadow: 0 20px 50px rgba(0,0,0,.35); z-index:2000; display:none; overflow:hidden; resize: both; backdrop-filter: saturate(180%) blur(12px); opacity: 0; transform: translateY(10px) scale(.98); transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease; border: 1px solid rgba(0,0,0,.06); }
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
 .note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 body.dark .note-overlay{ background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08); }
+.note-overlay::after{ content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px; background:
+    linear-gradient(135deg, rgba(0,0,0,.25) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(0,0,0,.15) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(0,0,0,.10) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat;
+  pointer-events:none; opacity:.6; }
+body.dark .note-overlay::after{ background:
+    linear-gradient(135deg, rgba(255,255,255,.3) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.2) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
+    linear-gradient(135deg, rgba(255,255,255,.15) 0 2px, transparent 0) right 16px bottom / 8px 8px no-repeat; }
 
+/* barre de titre */
 .note-titlebar{ cursor:grab; user-select:none; display:flex; align-items:center; gap:10px; padding:10px 12px; background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.35)); border-bottom: 1px solid rgba(0,0,0,.06); }
 .note-titlebar .spacer{ flex:1; }
 .note-titlebar:active{ cursor:grabbing; }
 body.dark .note-titlebar{ background: linear-gradient(180deg, rgba(30,30,30,.7), rgba(30,30,30,.45)); border-bottom-color: rgba(255,255,255,.08); }
 
+/* Toolbar */
 .note-toolbar{ display:flex; gap:10px; align-items:center; padding:10px 12px; border-bottom:1px solid rgba(0,0,0,.06); flex-wrap:wrap; }
 body.dark .note-toolbar{ border-bottom-color: rgba(255,255,255,.08); }
 .note-toolbar .note-btn{ border:0; padding:8px 12px; border-radius:10px; background:#e7ebf0; cursor:pointer; font-weight:600; transition: transform .12s ease, background .15s ease, box-shadow .15s ease; }
@@ -312,10 +319,21 @@ body.dark .note-toolbar .note-btn{ background:#2a2a2a; color:#eee; }
 .note-btn.active{ outline: 2px solid #1976d2; box-shadow: 0 0 0 3px rgba(25,118,210,.15); }
 .note-btn[disabled]{ opacity:.5; cursor:not-allowed; }
 .note-btn-danger{ background:#e53935 !important; color:#fff !important; }
+.note-btn-danger:hover{ filter: brightness(0.95); }
+.note-btn-danger:active{ transform: translateY(1px); }
+.note-toolbar input[type="range"]{ width:140px; }
+.note-color{ width:24px; height:24px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.2); cursor:pointer; transition: transform .12s ease; }
+.note-color:hover{ transform: scale(1.06); }
+.note-color.selected{ outline:3px solid #1976d2; }
 
 .note-canvas-wrap{ position:relative; width:100%; height:calc(100% - 100px); }
 #noteCanvas{ width:100%; height:100%; display:block; touch-action:none; background:#fff; }
 body.dark #noteCanvas{ background:#111; }
+
+/* Icône bloc-note dans le bandeau d’onglets */
+#tab-bar .note-icon{ margin-left:auto; border-radius:12px; }
+#tab-bar .note-icon:hover{ background:#e9eef6; }
+body.dark #tab-bar .note-icon:hover{ background:#2a2a2a; }
 
 /* === TIMING – split arrivée / départ === */
 .timing-split{ display:grid; grid-template-columns: repeat(2, minmax(260px,1fr)); gap:12px; }
@@ -337,14 +355,27 @@ body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90ca
 .timing-panel{ display:none; }
 .timing-panel.active{ display:block; }
 
-/* Arrivée bouton actif en vert */
-#seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32; color:#fff; }
-body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32; color:#fff; }
+/* Spécifique : Arrivée en vert quand actif */
+#seg-arr.timing-seg.active {
+  background: #2e7d32;
+  border-color: #2e7d32;
+  color: #fff;
+}
+/* Option dark mode (même vert) */
+body.dark #seg-arr.timing-seg.active {
+  background: #2e7d32;
+  border-color: #2e7d32;
+  color: #fff;
+}
 
-/* Now verts dans ARRIVÉE */
+/* Now VERTS uniquement dans la colonne ARRIVÉE */
 #panel-arr .btn-actions .now { background: #2e7d32; }
 
-/* === CHIFFRES PORTE — esthétique === */
+/* Séparateur pour la zone recherche bagage / INAD / fermeture */
+.timing-divider{ border-top:1px dashed #aaa; margin:6px 0 2px; }
+body.dark .timing-divider{ border-top-color:#555; }
+
+/* === CHIFFRES PORTE — esthétique + lignes figées === */
 #chiffres-porte .form-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px; }
 #chiffres-porte .cp-row{ grid-column: 1 / -1; display: grid; gap: 12px; margin-bottom: 6px; }
 #chiffres-porte .cp-cols-1{ grid-template-columns: 1fr; }
@@ -361,6 +392,20 @@ body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32;
   transition: transform .12s ease, box-shadow .15s ease, background .2s ease;
   position: relative; overflow: hidden;
 }
+#chiffres-porte .form-group:hover,
+#chiffres-porte .form-group-3col:hover,
+#chiffres-porte .form-group-4col:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12), inset 0 0 0 1px rgba(0,0,0,.06);
+}
+#chiffres-porte .form-group::before,
+#chiffres-porte .form-group-3col::before,
+#chiffres-porte .form-group-4col::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:6px;
+  background: linear-gradient(180deg, #1976d2, #4caf50);
+  opacity:.85;
+}
 #chiffres-porte label{ font-weight: 800; font-size: .9rem; color:#123; }
 #chiffres-porte input, #chiffres-porte select{
   background: #fff; border: 1px solid #d7dde5; border-radius: 8px; padding: 8px; font-weight: 700;
@@ -368,29 +413,134 @@ body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32;
 #chiffres-porte #TOB{
   font-size: 1.25rem; letter-spacing: .5px; background: #e8f0fe; border: 2px solid #1976d2; border-radius: 10px;
 }
+body.dark #chiffres-porte .form-group,
+body.dark #chiffres-porte .form-group-3col,
+body.dark #chiffres-porte .form-group-4col{
+  background: linear-gradient(180deg, #171717, #121212);
+  box-shadow: 0 8px 20px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+body.dark #chiffres-porte label{ color:#eef2f7; }
+body.dark #chiffres-porte input, body.dark #chiffres-porte select{
+  background:#0f0f0f; color:#eef2f7; border-color:#2e2e2e;
+}
+body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 
-/* === CHIFFRES PORTE via <details> === */
+/* === CHIFFRES PORTE via <details> : rétractable */
 #chiffres-porte summary { list-style: none; cursor: pointer; }
 #chiffres-porte summary::-webkit-details-marker { display: none; }
 #chiffres-porte summary h2 { cursor: pointer; }
 
+/* === PATCH: Timeline plus aérée (barres + étiquettes) === */
+.tl-range { height: 16px; }
+.tl-range-label { top: -22px; }
+
 /* Bordure d'erreur DL */
 .dl-error { border: 2px solid #d32f2f !important; border-radius: 4px; }
 
-/* === TAGS Grid === */
+/* --- Détails repliables (INAD / Recherche bagage) --- */
+details.timing-collapse summary { list-style: none; }
+details.timing-collapse summary::-webkit-details-marker { display: none; }
+details.timing-collapse > summary.timing-seg { display:inline-block; }
+details.timing-collapse[open] > summary.timing-seg {
+  background:#1976d2; color:#fff; border-color:#1976d2;
+}
+body.dark details.timing-collapse[open] > summary.timing-seg {
+  background:#90caf9; color:#111; border-color:#90caf9;
+}
+
+/* === FIX responsive + overflow pour CHIFFRES PORTE === */
+#chiffres-porte .form-group,
+#chiffres-porte .form-group-3col,
+#chiffres-porte .form-group-4col {
+  min-width: 0; /* évite le débordement des items en grid */
+}
+#chiffres-porte .cp-cols-2,
+#chiffres-porte .cp-cols-3,
+#chiffres-porte .cp-cols-4 {
+  /* au lieu d'imposer 2/3/4 colonnes, on s'adapte à la largeur dispo */
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+@media (max-width: 900px) {
+  #chiffres-porte .cp-cols-2,
+  #chiffres-porte .cp-cols-3,
+  #chiffres-porte .cp-cols-4 {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}
+#chiffres-porte input,
+#chiffres-porte select {
+  max-width: 100%;
+}
+
+/* === TAGS: grille 2 colonnes, pleine largeur === */
 #TagsContainer{
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   align-items: start;
 }
-#TagsContainer .form-group{ margin-bottom: 0; }
-#TagsContainer .form-group:nth-last-child(1):nth-child(odd){ grid-column: 1 / -1; }
-@media (max-width: 700px){ #TagsContainer{ grid-template-columns: 1fr; } }
+#TagsContainer .form-group{
+  margin-bottom: 0; /* géré par le gap */
+}
+/* Si nombre impair, le dernier s'étale sur toute la ligne */
+#TagsContainer .form-group:nth-last-child(1):nth-child(odd){
+  grid-column: 1 / -1;
+}
+/* Sur petit écran: 1 colonne */
+@media (max-width: 700px){
+  #TagsContainer{ grid-template-columns: 1fr; }
+}
 
-/* Helpers */
-.form-group.full { flex: 1 1 100% !important; }
-.form-row-2 { display: contents; }
+/* === Helpers de largeur pour forcer la mise en ligne === */
+.form-group.full { flex: 1 1 100% !important; }   /* occupe toute la ligne */
+.form-row-2 { display: contents; } /* en flex-wrap, on laisse les .form-group à 50% */
+
+/* === Accordéon moderne pour INAD / Recherche bagage === */
+details.accordion {
+  flex: 1 1 100%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08), inset 0 0 0 1px rgba(0,0,0,.06);
+  padding: 0;
+  overflow: hidden;
+}
+body.dark details.accordion {
+  background: #161616;
+  box-shadow: 0 8px 20px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
+}
+details.accordion > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(180deg, #f7faff, #eef2f7);
+}
+body.dark details.accordion > summary {
+  background: linear-gradient(180deg, #1d1d1d, #171717);
+}
+details.accordion > summary::marker,
+details.accordion summary::-webkit-details-marker { display: none; }
+details.accordion > summary::after {
+  content: "▸";
+  margin-left: auto;
+  transition: transform .15s ease;
+  font-weight: 900;
+  opacity: .7;
+}
+details.accordion[open] > summary::after { transform: rotate(90deg); opacity: 1; }
+details.accordion .accordion-body {
+  padding: 12px 14px 14px 14px;
+  background: transparent;
+}
+details.accordion .accordion-body .form-grid { margin-top: 4px; }
+
+/* On n’utilise plus la ligne pointillée pour séparer ces blocs */
+.timing-divider { display: none; }
+}
+
 </style>
 </head>
 <body onload="initForm()">
@@ -547,7 +697,7 @@ body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32;
   </div>
 </section>
 
-<!-- CHIFFRES PORTE -->
+<!-- CHIFFRES PORTE (rétractable – version <details>) -->
 <section id="chiffres-porte">
   <details id="cp-details" open>
     <summary><h2>CHIFFRES PORTE</h2></summary>
@@ -651,8 +801,6 @@ body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32;
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
-<button id="exportPdf" onclick="exportPDF()">EXPORTER EN PDF</button>
-<button id="sendMail" onclick="sendEmail()">ENVOYER PAR MAIL</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <script>
@@ -717,7 +865,7 @@ function initForm(){
   attachAutoSave();
   window.addEventListener('beforeunload', saveCurrentTabData);
 
-  /* replis génériques sur H2, sauf CHIFFRES PORTE */
+  /* replis génériques sur H2, sauf CHIFFRES PORTE (gérée par <details>) */
   document.querySelectorAll("section h2").forEach(h2=>{
     if (h2.closest('#chiffres-porte')) return;
     h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
@@ -953,6 +1101,7 @@ function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
+  // helper : demi-largeur par défaut ; "full" pour toute la ligne
   const fieldHTML = (id,label,variant='half')=>`
     <div class="form-group ${variant==='full' ? 'full' : ''}">
       <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
@@ -963,54 +1112,61 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ===== ARRIVÉE ===== */
+  /* ===== ARRIVÉE ===== (ordre demandé) */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
 
-  // Arrivée AVITAIR
+  // 1) Arrivée AVITAIR (seul sur la ligne)
   arr += fieldHTML('ArriveeFuel','Arrivée Avitair','full');
 
-  // Premier/Dernier débarqué
+  // 2) Premier débarqué / Dernier débarqué (même ligne)
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  // Arrivée/Départ Lift (Arrivée)
+  // 3) Arrivée Lift / Départ Lift (même ligne)
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
-  /* supprimé : Arrivée agent PMR (arr) */
-  /* supprimé : Début/Fin déchargement bagages (arr) */
+  // 4) Arrivée agent PMR (seul sur la ligne)
+  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','full');
+
+  // 5) Début/Fin déchargement bagages (même ligne)
+  arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
+  arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
 
   arr += `</div></div>`;
 
-  /* ===== DÉPART ===== */
+  /* ===== DÉPART ===== (ordre demandé) */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
 
-  // Arrivée PNT / Arrivée PNC
+  // 1) Arrivée PNT / Arrivée PNC
   dep += fieldHTML('ArrPNT','Arrivée PNT');
   dep += fieldHTML('ArrPNC','Arrivée PNC');
 
-  // Premier / Dernier embarqué
+  // 2) Premier / Dernier embarqué
   dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
   dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  // Arrivée / Départ Lift (Départ)
+  // 3) Arrivée Lift / Départ Lift
   dep += fieldHTML('ArriveeLift','Arrivée lift');
   dep += fieldHTML('DepartLift','Départ lift');
 
-  /* supprimé : Arrivée agent PMR (dep) */
+  // 4) Arrivée agent PMR (seul)
+  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','full');
 
-  // Début/Fin chargement bagages (on conserve)
+  // 5) Début/Fin chargement bagages
   dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
   dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
 
-  // Départ AVITAIR
+  // 6) Départ AVITAIR (seul)
   dep += fieldHTML('DepartFuel','Départ Avitair','full');
 
-  /* supprimé : Arrivée/ Départ NAYAK */
+  // 7) Arrivée NAYAK / Départ NAYAK (nouveaux champs)
+  dep += fieldHTML('ArriveeNayak','Arrivée NAYAK');
+  dep += fieldHTML('DepartNayak','Départ NAYAK');
 
-  // Remise LID/LDS / Fermeture porte avion
+  // 8) Remise LID/LDS / Fermeture porte avion (même ligne)
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
@@ -1051,6 +1207,7 @@ function generateTimingFields(){
 
   dep += `</div></div>`;
 
+  /* ===== Toggle Arr/Dep + panneaux ===== */
   const toggle = `
     <div class="timing-toggle">
       <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
@@ -1064,6 +1221,7 @@ function generateTimingFields(){
   const saved = localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(saved);
 
+  // Init champs tags si valeur déjà présente
   updateTagInputs();
 }
 
@@ -1321,7 +1479,7 @@ function updateCTOTDisplay(){
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
-/* DL CODES (mapping) */
+/* DL CODES (mapping demandé) */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
@@ -1356,7 +1514,7 @@ function totalDelayMinutes(){
   const a = parseHHMM(ao);
   if (s==null || a==null) return null;
   let total = a - s;
-  if (total < 0) total += 1440;
+  if (total < 0) total += 1440; // overnight
   return total;
 }
 
@@ -1469,6 +1627,8 @@ function setDarkMode(enable, fromInit=false){
   if (!enable && currentlyDark) document.body.classList.remove('dark');
   document.getElementById('darkToggle').checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
+
+  adaptNotepadThemeColors(enable, fromInit);
 }
 
 function setTimeModeUTC(enable, fromInit=false){
@@ -1613,9 +1773,10 @@ function collectTimelineData(){
     {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
     {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
-    /* supprimé : Déchargement bagages (arr) */
-    /* supprimé : NAYAK */
+    {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
+    {key:'nayak',  label:'NAYAK',                 pair:getPairWindow('ArriveeNayak','DepartNayak'),                        cls:'tl--std',  color:'#000000'},
+
   ];
 
   const durations = rows
@@ -1695,29 +1856,32 @@ function renderTimeline(){
     return { ...d, start: Math.min(aExt,bExt), end: Math.max(aExt,bExt) };
   }).sort((x,y)=> x.start - y.start);
 
-  const durLanesEnd = [];
-  const LANE_PAD_MIN = 2;
-  function packLanes(items, pad = LANE_PAD_MIN){
-    const lanes = [];
-    return items.map(it => {
-      let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
-      if (laneIdx === -1) {
-        laneIdx = lanes.length;
-        lanes.push(it.end + pad);
-      } else {
-        lanes[laneIdx] = it.end + pad;
-      }
-      return { ...it, lane: laneIdx };
-    });
-  }
-  const durWithLane = packLanes(durItems);
-  const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
+const durLanesEnd = [];
+// Empilage strict avec tampon
+const LANE_PAD_MIN = 2; // augmente à 3/4 si besoin
 
-  const finalHeight = Math.max(
-    MIN_HEIGHT,
-    trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
-  );
-  canvas.style.height = `${finalHeight}px`;
+function packLanes(items, pad = LANE_PAD_MIN){
+  const lanes = []; // minute "libre à partir de" pour chaque voie
+  return items.map(it => {
+    let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
+    if (laneIdx === -1) {
+      laneIdx = lanes.length;
+      lanes.push(it.end + pad);
+    } else {
+      lanes[laneIdx] = it.end + pad;
+    }
+    return { ...it, lane: laneIdx };
+  });
+}
+
+const durWithLane = packLanes(durItems);
+const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
+
+const finalHeight = Math.max(
+  MIN_HEIGHT,
+  trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
+);
+canvas.style.height = `${finalHeight}px`;
 
   for(let t = Math.ceil(min); t <= Math.floor(max); t++){
     const x = (t-min)/total;
@@ -1750,26 +1914,26 @@ function renderTimeline(){
     el.style.visibility = 'visible';
   });
 
-  const downStart = trackY + AFTER_TRACK;
-  durWithLane.forEach(d=>{
-    const leftStartPct = 6 + ((d.start-min)/total)*88;
-    const widthPct     = ((d.end-d.start)/total)*88;
+const downStart = trackY + AFTER_TRACK;
+durWithLane.forEach(d=>{
+  const leftStartPct = 6 + ((d.start-min)/total)*88;
+  const widthPct     = ((d.end-d.start)/total)*88;
 
-    const bar = document.createElement('div');
-    bar.className = `tl-range ${d.cls}`;
-    if(d.color){ bar.style.setProperty('--c', d.color); }
-    bar.style.left = `${leftStartPct}%`;
-    bar.style.width = `${widthPct}%`;
-    bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
-    bar.style.transform = 'translateX(-50%)';
-    canvas.appendChild(bar);
+  const bar = document.createElement('div');
+  bar.className = `tl-range ${d.cls}`;
+  if(d.color){ bar.style.setProperty('--c', d.color); }
+  bar.style.left = `${leftStartPct}%`;
+  bar.style.width = `${widthPct}%`;
+  bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
+  bar.style.transform = 'translateX(-50%)'; // ✅ plus de centrage vertical
+  canvas.appendChild(bar);
 
-    const lab = document.createElement('div');
-    lab.className = 'tl-range-label';
-    const durMin = Math.max(0, d.b - d.a);
-    lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
-    bar.appendChild(lab);
-  });
+  const lab = document.createElement('div');
+  lab.className = 'tl-range-label';
+  const durMin = Math.max(0, d.b - d.a);
+  lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
+  bar.appendChild(lab);
+});
 
   if(!timelineUserScrolled){
     const centerMin = (min + max) / 2;
@@ -1825,7 +1989,7 @@ function updateTagInputs(){
   const wrap = document.getElementById('TagsContainer');
   if(!wrap) return;
 
-  const count = Math.max(0, Math.min(nb, 50));
+  const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
   let html = '';
   for(let i=1; i<=count; i++){
     html += `
@@ -1838,6 +2002,7 @@ function updateTagInputs(){
   }
   wrap.innerHTML = html;
 
+  // Réinjecter les valeurs sauvegardées (si présentes)
   try{
     const data = JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}');
     for(let i=1; i<=count; i++){
@@ -1845,182 +2010,6 @@ function updateTagInputs(){
       if(f && data['TagNumero'+i] !== undefined) f.value = data['TagNumero'+i];
     }
   }catch(e){}
-}
-
-/* === EXPORT TEXTE BRUT (rapport) === */
-function formatDateFR(iso){
-  if(!iso) return '';
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-function val(id){ const el=document.getElementById(id); return el? (el.value||'') : ''; }
-function timerText(id){ const el=document.getElementById(id); const t=el?el.textContent:''; return (t && t!=='--:--')?t:''; }
-
-function buildReportText(){
-  const lines = [];
-
-  // En-tête
-  lines.push(`DATE : ${formatDateFR(val('Date'))}`);
-  lines.push(`Cie : ${val('Cie')}`);
-  lines.push(`N° vol : ${val('NVol')}`);
-  lines.push(`From : ${val('From')}`);
-  lines.push(`To : ${val('To')}`);
-  lines.push(`RZA : ${val('RZA')}`);
-  lines.push(`Immat : ${val('Immat')}`);
-  lines.push(`Parking : ${val('Parking')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Horaires
-  lines.push(`SIBT : ${val('SIBT')}`);
-  lines.push(`AIBT : ${val('AIBT')}`);
-  lines.push(`SOBT : ${val('SOBT')}`);
-  lines.push(`AOBT : ${val('AOBT')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Timings clefs
-  lines.push(`Arrivée PNT : ${val('ArrPNT')}`);
-  lines.push(`Arrivée PNC : ${val('ArrPNC')}`);
-  lines.push(`Premier débarqué : ${val('PremierDebarque')}`);
-  lines.push(`Dernier débarqué : ${val('DernierDebarque')}`);
-  lines.push(`Premier embarqué : ${val('AvionPremierEmbarque')}`);
-  lines.push(`Dernier embarqué : ${val('AvionDernierEmbarque')}`);
-  lines.push(`Fermeture porte avion : ${val('FermeturePorteAvion')}`);
-  lines.push(`Arrivée AVITAIR : ${val('ArriveeFuel')}`);
-  lines.push(`Départ AVITAIR : ${val('DepartFuel')}`);
-  lines.push(`Arrivée Lift : ${val('ArriveeLift') || val('ArriveeLiftArr')}`);
-  lines.push(`Départ Lift : ${val('DepartLift') || val('DepartLiftArr')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Retards
-  lines.push(`DL Code 1 : ${val('DLcode1')}`);
-  lines.push(`DL Durée 1 (min) : ${val('DLduree1')}`);
-  lines.push(``);
-  lines.push(`DL Code 2 : ${val('DLcode2')}`);
-  lines.push(`DL Durée 2 (min) : ${val('DLduree2')}`);
-  lines.push(``);
-  lines.push(`DL Code 3 : ${val('DLcode3')}`);
-  lines.push(`DL Durée 3 (min) : ${val('DLduree3')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Justif & Faits
-  lines.push(`DL justifications :`);
-  lines.push(`${val('DLJustif')}`);
-  lines.push(``);
-  lines.push(`Faits saillants :`);
-  lines.push(`${val('FaitsSaillants')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Assistances
-  lines.push(`WCHC : ${val('WCHC')}`);
-  lines.push(`WCHS : ${val('WCHS')}`);
-  lines.push(`WCHR : ${val('WCHR')}`);
-  lines.push(`Autre : ${val('AutreAssist')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Prestations
-  lines.push(`Prestations :`);
-  lines.push(``);
-  lines.push(`ASU : ${val('ASU')}`);
-  lines.push(`Flux RZA : ${val('FluxRZA')}`);
-  lines.push(`Eau potable : ${val('EauPotable')}`);
-  lines.push(`Vidange toilettes : ${val('Vidange')}`);
-  lines.push(`Ménage Assist'Air : ${val('MenageAssist')}`);
-  lines.push(`Ménage Atalian : ${val('MenageAtalian')}`);
-  lines.push(`Collecte d'ordures : ${val('Ordures')}`);
-  lines.push(`Toilet Kit : ${val('ToiletKit')}`);
-  lines.push(`Dégivrage : ${val('Degivrage')}`);
-  lines.push(`Push-Pull : ${val('PushPull')}`);
-  lines.push(`Echelle supplémentaire : ${val('Echelle')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Timers calculés (optionnel)
-  const HLE = timerText('timer-h40');
-  const H15 = timerText('timer-h15');
-  const TOBT = timerText('timer-tobt');
-  const CTOT = timerText('timer-ctot');
-  const LID  = timerText('timer-h8');
-  if (HLE || H15 || TOBT || CTOT || LID){
-    lines.push(`Calculs :`);
-    if(HLE) lines.push(`HLE : ${HLE}`);
-    if(H15) lines.push(`H-15 : ${H15}`);
-    if(TOBT) lines.push(`TOBT : ${TOBT}`);
-    if(CTOT) lines.push(`CTOT : ${CTOT}`);
-    if(LID) lines.push(`LID : ${LID}`);
-    lines.push(``);
-    lines.push(`---`);
-    lines.push(``);
-  }
-
-  // Recherche bagages (si présent)
-  const nbDecharges = val('NbBagagesDecharges');
-  if (nbDecharges){
-    lines.push(`Recherche bagage :`);
-    lines.push(`Début : ${val('DebutRechercheBagage')}`);
-    lines.push(`Fin : ${val('FinRechercheBagage')}`);
-    lines.push(`Quantité déchargée : ${nbDecharges}`);
-    for (let i=1;i<=Math.min(parseInt(nbDecharges)||0,50);i++){
-      const v = val('TagNumero'+i);
-      if(v) lines.push(`Tag ${i} : ${v}`);
-    }
-    lines.push(``);
-    lines.push(`---`);
-    lines.push(``);
-  }
-
-  return lines.join('\n');
-}
-
-/* === EXPORT PDF === */
-async function exportPDF(){
-  const { jsPDF } = window.jspdf || {};
-  if (!jsPDF){
-    showPopup("Librairie PDF indisponible", "#d32f2f", 3000);
-    return;
-  }
-  const doc = new jsPDF({ unit:'pt', format:'a4' });
-  const left = 40, topStart = 50, lineH = 16, maxWidth = 515; // 595-2*40 approx
-  let y = topStart;
-
-  doc.setFont('courier','normal');
-  doc.setFontSize(12);
-
-  const text = buildReportText().split('\n');
-  text.forEach(line=>{
-    const parts = doc.splitTextToSize(line, maxWidth);
-    parts.forEach(part=>{
-      if (y > 800){ doc.addPage(); y = topStart; }
-      doc.text(part, left, y);
-      y += lineH;
-    });
-  });
-
-  const cie = (val('Cie')||'XX').toUpperCase();
-  const nvol = (val('NVol')||'----').toUpperCase();
-  const date = formatDateFR(val('Date')).replace(/\//g,'-') || 'DATE';
-  doc.save(`rapport_${cie}${nvol}_${date}.pdf`);
-  showPopup("PDF exporté", "#6a1b9a", 2200);
-}
-
-/* === ENVOI PAR MAIL (mailto:) === */
-function sendEmail(){
-  const subject = `[SUIVI PERF] ${val('Cie')}${val('NVol')||''} ${val('From')}→${val('To')} ${formatDateFR(val('Date'))}`;
-  const body = buildReportText();
-  const link = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = link;
 }
 
 /* VALIDATION */
@@ -2044,3 +2033,315 @@ function clearAutoSave() {
     location.reload();
   }
 }
+
+/* ==========================================================
+   === BLOC-NOTE (version moderne, avec undo/redo) ===
+   ========================================================== */
+let noteOpen = false;
+let noteTool = 'pen';
+let noteColor = NOTE_DEFAULT_LIGHT;
+let notePenSize = 3;
+let noteEraserSize = 22;
+let noteStrokes = [];
+let noteIsDrawing = false;
+let noteCurrentStroke = null;
+let noteCanvas, noteCtx, noteRO;
+let noteDrag = {active:false, dx:0, dy:0};
+let noteInited = false;
+let noteUndoStack = [];
+let noteRedoStack = [];
+const NOTE_UNDO_LIMIT = 100;
+
+function getThemeDefaultPen(){
+  return document.body.classList.contains('dark') ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+}
+
+function noteStorageKey(){ return currentTabId ? `notepad-${currentTabId}` : 'notepad-default'; }
+
+function toggleNotepadOverlay(){ noteOpen ? closeNotepadOverlay() : openNotepadOverlay(); }
+function openNotepadOverlay(){
+  const el = document.getElementById('noteOverlay');
+  if (!noteInited) initNotepadOnce();
+  el.style.display = 'block';
+  ensureNoteOverlayInViewport();
+  requestAnimationFrame(()=>{ el.classList.add('open'); });
+  el.setAttribute('aria-hidden','false');
+  noteOpen = true;
+  loadNotepad();
+  fitNoteCanvas();
+  renderNote();
+  noteUndoStack = []; noteRedoStack = []; updateUndoRedoBtns();
+}
+function closeNotepadOverlay(){
+  const el = document.getElementById('noteOverlay');
+  el.classList.remove('open');
+  el.style.display = 'none';
+  el.setAttribute('aria-hidden','true');
+  noteOpen = false;
+}
+
+function ensureNoteOverlayInViewport(){
+  const overlay = document.getElementById('noteOverlay');
+  if(!overlay) return;
+  const margin = 10;
+  overlay.style.maxWidth  = `calc(100vw - ${margin*2}px)`;
+  overlay.style.maxHeight = `calc(100vh - ${margin*2}px)`;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const rect = overlay.getBoundingClientRect();
+  let w = Math.min(rect.width,  vw - margin*2);
+  let h = Math.min(rect.height, vh - margin*2);
+  if (Math.abs(w - rect.width) > 0.5) overlay.style.width  = w + 'px';
+  if (Math.abs(h - rect.height) > 0.5) overlay.style.height = h + 'px';
+  const rect2 = overlay.getBoundingClientRect();
+  w = rect2.width; h = rect2.height;
+  let left = Math.min(Math.max(rect2.left,  margin), vw - margin - w);
+  let top  = Math.min(Math.max(rect2.top,   margin), vh - margin - h);
+  overlay.style.left = left + 'px';
+  overlay.style.top  = top  + 'px';
+  overlay.style.right = 'auto';
+}
+
+function initNotepadOnce(){
+  if (noteInited) return; noteInited = true;
+
+  noteCanvas = document.getElementById('noteCanvas');
+  noteCtx = noteCanvas.getContext('2d', { willReadFrequently: false });
+  noteCtx.lineJoin = 'round'; noteCtx.lineCap  = 'round';
+
+  const dragBar = document.getElementById('noteDragBar');
+  const overlay = document.getElementById('noteOverlay');
+  dragBar.addEventListener('mousedown', (e)=>{
+    overlay.classList.add('dragging');
+    noteDrag.active = true;
+    const r = overlay.getBoundingClientRect();
+    noteDrag.dx = e.clientX - r.left;
+    noteDrag.dy = e.clientY - r.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', ()=>{
+    if(!noteDrag.active) return;
+  });
+  document.addEventListener('mouseup', ()=>{
+    if(!noteDrag.active) return;
+    noteDrag.active=false;
+    overlay.classList.remove('dragging');
+    ensureNoteOverlayInViewport();
+  });
+
+  noteRO = new ResizeObserver(()=>{ ensureNoteOverlayInViewport(); fitNoteCanvas(); renderNote(); });
+  noteRO.observe(overlay);
+  noteRO.observe(document.querySelector('.note-canvas-wrap'));
+  window.addEventListener('resize', ensureNoteOverlayInViewport);
+
+  noteCanvas.addEventListener('pointerdown', notePointerDown);
+  noteCanvas.addEventListener('pointermove', notePointerMove);
+  noteCanvas.addEventListener('pointerup',   notePointerUp);
+  noteCanvas.addEventListener('pointerleave',notePointerUp);
+  noteCanvas.addEventListener('pointercancel',notePointerUp);
+
+  document.addEventListener('keydown', (e)=>{
+    if(!noteOpen) return;
+    const isMac = navigator.platform.toLowerCase().includes('mac');
+    const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+    if (ctrlOrCmd && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? noteRedo() : noteUndo(); }
+    else if (ctrlOrCmd && (e.key.toLowerCase() === 'y')) { e.preventDefault(); noteRedo(); }
+  });
+
+  updatePenSizeLabel(); updateEraserSizeLabel();
+
+  const defaultDot = document.getElementById('noteColorDotDefault');
+  if(defaultDot){
+    defaultDot.style.background = getThemeDefaultPen();
+    defaultDot.classList.add('selected');
+  }
+  document.getElementById('noteColorInput').value = rgbToHex(getThemeDefaultPen());
+  noteColor = getThemeDefaultPen();
+}
+function rgbToHex(v){ return v.startsWith('#') ? v : '#111111'; }
+
+function fitNoteCanvas(){
+  if(!noteCanvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = noteCanvas.getBoundingClientRect();
+  noteCanvas.width  = Math.max(1, Math.floor(rect.width  * dpr));
+  noteCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  noteCtx.setTransform(1,0,0,1,0,0);
+  noteCtx.scale(dpr, dpr);
+  noteCtx.lineJoin = 'round';
+  noteCtx.lineCap  = 'round';
+}
+
+function setNoteTool(tool){
+  noteTool = tool;
+  document.getElementById('toolPen').classList.toggle('active', tool==='pen');
+  document.getElementById('toolErase').classList.toggle('active', tool==='eraser');
+}
+function updatePenSizeLabel(){
+  const v = parseInt(document.getElementById('penSize').value)||3;
+  notePenSize = v;
+  document.getElementById('penSizeVal').textContent = v;
+}
+function updateEraserSizeLabel(){
+  const v = parseInt(document.getElementById('eraserSize').value)||22;
+  noteEraserSize = v;
+  document.getElementById('eraserSizeVal').textContent = v;
+}
+function pickColor(el, color){
+  noteColor = color;
+  document.getElementById('noteColorInput').value = color;
+  document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
+  if(el) el.classList.add('selected');
+  setNoteTool('pen');
+}
+
+function saveNotepad(){
+  try{ localStorage.setItem(noteStorageKey(), JSON.stringify(noteStrokes)); }
+  catch(e){ showPopup("Sauvegarde du bloc-note impossible (quota localStorage ?)", "#d32f2f", 3000); }
+}
+function loadNotepad(){
+  try{
+    const raw = localStorage.getItem(noteStorageKey());
+    noteStrokes = raw ? JSON.parse(raw) : [];
+  }catch(e){ noteStrokes = []; }
+}
+
+function snapshotStrokes(){ return JSON.parse(JSON.stringify(noteStrokes)); }
+function pushUndoState(){
+  noteUndoStack.push(snapshotStrokes());
+  if (noteUndoStack.length > 100) noteUndoStack.shift();
+  updateUndoRedoBtns();
+}
+function clearRedo(){ noteRedoStack = []; updateUndoRedoBtns(); }
+function updateUndoRedoBtns(){
+  const u = document.getElementById('noteUndoBtn');
+  const r = document.getElementById('noteRedoBtn');
+  if (u) u.disabled = noteUndoStack.length === 0;
+  if (r) r.disabled = noteRedoStack.length === 0;
+}
+
+function noteEventPoint(e){ return { x: e.offsetX, y: e.offsetY }; }
+
+function notePointerDown(e){
+  e.preventDefault();
+  noteCanvas.setPointerCapture(e.pointerId);
+  pushUndoState(); clearRedo();
+
+  noteIsDrawing = true;
+  const pt = noteEventPoint(e);
+  const stroke = { tool: noteTool, color: noteColor, size: (noteTool==='pen' ? notePenSize : noteEraserSize), points: [pt] };
+  noteCurrentStroke = stroke;
+
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (stroke.tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.strokeStyle = stroke.color; noteCtx.lineWidth = stroke.size;
+  noteCtx.beginPath(); noteCtx.moveTo(pt.x, pt.y); noteCtx.lineTo(pt.x+0.01, pt.y+0.01); noteCtx.stroke();
+  noteCtx.restore();
+}
+function notePointerMove(e){
+  if(!noteIsDrawing || !noteCurrentStroke) return;
+  const pt = noteEventPoint(e);
+  const prev = noteCurrentStroke.points[noteCurrentStroke.points.length-1];
+  noteCurrentStroke.points.push(pt);
+
+  noteCtx.save();
+  noteCtx.globalCompositeOperation = (noteCurrentStroke.tool==='eraser') ? 'destination-out' : 'source-over';
+  noteCtx.strokeStyle = noteCurrentStroke.color; noteCtx.lineWidth = noteCurrentStroke.size;
+  noteCtx.beginPath(); noteCtx.moveTo(prev.x, prev.y); noteCtx.lineTo(pt.x, pt.y); noteCtx.stroke();
+  noteCtx.restore();
+}
+function notePointerUp(){
+  if(!noteIsDrawing) return;
+  noteIsDrawing = false;
+  if(noteCurrentStroke && noteCurrentStroke.points.length>0){
+    noteStrokes.push(noteCurrentStroke);
+    saveNotepad(); renderNote(); updateUndoRedoBtns();
+  }
+  noteCurrentStroke = null;
+}
+
+function renderNote(){
+  if(!noteCtx || !noteCanvas) return;
+  noteCtx.save();
+  noteCtx.setTransform(1,0,0,1,0,0);
+  noteCtx.clearRect(0,0,noteCanvas.width, noteCanvas.height);
+  noteCtx.restore();
+
+  for(const s of noteStrokes){
+    noteCtx.globalCompositeOperation = (s.tool==='eraser') ? 'destination-out' : 'source-over';
+    noteCtx.strokeStyle = s.color || getThemeDefaultPen();
+    noteCtx.lineWidth = s.size || 3;
+    if(!s.points || s.points.length===0) continue;
+    noteCtx.beginPath();
+    noteCtx.moveTo(s.points[0].x, s.points[0].y);
+    for(let i=1;i<s.points.length;i++){ const p = s.points[i]; noteCtx.lineTo(p.x, p.y); }
+    noteCtx.stroke();
+  }
+}
+
+function noteUndo(){
+  if (noteUndoStack.length === 0) return;
+  noteRedoStack.push(snapshotStrokes());
+  noteStrokes = noteUndoStack.pop();
+  saveNotepad(); renderNote(); updateUndoRedoBtns();
+}
+function noteRedo(){
+  if (noteRedoStack.length === 0) return;
+  noteUndoStack.push(snapshotStrokes());
+  noteStrokes = noteRedoStack.pop();
+  saveNotepad(); renderNote(); updateUndoRedoBtns();
+}
+
+function noteClearAll(){
+  if(!confirm('Effacer tous les traits de ce bloc-note ?')) return;
+  pushUndoState();
+  noteStrokes = []; clearRedo(); saveNotepad(); renderNote();
+}
+
+/* === Adaptation bloc-note au thème === */
+function adaptNotepadThemeColors(dark, fromInit){
+  const newDefault = dark ? NOTE_DEFAULT_DARK : NOTE_DEFAULT_LIGHT;
+  const defaultDot = document.getElementById('noteColorDotDefault');
+  if (defaultDot) {
+    defaultDot.style.background = newDefault;
+    document.querySelectorAll('.note-color').forEach(n=>n.classList.remove('selected'));
+    defaultDot.classList.add('selected');
+  }
+  noteColor = newDefault;
+  const colorInput = document.getElementById('noteColorInput');
+  if (colorInput) colorInput.value = newDefault;
+
+  try{
+    const key = noteStorageKey();
+    const raw = localStorage.getItem(key);
+    let strokes = raw ? JSON.parse(raw) : [];
+    let changed = false;
+    for(const s of strokes){
+      if(s.tool !== 'eraser' && s.color !== newDefault){
+        s.color = newDefault;
+        changed = true;
+      }
+    }
+    if(changed){
+      localStorage.setItem(key, JSON.stringify(strokes));
+    }
+    if(noteOpen){
+      noteStrokes = strokes;
+      fitNoteCanvas();
+      renderNote();
+    }
+  }catch(e){}
+}
+
+/* Maintien bloc-note lors du switch d’onglet */
+const _switchTabOrig = switchTab;
+switchTab = function(id){
+  _switchTabOrig(id);
+  if(noteOpen){
+    loadNotepad(); noteUndoStack = []; noteRedoStack = [];
+    fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
+    ensureNoteOverlayInViewport();
+  }
+};
+</script>
+</body>
+</html>
