@@ -2054,7 +2054,7 @@ const add = (label, value) => {
     }
 };
 
-    // ==== ENTÊTE ====
+// ==== ENTÊTE ====
 add("Date", v("Date"));
 add("Cie", v("Cie"));
 add("N° vol", v("NVol"));
@@ -2063,9 +2063,10 @@ add("Destination", v("To"));
 add("RZA", v("RZA"));
 add("Immat", v("Immat"));
 add("Parking", v("Parking"));
-    
-y += 4;
+
+y += 10;
 doc.text("----", x, y);
+y += 6;
 
 add("SIBT", v("SIBT"));
 add("AIBT", v("AIBT"));
@@ -2073,10 +2074,11 @@ add("SOBT", v("SOBT"));
 add("AOBT", v("AOBT"));
 add("CTOT", v("CTOT"));
 
-y += 4;
+y += 10;
 doc.text("----", x, y);
+y += 6;
 
-// TIMING
+// ==== TIMING ====
 add("Arrivée PNT", v("ArrPNT"));
 add("Arrivée PNC", v("ArrPNC"));
 add("Premier débarqué", v("PremierDebarque"));
@@ -2090,24 +2092,24 @@ add("Départ lift", v("DepartLift"));
 add("Remise LID/LDS", v("RemiseLID"));
 add("Fermeture porte avion", v("FermeturePorteAvion"));
 
-// DL + Justif
+// ==== DL (sans le titre “RETARDS”) ====
 y += 6;
-doc.text("RETARDS :", x, y); 
-y += 8;
-
 add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
 add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
 add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
 
+// ==== JUSTIFICATION DL ====
 y += 6;
 doc.text("Justification DL :", x, y);
 y += 8;
 doc.text(v("DLJustif"), x, y);
 
+// ==== FAITS SAILLANTS ====
 y += 20;
 doc.text("Faits saillants :", x, y);
 y += 8;
 doc.text(v("FaitsSaillants"), x, y);
+
 
         return doc;
 }
