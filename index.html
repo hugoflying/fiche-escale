@@ -2055,66 +2055,61 @@ const add = (label, value) => {
 };
 
     // ==== ENTÊTE ====
-    add("Date", v("Date"));
-    add("Cie", v("Cie"));
-    add("N° vol", v("NVol"));
-    add("Provenance", v("From"));
-    add("Destination", v("To"));
-    add("Immat", v("Immat"));
-    add("Parking", v("Parking"));
-    add("RZA", v("RZA"));
+add("Date", v("Date"));
+add("Cie", v("Cie"));
+add("N° vol", v("NVol"));
+add("Provenance", v("From"));
+add("Destination", v("To"));
+add("RZA", v("RZA"));
+add("Immat", v("Immat"));
+add("Parking", v("Parking"));
     
-    y += 4;
-    doc.text("----", 10, y); y += 8;
+y += 4;
+doc.text("----", x, y);
 
-    add("SIBT", v("SIBT"));
-    add("AIBT", v("AIBT"));
-    add("SOBT", v("SOBT"));
-    add("AOBT", v("AOBT"));
-    add("CTOT", v("CTOT"));
+add("SIBT", v("SIBT"));
+add("AIBT", v("AIBT"));
+add("SOBT", v("SOBT"));
+add("AOBT", v("AOBT"));
+add("CTOT", v("CTOT"));
 
-    y += 4;
-    doc.text("----", 10, y); y += 8;
+y += 4;
+doc.text("----", x, y);
 
-    // ARRIVÉE
-    add("Arrivée AVITAIR", v("ArriveeFuel"));
-    add("Premier débarqué", v("PremierDebarque"));
-    add("Dernier débarqué", v("DernierDebarque"));
-    add("Arrivée lift", v("ArriveeLiftArr"));
-    add("Départ lift", v("DepartLiftArr"));
-        
-    y += 4;
-    doc.text("----", 10, y); y += 8;
+// TIMING
+add("Arrivée PNT", v("ArrPNT"));
+add("Arrivée PNC", v("ArrPNC"));
+add("Premier débarqué", v("PremierDebarque"));
+add("Dernier débarqué", v("DernierDebarque"));
+add("Avion : Premier embarqué", v("AvionPremierEmbarque"));
+add("Avion : Dernier embarqué", v("AvionDernierEmbarque"));
+add("Arrivée Fuel", v("ArriveeFuel"));
+add("Départ Fuel", v("DepartFuel"));
+add("Arrivée lift", v("ArriveeLift"));
+add("Départ lift", v("DepartLift"));
+add("Remise LID/LDS", v("RemiseLID"));
+add("Fermeture porte avion", v("FermeturePorteAvion"));
 
-    // DÉPART
-    add("Arrivée PNT", v("ArrPNT"));
-    add("Arrivée PNC", v("ArrPNC"));
-    add("Premier embarqué", v("AvionPremierEmbarque"));
-    add("Dernier embarqué", v("AvionDernierEmbarque"));
-    add("Arrivée lift", v("ArriveeLift"));
-    add("Départ lift", v("DepartLift"));
-    add("Départ AVITAIR", v("DepartFuel"));
-    add("Remise LID/LDS", v("RemiseLID"));
-    add("Fermeture porte avion", v("FermeturePorteAvion"));
+// DL + Justif
+y += 6;
+doc.text("RETARDS :", x, y); 
+y += 8;
 
-    // DL + Justif
-    y += 6;
-    doc.text("RETARDS :", 10, y); y += 8;
-    add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
-    add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
-    add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
+add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
+add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
+add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
 
-    y += 6;
-    doc.text("Justification DL :", 10, y);
-    y += 8;
-    doc.text(v("DLJustif"), 10, y);
+y += 6;
+doc.text("Justification DL :", x, y);
+y += 8;
+doc.text(v("DLJustif"), x, y);
 
-    y += 20;
-    doc.text("Faits saillants :", 10, y);
-    y += 8;
-    doc.text(v("FaitsSaillants"), 10, y);
+y += 20;
+doc.text("Faits saillants :", x, y);
+y += 8;
+doc.text(v("FaitsSaillants"), x, y);
 
-    return doc;
+        return doc;
 }
 
    function validateForm() {
