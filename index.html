@@ -2023,6 +2023,7 @@ function updateTagInputs(){
 function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    doc.setFontSize(12);
 
     // Fonction raccourcie pour récupérer une valeur sans se fatiguer
     const v = id => (document.getElementById(id)?.value || "");
