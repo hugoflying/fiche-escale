@@ -1,31 +1,38 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SUIVI PERFORMANCE</title>
-<style>
-/* RESET & BASE */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    font-family: Arial, sans-serif;
-    background: #ffffff;
-    color: #222;
-    padding: 10px;
-}
-body.dark { background: #121212; color: #f8f9f9; }
 
-h1 { text-align: center; margin: 10px 0 15px; }
+    <!-- jsPDF + autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
-/* Sections (blocs) */
-section {
-    background: #f5f5f5;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 22px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-body.dark section { background: #1e1e1e; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SUIVI PERFORMANCE</title>
+
+    <style>
+        /* RESET & BASE */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #ffffff;
+            color: #222;
+            padding: 10px;
+        }
+        body.dark { background: #121212; color: #f8f9f9; }
+
+        h1 { text-align: center; margin: 10px 0 15px; }
+
+        /* Sections (blocs) */
+        section {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        body.dark section { background: #1e1e1e; }
 
 /* Titres de sections */
 h2 {
@@ -2013,11 +2020,95 @@ function updateTagInputs(){
 }
 
 /* VALIDATION */
-function validateForm() {
-  const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-  let missing = required.some(id => !document.getElementById(id).value);
-  if (missing) showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-  else showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Fonction raccourcie pour récupérer une valeur sans se fatiguer
+    const v = id => (document.getElementById(id)?.value || "");
+
+    let y = 10;
+    const add = (label, value) => {
+        doc.text(`${label} : ${value}`, 10, y);
+        y += 8;
+    };
+
+    // ==== ENTÊTE ====
+    add("Date", v("Date"));
+    add("Cie", v("Cie"));
+    add("N° VOL", v("NVol"));
+    add("Provenance", v("From"));
+    add("Destination", v("To"));
+    add("Immat", v("Immat"));
+    add("Parking", v("Parking"));
+    add("RZA", v("RZA"));
+    add("FNC", v("FNC"));
+
+    y += 4;
+    doc.text("----", 10, y); y += 8;
+
+    add("SIBT", v("SIBT"));
+    add("AIBT", v("AIBT"));
+    add("SOBT", v("SOBT"));
+    add("AOBT", v("AOBT"));
+    add("CTOT", v("CTOT"));
+
+    y += 4;
+    doc.text("----", 10, y); y += 8;
+
+    // ARRIVÉE
+    add("Arrivée AVITAIR", v("ArriveeFuel"));
+    add("Premier débarqué", v("PremierDebarque"));
+    add("Dernier débarqué", v("DernierDebarque"));
+    add("Arrivée lift", v("ArriveeLiftArr"));
+    add("Départ lift", v("DepartLiftArr"));
+    add("Arrivée agent PMR", v("ArriveeAgentsPMRArr"));
+    add("Début déchargement bagages", v("DebutDechargementBagages"));
+    add("Fin déchargement bagages", v("FinDechargementBagages"));
+
+    y += 4;
+    doc.text("----", 10, y); y += 8;
+
+    // DÉPART
+    add("Arrivée PNT", v("ArrPNT"));
+    add("Arrivée PNC", v("ArrPNC"));
+    add("Premier embarqué", v("AvionPremierEmbarque"));
+    add("Dernier embarqué", v("AvionDernierEmbarque"));
+    add("Arrivée lift", v("ArriveeLift"));
+    add("Départ lift", v("DepartLift"));
+    add("Arrivée agent PMR", v("ArriveeAgentsPMRDep"));
+    add("Début chargement bagages", v("DebutChargementBagages"));
+    add("Fin chargement bagages", v("FinChargementBagages"));
+    add("Départ AVITAIR", v("DepartFuel"));
+    add("Arrivée NAYAK", v("ArriveeNayak"));
+    add("Départ NAYAK", v("DepartNayak"));
+    add("Remise LID/LDS", v("RemiseLID"));
+    add("Fermeture porte avion", v("FermeturePorteAvion"));
+
+    // DL + Justif
+    y += 6;
+    doc.text("RETARDS :", 10, y); y += 8;
+    add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
+    add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
+    add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
+
+    y += 6;
+    doc.text("Justification DL :", 10, y);
+    y += 8;
+    doc.text(v("DLJustif"), 10, y);
+
+    y += 20;
+    doc.text("Faits saillants :", 10, y);
+    y += 8;
+    doc.text(v("FaitsSaillants"), 10, y);
+
+    return doc;
+}
+
+   function validateForm() {
+    const pdf = generatePDF();
+    pdf.save("recap.pdf");   // sauvegarde locale si besoin
+    sendEmailWithPDF(pdf);   // ouverture Outlook + PJ
 }
 
 /* SAUVEGARDE MANUELLE */
