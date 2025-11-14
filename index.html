@@ -2057,14 +2057,13 @@ const add = (label, value) => {
     // ==== ENTÊTE ====
     add("Date", v("Date"));
     add("Cie", v("Cie"));
-    add("N° VOL", v("NVol"));
+    add("N° vol", v("NVol"));
     add("Provenance", v("From"));
     add("Destination", v("To"));
     add("Immat", v("Immat"));
     add("Parking", v("Parking"));
     add("RZA", v("RZA"));
-    add("FNC", v("FNC"));
-
+    
     y += 4;
     doc.text("----", 10, y); y += 8;
 
@@ -2083,10 +2082,7 @@ const add = (label, value) => {
     add("Dernier débarqué", v("DernierDebarque"));
     add("Arrivée lift", v("ArriveeLiftArr"));
     add("Départ lift", v("DepartLiftArr"));
-    add("Arrivée agent PMR", v("ArriveeAgentsPMRArr"));
-    add("Début déchargement bagages", v("DebutDechargementBagages"));
-    add("Fin déchargement bagages", v("FinDechargementBagages"));
-
+        
     y += 4;
     doc.text("----", 10, y); y += 8;
 
@@ -2097,12 +2093,7 @@ const add = (label, value) => {
     add("Dernier embarqué", v("AvionDernierEmbarque"));
     add("Arrivée lift", v("ArriveeLift"));
     add("Départ lift", v("DepartLift"));
-    add("Arrivée agent PMR", v("ArriveeAgentsPMRDep"));
-    add("Début chargement bagages", v("DebutChargementBagages"));
-    add("Fin chargement bagages", v("FinChargementBagages"));
     add("Départ AVITAIR", v("DepartFuel"));
-    add("Arrivée NAYAK", v("ArriveeNayak"));
-    add("Départ NAYAK", v("DepartNayak"));
     add("Remise LID/LDS", v("RemiseLID"));
     add("Fermeture porte avion", v("FermeturePorteAvion"));
 
