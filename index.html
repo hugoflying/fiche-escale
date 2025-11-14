@@ -2023,101 +2023,133 @@ function updateTagInputs(){
 function generatePDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFontSize(12);
-
-    // Fonction raccourcie pour récupérer une valeur sans se fatiguer
+    
+    // Fonction raccourcie (à déclarer AVANT de l'utiliser)
     const v = id => (document.getElementById(id)?.value || "");
 
-   let y = 10;
-let col = 1;
+    // Construction du titre PDF
+    const dateRaw = v("Date");  // format YYYY-MM-DD
+    const [yyyy, mm, dd] = dateRaw.split("-");
+    const dateTitre = `${dd}-${mm}-${yyyy}`;
 
-const xLeft = 10;
-const xRight = 110;
+    const cie = v("Cie");
+    const vol = v("NVol");
+    const from = v("From");
+    const to = v("To");
+    const immat = v("Immat");
+    const rza = v("RZA");
 
-let x = xLeft;
+    const titrePDF = `${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
 
-const add = (label, value) => {
-    doc.text(`${label} : ${value}`, x, y);
+    // Titre affiché en haut
+    doc.setFontSize(14);
+    doc.text(titrePDF, 10, 10);
+    doc.setFontSize(12);
+
+    // Position de départ réelle
+    let y = 20;
+    let col = 1;
+
+    const xLeft = 10;
+    const xRight = 110;
+
+    let x = xLeft;
+
+    const add = (label, value) => {
+        doc.text(`${label} : ${value}`, x, y);
+        y += 6;
+
+        if (y > 270) {
+            if (col === 1) {
+                col = 2;
+                x = xRight;
+                y = 10;
+            } else {
+                doc.addPage();
+                col = 1;
+                x = xLeft;
+                y = 10;
+            }
+        }
+    };
+
+    // ==== ENTÊTE ====
+    add("Date", v("Date"));
+    add("Cie", v("Cie"));
+    add("N° vol", v("NVol"));
+    add("Provenance", v("From"));
+    add("Destination", v("To"));
+    add("RZA", v("RZA"));
+    add("Immat", v("Immat"));
+    add("Parking", v("Parking"));
+
+    y += 10;
+    doc.text("----", x, y);
     y += 6;
 
-    if (y > 270) {
-        if (col === 1) {
-            col = 2;
-            x = xRight;
-            y = 10;
-        } else {
-            doc.addPage();
-            col = 1;
-            x = xLeft;
-            y = 10;
-        }
-    }
-};
+    add("SIBT", v("SIBT"));
+    add("AIBT", v("AIBT"));
+    add("SOBT", v("SOBT"));
+    add("AOBT", v("AOBT"));
+    add("CTOT", v("CTOT"));
 
-// ==== ENTÊTE ====
-add("Date", v("Date"));
-add("Cie", v("Cie"));
-add("N° vol", v("NVol"));
-add("Provenance", v("From"));
-add("Destination", v("To"));
-add("RZA", v("RZA"));
-add("Immat", v("Immat"));
-add("Parking", v("Parking"));
+    y += 10;
+    doc.text("----", x, y);
+    y += 6;
 
-y += 10;
-doc.text("----", x, y);
-y += 6;
+    // ==== TIMING ====
+    add("Arrivée PNT", v("ArrPNT"));
+    add("Arrivée PNC", v("ArrPNC"));
+    add("Premier débarqué", v("PremierDebarque"));
+    add("Dernier débarqué", v("DernierDebarque"));
+    add("Avion : Premier embarqué", v("AvionPremierEmbarque"));
+    add("Avion : Dernier embarqué", v("AvionDernierEmbarque"));
+    add("Arrivée Fuel", v("ArriveeFuel"));
+    add("Départ Fuel", v("DepartFuel"));
+    add("Arrivée lift", v("ArriveeLift"));
+    add("Départ lift", v("DepartLift"));
+    add("Remise LID/LDS", v("RemiseLID"));
+    add("Fermeture porte avion", v("FermeturePorteAvion"));
 
-add("SIBT", v("SIBT"));
-add("AIBT", v("AIBT"));
-add("SOBT", v("SOBT"));
-add("AOBT", v("AOBT"));
-add("CTOT", v("CTOT"));
+    // ==== DL ====
+    y += 6;
+    add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
+    add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
+    add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
 
-y += 10;
-doc.text("----", x, y);
-y += 6;
+    // ==== JUSTIFICATION DL ====
+    y += 6;
+    doc.text("Justification DL :", x, y);
+    y += 8;
+    doc.text(v("DLJustif"), x, y);
 
-// ==== TIMING ====
-add("Arrivée PNT", v("ArrPNT"));
-add("Arrivée PNC", v("ArrPNC"));
-add("Premier débarqué", v("PremierDebarque"));
-add("Dernier débarqué", v("DernierDebarque"));
-add("Avion : Premier embarqué", v("AvionPremierEmbarque"));
-add("Avion : Dernier embarqué", v("AvionDernierEmbarque"));
-add("Arrivée Fuel", v("ArriveeFuel"));
-add("Départ Fuel", v("DepartFuel"));
-add("Arrivée lift", v("ArriveeLift"));
-add("Départ lift", v("DepartLift"));
-add("Remise LID/LDS", v("RemiseLID"));
-add("Fermeture porte avion", v("FermeturePorteAvion"));
+    // ==== FAITS SAILLANTS ====
+    y += 20;
+    doc.text("Faits saillants :", x, y);
+    y += 8;
+    doc.text(v("FaitsSaillants"), x, y);
 
-// ==== DL (sans le titre “RETARDS”) ====
-y += 6;
-add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
-add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
-add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
-
-// ==== JUSTIFICATION DL ====
-y += 6;
-doc.text("Justification DL :", x, y);
-y += 8;
-doc.text(v("DLJustif"), x, y);
-
-// ==== FAITS SAILLANTS ====
-y += 20;
-doc.text("Faits saillants :", x, y);
-y += 8;
-doc.text(v("FaitsSaillants"), x, y);
-
-
-        return doc;
+    return doc;
 }
 
    function validateForm() {
     const pdf = generatePDF();
-    pdf.save("recap.pdf");   // sauvegarde locale si besoin
-    sendEmailWithPDF(pdf);   // ouverture Outlook + PJ
+
+    const dateRaw = document.getElementById("Date").value;
+    const [yyyy, mm, dd] = dateRaw.split("-");
+    const dateTitre = `${dd}-${mm}-${yyyy}`;
+
+    const cie = document.getElementById("Cie").value;
+    const vol = document.getElementById("NVol").value;
+    const from = document.getElementById("From").value;
+    const to = document.getElementById("To").value;
+    const immat = document.getElementById("Immat").value;
+    const rza = document.getElementById("RZA").value;
+
+    const fileName = `${dateTitre} - ${cie}${vol} ${from}-${to} - ${immat} - ${rza}.pdf`;
+
+    pdf.save(fileName);
+    sendEmailWithPDF(pdf);
 }
 
 /* SAUVEGARDE MANUELLE */
