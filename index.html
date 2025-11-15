@@ -2016,26 +2016,24 @@ function validateForm() {
 
 
     // -------------------------
-    // 2. DL FORMATÉS
+    // 2. LIFT
     // -------------------------
-    const formatDL = (code, duree, index) => {
-        if (!code || code.trim() === "") {
-            return `DL code ${index}`;
-        }
-        return `DL (${code}) : ${duree} min`;
-    };
-
-    const DL1 = formatDL(val("DLcode1"), val("DLduree1"), 1);
-    const DL2 = formatDL(val("DLcode2"), val("DLduree2"), 2);
-    const DL3 = formatDL(val("DLcode3"), val("DLduree3"), 3);
+    const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
+    const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
 
 
     // -------------------------
-    // 3. ASSISTANCES
+    // 3. ASSISTANCES (afficher seulement si valeurs renseignées)
     // -------------------------
-    const WCHC = val("WCHC");
-    const WCHS = val("WCHS");
-    const WCHR = val("WCHR");
+    const assistances = [];
+
+    if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
+    if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
+    if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
+
+    const assistanceBlock = assistances.length > 0
+        ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
+        : "";
 
 
     // -------------------------
@@ -2053,7 +2051,7 @@ function validateForm() {
     addIfYes("Eau potable", "EauPotable");
     addIfYes("Vidange toilettes", "Vidange");
     addIfYes("Ménage Assist'Air", "MenageAssist");
-    addIfYes("Ménage Atalian", "MenageAtalian");  // T/F → affiché
+    addIfYes("Ménage Atalian", "MenageAtalian");
     addIfYes("Collecte d'ordures", "Ordures");
     addIfYes("Toilet Kit", "ToiletKit");
     addIfYes("Dégivrage", "Degivrage");
@@ -2061,18 +2059,41 @@ function validateForm() {
     addIfYes("Échelle supplémentaire", "Echelle");
 
     const prestationsText =
-        prestationsList.length > 0 ? prestationsList.join("\n") : "Aucune";
+        prestationsList.length > 0 ? `\n== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
 
 
     // -------------------------
-    // 5. LIFT FORMATTÉ
+    // 5. DL (afficher uniquement si renseigné)
     // -------------------------
-    const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
-    const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
+    const dlLines = [];
+
+    if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
+    if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
+    if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
+
+    const dlBlock = dlLines.length > 0
+        ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
+        : "";
 
 
     // -------------------------
-    // 6. MAIL COMPLET
+    // 6. JUSTIFICATION (si présente)
+    // -------------------------
+    const justifBlock = val("DLJustif").trim() !== ""
+        ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
+        : "";
+
+
+    // -------------------------
+    // 7. FAITS SAILLANTS (si présents)
+    // -------------------------
+    const faitsBlock = val("FaitsSaillants").trim() !== ""
+        ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
+        : "";
+
+
+    // -------------------------
+    // 8. MAIL COMPLET
     // -------------------------
     const body =
 `Vol : ${cie}${vol}
@@ -2095,43 +2116,20 @@ Dernier embarqué : ${val("AvionDernierEmbarque")}
 Arrivée fuel : ${val("ArriveeFuel")}
 Départ fuel : ${val("DepartFuel")}
 
-== LIFT ==
-
-Lift arrivée : ${liftArrivee}
-Lift départ  : ${liftDepart}
+TOB : ${val("TOB")}
 
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
 
-== ASSISTANCES ==
+== LIFT ==
 
-WCHC : ${WCHC}
-WCHS : ${WCHS}
-WCHR : ${WCHR}
-
-== PRESTATIONS ==
-
-${prestationsText}
-
-== DL ==
-
-${DL1}
-${DL2}
-${DL3}
-
-== JUSTIFICATION ==
-
-${val("DLJustif")}
-
-
-== FAITS SAILLANTS ==
-
-${val("FaitsSaillants")}
-`;
+Lift arrivée : ${liftArrivee}
+Lift départ  : ${liftDepart}
+${assistanceBlock}${prestationsText}${dlBlock}${justifBlock}${faitsBlock}`;
 
 
     // -------------------------
-    // 7. OUVERTURE OUTLOOK
+    // 9. OUVERTURE OUTLOOK
     // -------------------------
     window.location.href =
         `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
