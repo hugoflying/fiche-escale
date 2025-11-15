@@ -1127,14 +1127,7 @@ function generateTimingFields(){
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
-  // 4) Arrivée agent PMR (seul sur la ligne)
-  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','full');
-
-  // 5) Début/Fin déchargement bagages (même ligne)
-  arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
-  arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
-
-  arr += `</div></div>`;
+     arr += `</div></div>`;
 
   /* ===== DÉPART ===== (ordre demandé) */
   let dep = '';
@@ -1155,18 +1148,10 @@ function generateTimingFields(){
   // 4) Arrivée agent PMR (seul)
   dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','full');
 
-  // 5) Début/Fin chargement bagages
-  dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
-  dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
-
   // 6) Départ AVITAIR (seul)
   dep += fieldHTML('DepartFuel','Départ Avitair','full');
 
-  // 7) Arrivée NAYAK / Départ NAYAK (nouveaux champs)
-  dep += fieldHTML('ArriveeNayak','Arrivée NAYAK');
-  dep += fieldHTML('DepartNayak','Départ NAYAK');
-
-  // 8) Remise LID/LDS / Fermeture porte avion (même ligne)
+   // 8) Remise LID/LDS / Fermeture porte avion (même ligne)
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
