@@ -2132,62 +2132,107 @@ function generatePDF() {
     return doc;
 }
 
-   function validateForm() {
-    const pdf = generatePDF();
- function validateForm() {
+function validateForm() {
 
-    // 1 — Récupération des valeurs
-    const dateRaw = document.getElementById("Date").value;
+    const val = id => (document.getElementById(id)?.value || "");
+
+    // -------------------------
+    // 1. RÉCUPÉRATION BASE
+    --------------------------
+    const dateRaw = val("Date");
     const [yyyy, mm, dd] = dateRaw.split("-");
     const dateTitre = `${dd}-${mm}-${yyyy}`;
 
-    const cie = document.getElementById("Cie").value;
-    const vol = document.getElementById("NVol").value;
-    const from = document.getElementById("From").value;
-    const to = document.getElementById("To").value;
-    const immat = document.getElementById("Immat").value;
-    const rza = document.getElementById("RZA").value;
+    const cie = val("Cie");
+    const vol = val("NVol");
+    const from = val("From");
+    const to = val("To");
+    const immat = val("Immat");
+    const rza = val("RZA");
 
-    const fileName = `${dateTitre} - ${cie}${vol} ${from}-${to} - ${immat} - ${rza}.pdf`;
-    const titre = `${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+    // -------------------------
+    // 2. TRI AUTOMATIQUE DES DL
+    // -------------------------
+    const rawDL = [
+        { code: val("DLcode1"), duree: val("DLduree1") },
+        { code: val("DLcode2"), duree: val("DLduree2") },
+        { code: val("DLcode3"), duree: val("DLduree3") }
+    ];
 
-    pdf.save(fileName);
-    sendEmailWithPDF(pdf);
+    let dlList = rawDL.filter(d => d.code && d.code.trim() !== "");
 
-    // 2 — Corps du mail pré-rempli
+    dlList.sort((a, b) => {
+        if (a.code === "93") return -1;
+        if (b.code === "93") return 1;
+        return 0;
+    });
+
+    const DL1 = dlList[0] ? `${dlList[0].code} (${dlList[0].duree} min)` : "";
+    const DL2 = dlList[1] ? `${dlList[1].code} (${dlList[1].duree} min)` : "";
+    const DL3 = dlList[2] ? `${dlList[2].code} (${dlList[2].duree} min)` : "";
+
+    // -------------------------
+    // 3. OBJET DU MAIL
+    // -------------------------
+    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+
+    // -------------------------
+    // 4. CORPS DU MAIL COMPLET
+    // -------------------------
     const body =
-        `Bonjour,\n\nVeuillez trouver ci-joint le suivi performance pour :\n\n` +
-        `Vol : ${cie}${vol}\n` +
-        `Date : ${dateTitre}\n` +
-        `Rotation : ${from} - ${to}\n` +
-        `Immat : ${immat}\n` +
-        `RZA : ${rza}\n\n` +
-        `PDF généré automatiquement.\n\n` +
-        `Cordialement,\n`;
+`Bonjour,
 
-    // Encodage mailto
-    const mailto = `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+Veuillez trouver ci-joint le suivi performance pour :
 
-    // 3 — OUVRE OUTLOOK
-    window.location.href = mailto;
+Vol : ${cie}${vol}
+Date : ${dateTitre}
+Rotation : ${from} - ${to}
+Immat : ${immat}
+RZA : ${rza}
 
-    // 4 — OUVRE LA PAGE PRINT (PDF)
+--- TIMINGS ---
+
+Arrivée PNT : ${val("ArrPNT")}
+Arrivée PNC : ${val("ArrPNC")}
+Premier débarqué : ${val("PremierDebarque")}
+Dernier débarqué : ${val("DernierDebarque")}
+Premier embarqué : ${val("AvionPremierEmbarque")}
+Dernier embarqué : ${val("AvionDernierEmbarque")}
+Arrivée fuel : ${val("ArriveeFuel")}
+Départ fuel : ${val("DepartFuel")}
+Arrivée lift : ${val("ArriveeLift")}
+Départ lift : ${val("DepartLift")}
+TOB : ${val("TOB")}
+Remise LID/LDS : ${val("RemiseLID")}
+Fermeture porte avion : ${val("FermeturePorteAvion")}
+
+--- DL ---
+
+DL1 : ${DL1}
+DL2 : ${DL2}
+DL3 : ${DL3}
+
+Justification :
+${val("DLJustif")}
+
+Faits saillants :
+${val("FaitsSaillants")}
+
+Cordialement,
+`;
+
+    // -------------------------
+    // 5. OUVERTURE OUTLOOK
+    // -------------------------
+    window.location.href =
+        `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+
+    // -------------------------
+    // 6. OUVERTURE DE LA PAGE PRINT PDF
+    // -------------------------
     window.open("print.html", "_blank");
 }
 
-/* SAUVEGARDE MANUELLE */
-function manualSave() {
-  saveCurrentTabData();
-  showPopup("Enregistrement réussi", "#2196f3", 2000);
-}
-
-/* RESET */
-function clearAutoSave() {
-  if (confirm("Tout réinitialiser ?")) {
-    localStorage.clear();
-    location.reload();
-  }
-}
 
 /* ==========================================================
    === BLOC-NOTE (version moderne, avec undo/redo) ===
@@ -2495,7 +2540,7 @@ switchTab = function(id){
     loadNotepad(); noteUndoStack = []; noteRedoStack = [];
     fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
     ensureNoteOverlayInViewport();
-  }
+ }
 };
 </script>
 </body>
