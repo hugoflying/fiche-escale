@@ -2132,9 +2132,9 @@ function generatePDF() {
     return doc;
 }
 
-   function validateForm() {
-    const pdf = generatePDF();
+ function validateForm() {
 
+    // 1 — Récupération des valeurs
     const dateRaw = document.getElementById("Date").value;
     const [yyyy, mm, dd] = dateRaw.split("-");
     const dateTitre = `${dd}-${mm}-${yyyy}`;
@@ -2146,10 +2146,28 @@ function generatePDF() {
     const immat = document.getElementById("Immat").value;
     const rza = document.getElementById("RZA").value;
 
-    const fileName = `${dateTitre} - ${cie}${vol} ${from}-${to} - ${immat} - ${rza}.pdf`;
+    const titre = `${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
 
-    pdf.save(fileName);
-    sendEmailWithPDF(pdf);
+
+    // 2 — Corps du mail pré-rempli
+    const body =
+        `Bonjour,\n\nVeuillez trouver ci-joint le suivi performance pour :\n\n` +
+        `Vol : ${cie}${vol}\n` +
+        `Date : ${dateTitre}\n` +
+        `Rotation : ${from} - ${to}\n` +
+        `Immat : ${immat}\n` +
+        `RZA : ${rza}\n\n` +
+        `PDF généré automatiquement.\n\n` +
+        `Cordialement,\n`;
+
+    // Encodage mailto
+    const mailto = `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+
+    // 3 — OUVRE OUTLOOK
+    window.location.href = mailto;
+
+    // 4 — OUVRE LA PAGE PRINT (PDF)
+    window.open("print.html", "_blank");
 }
 
 /* SAUVEGARDE MANUELLE */
