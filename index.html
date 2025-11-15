@@ -2002,7 +2002,7 @@ function validateForm() {
     const val = id => (document.getElementById(id)?.value || "");
 
     // -------------------------
-    // BASE
+    // 1. DONNÉES DE BASE
     // -------------------------
     const dateRaw = val("Date");
     const [yyyy, mm, dd] = dateRaw.split("-");
@@ -2019,7 +2019,7 @@ function validateForm() {
 
 
     // -------------------------
-    // DL FORMATÉS
+    // 2. DL FORMATÉS
     // -------------------------
     const formatDL = (code, duree, index) => {
         if (!code || code.trim() === "") {
@@ -2034,7 +2034,7 @@ function validateForm() {
 
 
     // -------------------------
-    // ASSISTANCES
+    // 3. ASSISTANCES
     // -------------------------
     const WCHC = val("WCHC");
     const WCHS = val("WCHS");
@@ -2042,7 +2042,7 @@ function validateForm() {
 
 
     // -------------------------
-    // PRESTATIONS (uniquement Y/F/T)
+    // 4. PRESTATIONS (uniquement Y/F/T)
     // -------------------------
     let prestationsList = [];
 
@@ -2056,7 +2056,7 @@ function validateForm() {
     addIfYes("Eau potable", "EauPotable");
     addIfYes("Vidange toilettes", "Vidange");
     addIfYes("Ménage Assist'Air", "MenageAssist");
-    addIfYes("Ménage Atalian", "MenageAtalian");
+    addIfYes("Ménage Atalian", "MenageAtalian");  // T/F → affiché
     addIfYes("Collecte d'ordures", "Ordures");
     addIfYes("Toilet Kit", "ToiletKit");
     addIfYes("Dégivrage", "Degivrage");
@@ -2068,7 +2068,14 @@ function validateForm() {
 
 
     // -------------------------
-    // MAIL COMPLET
+    // 5. LIFT FORMATTÉ
+    // -------------------------
+    const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
+    const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
+
+
+    // -------------------------
+    // 6. MAIL COMPLET
     // -------------------------
     const body =
 `Vol : ${cie}${vol}
@@ -2077,20 +2084,30 @@ Rotation : ${from} - ${to}
 Immat : ${immat}
 RZA : ${rza}
 
+
 == TIMINGS ==
 
 Arrivée PNT : ${val("ArrPNT")}
 Arrivée PNC : ${val("ArrPNC")}
+
 Premier débarqué : ${val("PremierDebarque")}
 Dernier débarqué : ${val("DernierDebarque")}
+
 Premier embarqué : ${val("AvionPremierEmbarque")}
 Dernier embarqué : ${val("AvionDernierEmbarque")}
+
 Arrivée fuel : ${val("ArriveeFuel")}
 Départ fuel : ${val("DepartFuel")}
-Arrivée lift : ${val("ArriveeLift")}
-Départ lift : ${val("DepartLift")}
+
+
+--- LIFT ---
+
+Lift arrivée : ${liftArrivee}
+Lift départ  : ${liftDepart}
+
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
+
 
 == ASSISTANCES ==
 
@@ -2098,9 +2115,11 @@ WCHC : ${WCHC}
 WCHS : ${WCHS}
 WCHR : ${WCHR}
 
+
 == PRESTATIONS ==
 
 ${prestationsText}
+
 
 == DL ==
 
@@ -2108,9 +2127,13 @@ ${DL1}
 ${DL2}
 ${DL3}
 
+
+
 == JUSTIFICATION ==
 
 ${val("DLJustif")}
+
+
 
 == FAITS SAILLANTS ==
 
@@ -2119,11 +2142,12 @@ ${val("FaitsSaillants")}
 
 
     // -------------------------
-    // MAILTO AVEC DESTINATAIRE PAR DÉFAUT
+    // 7. OUVERTURE OUTLOOK
     // -------------------------
     window.location.href =
         `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
 }
+
 
 /* SAUVEGARDE MANUELLE */
 function manualSave() {
