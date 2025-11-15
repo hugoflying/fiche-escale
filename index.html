@@ -1,38 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUIVI PERFORMANCE</title>
+<style>
+/* RESET & BASE */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #222;
+    padding: 10px;
+}
+body.dark { background: #121212; color: #f8f9f9; }
 
-    <!-- jsPDF + autoTable -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+h1 { text-align: center; margin: 10px 0 15px; }
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SUIVI PERFORMANCE</title>
-
-    <style>
-        /* RESET & BASE */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: Arial, sans-serif;
-            background: #ffffff;
-            color: #222;
-            padding: 10px;
-        }
-        body.dark { background: #121212; color: #f8f9f9; }
-
-        h1 { text-align: center; margin: 10px 0 15px; }
-
-        /* Sections (blocs) */
-        section {
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 22px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        body.dark section { background: #1e1e1e; }
+/* Sections (blocs) */
+section {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+body.dark section { background: #1e1e1e; }
 
 /* Titres de sections */
 h2 {
@@ -2020,219 +2013,26 @@ function updateTagInputs(){
 }
 
 /* VALIDATION */
-function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    // Fonction raccourcie (à déclarer AVANT de l'utiliser)
-    const v = id => (document.getElementById(id)?.value || "");
-
-    // Construction du titre PDF
-    const dateRaw = v("Date");  // format YYYY-MM-DD
-    const [yyyy, mm, dd] = dateRaw.split("-");
-    const dateTitre = `${dd}-${mm}-${yyyy}`;
-
-    const cie = v("Cie");
-    const vol = v("NVol");
-    const from = v("From");
-    const to = v("To");
-    const immat = v("Immat");
-    const rza = v("RZA");
-
-    const titrePDF = `${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
-
-    // Titre affiché en haut
-    doc.setFontSize(14);
-    doc.text(titrePDF, 10, 10);
-    doc.setFontSize(12);
-
-    // Position de départ réelle
-    let y = 20;
-    let col = 1;
-
-    const xLeft = 10;
-    const xRight = 110;
-
-    let x = xLeft;
-
-    const add = (label, value) => {
-        doc.text(`${label} : ${value}`, x, y);
-        y += 6;
-
-        if (y > 270) {
-            if (col === 1) {
-                col = 2;
-                x = xRight;
-                y = 10;
-            } else {
-                doc.addPage();
-                col = 1;
-                x = xLeft;
-                y = 10;
-            }
-        }
-    };
-
-    // ==== ENTÊTE ====
-    add("Date", v("Date"));
-    add("Cie", v("Cie"));
-    add("N° vol", v("NVol"));
-    add("Provenance", v("From"));
-    add("Destination", v("To"));
-    add("RZA", v("RZA"));
-    add("Immat", v("Immat"));
-    add("Parking", v("Parking"));
-
-    y += 10;
-    doc.text("----", x, y);
-    y += 6;
-
-    add("SIBT", v("SIBT"));
-    add("AIBT", v("AIBT"));
-    add("SOBT", v("SOBT"));
-    add("AOBT", v("AOBT"));
-    add("CTOT", v("CTOT"));
-
-    y += 10;
-    doc.text("----", x, y);
-    y += 6;
-
-    // ==== TIMING ====
-    add("Arrivée PNT", v("ArrPNT"));
-    add("Arrivée PNC", v("ArrPNC"));
-    add("Premier débarqué", v("PremierDebarque"));
-    add("Dernier débarqué", v("DernierDebarque"));
-    add("Avion : Premier embarqué", v("AvionPremierEmbarque"));
-    add("Avion : Dernier embarqué", v("AvionDernierEmbarque"));
-    add("Arrivée Fuel", v("ArriveeFuel"));
-    add("Départ Fuel", v("DepartFuel"));
-    add("Arrivée lift", v("ArriveeLift"));
-    add("Départ lift", v("DepartLift"));
-    add("Remise LID/LDS", v("RemiseLID"));
-    add("Fermeture porte avion", v("FermeturePorteAvion"));
-
-    // ==== DL ====
-    y += 6;
-    add("DL1", `${v("DLcode1")} (${v("DLduree1")} min)`);
-    add("DL2", `${v("DLcode2")} (${v("DLduree2")} min)`);
-    add("DL3", `${v("DLcode3")} (${v("DLduree3")} min)`);
-
-    // ==== JUSTIFICATION DL ====
-    y += 6;
-    doc.text("Justification DL :", x, y);
-    y += 8;
-    doc.text(v("DLJustif"), x, y);
-
-    // ==== FAITS SAILLANTS ====
-    y += 20;
-    doc.text("Faits saillants :", x, y);
-    y += 8;
-    doc.text(v("FaitsSaillants"), x, y);
-
-    return doc;
-}
-
 function validateForm() {
-
-    const val = id => (document.getElementById(id)?.value || "");
-
-    // -------------------------
-    // 1. RÉCUPÉRATION BASE
-    --------------------------
-    const dateRaw = val("Date");
-    const [yyyy, mm, dd] = dateRaw.split("-");
-    const dateTitre = `${dd}-${mm}-${yyyy}`;
-
-    const cie = val("Cie");
-    const vol = val("NVol");
-    const from = val("From");
-    const to = val("To");
-    const immat = val("Immat");
-    const rza = val("RZA");
-
-    // -------------------------
-    // 2. TRI AUTOMATIQUE DES DL
-    // -------------------------
-    const rawDL = [
-        { code: val("DLcode1"), duree: val("DLduree1") },
-        { code: val("DLcode2"), duree: val("DLduree2") },
-        { code: val("DLcode3"), duree: val("DLduree3") }
-    ];
-
-    let dlList = rawDL.filter(d => d.code && d.code.trim() !== "");
-
-    dlList.sort((a, b) => {
-        if (a.code === "93") return -1;
-        if (b.code === "93") return 1;
-        return 0;
-    });
-
-    const DL1 = dlList[0] ? `${dlList[0].code} (${dlList[0].duree} min)` : "";
-    const DL2 = dlList[1] ? `${dlList[1].code} (${dlList[1].duree} min)` : "";
-    const DL3 = dlList[2] ? `${dlList[2].code} (${dlList[2].duree} min)` : "";
-
-    // -------------------------
-    // 3. OBJET DU MAIL
-    // -------------------------
-    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
-
-    // -------------------------
-    // 4. CORPS DU MAIL COMPLET
-    // -------------------------
-    const body =
-`Bonjour,
-
-Veuillez trouver ci-joint le suivi performance pour :
-
-Vol : ${cie}${vol}
-Date : ${dateTitre}
-Rotation : ${from} - ${to}
-Immat : ${immat}
-RZA : ${rza}
-
---- TIMINGS ---
-
-Arrivée PNT : ${val("ArrPNT")}
-Arrivée PNC : ${val("ArrPNC")}
-Premier débarqué : ${val("PremierDebarque")}
-Dernier débarqué : ${val("DernierDebarque")}
-Premier embarqué : ${val("AvionPremierEmbarque")}
-Dernier embarqué : ${val("AvionDernierEmbarque")}
-Arrivée fuel : ${val("ArriveeFuel")}
-Départ fuel : ${val("DepartFuel")}
-Arrivée lift : ${val("ArriveeLift")}
-Départ lift : ${val("DepartLift")}
-TOB : ${val("TOB")}
-Remise LID/LDS : ${val("RemiseLID")}
-Fermeture porte avion : ${val("FermeturePorteAvion")}
-
---- DL ---
-
-DL1 : ${DL1}
-DL2 : ${DL2}
-DL3 : ${DL3}
-
-Justification :
-${val("DLJustif")}
-
-Faits saillants :
-${val("FaitsSaillants")}
-
-Cordialement,
-`;
-
-    // -------------------------
-    // 5. OUVERTURE OUTLOOK
-    // -------------------------
-    window.location.href =
-        `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
-
-    // -------------------------
-    // 6. OUVERTURE DE LA PAGE PRINT PDF
-    // -------------------------
-    window.open("print.html", "_blank");
+  const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
+  let missing = required.some(id => !document.getElementById(id).value);
+  if (missing) showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
+  else showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
 }
 
+/* SAUVEGARDE MANUELLE */
+function manualSave() {
+  saveCurrentTabData();
+  showPopup("Enregistrement réussi", "#2196f3", 2000);
+}
+
+/* RESET */
+function clearAutoSave() {
+  if (confirm("Tout réinitialiser ?")) {
+    localStorage.clear();
+    location.reload();
+  }
+}
 
 /* ==========================================================
    === BLOC-NOTE (version moderne, avec undo/redo) ===
@@ -2540,7 +2340,7 @@ switchTab = function(id){
     loadNotepad(); noteUndoStack = []; noteRedoStack = [];
     fitNoteCanvas(); renderNote(); updateUndoRedoBtns();
     ensureNoteOverlayInViewport();
- }
+  }
 };
 </script>
 </body>
