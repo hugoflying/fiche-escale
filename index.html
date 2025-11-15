@@ -2061,6 +2061,31 @@ WCHC : ${val("WCHC")}
 WCHS : ${val("WCHS")}
 WCHR : ${val("WCHR")}
 
+--- PRESTATIONS ---
+
+let prestationsList = [];
+
+    const addIfYes = (label, id) => {
+        const v = document.getElementById(id).value;
+        if (v !== "N") prestationsList.push(label);
+    };
+
+    addIfYes("ASU", "ASU");
+    addIfYes("Flux RZA", "FluxRZA");
+    addIfYes("Eau potable", "EauPotable");
+    addIfYes("Vidange toilettes", "Vidange");
+    addIfYes("Ménage Assist'Air", "MenageAssist");
+    addIfYes("Ménage Atalian", "MenageAtalian");  // valeurs T/F
+    addIfYes("Collecte d'ordures", "Ordures");
+    addIfYes("Toilet Kit", "ToiletKit");
+    addIfYes("Dégivrage", "Degivrage");
+    addIfYes("Push-Pull", "PushPull");
+    addIfYes("Échelle supplémentaire", "Echelle");
+
+    const prestationsText = prestationsList.length > 0
+        ? prestationsList.join("\n")
+        : "Aucune";
+
 --- DL ---
 
 DL1 : ${val("DLcode1")} (${val("DLduree1")} min)
