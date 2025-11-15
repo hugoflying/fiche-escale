@@ -2014,10 +2014,76 @@ function updateTagInputs(){
 
 /* VALIDATION */
 function validateForm() {
-  const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-  let missing = required.some(id => !document.getElementById(id).value);
-  if (missing) showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-  else showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
+
+    const val = id => (document.getElementById(id)?.value || "");
+
+    const dateRaw = val("Date");
+    const [yyyy, mm, dd] = dateRaw.split("-");
+    const dateTitre = `${dd}-${mm}-${yyyy}`;
+
+    const cie = val("Cie");
+    const vol = val("NVol");
+    const from = val("From");
+    const to = val("To");
+    const immat = val("Immat");
+    const rza = val("RZA");
+
+    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+
+    //---------------------------
+    // 🔥 ICI : mail complet
+    //---------------------------
+    const body =
+`Bonjour,
+
+Veuillez trouver ci-joint le suivi performance pour :
+
+Vol : ${cie}${vol}
+Date : ${dateTitre}
+Rotation : ${from} - ${to}
+Immat : ${immat}
+RZA : ${rza}
+
+--- TIMINGS ---
+
+Arrivée PNT : ${val("ArrPNT")}
+Arrivée PNC : ${val("ArrPNC")}
+Premier débarqué : ${val("PremierDebarque")}
+Dernier débarqué : ${val("DernierDebarque")}
+Premier embarqué : ${val("AvionPremierEmbarque")}
+Dernier embarqué : ${val("AvionDernierEmbarque")}
+Arrivée fuel : ${val("ArriveeFuel")}
+Départ fuel : ${val("DepartFuel")}
+Arrivée lift : ${val("ArriveeLift")}
+Départ lift : ${val("DepartLift")}
+Remise LID/LDS : ${val("RemiseLID")}
+Fermeture porte avion : ${val("FermeturePorteAvion")}
+
+--- DL ---
+
+DL1 : ${val("DLcode1")} (${val("DLduree1")} min)
+DL2 : ${val("DLcode2")} (${val("DLduree2")} min)
+DL3 : ${val("DLcode3")} (${val("DLduree3")} min)
+
+Justification :
+${val("DLJustif")}
+
+Faits saillants :
+${val("FaitsSaillants")}
+
+Cordialement,
+`;
+
+    //---------------------------
+    // 🔥 Ouvre Outlook
+    //---------------------------
+    window.location.href =
+        `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+
+    //---------------------------
+    // 🔥 Ouvre la page print PDF
+    //---------------------------
+    window.open("print.html", "_blank");
 }
 
 /* SAUVEGARDE MANUELLE */
