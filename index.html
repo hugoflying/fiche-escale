@@ -2012,11 +2012,13 @@ function updateTagInputs(){
   }catch(e){}
 }
 
-/* VALIDATION */
 function validateForm() {
 
     const val = id => (document.getElementById(id)?.value || "");
 
+    // -------------------------
+    // 1. DONNÉES DE BASE
+    // -------------------------
     const dateRaw = val("Date");
     const [yyyy, mm, dd] = dateRaw.split("-");
     const dateTitre = `${dd}-${mm}-${yyyy}`;
@@ -2030,9 +2032,53 @@ function validateForm() {
 
     const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
 
-    //---------------------------
-    // MAIL COMPLET
-    //---------------------------
+
+    // -------------------------
+    // 2. ASSISTANCES PRISES EN CHARGE
+    // -------------------------
+    const WCHC = val("WCHC");
+    const WCHS = val("WCHS");
+    const WCHR = val("WCHR");
+
+
+    // -------------------------
+    // 3. PRESTATIONS (uniquement Y/F/T)
+    // -------------------------
+    let prestationsList = [];
+
+    const addIfYes = (label, id) => {
+        const v = document.getElementById(id).value;
+        if (v !== "N") prestationsList.push(label);
+    };
+
+    addIfYes("ASU", "ASU");
+    addIfYes("Flux RZA", "FluxRZA");
+    addIfYes("Eau potable", "EauPotable");
+    addIfYes("Vidange toilettes", "Vidange");
+    addIfYes("Ménage Assist'Air", "MenageAssist");
+    addIfYes("Ménage Atalian", "MenageAtalian");  // T/F → affiché
+    addIfYes("Collecte d'ordures", "Ordures");
+    addIfYes("Toilet Kit", "ToiletKit");
+    addIfYes("Dégivrage", "Degivrage");
+    addIfYes("Push-Pull", "PushPull");
+    addIfYes("Échelle supplémentaire", "Echelle");
+
+    const prestationsText = prestationsList.length > 0
+        ? prestationsList.join("\n")
+        : "Aucune";
+
+
+    // -------------------------
+    // 4. DL
+    // -------------------------
+    const DL1 = `${val("DLcode1")} (${val("DLduree1")} min)`;
+    const DL2 = `${val("DLcode2")} (${val("DLduree2")} min)`;
+    const DL3 = `${val("DLcode3")} (${val("DLduree3")} min)`;
+
+
+    // -------------------------
+    // 5. MAIL COMPLET
+    // -------------------------
     const body =
 `Vol : ${cie}${vol}
 Date : ${dateTitre}
@@ -2057,40 +2103,19 @@ Fermeture porte avion : ${val("FermeturePorteAvion")}
 
 --- ASSISTANCES PRISES EN CHARGE ---
 
-WCHC : ${val("WCHC")}
-WCHS : ${val("WCHS")}
-WCHR : ${val("WCHR")}
+WCHC : ${WCHC}
+WCHS : ${WCHS}
+WCHR : ${WCHR}
 
 --- PRESTATIONS ---
 
-let prestationsList = [];
-
-    const addIfYes = (label, id) => {
-        const v = document.getElementById(id).value;
-        if (v !== "N") prestationsList.push(label);
-    };
-
-    addIfYes("ASU", "ASU");
-    addIfYes("Flux RZA", "FluxRZA");
-    addIfYes("Eau potable", "EauPotable");
-    addIfYes("Vidange toilettes", "Vidange");
-    addIfYes("Ménage Assist'Air", "MenageAssist");
-    addIfYes("Ménage Atalian", "MenageAtalian");  // valeurs T/F
-    addIfYes("Collecte d'ordures", "Ordures");
-    addIfYes("Toilet Kit", "ToiletKit");
-    addIfYes("Dégivrage", "Degivrage");
-    addIfYes("Push-Pull", "PushPull");
-    addIfYes("Échelle supplémentaire", "Echelle");
-
-    const prestationsText = prestationsList.length > 0
-        ? prestationsList.join("\n")
-        : "Aucune";
+${prestationsText}
 
 --- DL ---
 
-DL1 : ${val("DLcode1")} (${val("DLduree1")} min)
-DL2 : ${val("DLcode2")} (${val("DLduree2")} min)
-DL3 : ${val("DLcode3")} (${val("DLduree3")} min)
+DL1 : ${DL1}
+DL2 : ${DL2}
+DL3 : ${DL3}
 
 Justification :
 ${val("DLJustif")}
@@ -2099,9 +2124,9 @@ Faits saillants :
 ${val("FaitsSaillants")}
 `;
 
-    //---------------------------
-    // OUVERTURE OUTLOOK
-    //---------------------------
+    // -------------------------
+    // 6. OUVERTURE OUTLOOK
+    // -------------------------
     window.location.href =
         `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
 }
