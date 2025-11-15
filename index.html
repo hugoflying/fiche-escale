@@ -2023,7 +2023,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 3. ASSISTANCES (afficher seulement si valeurs renseignées)
+    // 3. ASSISTANCES (affichage conditionnel)
     // -------------------------
     const assistances = [];
 
@@ -2037,7 +2037,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 4. PRESTATIONS (uniquement Y/F/T)
+    // 4. PRESTATIONS
     // -------------------------
     let prestationsList = [];
 
@@ -2063,7 +2063,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 5. DL (afficher uniquement si renseigné)
+    // 5. DL
     // -------------------------
     const dlLines = [];
 
@@ -2077,7 +2077,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 6. JUSTIFICATION (si présente)
+    // 6. JUSTIFICATION
     // -------------------------
     const justifBlock = val("DLJustif").trim() !== ""
         ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
@@ -2085,7 +2085,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 7. FAITS SAILLANTS (si présents)
+    // 7. FAITS SAILLANTS
     // -------------------------
     const faitsBlock = val("FaitsSaillants").trim() !== ""
         ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
@@ -2093,7 +2093,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 8. MAIL COMPLET
+    // 8. MAIL COMPLET (CORRIGÉ)
     // -------------------------
     const body =
 `Vol : ${cie}${vol}
@@ -2118,7 +2118,6 @@ Départ fuel : ${val("DepartFuel")}
 
 Lift arrivée : ${liftArrivee}
 Lift départ  : ${liftDepart}
-${assistanceBlock}${prestationsText}${dlBlock}${justifBlock}${faitsBlock}`;
 
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
@@ -2127,6 +2126,8 @@ Fermeture porte avion : ${val("FermeturePorteAvion")}
 
 TOB : ${val("TOB")}
 Bagages (hors GB) : ${val("BAGS")}
+
+${assistanceBlock}${prestationsText}${dlBlock}${justifBlock}${faitsBlock}`;
 
 
     // -------------------------
