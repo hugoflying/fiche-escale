@@ -2017,7 +2017,7 @@ function validateForm() {
     const val = id => (document.getElementById(id)?.value || "");
 
     // -------------------------
-    // 1. DONNÉES DE BASE
+    // BASE
     // -------------------------
     const dateRaw = val("Date");
     const [yyyy, mm, dd] = dateRaw.split("-");
@@ -2034,7 +2034,22 @@ function validateForm() {
 
 
     // -------------------------
-    // 2. ASSISTANCES PRISES EN CHARGE
+    // DL FORMATÉS
+    // -------------------------
+    const formatDL = (code, duree, index) => {
+        if (!code || code.trim() === "") {
+            return `DL code ${index}`;
+        }
+        return `DL (${code}) : ${duree} min`;
+    };
+
+    const DL1 = formatDL(val("DLcode1"), val("DLduree1"), 1);
+    const DL2 = formatDL(val("DLcode2"), val("DLduree2"), 2);
+    const DL3 = formatDL(val("DLcode3"), val("DLduree3"), 3);
+
+
+    // -------------------------
+    // ASSISTANCES
     // -------------------------
     const WCHC = val("WCHC");
     const WCHS = val("WCHS");
@@ -2042,7 +2057,7 @@ function validateForm() {
 
 
     // -------------------------
-    // 3. PRESTATIONS (uniquement Y/F/T)
+    // PRESTATIONS (uniquement Y/F/T)
     // -------------------------
     let prestationsList = [];
 
@@ -2056,28 +2071,19 @@ function validateForm() {
     addIfYes("Eau potable", "EauPotable");
     addIfYes("Vidange toilettes", "Vidange");
     addIfYes("Ménage Assist'Air", "MenageAssist");
-    addIfYes("Ménage Atalian", "MenageAtalian");  // T/F → affiché
+    addIfYes("Ménage Atalian", "MenageAtalian");
     addIfYes("Collecte d'ordures", "Ordures");
     addIfYes("Toilet Kit", "ToiletKit");
     addIfYes("Dégivrage", "Degivrage");
     addIfYes("Push-Pull", "PushPull");
     addIfYes("Échelle supplémentaire", "Echelle");
 
-    const prestationsText = prestationsList.length > 0
-        ? prestationsList.join("\n")
-        : "Aucune";
+    const prestationsText =
+        prestationsList.length > 0 ? prestationsList.join("\n") : "Aucune";
 
 
     // -------------------------
-    // 4. DL
-    // -------------------------
-    const DL1 = `${val("DLcode1")} (${val("DLduree1")} min)`;
-    const DL2 = `${val("DLcode2")} (${val("DLduree2")} min)`;
-    const DL3 = `${val("DLcode3")} (${val("DLduree3")} min)`;
-
-
-    // -------------------------
-    // 5. MAIL COMPLET
+    // MAIL COMPLET
     // -------------------------
     const body =
 `Vol : ${cie}${vol}
@@ -2086,7 +2092,7 @@ Rotation : ${from} - ${to}
 Immat : ${immat}
 RZA : ${rza}
 
---- TIMINGS ---
+== TIMINGS ==
 
 Arrivée PNT : ${val("ArrPNT")}
 Arrivée PNC : ${val("ArrPNC")}
@@ -2101,34 +2107,37 @@ Départ lift : ${val("DepartLift")}
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
 
---- ASSISTANCES PRISES EN CHARGE ---
+== ASSISTANCES ==
 
 WCHC : ${WCHC}
 WCHS : ${WCHS}
 WCHR : ${WCHR}
 
---- PRESTATIONS ---
+== PRESTATIONS ==
 
 ${prestationsText}
 
---- DL ---
+== DL ==
 
-DL1 : ${DL1}
-DL2 : ${DL2}
-DL3 : ${DL3}
+${DL1}
+${DL2}
+${DL3}
 
-Justification :
+== JUSTIFICATION ==
+
 ${val("DLJustif")}
 
-Faits saillants :
+== FAITS SAILLANTS ==
+
 ${val("FaitsSaillants")}
 `;
 
+
     // -------------------------
-    // 6. OUVERTURE OUTLOOK
+    // MAILTO AVEC DESTINATAIRE PAR DÉFAUT
     // -------------------------
     window.location.href =
-        `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+        `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
 }
 
 /* SAUVEGARDE MANUELLE */
