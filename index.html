@@ -2031,7 +2031,7 @@ function validateForm() {
     const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
 
     //---------------------------
-    // 🔥 ICI : mail complet
+    // MAIL COMPLET
     //---------------------------
     const body =
 `Vol : ${cie}${vol}
@@ -2055,6 +2055,12 @@ Départ lift : ${val("DepartLift")}
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
 
+--- ASSISTANCES PRISES EN CHARGE ---
+
+WCHC : ${val("WCHC")}
+WCHS : ${val("WCHS")}
+WCHR : ${val("WCHR")}
+
 --- DL ---
 
 DL1 : ${val("DLcode1")} (${val("DLduree1")} min)
@@ -2066,21 +2072,21 @@ ${val("DLJustif")}
 
 Faits saillants :
 ${val("FaitsSaillants")}
-
 `;
 
     //---------------------------
-    // 🔥 Ouvre Outlook
+    // OUVERTURE OUTLOOK
     //---------------------------
     window.location.href =
         `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+}
 
-   
 /* SAUVEGARDE MANUELLE */
 function manualSave() {
   saveCurrentTabData();
   showPopup("Enregistrement réussi", "#2196f3", 2000);
 }
+
 
 /* RESET */
 function clearAutoSave() {
