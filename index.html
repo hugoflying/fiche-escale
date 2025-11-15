@@ -2132,41 +2132,76 @@ function generatePDF() {
     return doc;
 }
 
- function validateForm() {
+function validateForm() {
 
-    // 1 — Récupération des valeurs
-    const dateRaw = document.getElementById("Date").value;
+    const val = id => (document.getElementById(id)?.value || "");
+
+    const dateRaw = val("Date");
     const [yyyy, mm, dd] = dateRaw.split("-");
     const dateTitre = `${dd}-${mm}-${yyyy}`;
 
-    const cie = document.getElementById("Cie").value;
-    const vol = document.getElementById("NVol").value;
-    const from = document.getElementById("From").value;
-    const to = document.getElementById("To").value;
-    const immat = document.getElementById("Immat").value;
-    const rza = document.getElementById("RZA").value;
+    const cie = val("Cie");
+    const vol = val("NVol");
+    const from = val("From");
+    const to = val("To");
+    const immat = val("Immat");
+    const rza = val("RZA");
 
-    const titre = `${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
 
-
-    // 2 — Corps du mail pré-rempli
+    //---------------------------
+    // 🔥 ICI : mail complet
+    //---------------------------
     const body =
-        `Bonjour,\n\nVeuillez trouver ci-joint le suivi performance pour :\n\n` +
-        `Vol : ${cie}${vol}\n` +
-        `Date : ${dateTitre}\n` +
-        `Rotation : ${from} - ${to}\n` +
-        `Immat : ${immat}\n` +
-        `RZA : ${rza}\n\n` +
-        `PDF généré automatiquement.\n\n` +
-        `Cordialement,\n`;
+`Bonjour,
 
-    // Encodage mailto
-    const mailto = `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+Veuillez trouver ci-joint le suivi performance pour :
 
-    // 3 — OUVRE OUTLOOK
-    window.location.href = mailto;
+Vol : ${cie}${vol}
+Date : ${dateTitre}
+Rotation : ${from} - ${to}
+Immat : ${immat}
+RZA : ${rza}
 
-    // 4 — OUVRE LA PAGE PRINT (PDF)
+--- TIMINGS ---
+
+Arrivée PNT : ${val("ArrPNT")}
+Arrivée PNC : ${val("ArrPNC")}
+Premier débarqué : ${val("PremierDebarque")}
+Dernier débarqué : ${val("DernierDebarque")}
+Premier embarqué : ${val("AvionPremierEmbarque")}
+Dernier embarqué : ${val("AvionDernierEmbarque")}
+Arrivée fuel : ${val("ArriveeFuel")}
+Départ fuel : ${val("DepartFuel")}
+Arrivée lift : ${val("ArriveeLift")}
+Départ lift : ${val("DepartLift")}
+Remise LID/LDS : ${val("RemiseLID")}
+Fermeture porte avion : ${val("FermeturePorteAvion")}
+
+--- DL ---
+
+DL1 : ${val("DLcode1")} (${val("DLduree1")} min)
+DL2 : ${val("DLcode2")} (${val("DLduree2")} min)
+DL3 : ${val("DLcode3")} (${val("DLduree3")} min)
+
+Justification :
+${val("DLJustif")}
+
+Faits saillants :
+${val("FaitsSaillants")}
+
+Cordialement,
+`;
+
+    //---------------------------
+    // 🔥 Ouvre Outlook
+    //---------------------------
+    window.location.href =
+        `mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+
+    //---------------------------
+    // 🔥 Ouvre la page print PDF
+    //---------------------------
     window.open("print.html", "_blank");
 }
 
