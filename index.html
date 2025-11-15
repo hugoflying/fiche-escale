@@ -2132,43 +2132,6 @@ function generatePDF() {
     return doc;
 }
     
-function updateDLFields() {
-    const val = id => (document.getElementById(id)?.value || "");
-
-    // Liste brute
-    const rawDL = [
-        { idCode: "DLcode1", idDuree: "DLduree1", code: val("DLcode1"), duree: val("DLduree1") },
-        { idCode: "DLcode2", idDuree: "DLduree2", code: val("DLcode2"), duree: val("DLduree2") },
-        { idCode: "DLcode3", idDuree: "DLduree3", code: val("DLcode3"), duree: val("DLduree3") }
-    ];
-
-    // On enlève ce qui est vide
-    let dlList = rawDL.filter(d => d.code && d.code.trim() !== "");
-
-    // DL93 en premier
-    dlList.sort((a, b) => {
-        if (a.code === "93") return -1;
-        if (b.code === "93") return 1;
-        return 0;
-    });
-
-    // Mise à jour des champs visibles
-    const newOrder = [
-        dlList[0] || { code: "", duree: "" },
-        dlList[1] || { code: "", duree: "" },
-        dlList[2] || { code: "", duree: "" }
-    ];
-
-    document.getElementById("DLcode1").value = newOrder[0].code;
-    document.getElementById("DLduree1").value = newOrder[0].duree;
-
-    document.getElementById("DLcode2").value = newOrder[1].code;
-    document.getElementById("DLduree2").value = newOrder[1].duree;
-
-    document.getElementById("DLcode3").value = newOrder[2].code;
-    document.getElementById("DLduree3").value = newOrder[2].duree;
-}
-
 function validateForm() {
 
     const val = id => (document.getElementById(id)?.value || "");
