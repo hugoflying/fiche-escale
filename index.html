@@ -1145,13 +1145,10 @@ function generateTimingFields(){
   dep += fieldHTML('ArriveeLift','Arrivée lift');
   dep += fieldHTML('DepartLift','Départ lift');
 
-  // 4) Arrivée agent PMR (seul)
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','full');
-
-  // 6) Départ AVITAIR (seul)
+   // 4) Départ AVITAIR (seul)
   dep += fieldHTML('DepartFuel','Départ Avitair','full');
 
-   // 8) Remise LID/LDS / Fermeture porte avion (même ligne)
+   // 5) Remise LID/LDS / Fermeture porte avion (même ligne)
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
