@@ -101,27 +101,6 @@ body.dark .fixed-header{
   line-height: 1.05;
 }
 .brand-title strong{ display:block; font-size: 1rem; color: var(--text); }
-.brand-title span{ display:block; font-size: .85rem; color: var(--muted); }
-
-/* Tabs (vols) */
-#tab-bar{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex: 1 1 auto;
-
-  /* responsive important : scroll horizontal sur mobile */
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  scrollbar-width: thin;
-  padding-bottom: 2px;
-}
-#tab-bar .button{
-  border-radius: 999px;
-  flex: 0 0 auto;
-}
 
 /* Toggles */
 .top-toggles{
@@ -163,6 +142,35 @@ body.dark .fixed-header{
 #timer-tobt{ background:#16a34a !important; }
 #timer-h8{ background:#facc15 !important; color:#111 !important; }
 #timer-ctot{ background:#334155 !important; }
+#timer-cd{ background:#60a5fa !important; color:#111 !important; }
+
+/* Tabs row (au-dessus des timers, même style graphique) */
+.tabs-row{
+  display:flex;
+  justify-content:center;
+}
+.tabs-chip{
+  width: 100%;
+  max-width: 1120px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: var(--card);
+  box-shadow: var(--shadow2);
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+.tabs-chip .button{
+  border-radius: 999px;
+  flex: 0 0 auto;
+  font-weight: 900;
+}
 
 /* Bulma tweaks */
 .card{
@@ -226,7 +234,7 @@ body.dark .card-header{
 /* Popup */
 #popup{
   position: fixed;
-  top: calc(var(--fixed-header-h) + 12px); /* pas sous le header */
+  top: calc(var(--fixed-header-h) + 12px);
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 16px;
@@ -236,7 +244,7 @@ body.dark .card-header{
   box-shadow: var(--shadow);
 }
 
-/* === TIMELINE (ton CSS, quasi inchangé) === */
+/* === TIMELINE === */
 .timeline-track {
   position: absolute; left:6%; right:6%;
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
@@ -302,13 +310,20 @@ body.dark .timeline-scroll{
 /* DL error */
 .dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
-/* ===== RESPONSIVE IMPORTANT ===== */
+/* ===== Titre centré + suppression sous-titre + suppression badge ===== */
+.brandline{
+  flex: 1 1 100%;
+  justify-content: center;
+}
+.brand-badge{ display:none; }
+.brand-title{ text-align:center; }
+.brand-title strong{ font-size: 1.2rem; }
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px){
-  .brandline{ min-width: 0; flex: 1 1 100%; }
   .top-toggles{ width: 100%; justify-content: flex-start; }
-  #tab-bar{ width: 100%; }
   .timer-chip{ min-width: 128px; }
-  .timeline-canvas{ min-width: 720px; } /* garde de la lisibilité en scroll */
+  .timeline-canvas{ min-width: 720px; }
 }
 @media (max-width: 420px){
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
@@ -319,7 +334,7 @@ body.dark .timeline-scroll{
 
 <body onload="initForm()">
 
-<!-- ===== FIXED HEADER : TOP BAR + TIMERS ===== -->
+<!-- ===== FIXED HEADER : TOP BAR + TABS + TIMERS ===== -->
 <div class="fixed-header" id="fixedHeader">
   <div class="fixed-header-inner">
 
@@ -328,12 +343,8 @@ body.dark .timeline-scroll{
         <div class="brand-badge"></div>
         <div class="brand-title">
           <strong>SUIVI PERFORMANCE</strong>
-          <span>Interface Bulma • autosave • multi-vol</span>
         </div>
       </div>
-
-      <!-- Tabs vols -->
-      <div id="tab-bar" class="buttons are-small"></div>
 
       <!-- Toggles -->
       <div class="buttons are-small top-toggles">
@@ -346,6 +357,11 @@ body.dark .timeline-scroll{
           <span>UTC</span>
         </label>
       </div>
+    </div>
+
+    <!-- Tabs vols (au-dessus des timers) -->
+    <div class="tabs-row">
+      <div id="tab-bar" class="tabs-chip"></div>
     </div>
 
     <!-- Timers (fixes) -->
@@ -708,7 +724,6 @@ function updateHeaderOffset(){
 let isUTC=false;
 let manualSOBT=false;
 let currentTabId=null;
-const circledNums=["","①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫"];
 let saveTimer=null;
 
 /* TIMELINE zoom & scroll */
@@ -749,13 +764,19 @@ function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
 
+  // STOP dès que AOBT est rentré
+  const aobtTxt = document.getElementById('AOBT')?.value || '';
+  if(aobtTxt){
+    stopCountdown();
+    return;
+  }
+
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
-  const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  // Condition demandée : SOBT + AOBT obligatoires, et déclenchement à l’entrée AIBT
-  if(!aibtTxt || !sobtTxt || !aobtTxt || !sibtTxt){
+  // Condition demandée : AIBT + SOBT (et SIBT nécessaire pour la règle)
+  if(!aibtTxt || !sobtTxt || !sibtTxt){
     el.textContent = '--:--';
     return;
   }
@@ -775,7 +796,7 @@ function updateCountdownOnce(){
   if (AIBT <= SIBT){
     const now = getNowMinutes();
     let diffMin = SOBT - now.mins;
-    if(diffMin < 0) diffMin += 1440; // wrap jour suivant
+    if(diffMin < 0) diffMin += 1440;
     remainingSeconds = diffMin * 60 - now.secs;
   }
   // Si AIBT > SIBT => countdown = TOBT - AIBT
@@ -788,7 +809,7 @@ function updateCountdownOnce(){
     }
     let diffMin = TOBT - AIBT;
     if(diffMin < 0) diffMin += 1440;
-    remainingSeconds = diffMin * 60; // AIBT est à la minute près
+    remainingSeconds = diffMin * 60;
   }
 
   el.textContent = (remainingSeconds == null) ? '--:--' : fmtMMSS(remainingSeconds);
@@ -799,7 +820,8 @@ function ensureCountdownRunning(){
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && aobtTxt);
+  // Démarre uniquement si AIBT + SOBT + SIBT, et s'arrête / ne redémarre pas si AOBT existe
+  const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && !aobtTxt);
 
   if(!shouldRun){
     stopCountdown();
@@ -814,7 +836,7 @@ function ensureCountdownRunning(){
   }
 }
 
-/* Zoom helpers */
+/* ===== TIMELINE zoom & scroll ===== */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
@@ -889,19 +911,17 @@ function initForm(){
 
   setDefaultDateToTodayIfEmpty();
 
-  /* IMPORTANT: calc header height (fixed) */
   updateHeaderOffset();
   window.addEventListener('resize', ()=>{
     updateHeaderOffset();
     renderTimeline();
   });
 
-  /* render */
   renderTimeline();
   ensureCountdownRunning();
 }
 
-/* date par défaut = aujourd’hui si vide */
+/* date par défaut */
 function setDefaultDateToTodayIfEmpty(){
   const d = document.getElementById('Date');
   if(d && !d.value){ d.valueAsDate = new Date(); }
@@ -941,7 +961,7 @@ function attachAutoSave(){
 function renderTabs(){
   const tabBar=document.getElementById('tab-bar');
   tabBar.innerHTML = `
-    <button class="button is-success is-light is-small" type="button" onclick="createNewTab()">+ Ajouter vol</button>
+    <button class="button is-success is-light" type="button" onclick="createNewTab()">+ Ajouter vol</button>
   `;
 
   let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
@@ -956,7 +976,7 @@ function renderTabs(){
     let label = left || to ? (to ? `${left} | ${to}`.trim() : left) : 'VOL';
 
     const btn=document.createElement('button');
-    btn.className = `button is-small ${id===currentTabId ? 'is-link' : 'is-light'}`;
+    btn.className = `button ${id===currentTabId ? 'is-link' : 'is-light'}`;
     btn.textContent = label || 'VOL';
     btn.onclick=()=>switchTab(id);
     btn.ondblclick=()=>deleteTab(id);
