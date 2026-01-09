@@ -489,7 +489,6 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
 
 /* On n’utilise plus la ligne pointillée pour séparer ces blocs */
 .timing-divider { display: none; }
-}
 </style>
 </head>
 <body onload="initForm()">
@@ -809,7 +808,7 @@ function initForm(){
       e.preventDefault();
     });
     ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
-      scroller.addEventListener(ev, ()=>{ window.timelineUserScrolled = true; }, {passive:true});
+      scroller.addEventListener(ev, ()=>{ timelineUserScrolled = true; }, {passive:true});
     });
   }
 
@@ -1787,43 +1786,6 @@ function renderTimeline(){
   const lbl = document.getElementById('timelineZoomLabel');
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
-
-(function injectShowHoursToggle(){
-  const bar = document.querySelector('.timeline-toolbar');
-  if (bar) {
-    if (!document.getElementById('showTimesToggle')) {
-      const wrap = document.createElement('label');
-      wrap.style.display = 'flex';
-      wrap.style.alignItems = 'center';
-      wrap.style.gap = '6px';
-      wrap.style.marginLeft = '8px';
-      wrap.style.flexWrap = 'wrap';
-      wrap.style.maxWidth = '100%';
-
-      const cb = document.createElement('input');
-      cb.type = 'checkbox'; cb.id = 'showTimesToggle'; cb.checked = true; showTimeLabels = true;
-      cb.addEventListener('change', () => { showTimeLabels = cb.checked; renderTimeline(); });
-
-      const span = document.createElement('span'); span.textContent = 'Heure sur étiquettes';
-      wrap.appendChild(cb); wrap.appendChild(span); bar.appendChild(wrap);
-    } else {
-      const cb = document.getElementById('showTimesToggle'); cb.checked = true; showTimeLabels = true;
-      const wrap = cb.closest('label');
-      if (wrap) {
-        wrap.style.display = 'flex';
-        wrap.style.alignItems = 'center';
-        wrap.style.gap = '6px';
-        wrap.style.marginLeft = '8px';
-        wrap.style.flexWrap = 'wrap';
-        wrap.style.maxWidth = '100%';
-      }
-    }
-  }
-  const scroller = document.getElementById('timelineScroll');
-  if (scroller) { ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
-    scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
-  });}
-})();
 
 /* Génération dynamique des champs "Numéro tag i" */
 function updateTagInputs(){
