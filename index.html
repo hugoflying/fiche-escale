@@ -329,6 +329,71 @@ body.dark .timeline-scroll{
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
   .timer-chip .v{ min-width: 64px; }
 }
+
+/* ================================
+   MODE COMPACT CHAMPS (INFO+TIMING)
+   ================================ */
+.input, .select select, .textarea{
+  font-size: .85rem !important;
+  padding-left: .55rem !important;
+  padding-right: .55rem !important;
+  min-height: 2.05rem !important;
+  height: 2.05rem !important;
+  border-radius: 10px !important;
+}
+.textarea{
+  height: auto !important;
+  min-height: 6rem !important;
+}
+.field .label{
+  font-size: .78rem !important;
+  margin-bottom: .25rem !important;
+}
+.columns.is-multiline{
+  margin-left: -0.35rem !important;
+  margin-right: -0.35rem !important;
+}
+.columns.is-multiline > .column{
+  padding: 0.35rem !important;
+}
+.btn-actions{
+  gap: 4px !important;
+  margin-top: 6px !important;
+}
+.btn-actions .button{
+  padding: .25rem .45rem !important;
+  font-size: .75rem !important;
+  border-radius: 10px !important;
+}
+.card-content{
+  padding: .85rem !important;
+}
+@media (max-width: 768px){
+  .columns.is-multiline > .column.is-6-tablet,
+  .columns.is-multiline > .column.is-6-tablet.is-3-desktop,
+  .columns.is-multiline > .column.is-6-tablet.is-4-desktop{
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+  @media (min-width: 421px){
+    .columns.is-multiline > .column.is-6-tablet.is-4-desktop{
+      flex: 0 0 33.333% !important;
+      max-width: 33.333% !important;
+    }
+  }
+}
+@media (max-width: 420px){
+  .field .label{ font-size: .74rem !important; }
+  .input, .select select{
+    font-size: .82rem !important;
+    min-height: 1.95rem !important;
+    height: 1.95rem !important;
+  }
+  .btn-actions .button{
+    font-size: .72rem !important;
+    padding: .22rem .38rem !important;
+  }
+}
 </style>
 </head>
 
@@ -405,9 +470,7 @@ body.dark .timeline-scroll{
   <div class="card mb-5">
     <header class="card-header section-collapse" onclick="toggleCardBody(this)">
       <p class="card-header-title">INFO VOL</p>
-      <span class="card-header-icon" aria-label="more options">
-        <span class="icon">⌄</span>
-      </span>
+      <span class="card-header-icon" aria-label="more options"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
       <div class="columns is-multiline">
@@ -475,6 +538,20 @@ body.dark .timeline-scroll{
             <label class="label">Immat</label>
             <div class="control">
               <input class="input uppercase" type="text" id="Immat" maxlength="5">
+            </div>
+          </div>
+        </div>
+
+        <!-- Optionnel mais utile pour W4/W6 -->
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Type avion</label>
+            <div class="control select is-fullwidth">
+              <select id="TypeAvion" onchange="updateAllCalculations()">
+                <option value="">--</option>
+                <option>A320</option>
+                <option>A321</option>
+              </select>
             </div>
           </div>
         </div>
@@ -760,11 +837,16 @@ function stopCountdown(){
   const el = document.getElementById('timer-cd');
   if(el) el.textContent = '--:--';
 }
+
+/* Règles CD:
+   - STOP si AOBT est renseigné
+   - si AIBT <= SIBT => CD = SOBT - now
+   - si AIBT >  SIBT => CD = TOBT - now
+*/
 function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
 
-  // STOP dès que AOBT est rentré
   const aobtTxt = document.getElementById('AOBT')?.value || '';
   if(aobtTxt){
     stopCountdown();
@@ -775,7 +857,6 @@ function updateCountdownOnce(){
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
 
-  // Condition demandée : AIBT + SOBT (et SIBT nécessaire pour la règle)
   if(!aibtTxt || !sobtTxt || !sibtTxt){
     el.textContent = '--:--';
     return;
@@ -784,43 +865,39 @@ function updateCountdownOnce(){
   const SIBT = parseHHMM(sibtTxt);
   const AIBT = parseHHMM(aibtTxt);
   const SOBT = parseHHMM(sobtTxt);
-
   if(SIBT == null || AIBT == null || SOBT == null){
     el.textContent = '--:--';
     return;
   }
 
-  let remainingSeconds = null;
+  let targetMin = null;
 
-  // Si AIBT <= SIBT => countdown = SOBT - heure actuelle
   if (AIBT <= SIBT){
-    const now = getNowMinutes();
-    let diffMin = SOBT - now.mins;
-    if(diffMin < 0) diffMin += 1440;
-    remainingSeconds = diffMin * 60 - now.secs;
-  }
-  // Si AIBT > SIBT => countdown = TOBT - AIBT
-  else {
+    targetMin = SOBT;
+  } else {
     const tobtTxt = (document.getElementById('timer-tobt')?.textContent || '').trim();
     const TOBT = parseHHMM(tobtTxt);
     if(TOBT == null){
       el.textContent = '--:--';
       return;
     }
-    let diffMin = TOBT - AIBT;
-    if(diffMin < 0) diffMin += 1440;
-    remainingSeconds = diffMin * 60;
+    targetMin = TOBT;
   }
 
-  el.textContent = (remainingSeconds == null) ? '--:--' : fmtMMSS(remainingSeconds);
+  const now = getNowMinutes();
+  let diffMin = targetMin - now.mins;
+  if(diffMin < 0) diffMin += 1440;
+
+  const remainingSeconds = diffMin * 60 - now.secs;
+  el.textContent = fmtMMSS(remainingSeconds);
 }
+
 function ensureCountdownRunning(){
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  // Démarre uniquement si AIBT + SOBT + SIBT, et s'arrête / ne redémarre pas si AOBT existe
   const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && !aobtTxt);
 
   if(!shouldRun){
@@ -886,6 +963,13 @@ function initForm(){
   const storedUTC  = (localStorage.getItem('modeUTC')||'0')==='1';
   setDarkMode(storedDark, true);
   setTimeModeUTC(storedUTC, true);
+
+  // Recalcul instantané CD/TOBT si on modifie AIBT ou SOBT (input, pas seulement blur)
+  ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', ()=>{ updateAllCalculations(); });
+  });
 
   const scroller = document.getElementById('timelineScroll');
   if(scroller){
@@ -1233,10 +1317,10 @@ function updateLID() {
   el.textContent = fmtHHMM(lid);
 }
 
-/* SOBT par défaut */
+/* SOBT par défaut (conserve ton existant) */
 function updateSOBTDefault() {
   if (manualSOBT) return;
-  const cie = document.getElementById('Cie').value;
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibt = document.getElementById('SIBT').value;
   const arrPNT = document.getElementById('ArrPNT')?.value;
   const arrPNC = document.getElementById('ArrPNC')?.value;
@@ -1251,50 +1335,70 @@ function updateSOBTDefault() {
   document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* TOBT + règle CTOT (stocke TOBT brut pour LID) */
+/* TOBT + règle CTOT */
 function updateTOBT() {
-  const cie = document.getElementById('Cie').value;
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
   const aibttxt = document.getElementById('AIBT').value;
   const sobttxt = document.getElementById('SOBT').value;
   const ctottxt = document.getElementById('CTOT').value;
 
-  if (!cie || !sibttxt) {
+  if (!cie || !sibttxt || !sobttxt) {
     document.getElementById('timer-tobt').textContent = '--:--';
-    window._tobtRawMins = null; return;
+    window._tobtRawMins = null;
+    return;
   }
 
   const [sH, sM] = sibttxt.split(':').map(Number);
   const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
-  const [soH, soM] = sobttxt ? sobttxt.split(':').map(Number) : [sH, sM];
+  const [soH, soM] = sobttxt.split(':').map(Number);
 
   const SIBT = new Date(); SIBT.setHours(sH, sM, 0, 0);
   const AIBT = new Date(); AIBT.setHours(aH, aM, 0, 0);
   const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
 
-  let TOBT_raw = new Date(SIBT);
+  const isDelayed = (aibttxt && (AIBT > SIBT));
+  const crewChange = !!(document.getElementById('ArrPNT')?.value || document.getElementById('ArrPNC')?.value);
+  const addMin = (d, m)=> new Date(d.getTime() + m*60000);
 
-  if (cie === 'FR' || cie === 'RK' || cie === 'W4' || cie === 'W6') {
-    if (AIBT > SIBT) {
-      const arrPNT = document.getElementById('ArrPNT')?.value;
-      const arrPNC = document.getElementById('ArrPNC')?.value;
-      const add = (arrPNT || arrPNC) ? 35 : 25;
-      TOBT_raw = new Date(AIBT.getTime() + add * 60000);
+  let TOBT_raw;
+
+  // FR/RK (RYR) – turnaround 25 ou 35 si PNT/PNC rempli.
+  if (cie === 'FR' || cie === 'RK') {
+    if (!isDelayed) {
+      TOBT_raw = new Date(SOBT);
     } else {
-      TOBT_raw = new Date(SIBT);
+      const turn = crewChange ? 35 : 25;
+      const candidate = addMin(AIBT, turn);
+      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
     }
-  } else {
-    if (AIBT > SIBT) {
+  }
+  // W4/W6 – si retard: A320=30, A321=35. (Si type vide -> 30)
+  else if (cie === 'W4' || cie === 'W6') {
+    if (!isDelayed) {
+      TOBT_raw = new Date(SOBT);
+    } else {
+      const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
+      const turn = (type === 'A321') ? 35 : 30;
+      const candidate = addMin(AIBT, turn);
+      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
+    }
+  }
+  // autres compagnies: fallback simple (conserve une logique proche de ton ancien)
+  else {
+    if (aibttxt && AIBT > SIBT) {
       const diff = (SOBT - SIBT) / 60000;
       TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
     } else {
-      TOBT_raw = new Date(SIBT);
+      TOBT_raw = new Date(SOBT);
     }
   }
 
+  // ne jamais être avant SOBT
   if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
   window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
 
+  // Ajustement CTOT: si CTOT > TOBT+15 => TOBT = CTOT-15 ; et TOBT >= SOBT
   let TOBT_adj = new Date(TOBT_raw);
   if (ctottxt) {
     const [cH, cM] = ctottxt.split(':').map(Number);
@@ -1765,6 +1869,7 @@ function validateForm() {
   const from = val("From");
   const to = val("To");
   const immat = val("Immat");
+  const typeAvion = val("TypeAvion");
   const rza = val("RZA");
 
   const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
@@ -1803,6 +1908,7 @@ function validateForm() {
 Date : ${dateTitre}
 Rotation : ${from} - ${to}
 Immat : ${immat}
+Type avion : ${typeAvion}
 RZA : ${rza}
 
 == HORAIRES ==
@@ -1812,6 +1918,7 @@ AIBT : ${val("AIBT")}
 -
 SOBT : ${val("SOBT")}
 AOBT : ${val("AOBT")}
+CTOT : ${val("CTOT")}
 
 == TIMINGS ==
 
