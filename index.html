@@ -844,11 +844,6 @@ function sanitizePositiveInt(inputEl){
   inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
-/* Chiffres uniquement (préserve zéros en tête) */
-function sanitizeDigitsOnly(inputEl){
-  inputEl.value = (inputEl.value || '').replace(/\D/g, '');
-}
-
 /* Autosave */
 function attachAutoSave(){
   const handler=()=>{
@@ -977,10 +972,8 @@ function loadTabData(id){
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
 
-  updateTagInputs();
-}
 
-/* Mise à jour label onglet */
+    /* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS – ARR / DEP */
@@ -1018,40 +1011,6 @@ function generateTimingFields(){
   dep += fieldHTML('DepartFuel','Départ Avitair','full');
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
-
-  dep += `
-    <details class="accordion">
-      <summary>INAD (si besoin)</summary>
-      <div class="accordion-body">
-        <div class="form-grid">
-          ${fieldHTML('ArriveeINAD','Arrivée INAD')}
-          <div class="form-group">
-            <label>Quantité INAD
-              <input type="number" id="QuantiteINAD" min="0" step="1" oninput="sanitizePositiveInt(this)">
-            </label>
-          </div>
-        </div>
-      </div>
-    </details>`;
-
-  dep += `
-    <details class="accordion">
-      <summary>Recherche bagage (si besoin)</summary>
-      <div class="accordion-body">
-        <div class="form-grid">
-          ${fieldHTML('DebutRechercheBagage','Début recherche bagage')}
-          ${fieldHTML('FinRechercheBagage','Fin recherche bagage')}
-          <div class="form-group full">
-            <label>Quantité bagage(s) déchargé(s)
-              <input type="number" id="NbBagagesDecharges" min="0" step="1"
-                     oninput="sanitizePositiveInt(this); updateTagInputs()">
-            </label>
-          </div>
-          <div id="TagsContainer" style="margin-top:6px;" class="full"></div>
-        </div>
-      </div>
-    </details>`;
-
   dep += `</div></div>`;
 
   const toggle = `
@@ -1066,8 +1025,6 @@ function generateTimingFields(){
 
   const saved = localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(saved);
-
-  updateTagInputs();
 }
 
 function switchTimingPanel(mode){
@@ -1783,36 +1740,7 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
-/* Génération dynamique des champs "Numéro tag i" */
-function updateTagInputs(){
-  const nb = parseInt(document.getElementById('NbBagagesDecharges')?.value) || 0;
-  const wrap = document.getElementById('TagsContainer');
-  if(!wrap) return;
-
-  const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
-  let html = '';
-  for(let i=1; i<=count; i++){
-    html += `
-      <div class="form-group">
-        <label>Numéro tag ${i}
-          <input type="text" id="TagNumero${i}" inputmode="numeric" pattern="[0-9]*"
-                 oninput="sanitizeDigitsOnly(this)">
-        </label>
-      </div>`;
-  }
-  wrap.innerHTML = html;
-
-  // Réinjecter les valeurs sauvegardées (si présentes)
-  try{
-    const data = JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}');
-    for(let i=1; i<=count; i++){
-      const f = document.getElementById('TagNumero'+i);
-      if(f && data['TagNumero'+i] !== undefined) f.value = data['TagNumero'+i];
-    }
-  }catch(e){}
-}
-
-function validateForm() {
+ function validateForm() {
 
     const val = id => (document.getElementById(id)?.value || "");
 
