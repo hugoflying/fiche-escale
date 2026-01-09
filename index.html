@@ -839,29 +839,46 @@ function saveCurrentTabData(){
 }
 
 function loadTabData(id){
-  const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
+  const data = JSON.parse(localStorage.getItem('tab-'+id) || '{}');
 
+  // Recharge tous les champs
   document.querySelectorAll('input, select, textarea').forEach(el=>{
-    if(!el.id || data[el.id]===undefined) return;
-    if(el.type==='checkbox') el.checked = data[el.id]==='1';
+    if(!el.id || data[el.id] === undefined) return;
+    if(el.type === 'checkbox') el.checked = (data[el.id] === '1');
     else el.value = data[el.id];
   });
 
-  if(data.modeDark==='1') document.body.classList.add('dark'); else document.body.classList.remove('dark');
-  isUTC=data.modeUTC==='1';
+  // Dark mode
+  if(data.modeDark === '1') document.body.classList.add('dark');
+  else document.body.classList.remove('dark');
 
-  document.getElementById('timer-h40').textContent=data.timer_h40||'--:--';
-  document.getElementById('timer-h15').textContent=data.timer_h15||'--:--';
-  document.getElementById('timer-h8').textContent=data.timer_h8||'--:--';
-  document.getElementById('timer-tobt').textContent=data.timer_tobt||'--:--';
-  document.getElementById('timer-ctot').textContent=data.timer_ctot||'--:--';
+  // UTC mode
+  isUTC = (data.modeUTC === '1');
 
-  document.getElementById('darkToggle').checked = document.body.classList.contains('dark');
-  document.getElementById('utcToggle').checked  = isUTC;
+  // Timers affichés
+  const h40  = document.getElementById('timer-h40');
+  const h15  = document.getElementById('timer-h15');
+  const h8   = document.getElementById('timer-h8');
+  const tobt = document.getElementById('timer-tobt');
+  const ctot = document.getElementById('timer-ctot');
+  if(h40)  h40.textContent  = data.timer_h40  || '--:--';
+  if(h15)  h15.textContent  = data.timer_h15  || '--:--';
+  if(h8)   h8.textContent   = data.timer_h8   || '--:--';
+  if(tobt) tobt.textContent = data.timer_tobt || '--:--';
+  if(ctot) ctot.textContent = data.timer_ctot || '--:--';
 
+  // Sync des toggles si ils existent dans le HTML
+  const dt = document.getElementById('darkToggle');
+  const ut = document.getElementById('utcToggle');
+  if(dt) dt.checked = document.body.classList.contains('dark');
+  if(ut) ut.checked = isUTC;
+
+  // Date par défaut si vide
   setDefaultDateToTodayIfEmpty();
 
+  // Recrée la zone CHIFFRES PORTE selon la Cie
   generateChargementFields();
+
   updateAllCalculations();
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
