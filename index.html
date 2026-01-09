@@ -95,16 +95,7 @@ body.dark .fixed-header{
 .brand-title{ text-align:center; line-height: 1.05; }
 .brand-title strong{ display:block; font-size: 1.2rem; color: var(--text); }
 
-/* Toggles */
-.top-toggles{
-  display:flex;
-  gap:8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-/* Tabs row (au-dessus des timers, même style graphique) */
+/* Tabs row */
 .tabs-row{
   display:flex;
   justify-content:center;
@@ -232,6 +223,52 @@ body.dark .card-header{
   box-shadow: var(--shadow);
 }
 
+/* ===== Toggle switch ===== */
+.toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow2);
+  cursor:pointer;
+  user-select:none;
+  font-weight: 900;
+  color: var(--text);
+}
+.toggle input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.toggle .track{
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(148,163,184,.55);
+  position: relative;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
+}
+.toggle .thumb{
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  position:absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform .18s ease, background .18s ease;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18);
+}
+.toggle input:checked + .track{
+  background: color-mix(in srgb, #3b82f6 70%, #22c55e 30%);
+}
+.toggle input:checked + .track .thumb{
+  transform: translateX(18px);
+}
+
 /* === TIMELINE === */
 .timeline-track {
   position: absolute; left:6%; right:6%;
@@ -318,21 +355,23 @@ body.dark .timeline-scroll{
 
     <div class="topbar-inner">
       <div class="brandline">
-        <div class="brand-badge"></div>
         <div class="brand-title">
           <strong>SUIVI PERFORMANCE</strong>
         </div>
       </div>
 
       <!-- Toggles -->
-      <div class="buttons are-small top-toggles">
-        <label class="button is-light" style="gap:10px;">
-          <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)" style="margin:0;">
+      <div class="top-toggles" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
+        <label class="toggle">
           <span>Mode sombre</span>
+          <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)">
+          <span class="track"><span class="thumb"></span></span>
         </label>
-        <label class="button is-light" style="gap:10px;">
-          <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)" style="margin:0;">
-          <span>UTC</span>
+
+        <label class="toggle">
+          <span id="tzLabel">Locale</span>
+          <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)">
+          <span class="track"><span class="thumb"></span></span>
         </label>
       </div>
     </div>
@@ -385,9 +424,9 @@ body.dark .timeline-scroll{
       <span class="card-header-icon" aria-label="more options"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline is-mobile">
+      <div class="columns is-multiline">
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Date</label>
             <div class="control">
@@ -396,7 +435,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">RZA</label>
             <div class="control">
@@ -405,7 +444,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Cie</label>
             <div class="control select is-fullwidth">
@@ -419,7 +458,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">N° VOL</label>
             <div class="control">
@@ -428,7 +467,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Provenance</label>
             <div class="control">
@@ -437,7 +476,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Destination</label>
             <div class="control">
@@ -446,7 +485,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Immat</label>
             <div class="control">
@@ -455,7 +494,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Type avion</label>
             <div class="control select is-fullwidth">
@@ -468,7 +507,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Parking</label>
             <div class="control select is-fullwidth">
@@ -493,12 +532,12 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline is-mobile">
+      <div class="columns is-multiline">
 
         <script>
           function timeField(id,label,onchange){
             return `
-            <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+            <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
               <div class="field">
                 <label class="label">${label}</label>
                 <div class="control">
@@ -519,7 +558,7 @@ body.dark .timeline-scroll{
           document.addEventListener("DOMContentLoaded", ()=>{
             const mount = document.getElementById('horairesMount');
             if(!mount) return;
-            mount.innerHTML = `<div class="columns is-multiline is-mobile">
+            mount.innerHTML = `<div class="columns is-multiline">
               ${timeField('SIBT','SIBT',"updateAllCalculations()")}
               ${timeField('AIBT','AIBT',"updateAllCalculations()")}
               ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()")}
@@ -579,40 +618,40 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline is-mobile">
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+      <div class="columns is-multiline">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Code 1</label>
             <div class="control"><input class="input" type="text" id="DLcode1"></div>
           </div>
         </div>
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Durée 1 (min)</label>
             <div class="control"><input class="input" type="number" id="DLduree1" min="0" step="1" oninput="dldChanged(1)"></div>
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Code 2</label>
             <div class="control"><input class="input" type="text" id="DLcode2"></div>
           </div>
         </div>
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Durée 2 (min)</label>
             <div class="control"><input class="input" type="number" id="DLduree2" min="0" step="1" oninput="dldChanged(2)"></div>
           </div>
         </div>
 
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Code 3</label>
             <div class="control"><input class="input" type="text" id="DLcode3"></div>
           </div>
         </div>
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Durée 3 (min)</label>
             <div class="control"><input class="input" type="number" id="DLduree3" min="0" step="1" oninput="dldChanged(3)"></div>
@@ -650,26 +689,26 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline is-mobile">
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+      <div class="columns is-multiline">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">WCHC</label>
             <div class="control"><input class="input" type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
           </div>
         </div>
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">WCHS</label>
             <div class="control"><input class="input" type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
           </div>
         </div>
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">WCHR</label>
             <div class="control"><input class="input" type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
           </div>
         </div>
-        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Autre</label>
             <div class="control"><input class="input" type="number" id="AutreAssist"></div>
@@ -748,6 +787,7 @@ function stopCountdown(){
   const el = document.getElementById('timer-cd');
   if(el) el.textContent = '--:--';
 }
+
 /* Règles CD:
    - stop si AOBT renseigné
    - déclenche si SIBT + AIBT + SOBT
@@ -872,7 +912,7 @@ function initForm(){
   setDarkMode(storedDark, true);
   setTimeModeUTC(storedUTC, true);
 
-  /* recalcul instantané (AIBT/SOBT etc.) */
+  /* recalcul instantané */
   ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -1074,6 +1114,9 @@ function loadTabData(id){
   if(dt) dt.checked = document.body.classList.contains('dark');
   if(ut) ut.checked = isUTC;
 
+  const tzLabel = document.getElementById('tzLabel');
+  if(tzLabel) tzLabel.textContent = isUTC ? 'UTC' : 'Locale';
+
   setDefaultDateToTodayIfEmpty();
   updateAllCalculations();
 
@@ -1091,7 +1134,7 @@ function generateTimingFields(){
   if(!container) return;
 
   const fieldHTML = (id,label,full=false)=>`
-    <div class="column ${full ? 'is-12' : 'is-half-mobile is-one-third-tablet is-one-quarter-desktop'}">
+    <div class="column ${full ? 'is-12' : 'is-full-mobile is-one-third-tablet is-one-quarter-desktop'}">
       <div class="field">
         <label class="label">${label}</label>
         <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
@@ -1106,7 +1149,7 @@ function generateTimingFields(){
   let arr = `
     <div class="card mb-4">
       <header class="card-header"><p class="card-header-title">Arrivée</p></header>
-      <div class="card-content"><div class="columns is-multiline is-mobile">
+      <div class="card-content"><div class="columns is-multiline">
         ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
         ${fieldHTML('PremierDebarque','Premier débarqué')}
         ${fieldHTML('DernierDebarque','Dernier débarqué')}
@@ -1118,7 +1161,7 @@ function generateTimingFields(){
   let dep = `
     <div class="card">
       <header class="card-header"><p class="card-header-title">Départ</p></header>
-      <div class="card-content"><div class="columns is-multiline is-mobile">
+      <div class="card-content"><div class="columns is-multiline">
         ${fieldHTML('ArrPNT','Arrivée PNT')}
         ${fieldHTML('ArrPNC','Arrivée PNC')}
         ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
@@ -1233,7 +1276,7 @@ function updateSOBTDefault() {
   document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
-/* TOBT + règle CTOT */
+/* TOBT + règle CTOT (logique demandée) */
 function updateTOBT() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT')?.value || '';
@@ -1459,9 +1502,15 @@ function setTimeModeUTC(enable, fromInit=false){
       input.value = `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`;
     });
   }
+
   isUTC = enable;
+
   const ut = document.getElementById('utcToggle');
   if(ut) ut.checked = enable;
+
+  const tzLabel = document.getElementById('tzLabel');
+  if(tzLabel) tzLabel.textContent = enable ? 'UTC' : 'Locale';
+
   localStorage.setItem('modeUTC', enable ? '1' : '0');
   updateAllCalculations();
 }
