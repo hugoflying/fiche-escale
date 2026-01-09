@@ -1,213 +1,188 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SUIVI PERFORMANCE</title>
+
+<!-- Bulma -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
 <style>
-    
-/* RESET & BASE */
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    font-family: Arial, sans-serif;
-    background: #ffffff;
-    color: #222;
-    padding: 10px;
+/* === BASE === */
+:root{
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --shadow: 0 10px 28px rgba(0,0,0,.08);
+  --shadow2: 0 6px 18px rgba(0,0,0,.10);
+  --radius: 14px;
 }
-body.dark { background: #121212; color: #f8f9f9; }
-
-h1 { text-align: center; margin: 10px 0 15px; }
-
-/* Sections (blocs) */
-section {
-    background: #f5f5f5;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 22px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+body{
+  background: var(--bg);
+  color: var(--text);
 }
-body.dark section { background: #1e1e1e; }
-
-/* Titres de sections */
-h2 {
-    font-size: 1.2rem;
-    margin: -12px -12px 10px -12px;
-    padding: 8px 12px;
-    border-bottom: 1px solid #ccc;
-    text-align: center;
-    cursor: pointer;
-    background: #e8f0fe;
-    color: #123;
-    border-left: 6px solid #1976d2;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+body.dark{
+  --bg: #0f1115;
+  --card: #151922;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --shadow: 0 10px 28px rgba(0,0,0,.45);
+  --shadow2: 0 6px 18px rgba(0,0,0,.50);
 }
-body.dark h2 {
-    background: #242424;
-    color: #f5f5f5;
-    border-left: 6px solid #90caf9;
-    border-bottom-color: #3a3a3a;
+.app-wrap{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 14px;
+}
+h1.title{
+  margin: 12px 0 12px;
 }
 
-/* Collapse */
-section.collapsed > *:not(h2) { display: none; }
+/* Topbar sticky */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(246,247,251,.75);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+body.dark .topbar{
+  background: rgba(15,17,21,.75);
+  border-bottom-color: rgba(255,255,255,.06);
+}
+.topbar-inner{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 10px 14px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.brandline{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width: 240px;
+}
+.brand-badge{
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#3b82f6,#22c55e);
+  box-shadow: var(--shadow2);
+}
+.brand-title{
+  line-height: 1.05;
+}
+.brand-title strong{ display:block; font-size: 1rem; }
+.brand-title span{ display:block; font-size: .85rem; color: var(--muted); }
 
-/* Grilles */
-.form-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-.form-group { flex: 1 1 calc(50% - 10px); min-width: 150px; margin-bottom: 10px; text-align:center; }
-.form-group-3col { flex: 1 1 calc(33.33% - 10px); min-width: 120px; margin-bottom: 10px; text-align:center; }
-.form-group-4col { flex: 1 1 calc(25% - 10px); min-width: 80px; margin-bottom: 10px; text-align:center; }
+/* Bulma tweaks */
+.card{
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--card);
+}
+body.dark .card{ background: var(--card); }
+.card-header{
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 85%, #3b82f6 15%);
+}
+body.dark .card-header{
+  background: color-mix(in srgb, var(--card) 80%, #60a5fa 20%);
+}
+.card-header-title{
+  font-weight: 800;
+}
+.section-collapse{
+  cursor: pointer;
+  user-select: none;
+}
+.collapsed-body{ display: none; }
 
-/* Labels en gras */
-.form-group label,
-.form-group-3col label,
-.form-group-4col label {
-    font-size: 0.9rem;
-    font-weight: bold;
-    display: block;
-    margin-bottom: 3px;
-    text-align: center;
+/* Inputs */
+.input, .select select, .textarea{
+  border-radius: 12px;
 }
-
-/* Champs */
-input, select {
-    width: 100%;
-    padding: 6px;
-    font-size: 0.95rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    text-align: center;
-}
-textarea {
-    width: 100%;
-    padding: 6px;
-    font-size: 0.95rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    resize: both;
-    min-height: 60px;
-    text-align: left;
-    overflow: auto;
-}
-
-/* Affichage visuel en MAJ */
-input.uppercase { text-transform: uppercase; }
-
-/* Champ horaire + boutons */
-.form-group input[type="time"] {
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-    display: block;
-}
-
-/* Boutons horaires */
-.btn-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    width: 100%;
-    gap: 5px;
-    margin-top: 5px;
-}
-button.action {
-    width: 100%;
-    padding: 10px;
-    font-size: 0.95rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform .15s ease, filter .2s ease;
-}
-button.action:active { transform: scale(0.98); filter: brightness(0.95); }
-button.minus { background: #555; color: white; }
-button.now   { background: #1976d2; color: white; }
-button.plus  { background: #555; color: white; }
-
-/* Boutons principaux */
-#validate, #save, #reset {
-    width: 100%;
-    padding: 12px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 6px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-#validate { background: #4caf50; color: white; }
-#save { background: #2196f3; color: white; margin: 15px 0; }
-#reset { background: #d32f2f; color: white; }
-
-/* Timers (2 groupes) */
-.timer-box {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-bottom: 32px;
-    flex-wrap: wrap;
-}
-.timer-group { display: flex; gap: 20px; align-items: center; }
-.timer { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.timer-label { font-weight: bold; font-size: 1rem; }
-.timer-value {
-    background: #d32f2f;
-    color: #fff;
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-}
-#timer-tobt { background: #2e7d32; }
-#timer-h8   { background: #ffd54f; color:#000; }
-#timer-ctot { background: #455a64; }
-
-/* Toggles (barre du haut) */
-.toggle-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.toggle-group { display: flex; align-items: center; gap: 8px; }
-
-/* Interrupteurs */
-.switch { position: relative; display: inline-block; width: 60px; height: 28px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background: #cfd4da; transition: .2s; border-radius: 999px;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
-}
-.slider:before {
-    position: absolute; content: ""; height: 22px; width: 22px; left: 3px; top: 3px;
-    background: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.3);
-}
-.switch input:checked + .slider { background: #1976d2; }
-.switch input:checked + .slider:before { transform: translateX(32px); }
-
-/* Légendes des interrupteurs */
-.toggle-caption { font-size: .9rem; user-select: none; }
-
-/* Onglets */
-#tab-bar {
-    display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;
-    position: sticky; top: 0; background: #ffffff; z-index: 999; padding: 5px 0;
-    backdrop-filter: saturate(180%) blur(6px);
-}
-#tab-bar button {
-    border: none; cursor: pointer; border-radius: 8px;
-    font-size: 1.05rem; padding: 8px 14px; transition: background .15s ease, transform .12s ease;
-    background: #eef2f7;
-}
-#tab-bar button:hover { background: #e1e7f0; }
-#tab-bar button:active { transform: translateY(1px); }
-body.dark #tab-bar { background: #121212; }
-#tab-bar button:first-child {
-    font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
+.input.uppercase{ text-transform: uppercase; }
+.field .label{
+  font-weight: 800;
 }
 
-/* Popup notifications */
-#popup {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    padding: 12px 20px; border-radius: 10px; font-size: 1rem; color: #fff;
-    display: none; z-index: 1000;
+/* Tabs (vols) */
+#tab-bar{
+  display:flex;
+  gap:8px;
+  flex-wrap: wrap;
+  align-items:center;
+}
+#tab-bar .button{
+  border-radius: 999px;
 }
 
-/* === TIMELINE (base) === */
+/* Timer chips */
+.timer-row{
+  display:flex;
+  gap:12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.timer-chip{
+  min-width: 140px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: var(--card);
+  box-shadow: var(--shadow2);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap:10px;
+}
+.timer-chip .k{ font-weight: 800; }
+.timer-chip .v{
+  font-weight: 900;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background:#ef4444;
+  color:#fff;
+  min-width: 70px;
+  text-align:center;
+}
+#timer-tobt{ background:#16a34a !important; }
+#timer-h8{ background:#facc15 !important; color:#111 !important; }
+#timer-ctot{ background:#334155 !important; }
+
+/* Time buttons */
+.btn-actions{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.btn-actions .button{
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+/* Popup */
+#popup{
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 16px;
+  border-radius: 12px;
+  color:#fff;
+  z-index: 2000;
+  box-shadow: var(--shadow);
+}
+
+/* === TIMELINE (ton CSS, quasi inchangé) === */
 .timeline-track {
   position: absolute; left:6%; right:6%;
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
@@ -219,427 +194,481 @@ body.dark .timeline-tick { background:#3e444b; }
 
 .timeline-tick-label {
   position: absolute; transform: translateX(-50%);
-  font-size: 14px; font-weight: 600; color:#444;
+  font-size: 14px; font-weight: 700; color:#444;
 }
 body.dark .timeline-tick-label { color:#cfd4da; }
 
 .tl-event, .tl-range { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height:1; z-index: 1; }
-
-/* Points (événements) */
 .tl-dot {
   width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
   margin: 0 auto 4px;
 }
 .tl-label {
-  padding: 3px 8px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+  padding: 4px 10px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+  font-weight: 800;
 }
-body.dark .tl-label { background:#2b2b2b; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.07); }
+body.dark .tl-label { background:#232733; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
 
-/* couleurs */
-.tl--std  { --c:#607d8b; }
-.tl--tobt { --c:#2e7d32; }
-.tl--ctot { --c:#455a64; }
-.tl--ops  { --c:#1976d2; }
-.tl--turn { --c:#d32f2f; }
+.tl--std  { --c:#64748b; }
+.tl--tobt { --c:#16a34a; }
+.tl--ctot { --c:#334155; }
+.tl--ops  { --c:#2563eb; }
+.tl--turn { --c:#ef4444; }
 .tl-event .tl-dot { background: var(--c); }
 
-/* Barres de durées */
 .tl-range {
-  height: 16px; background: color-mix(in srgb, var(--c) 50%, transparent);
-  border: 2px solid var(--c); border-radius: 8px; z-index: 2;
+  height: 16px; background: color-mix(in srgb, var(--c) 42%, transparent);
+  border: 2px solid var(--c); border-radius: 999px; z-index: 2;
 }
 .tl-range-label {
-  position:absolute; top: -30px; left:50%; transform: translateX(-50%);
-  font-size: 14px; background: rgba(255,255,255,.9);
-  padding: 2px 8px; border-radius:6px; font-weight: 600;
+  position:absolute; top: -22px; left:50%; transform: translateX(-50%);
+  font-size: 13px; background: rgba(255,255,255,.9);
+  padding: 2px 8px; border-radius: 10px; font-weight: 900;
 }
 body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 
-/* --- Toolbar timeline --- */
 .timeline-toolbar{
-  display:flex; align-items:center; gap:8px; margin: 4px 0 8px;
+  display:flex; align-items:center; gap:8px; margin: 4px 0 10px;
   flex-wrap: wrap;
-  min-width: 0;
-  overflow-x: hidden;
 }
-.tl-btn{
-  padding:6px 10px; border:0; border-radius:10px; cursor:pointer;
-  background:#e7ebf0; font-weight:600; transition: transform .12s ease, background .15s ease;
-}
-.tl-btn:hover{ background:#dde3ea; }
-.tl-btn:active{ transform: translateY(1px); }
-body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
-
-/* Coche “Heure sur étiquettes” */
-.tl-toggle {
-  display:flex; align-items:center; gap:6px; margin-left:8px; font-size:14px;
-  max-width: 100%;
-  flex-wrap: wrap;
-}
-.tl-toggle input { flex: 0 0 auto; }
-
-/* --- zone scrollable + canvas --- */
 .timeline-scroll{
   overflow-x:auto; overflow-y:hidden;
-  border-radius:12px; background:#ffffff;
+  border-radius: 16px;
+  background: var(--card);
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
-body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+body.dark .timeline-scroll{
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+}
 .timeline-canvas{ position:relative; min-width:600px; width:100%; }
 
-/* === TIMING (tabs) === */
-.timing-col{ background:#fff; border-radius:12px; padding:10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
-body.dark .timing-col{ background:#161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
-.timing-col.arr{ border-left:6px solid #2e7d32; }
-.timing-col.dep{ border-left:6px solid #1976d2; }
+/* DL error */
+.dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
-.timing-toggle{ display:flex; justify-content:center; gap:8px; margin:6px 0 10px; }
-.timing-seg{
-  border:1px solid rgba(0,0,0,.12);
-  background:#eef2f7;
-  padding:8px 14px;
-  border-radius:999px;
-  font-weight:700;
-  cursor:pointer;
-  transition:background .15s ease, transform .12s ease, color .15s ease, border-color .15s ease;
-}
-.timing-seg:hover{ background:#e1e7f0; }
-.timing-seg:active{ transform: translateY(1px); }
-.timing-seg.active{ background:#1976d2; color:#fff; border-color:#1976d2; }
-body.dark .timing-seg{ background:#2a2a2a; color:#eee; border-color:#3a3a3a; }
-body.dark .timing-seg:hover{ background:#333; }
-body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90caf9; }
-.timing-panel{ display:none; }
-.timing-panel.active{ display:block; }
-
-#seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32; color:#fff; }
-body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32; color:#fff; }
-#panel-arr .btn-actions .now { background:#2e7d32; }
-
-/* === CHIFFRES PORTE === */
-#chiffres-porte .form-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px; }
-#chiffres-porte .cp-row{ grid-column: 1 / -1; display: grid; gap: 12px; margin-bottom: 6px; }
+/* CHIFFRES PORTE (ta grille) */
+#chiffres-porte .form-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+#chiffres-porte .cp-row{ grid-column: 1 / -1; display: grid; gap: 10px; margin-bottom: 10px; }
 #chiffres-porte .cp-cols-1{ grid-template-columns: 1fr; }
 #chiffres-porte .cp-cols-2{ grid-template-columns: repeat(2, minmax(140px,1fr)); }
 #chiffres-porte .cp-cols-3{ grid-template-columns: repeat(3, minmax(140px,1fr)); }
 #chiffres-porte .cp-cols-4{ grid-template-columns: repeat(4, minmax(140px,1fr)); }
 
-#chiffres-porte .form-group,
-#chiffres-porte .form-group-3col,
-#chiffres-porte .form-group-4col{
-  background: linear-gradient(180deg, #ffffff, #f7fafc);
-  border-radius: 12px;
-  padding: 10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,.08), inset 0 0 0 1px rgba(0,0,0,.05);
-  transition: transform .12s ease, box-shadow .15s ease, background .2s ease;
-  position: relative; overflow: hidden;
-}
-#chiffres-porte .form-group:hover,
-#chiffres-porte .form-group-3col:hover,
-#chiffres-porte .form-group-4col:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(0,0,0,.12), inset 0 0 0 1px rgba(0,0,0,.06);
-}
-#chiffres-porte .form-group::before,
-#chiffres-porte .form-group-3col::before,
-#chiffres-porte .form-group-4col::before{
-  content:"";
-  position:absolute; left:0; top:0; bottom:0; width:6px;
-  background: linear-gradient(180deg, #1976d2, #4caf50);
-  opacity:.85;
-}
-#chiffres-porte label{ font-weight: 800; font-size: .9rem; color:#123; }
-#chiffres-porte input, #chiffres-porte select{
-  background: #fff; border: 1px solid #d7dde5; border-radius: 8px; padding: 8px; font-weight: 700;
-}
-#chiffres-porte #TOB{
-  font-size: 1.25rem; letter-spacing: .5px; background: #e8f0fe; border: 2px solid #1976d2; border-radius: 10px;
-}
-body.dark #chiffres-porte .form-group,
-body.dark #chiffres-porte .form-group-3col,
-body.dark #chiffres-porte .form-group-4col{
-  background: linear-gradient(180deg, #171717, #121212);
-  box-shadow: 0 8px 20px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
-}
-body.dark #chiffres-porte label{ color:#eef2f7; }
-body.dark #chiffres-porte input, body.dark #chiffres-porte select{
-  background:#0f0f0f; color:#eef2f7; border-color:#2e2e2e;
-}
-body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
-
-/* CHIFFRES PORTE via <details> */
 #chiffres-porte summary { list-style: none; cursor: pointer; }
 #chiffres-porte summary::-webkit-details-marker { display: none; }
-#chiffres-porte summary h2 { cursor: pointer; }
-
-/* Timeline patch */
-.tl-range { height: 16px; }
-.tl-range-label { top: -22px; }
-
-/* Bordure d'erreur DL */
-.dl-error { border: 2px solid #d32f2f !important; border-radius: 4px; }
-
-/* Responsive + overflow CHIFFRES PORTE */
-#chiffres-porte .form-group,
-#chiffres-porte .form-group-3col,
-#chiffres-porte .form-group-4col { min-width: 0; }
-
-#chiffres-porte .cp-cols-2,
-#chiffres-porte .cp-cols-3,
-#chiffres-porte .cp-cols-4 { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
-
-@media (max-width: 900px) {
-  #chiffres-porte .cp-cols-2,
-  #chiffres-porte .cp-cols-3,
-  #chiffres-porte .cp-cols-4 { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-}
-
-#chiffres-porte input,
-#chiffres-porte select { max-width: 100%; }
 
 /* Helpers */
 .form-group.full { flex: 1 1 100% !important; }
-.form-row-2 { display: contents; }
-
 </style>
 </head>
+
 <body onload="initForm()">
 
-<!-- Barre d’onglets -->
-<div id="tab-bar">
-  <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brandline">
+      <div class="brand-badge"></div>
+      <div class="brand-title">
+        <strong>SUIVI PERFORMANCE</strong>
+        <span>Interface Bulma • autosave • multi-vol</span>
+      </div>
+    </div>
+
+    <!-- Tabs vols -->
+    <div id="tab-bar" class="buttons are-small"></div>
+
+    <!-- Toggles (référencés par ton JS) -->
+    <div class="buttons are-small">
+      <label class="button is-light" style="gap:10px;">
+        <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)" style="margin:0;">
+        <span>Mode sombre</span>
+      </label>
+      <label class="button is-light" style="gap:10px;">
+        <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)" style="margin:0;">
+        <span>UTC</span>
+      </label>
+    </div>
+  </div>
 </div>
 
-<h1>SUIVI PERFORMANCE</h1>
+<div class="app-wrap">
 
-<!-- Timers -->
-<div class="timer-box">
-  <div class="timer-group">
-    <div class="timer"><div class="timer-label">HLE</div><div id="timer-h40" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
-    <div id="lidBlock" class="timer" style="display:none;"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
+  <!-- Timers -->
+  <div class="timer-row mb-4">
+    <div class="timer-chip">
+      <div class="k">HLE</div>
+      <div id="timer-h40" class="v">--:--</div>
+    </div>
+    <div class="timer-chip">
+      <div class="k">H-15</div>
+      <div id="timer-h15" class="v">--:--</div>
+    </div>
+
+    <div id="lidBlock" class="timer-chip" style="display:none;">
+      <div class="k">LID</div>
+      <div id="timer-h8" class="v">--:--</div>
+    </div>
+
+    <div class="timer-chip">
+      <div class="k">TOBT</div>
+      <div id="timer-tobt" class="v">--:--</div>
+    </div>
+    <div class="timer-chip">
+      <div class="k">CTOT</div>
+      <div id="timer-ctot" class="v">--:--</div>
+    </div>
   </div>
-  <div class="timer-group">
-    <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
-    <div class="timer"><div class="timer-label">CTOT</div><div id="timer-ctot" class="timer-value">--:--</div></div>
+
+  <!-- INFO VOL -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">INFO VOL</p>
+      <span class="card-header-icon" aria-label="more options">
+        <span class="icon">⌄</span>
+      </span>
+    </header>
+    <div class="card-content">
+      <div class="columns is-multiline">
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Date</label>
+            <div class="control">
+              <input class="input" type="date" id="Date">
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">RZA</label>
+            <div class="control">
+              <input class="input uppercase" type="text" id="RZA" maxlength="3">
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Cie</label>
+            <div class="control select is-fullwidth">
+              <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
+                <option value="">--</option>
+                <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
+                <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
+                <option>V7</option><option>Autre</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">N° VOL</label>
+            <div class="control">
+              <input class="input uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Provenance</label>
+            <div class="control">
+              <input class="input uppercase" type="text" id="From" maxlength="3">
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Destination</label>
+            <div class="control">
+              <input class="input uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Immat</label>
+            <div class="control">
+              <input class="input uppercase" type="text" id="Immat" maxlength="5">
+            </div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Parking</label>
+            <div class="control select is-fullwidth">
+              <select id="Parking">
+                <option value="">--</option>
+                <option>1</option><option>2</option><option>3</option><option>4</option>
+                <option>5</option><option>6</option><option>7</option><option>8</option>
+                <option>9</option><option>10</option><option>11</option><option>12</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
+
+  <!-- HORAIRES -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">HORAIRES</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div class="columns is-multiline">
+
+        <!-- helper -->
+        <script>
+          function timeField(id,label,onchange){
+            return `
+            <div class="column is-6-tablet is-4-desktop">
+              <div class="field">
+                <label class="label">${label}</label>
+                <div class="control">
+                  <input class="input" type="time" id="${id}" onchange="${onchange}">
+                </div>
+                <div class="btn-actions">
+                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+                  <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+                </div>
+              </div>
+            </div>`;
+          }
+        </script>
+
+        <div id="horairesMount" class="column is-12"></div>
+        <script>
+          document.addEventListener("DOMContentLoaded", ()=>{
+            const mount = document.getElementById('horairesMount');
+            if(!mount) return;
+            mount.innerHTML = `<div class="columns is-multiline">
+              ${timeField('SIBT','SIBT',"updateAllCalculations()")}
+              ${timeField('AIBT','AIBT',"updateAllCalculations()")}
+              ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()")}
+              ${timeField('AOBT','AOBT',"updateAllCalculations()")}
+              ${timeField('CTOT','CTOT',"updateAllCalculations()")}
+            </div>`;
+          });
+        </script>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMING -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">TIMING</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div id="timing-grid"></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">TIMELINE</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div class="timeline-toolbar">
+        <button type="button" class="button is-small" onclick="timelineZoomOut()">−</button>
+        <span class="tag is-light" id="timelineZoomLabel">100%</span>
+        <button type="button" class="button is-small" onclick="timelineZoomIn()">+</button>
+        <div class="tl-sep"></div>
+        <button type="button" class="button is-small" onclick="timelineScroll(-15)">◀ 15 min</button>
+        <button type="button" class="button is-small" onclick="timelineScroll(15)">15 min ▶</button>
+        <div class="tl-sep"></div>
+        <button type="button" class="button is-small is-light" onclick="timelineZoomReset()">Reset</button>
+        <label class="checkbox ml-2" title="Afficher l’heure à côté des étiquettes" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="showTimesToggle" checked onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
+          <span>Afficher heure/durée</span>
+        </label>
+      </div>
+
+      <div class="timeline-scroll" id="timelineScroll">
+        <div id="timelineCanvas" class="timeline-canvas"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHIFFRES PORTE -->
+  <div class="card mb-5" id="chiffres-porte">
+    <header class="card-header">
+      <p class="card-header-title">CHIFFRES PORTE</p>
+      <span class="card-header-icon"><span class="icon">⇵</span></span>
+    </header>
+    <div class="card-content">
+      <details id="cp-details" open>
+        <summary class="mb-3"><span class="tag is-info is-light">Ouvrir / fermer</span></summary>
+        <div id="chargement-container" class="form-grid"></div>
+      </details>
+    </div>
+  </div>
+
+  <!-- RETARDS -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">RETARDS (Départ)</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div class="columns is-multiline">
+        <div class="column is-6-tablet is-4-desktop">
+          <div class="field">
+            <label class="label">DL Code 1</label>
+            <div class="control"><input class="input" type="text" id="DLcode1"></div>
+          </div>
+        </div>
+        <div class="column is-6-tablet is-4-desktop">
+          <div class="field">
+            <label class="label">DL Durée 1 (min)</label>
+            <div class="control"><input class="input" type="number" id="DLduree1" min="0" step="1" oninput="dldChanged(1)"></div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-4-desktop">
+          <div class="field">
+            <label class="label">DL Code 2</label>
+            <div class="control"><input class="input" type="text" id="DLcode2"></div>
+          </div>
+        </div>
+        <div class="column is-6-tablet is-4-desktop">
+          <div class="field">
+            <label class="label">DL Durée 2 (min)</label>
+            <div class="control"><input class="input" type="number" id="DLduree2" min="0" step="1" oninput="dldChanged(2)"></div>
+          </div>
+        </div>
+
+        <div class="column is-6-tablet is-4-desktop">
+          <div class="field">
+            <label class="label">DL Code 3</label>
+            <div class="control"><input class="input" type="text" id="DLcode3"></div>
+          </div>
+        </div>
+        <div class="column is-6-tablet is-4-desktop">
+          <div class="field">
+            <label class="label">DL Durée 3 (min)</label>
+            <div class="control"><input class="input" type="number" id="DLduree3" min="0" step="1" oninput="dldChanged(3)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">DL JUSTIFICATIONS</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <textarea class="textarea" id="DLJustif" placeholder="Justifications…"></textarea>
+    </div>
+  </div>
+
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">FAITS SAILLANTS</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <textarea class="textarea" id="FaitsSaillants" placeholder="Faits saillants…"></textarea>
+    </div>
+  </div>
+
+  <!-- ASSISTANCES -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">ASSISTANCES PRISES EN CHARGE A/D</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div class="columns is-multiline">
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">WCHC</label>
+            <div class="control"><input class="input" type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
+          </div>
+        </div>
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">WCHS</label>
+            <div class="control"><input class="input" type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
+          </div>
+        </div>
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">WCHR</label>
+            <div class="control"><input class="input" type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
+          </div>
+        </div>
+        <div class="column is-6-tablet is-3-desktop">
+          <div class="field">
+            <label class="label">Autre</label>
+            <div class="control"><input class="input" type="number" id="AutreAssist"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESTATIONS -->
+  <div class="card mb-6">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">PRESTATIONS</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div class="columns is-multiline">
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">ASU</label><div class="control select is-fullwidth"><select id="ASU"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Flux RZA</label><div class="control select is-fullwidth"><select id="FluxRZA"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Eau potable</label><div class="control select is-fullwidth"><select id="EauPotable"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Vidange toilettes</label><div class="control select is-fullwidth"><select id="Vidange"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Ménage Assist'Air</label><div class="control select is-fullwidth"><select id="MenageAssist"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Ménage Atalian</label><div class="control select is-fullwidth"><select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Collecte d'ordures</label><div class="control select is-fullwidth"><select id="Ordures"><option>Y</option><option>N</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Toilet Kit</label><div class="control select is-fullwidth"><select id="ToiletKit"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Dégivrage</label><div class="control select is-fullwidth"><select id="Degivrage"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Push-Pull</label><div class="control select is-fullwidth"><select id="PushPull"><option>N</option><option>Y</option></select></div></div></div>
+        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Echelle supplémentaire</label><div class="control select is-fullwidth"><select id="Echelle"><option>N</option><option>Y</option></select></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Boutons finaux -->
+  <div class="buttons is-centered">
+    <button class="button is-success is-medium" id="validate" onclick="validateForm()">VALIDER</button>
+    <button class="button is-link is-medium" id="save" onclick="manualSave()">SAUVEGARDER</button>
+    <button class="button is-danger is-light is-medium" id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
+  </div>
+
 </div>
-
-<!-- INFO VOL -->
-<section>
-  <h2>INFO VOL</h2>
-  <div class="form-grid">
-
-    <div class="form-group">
-      <label>Date
-        <input type="date" id="Date">
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>RZA
-        <input class="uppercase" type="text" id="RZA" maxlength="3">
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Cie
-        <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
-          <option value="">--</option>
-          <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
-          <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
-          <option>V7</option><option>Autre</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>N° VOL
-        <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Provenance
-        <input class="uppercase" type="text" id="From" maxlength="3">
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Destination
-        <input class="uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Immat
-        <input class="uppercase" type="text" id="Immat" maxlength="5">
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label>Parking
-        <select id="Parking">
-          <option value="">--</option>
-          <option>1</option><option>2</option><option>3</option><option>4</option>
-          <option>5</option><option>6</option><option>7</option><option>8</option>
-          <option>9</option><option>10</option><option>11</option><option>12</option>
-        </select>
-      </label>
-    </div>
-
-  </div>
-</section>
-
-
-<!-- HORAIRES -->
-<section>
-  <h2>HORAIRES</h2>
-  <div class="form-grid">
-    <div class="form-group">
-      <label>SIBT<input type="time" id="SIBT" onchange="updateAllCalculations()"></label>
-      <div class="btn-actions">
-        <button class="action minus" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
-        <button class="action now" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
-        <button class="action plus" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>AIBT<input type="time" id="AIBT" onchange="updateAllCalculations()"></label>
-      <div class="btn-actions">
-        <button class="action minus" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
-        <button class="action now" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
-        <button class="action plus" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
-      <div class="btn-actions">
-        <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
-        <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
-        <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>AOBT<input type="time" id="AOBT" onchange="updateAllCalculations()"></label>
-      <div class="btn-actions">
-        <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
-        <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
-        <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
-      <div class="btn-actions">
-        <button class="action minus" onclick="adjustTime('CTOT',-1);updateAllCalculations()">-1</button>
-        <button class="action now" onclick="setNow('CTOT');updateAllCalculations()">Now</button>
-        <button class="action plus" onclick="adjustTime('CTOT',1);updateAllCalculations()">+1</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- TIMING -->
-<section>
-  <h2>TIMING</h2>
-  <div id="timing-grid"></div>
-</section>
-
-<!-- TIMELINE -->
-<section>
-  <h2>TIMELINE</h2>
-
-  <div class="timeline-toolbar">
-    <button type="button" class="tl-btn" onclick="timelineZoomOut()">−</button>
-    <span id="timelineZoomLabel">100%</span>
-    <button type="button" class="tl-btn" onclick="timelineZoomIn()">+</button>
-    <div class="tl-sep"></div>
-    <button type="button" class="tl-btn" onclick="timelineScroll(-15)">◀ 15 min</button>
-    <button type="button" class="tl-btn" onclick="timelineScroll(15)">15 min ▶</button>
-    <div class="tl-sep"></div>
-    <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
-    <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
-      <input type="checkbox" id="showTimesToggle" checked
-             onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
-      Afficher heure/durée sur étiquettes
-    </label>
-  </div>
-
-  <div class="timeline-scroll" id="timelineScroll">
-    <div id="timelineCanvas" class="timeline-canvas"></div>
-  </div>
-</section>
-
-<!-- CHIFFRES PORTE (rétractable – version <details>) -->
-<section id="chiffres-porte">
-  <details id="cp-details" open>
-    <summary><h2>CHIFFRES PORTE</h2></summary>
-    <div id="chargement-container" class="form-grid"></div>
-  </details>
-</section>
-
-<!-- RETARDS -->
-<section>
-  <h2>RETARDS (Départ)</h2>
-  <div class="form-grid">
-    <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
-    <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" min="0" step="1" oninput="dldChanged(1)"></label></div>
-    <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
-    <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" min="0" step="1" oninput="dldChanged(2)"></label></div>
-    <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
-    <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3" min="0" step="1" oninput="dldChanged(3)"></label></div>
-  </div>
-</section>
-
-<!-- DL JUSTIFICATION -->
-<section>
-  <h2>DL JUSTIFICATIONS</h2>
-  <textarea id="DLJustif"></textarea>
-</section>
-
-<!-- FAITS SAILLANTS -->
-<section>
-  <h2>FAITS SAILLANTS</h2>
-  <textarea id="FaitsSaillants"></textarea>
-</section>
-
-<!-- ASSISTANCES -->
-<section>
-  <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
-  <div class="form-grid">
-    <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-    <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-    <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-    <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
-  </div>
-</section>
-
-<!-- PRESTATIONS -->
-<section>
-  <h2>PRESTATIONS</h2>
-  <div class="form-grid">
-    <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
-    <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
-    <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
-  </div>
-</section>
-
-<!-- Boutons finaux -->
-<button id="validate" onclick="validateForm()">VALIDER</button>
-<button id="save" onclick="manualSave()">SAUVEGARDER</button>
-<button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <script>
+/* Petite UX: collapse card body */
+function toggleCardBody(headerEl){
+  const card = headerEl.closest('.card');
+  if(!card) return;
+  const content = card.querySelector('.card-content');
+  if(!content) return;
+  const collapsed = content.classList.toggle('collapsed-body');
+  const icon = headerEl.querySelector('.icon');
+  if(icon) icon.textContent = collapsed ? '›' : '⌄';
+}
+
 /* === Variables === */
 let isUTC=false;
 let manualSOBT=false;
@@ -697,12 +726,6 @@ function initForm(){
   attachAutoSave();
   window.addEventListener('beforeunload', saveCurrentTabData);
 
-  /* replis génériques sur H2, sauf CHIFFRES PORTE (gérée par <details>) */
-  document.querySelectorAll("section h2").forEach(h2=>{
-    if (h2.closest('#chiffres-porte')) return;
-    h2.onclick=()=>h2.parentElement.classList.toggle("collapsed");
-  });
-
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
     updateTabLabelInstant();
@@ -745,7 +768,6 @@ function initForm(){
   if (currentTabId) loadTabData(currentTabId);
 
   setDefaultDateToTodayIfEmpty();
-
   renderTimeline();
 }
 
@@ -784,7 +806,10 @@ function attachAutoSave(){
 /* Tabs */
 function renderTabs(){
   const tabBar=document.getElementById('tab-bar');
-  tabBar.innerHTML='<button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>';
+  tabBar.innerHTML = `
+    <button class="button is-success is-light is-small" type="button" onclick="createNewTab()">+ Ajouter vol</button>
+  `;
+
   let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
   tabs.forEach((id)=>{
     const data=JSON.parse(localStorage.getItem('tab-'+id)||'{}');
@@ -797,8 +822,8 @@ function renderTabs(){
     let label = left || to ? (to ? `${left} | ${to}`.trim() : left) : 'VOL';
 
     const btn=document.createElement('button');
-    btn.textContent=label || 'VOL';
-    btn.style.fontWeight=id===currentTabId?'bold':'normal';
+    btn.className = `button is-small ${id===currentTabId ? 'is-link' : 'is-light'}`;
+    btn.textContent = label || 'VOL';
     btn.onclick=()=>switchTab(id);
     btn.ondblclick=()=>deleteTab(id);
     tabBar.appendChild(btn);
@@ -844,8 +869,8 @@ function clearFormFields(){
     else if(el.tagName==='SELECT') el.selectedIndex=0;
     else el.value='';
   });
-  document.getElementById('Date').valueAsDate=new Date();
-  document.getElementById('FNC').value='N';
+  const d = document.getElementById('Date');
+  if(d) d.valueAsDate=new Date();
   updateAllCalculations();
 }
 
@@ -873,21 +898,17 @@ function saveCurrentTabData(){
 function loadTabData(id){
   const data = JSON.parse(localStorage.getItem('tab-'+id) || '{}');
 
-  // Recharge tous les champs
   document.querySelectorAll('input, select, textarea').forEach(el=>{
     if(!el.id || data[el.id] === undefined) return;
     if(el.type === 'checkbox') el.checked = (data[el.id] === '1');
     else el.value = data[el.id];
   });
 
-  // Dark mode
   if(data.modeDark === '1') document.body.classList.add('dark');
   else document.body.classList.remove('dark');
 
-  // UTC mode
   isUTC = (data.modeUTC === '1');
 
-  // Timers affichés
   const h40  = document.getElementById('timer-h40');
   const h15  = document.getElementById('timer-h15');
   const h8   = document.getElementById('timer-h8');
@@ -899,73 +920,79 @@ function loadTabData(id){
   if(tobt) tobt.textContent = data.timer_tobt || '--:--';
   if(ctot) ctot.textContent = data.timer_ctot || '--:--';
 
-  // Sync des toggles si ils existent dans le HTML
   const dt = document.getElementById('darkToggle');
   const ut = document.getElementById('utcToggle');
   if(dt) dt.checked = document.body.classList.contains('dark');
   if(ut) ut.checked = isUTC;
 
-  // Date par défaut si vide
   setDefaultDateToTodayIfEmpty();
-
-  // Recrée la zone CHIFFRES PORTE selon la Cie
   generateChargementFields();
-
   updateAllCalculations();
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
 }
 
-/* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – ARR / DEP */
+/* TIMING FIELDS – ARR / DEP (ton code, juste Bulma wrapper léger) */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label,variant='half')=>`
-    <div class="form-group ${variant==='full' ? 'full' : ''}">
-      <label>${label}<input type="time" id="${id}" onchange="updateAllCalculations()"></label>
-      <div class="btn-actions">
-        <button class="action minus" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-        <button class="action now"   onclick="setNow('${id}');updateAllCalculations()">Now</button>
-        <button class="action plus"  onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+  const fieldHTML = (id,label,full=false)=>`
+    <div class="column ${full ? 'is-12' : 'is-6-tablet is-4-desktop'}">
+      <div class="field">
+        <label class="label">${label}</label>
+        <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
+        <div class="btn-actions">
+          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+          <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+        </div>
       </div>
     </div>`;
 
-  let arr = '';
-  arr += `<div class="timing-col arr"><div class="form-grid">`;
-  arr += fieldHTML('ArriveeFuel','Arrivée Avitair','full');
-  arr += fieldHTML('PremierDebarque','Premier débarqué');
-  arr += fieldHTML('DernierDebarque','Dernier débarqué');
-  arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
-  arr += fieldHTML('DepartLiftArr','Départ lift');
-  arr += `</div></div>`;
-
-  let dep = '';
-  dep += `<div class="timing-col dep"><div class="form-grid">`;
-  dep += fieldHTML('ArrPNT','Arrivée PNT');
-  dep += fieldHTML('ArrPNC','Arrivée PNC');
-  dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
-  dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
-  dep += fieldHTML('ArriveeLift','Arrivée lift');
-  dep += fieldHTML('DepartLift','Départ lift');
-  dep += fieldHTML('DepartFuel','Départ Avitair','full');
-  dep += fieldHTML('RemiseLID','Remise LID/LDS');
-  dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
-  dep += `</div></div>`;
-
-  const toggle = `
-    <div class="timing-toggle">
-      <button type="button" id="seg-arr" class="timing-seg" onclick="switchTimingPanel('arr')">Arrivée</button>
-      <button type="button" id="seg-dep" class="timing-seg" onclick="switchTimingPanel('dep')">Départ</button>
+  let arr = `
+    <div class="card mb-4">
+      <header class="card-header"><p class="card-header-title">Arrivée</p></header>
+      <div class="card-content"><div class="columns is-multiline">
+        ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
+        ${fieldHTML('PremierDebarque','Premier débarqué')}
+        ${fieldHTML('DernierDebarque','Dernier débarqué')}
+        ${fieldHTML('ArriveeLiftArr','Arrivée lift')}
+        ${fieldHTML('DepartLiftArr','Départ lift')}
+      </div></div>
     </div>`;
 
-  container.innerHTML = toggle +
-    `<div class="timing-panel" id="panel-arr">${arr}</div>` +
-    `<div class="timing-panel" id="panel-dep">${dep}</div>`;
+  let dep = `
+    <div class="card">
+      <header class="card-header"><p class="card-header-title">Départ</p></header>
+      <div class="card-content"><div class="columns is-multiline">
+        ${fieldHTML('ArrPNT','Arrivée PNT')}
+        ${fieldHTML('ArrPNC','Arrivée PNC')}
+        ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
+        ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
+        ${fieldHTML('ArriveeLift','Arrivée lift')}
+        ${fieldHTML('DepartLift','Départ lift')}
+        ${fieldHTML('DepartFuel','Départ Avitair',true)}
+        ${fieldHTML('RemiseLID','Remise LID/LDS')}
+        ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
+      </div></div>
+    </div>`;
+
+  const toggle = `
+    <div class="tabs is-toggle is-toggle-rounded is-centered mb-4">
+      <ul>
+        <li id="seg-arr-li"><a onclick="switchTimingPanel('arr')"><span>Arrivée</span></a></li>
+        <li id="seg-dep-li"><a onclick="switchTimingPanel('dep')"><span>Départ</span></a></li>
+      </ul>
+    </div>`;
+
+  container.innerHTML = toggle + `
+    <div id="panel-arr" style="display:none;">${arr}</div>
+    <div id="panel-dep" style="display:none;">${dep}</div>
+  `;
 
   const saved = localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(saved);
@@ -974,72 +1001,83 @@ function generateTimingFields(){
 function switchTimingPanel(mode){
   const arrPanel=document.getElementById('panel-arr');
   const depPanel=document.getElementById('panel-dep');
-  const btnArr=document.getElementById('seg-arr');
-  const btnDep=document.getElementById('seg-dep');
+  const liArr=document.getElementById('seg-arr-li');
+  const liDep=document.getElementById('seg-dep-li');
 
-  [arrPanel,depPanel].forEach(p=>p&&p.classList.remove('active'));
-  [btnArr,btnDep].forEach(b=>b&&b.classList.remove('active'));
+  if(arrPanel) arrPanel.style.display = (mode==='arr') ? '' : 'none';
+  if(depPanel) depPanel.style.display = (mode==='dep') ? '' : 'none';
 
-  if(mode==='arr'){ if(arrPanel) arrPanel.classList.add('active'); if(btnArr) btnArr.classList.add('active'); }
-  else { if(depPanel) depPanel.classList.add('active'); if(btnDep) btnDep.classList.add('active'); }
+  if(liArr) liArr.classList.toggle('is-active', mode==='arr');
+  if(liDep) liDep.classList.toggle('is-active', mode!=='arr');
 
   localStorage.setItem('timingPanel', mode);
 }
 
-/* CHARGEMENT / TOB */
+/* CHARGEMENT / TOB (ton code intact) */
 function generateChargementFields() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const container = document.getElementById('chargement-container');
   container.innerHTML = "";
   let html = "";
 
+  const wrapNum = (id,label)=>`
+    <div class="field">
+      <label class="label">${label}</label>
+      <div class="control">
+        <input class="input" type="number" id="${id}">
+      </div>
+    </div>`;
+
   if (cie === "FR" || cie === "RK") {
     html += `
       <div class="cp-row cp-cols-3">
-        <div class="form-group-3col"><label>ADULT<input type="number" id="ADULT" oninput="updateTOB()"></label></div>
-        <div class="form-group-3col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-        <div class="form-group-3col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+        <div>${wrapNum('ADULT','ADULT').replace('id="ADULT"','id="ADULT" oninput="updateTOB()"')}</div>
+        <div>${wrapNum('CHILD','CHILD').replace('id="CHILD"','id="CHILD" oninput="updateTOB()"')}</div>
+        <div>${wrapNum('INFANT','INFANT').replace('id="INFANT"','id="INFANT" oninput="updateTOB()"')}</div>
       </div>
       <div class="cp-row cp-cols-3">
-        <div class="form-group-3col"><label>FWD/OA<input type="number" id="FWD" oninput="checkTOBCoherence()"></label></div>
-        <div class="form-group-3col"><label>MID/OB<input type="number" id="MID" oninput="checkTOBCoherence()"></label></div>
-        <div class="form-group-3col"><label>AFT/OC<input type="number" id="AFT" oninput="checkTOBCoherence()"></label></div>
+        <div>${wrapNum('FWD','FWD/OA').replace('id="FWD"','id="FWD" oninput="checkTOBCoherence()"')}</div>
+        <div>${wrapNum('MID','MID/OB').replace('id="MID"','id="MID" oninput="checkTOBCoherence()"')}</div>
+        <div>${wrapNum('AFT','AFT/OC').replace('id="AFT"','id="AFT" oninput="checkTOBCoherence()"')}</div>
       </div>
       <div class="cp-row cp-cols-2">
-        <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-        <div class="form-group-3col"><label>ITG<input type="number" id="ITG"></label></div>
+        <div>${wrapNum('BAGS','BAGS')}</div>
+        <div>${wrapNum('ITG','ITG')}</div>
       </div>
     `;
   } else {
     html += `
       <div class="cp-row cp-cols-4">
-        <div class="form-group-4col"><label>MALE<input type="number" id="MALE" oninput="updateTOB()"></label></div>
-        <div class="form-group-4col"><label>FEMALE<input type="number" id="FEMALE" oninput="updateTOB()"></label></div>
-        <div class="form-group-4col"><label>CHILD<input type="number" id="CHILD" oninput="updateTOB()"></label></div>
-        <div class="form-group-4col"><label>INFANT<input type="number" id="INFANT" oninput="updateTOB()"></label></div>
+        <div>${wrapNum('MALE','MALE').replace('id="MALE"','id="MALE" oninput="updateTOB()"')}</div>
+        <div>${wrapNum('FEMALE','FEMALE').replace('id="FEMALE"','id="FEMALE" oninput="updateTOB()"')}</div>
+        <div>${wrapNum('CHILD','CHILD').replace('id="CHILD"','id="CHILD" oninput="updateTOB()"')}</div>
+        <div>${wrapNum('INFANT','INFANT').replace('id="INFANT"','id="INFANT" oninput="updateTOB()"')}</div>
       </div>
       <div class="cp-row cp-cols-4">
-        <div class="form-group-4col"><label>OA<input type="number" id="OA" oninput="checkTOBCoherence()"></label></div>
-        <div class="form-group-4col"><label>OB<input type="number" id="OB" oninput="checkTOBCoherence()"></label></div>
-        <div class="form-group-4col"><label>OC<input type="number" id="OC" oninput="checkTOBCoherence()"></label></div>
-        <div class="form-group-4col"><label>OD<input type="number" id="OD" oninput="checkTOBCoherence()"></label></div>
+        <div>${wrapNum('OA','OA').replace('id="OA"','id="OA" oninput="checkTOBCoherence()"')}</div>
+        <div>${wrapNum('OB','OB').replace('id="OB"','id="OB" oninput="checkTOBCoherence()"')}</div>
+        <div>${wrapNum('OC','OC').replace('id="OC"','id="OC" oninput="checkTOBCoherence()"')}</div>
+        <div>${wrapNum('OD','OD').replace('id="OD"','id="OD" oninput="checkTOBCoherence()"')}</div>
       </div>
       <div class="cp-row cp-cols-2">
-        <div class="form-group-3col"><label>BAGS<input type="number" id="BAGS"></label></div>
-        <div class="form-group-3col"><label>POIDS<input type="number" id="POIDS"></label></div>
+        <div>${wrapNum('BAGS','BAGS')}</div>
+        <div>${wrapNum('POIDS','POIDS')}</div>
       </div>
     `;
   }
 
   html += `
     <div class="cp-row cp-cols-1">
-      <div class="form-group" style="flex:1 1 100%;">
-        <label>TOB<input type="text" id="TOB" readonly style="font-weight:bold;"></label>
+      <div class="field">
+        <label class="label">TOB</label>
+        <div class="control">
+          <input class="input" type="text" id="TOB" readonly style="font-weight:900;">
+        </div>
       </div>
     </div>
   `;
-  container.innerHTML = html;
 
+  container.innerHTML = html;
   updateTOB();
   updateLIDVisibility();
 }
@@ -1104,8 +1142,8 @@ function checkTOBCoherence() {
 function styleTOB(valid) {
   const tobField = document.getElementById('TOB');
   if (!tobField) return;
-  if (valid) { tobField.style.border = "1px solid #ccc"; tobField.style.color = "#000"; }
-  else { tobField.style.border = "2px solid red"; tobField.style.color = "red"; }
+  if (valid) { tobField.style.border = ""; tobField.style.color = ""; }
+  else { tobField.style.border = "2px solid #ef4444"; tobField.style.color = "#ef4444"; }
 }
 
 /* CALCULS */
@@ -1126,7 +1164,10 @@ function updateAllCalculations() {
 function updateTimers() {
   const sobt = document.getElementById('SOBT').value;
   if (!sobt) {
-    ['timer-h40', 'timer-h15', 'timer-h8'].forEach(id => document.getElementById(id).textContent = '--:--');
+    ['timer-h40', 'timer-h15', 'timer-h8'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.textContent = '--:--';
+    });
     return;
   }
   const [hh, mm] = sobt.split(':').map(Number);
@@ -1228,7 +1269,7 @@ function updateCTOTDisplay(){
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
-/* DL CODES (mapping demandé) */
+/* DL CODES */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT').value;
@@ -1263,7 +1304,7 @@ function totalDelayMinutes(){
   const a = parseHHMM(ao);
   if (s==null || a==null) return null;
   let total = a - s;
-  if (total < 0) total += 1440; // overnight
+  if (total < 0) total += 1440;
   return total;
 }
 
@@ -1356,7 +1397,6 @@ function setNow(fieldId) {
   const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
   document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
-
 function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
   if (!input.value) return;
@@ -1374,10 +1414,10 @@ function setDarkMode(enable, fromInit=false){
   const currentlyDark = document.body.classList.contains('dark');
   if (enable && !currentlyDark) document.body.classList.add('dark');
   if (!enable && currentlyDark) document.body.classList.remove('dark');
-  document.getElementById('darkToggle').checked = enable;
+  const dt = document.getElementById('darkToggle');
+  if(dt) dt.checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
 }
-
 function setTimeModeUTC(enable, fromInit=false){
   const offsetHours = -new Date().getTimezoneOffset() / 60;
 
@@ -1395,19 +1435,19 @@ function setTimeModeUTC(enable, fromInit=false){
     });
   }
   isUTC = enable;
-  document.getElementById('utcToggle').checked = enable;
+  const ut = document.getElementById('utcToggle');
+  if(ut) ut.checked = enable;
   localStorage.setItem('modeUTC', enable ? '1' : '0');
   updateAllCalculations();
 }
 
 /* POPUP */
-function showPopup(message, color = "#2196f3", duration = 2000) {
+function showPopup(message, color = "#2563eb", duration = 2000) {
   const popup = document.createElement('div');
   popup.id = "popup";
   popup.textContent = message;
   popup.style.background = color;
   document.body.appendChild(popup);
-  popup.style.display = "block";
   setTimeout(() => popup.remove(), duration);
 }
 
@@ -1501,7 +1541,6 @@ function collectTimelineData(){
   addPoint('HLE',  H40,  'tl--turn');
   addPoint('H-15', H15,  'tl--turn');
 
-  /* Événements simples */
   const singles = [
     ['ArrPNT','Arrivée PNT'],
     ['ArrPNC','Arrivée PNC'],
@@ -1512,18 +1551,17 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
-  /* Paires de durées */
   const rows = [
-    {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),                 cls:'tl--turn', color:null},
-    {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),       cls:'tl--ops',  color:null},
-    {key:'avit',    label:'Avitair',              pair:getPairWindow('ArriveeFuel','DepartFuel'),                           cls:'tl--std',  color:'#ff9800'},
-    {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
-    {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},   
+    {label:'Débarquement', pair:getPairWindow('PremierDebarque','DernierDebarque'), cls:'tl--turn', color:null},
+    {label:'Embarquement', pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
+    {label:'Avitair',      pair:getPairWindow('ArriveeFuel','DepartFuel'), cls:'tl--std', color:'#f59e0b'},
+    {label:'Lift (Arr)',   pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'), cls:'tl--std', color:'#a855f7'},
+    {label:'Lift (Dep)',   pair:getPairWindow('ArriveeLift','DepartLift'), cls:'tl--std', color:'#16a34a'},
   ];
 
   const durations = rows
     .filter(r=>r.pair!=null)
-    .map((r)=>({label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
+    .map(r=>({label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
 
   const allTimes = [ ...fixedPoints.map(p=>p.t), ...durations.flatMap(d=>[d.a,d.b]) ];
   const windowInfo = computeTimelineWindow(allTimes);
@@ -1598,10 +1636,7 @@ function renderTimeline(){
     return { ...d, start: Math.min(aExt,bExt), end: Math.max(aExt,bExt) };
   }).sort((x,y)=> x.start - y.start);
 
-  const durLanesEnd = [];
-  const LANE_PAD_MIN = 2;
-
-  function packLanes(items, pad = LANE_PAD_MIN){
+  function packLanes(items, pad = 2){
     const lanes = [];
     return items.map(it => {
       let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
@@ -1687,107 +1722,73 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
- function validateForm() {
+/* validateForm + save/reset (inchangé) */
+function validateForm() {
+  const val = id => (document.getElementById(id)?.value || "");
+  const dateRaw = val("Date");
+  const [yyyy, mm, dd] = dateRaw.split("-");
+  const dateTitre = `${dd}-${mm}-${yyyy}`;
 
-    const val = id => (document.getElementById(id)?.value || "");
+  const cie = val("Cie");
+  const vol = val("NVol");
+  const from = val("From");
+  const to = val("To");
+  const immat = val("Immat");
+  const rza = val("RZA");
 
-    // -------------------------
-    // 1. DONNÉES DE BASE
-    // -------------------------
-    const dateRaw = val("Date");
-    const [yyyy, mm, dd] = dateRaw.split("-");
-    const dateTitre = `${dd}-${mm}-${yyyy}`;
+  const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
 
-    const cie = val("Cie");
-    const vol = val("NVol");
-    const from = val("From");
-    const to = val("To");
-    const immat = val("Immat");
-    const rza = val("RZA");
+  const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
+  const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
 
-    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+  const assistances = [];
+  if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
+  if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
+  if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
 
+  const assistanceBlock = assistances.length > 0
+      ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
+      : "";
 
-    // -------------------------
-    // 2. LIFT
-    // -------------------------
-    const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
-    const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
+  let prestationsList = [];
+  const addIfYes = (label, id) => {
+      const v = document.getElementById(id).value;
+      if (v !== "N") prestationsList.push(label);
+  };
 
+  addIfYes("ASU", "ASU");
+  addIfYes("Flux RZA", "FluxRZA");
+  addIfYes("Eau potable", "EauPotable");
+  addIfYes("Vidange toilettes", "Vidange");
+  addIfYes("Ménage Assist'Air", "MenageAssist");
+  addIfYes("Ménage Atalian", "MenageAtalian");
+  addIfYes("Collecte d'ordures", "Ordures");
+  addIfYes("Toilet Kit", "ToiletKit");
+  addIfYes("Dégivrage", "Degivrage");
+  addIfYes("Push-Pull", "PushPull");
+  addIfYes("Échelle supplémentaire", "Echelle");
 
-    // -------------------------
-    // 3. ASSISTANCES (affichage conditionnel)
-    // -------------------------
-    const assistances = [];
+  const prestationsText =
+       prestationsList.length > 0 ? `== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
 
-    if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
-    if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
-    if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
+  const dlLines = [];
+  if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
+  if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
+  if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
 
-    const assistanceBlock = assistances.length > 0
-        ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
-        : "";
+  const dlBlock = dlLines.length > 0
+      ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
+      : "";
 
+  const justifBlock = val("DLJustif").trim() !== ""
+      ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
+      : "";
 
-    // -------------------------
-    // 4. PRESTATIONS
-    // -------------------------
-    let prestationsList = [];
+  const faitsBlock = val("FaitsSaillants").trim() !== ""
+      ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
+      : "";
 
-    const addIfYes = (label, id) => {
-        const v = document.getElementById(id).value;
-        if (v !== "N") prestationsList.push(label);
-    };
-
-    addIfYes("ASU", "ASU");
-    addIfYes("Flux RZA", "FluxRZA");
-    addIfYes("Eau potable", "EauPotable");
-    addIfYes("Vidange toilettes", "Vidange");
-    addIfYes("Ménage Assist'Air", "MenageAssist");
-    addIfYes("Ménage Atalian", "MenageAtalian");
-    addIfYes("Collecte d'ordures", "Ordures");
-    addIfYes("Toilet Kit", "ToiletKit");
-    addIfYes("Dégivrage", "Degivrage");
-    addIfYes("Push-Pull", "PushPull");
-    addIfYes("Échelle supplémentaire", "Echelle");
-
-    const prestationsText =
-         prestationsList.length > 0 ? `== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
-
-    // -------------------------
-    // 5. DL
-    // -------------------------
-    const dlLines = [];
-
-    if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
-    if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
-    if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
-
-    const dlBlock = dlLines.length > 0
-        ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
-        : "";
-
-
-    // -------------------------
-    // 6. JUSTIFICATION
-    // -------------------------
-    const justifBlock = val("DLJustif").trim() !== ""
-        ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
-        : "";
-
-
-    // -------------------------
-    // 7. FAITS SAILLANTS
-    // -------------------------
-    const faitsBlock = val("FaitsSaillants").trim() !== ""
-        ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
-        : "";
-
-
-    // -------------------------
-    // 8. MAIL COMPLET (CORRIGÉ)
-    // -------------------------
-    const body =
+  const body =
 `Vol : ${cie}${vol}
 Date : ${dateTitre}
 Rotation : ${from} - ${to}
@@ -1835,21 +1836,15 @@ ${[
   faitsBlock
 ].filter(Boolean).join("\n")}`;
 
-
-    // -------------------------
-    // 9. OUVERTURE OUTLOOK
-    // -------------------------
-    window.location.href =
-        `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+  window.location.href =
+      `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
 }
 
-/* SAUVEGARDE MANUELLE */
 function manualSave() {
   saveCurrentTabData();
-  showPopup("Enregistrement réussi", "#2196f3", 2000);
+  showPopup("Enregistrement réussi", "#2563eb", 2000);
 }
 
-/* RESET */
 function clearAutoSave() {
   if (confirm("Tout réinitialiser ?")) {
     localStorage.clear();
@@ -1857,5 +1852,6 @@ function clearAutoSave() {
   }
 }
 </script>
+
 </body>
 </html>
