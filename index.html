@@ -712,45 +712,6 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
   </div>
 </section>
 
-<!-- === BLOC-NOTE SUPERPOSÉ === -->
-<div id="noteOverlay" class="note-overlay" aria-hidden="true">
-  <div id="noteDragBar" class="note-titlebar">
-    <strong>Bloc-note</strong>
-    <div class="spacer"></div>
-    <button type="button" class="note-btn note-btn-danger" onclick="closeNotepadOverlay()" title="Fermer (ESC)" aria-label="Fermer">❌</button>
-  </div>
-
-  <div class="note-toolbar">
-    <button type="button" id="toolPen"   class="note-btn active" onclick="setNoteTool('pen')">✏️ Crayon</button>
-    <button type="button" id="toolErase" class="note-btn"        onclick="setNoteTool('eraser')">🧽 Gomme</button>
-    <button type="button" class="note-btn" id="noteClearBtn" onclick="noteClearAll()" title="Tout effacer">🧹 Effacer</button>
-
-    <button type="button" class="note-btn" id="noteUndoBtn" onclick="noteUndo()" title="Annuler (Ctrl+Z)" disabled>↶ Undo</button>
-    <button type="button" class="note-btn" id="noteRedoBtn" onclick="noteRedo()" title="Rétablir (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button>
-
-    <span style="margin-left:6px;">Taille crayon</span>
-    <input id="penSize" type="range" min="1" max="20" step="1" value="3" oninput="updatePenSizeLabel()">
-    <span id="penSizeVal">3</span>px
-
-    <span style="margin-left:12px;">Taille gomme</span>
-    <input id="eraserSize" type="range" min="5" max="60" step="1" value="22" oninput="updateEraserSizeLabel()">
-    <span id="eraserSizeVal">22</span>px
-
-    <div style="display:flex; align-items:center; gap:10px; margin-left:12px;">
-      <div class="note-color" id="noteColorDotDefault" style="background:#111" onclick="pickColor(this, getThemeDefaultPen())"></div>
-      <div class="note-color" style="background:#d32f2f" onclick="pickColor(this,'#d32f2f')"></div>
-      <div class="note-color" style="background:#1976d2" onclick="pickColor(this,'#1976d2')"></div>
-      <div class="note-color" style="background:#2e7d32" onclick="pickColor(this,'#2e7d32')"></div>
-      <div class="note-color" style="background:#ff9800" onclick="pickColor(this,'#ff9800')"></div>
-      <input id="noteColorInput" type="color" value="#111111" onchange="pickColor(null,this.value)">
-    </div>
-  </div>
-
-  <div class="note-canvas-wrap">
-    <canvas id="noteCanvas"></canvas>
-  </div>
-</div>
-
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
