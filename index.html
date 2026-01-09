@@ -1114,70 +1114,97 @@ function switchTimingPanel(mode){
 function generateChargementFields() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const container = document.getElementById('chargement-container');
-  container.innerHTML = "";
-  let html = "";
+  if(!container) return;
 
-  const wrapNum = (id,label)=>`
+  container.innerHTML = "";
+
+  // CSS local minimal (ancrage des champs) injecté UNE fois
+  if(!document.getElementById('cp-fix-style')){
+    const st = document.createElement('style');
+    st.id = 'cp-fix-style';
+    st.textContent = `
+      #chargement-container{ width:100%; }
+      #chargement-container .cp-row{ width:100%; max-width:100%; }
+      #chargement-container .cp-cell{ width:100%; max-width:100%; min-width:0; }
+      #chargement-container .cp-cell .field{ width:100%; }
+      #chargement-container .cp-cell .control{ width:100%; }
+      #chargement-container .cp-cell input{ width:100%; max-width:100%; box-sizing:border-box; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // wrapper "cell" qui ANCRE vraiment le champ dans la grille
+  const cell = (inner) => `<div class="cp-cell">${inner}</div>`;
+
+  const wrapNum = (id,label,extra='')=>`
     <div class="field">
       <label class="label">${label}</label>
       <div class="control">
-        <input class="input" type="number" id="${id}">
+        <input class="input" type="number" id="${id}" ${extra}>
       </div>
     </div>`;
+
+  let html = "";
 
   if (cie === "FR" || cie === "RK") {
     html += `
       <div class="cp-row cp-cols-3">
-        <div>${wrapNum('ADULT','ADULT').replace('id="ADULT"','id="ADULT" oninput="updateTOB()"')}</div>
-        <div>${wrapNum('CHILD','CHILD').replace('id="CHILD"','id="CHILD" oninput="updateTOB()"')}</div>
-        <div>${wrapNum('INFANT','INFANT').replace('id="INFANT"','id="INFANT" oninput="updateTOB()"')}</div>
+        ${cell(wrapNum('ADULT','ADULT','oninput="updateTOB()"'))}
+        ${cell(wrapNum('CHILD','CHILD','oninput="updateTOB()"'))}
+        ${cell(wrapNum('INFANT','INFANT','oninput="updateTOB()"'))}
       </div>
+
       <div class="cp-row cp-cols-3">
-        <div>${wrapNum('FWD','FWD/OA').replace('id="FWD"','id="FWD" oninput="checkTOBCoherence()"')}</div>
-        <div>${wrapNum('MID','MID/OB').replace('id="MID"','id="MID" oninput="checkTOBCoherence()"')}</div>
-        <div>${wrapNum('AFT','AFT/OC').replace('id="AFT"','id="AFT" oninput="checkTOBCoherence()"')}</div>
+        ${cell(wrapNum('FWD','FWD/OA','oninput="checkTOBCoherence()"'))}
+        ${cell(wrapNum('MID','MID/OB','oninput="checkTOBCoherence()"'))}
+        ${cell(wrapNum('AFT','AFT/OC','oninput="checkTOBCoherence()"'))}
       </div>
+
       <div class="cp-row cp-cols-2">
-        <div>${wrapNum('BAGS','BAGS')}</div>
-        <div>${wrapNum('ITG','ITG')}</div>
+        ${cell(wrapNum('BAGS','BAGS'))}
+        ${cell(wrapNum('ITG','ITG'))}
       </div>
     `;
   } else {
     html += `
       <div class="cp-row cp-cols-4">
-        <div>${wrapNum('MALE','MALE').replace('id="MALE"','id="MALE" oninput="updateTOB()"')}</div>
-        <div>${wrapNum('FEMALE','FEMALE').replace('id="FEMALE"','id="FEMALE" oninput="updateTOB()"')}</div>
-        <div>${wrapNum('CHILD','CHILD').replace('id="CHILD"','id="CHILD" oninput="updateTOB()"')}</div>
-        <div>${wrapNum('INFANT','INFANT').replace('id="INFANT"','id="INFANT" oninput="updateTOB()"')}</div>
+        ${cell(wrapNum('MALE','MALE','oninput="updateTOB()"'))}
+        ${cell(wrapNum('FEMALE','FEMALE','oninput="updateTOB()"'))}
+        ${cell(wrapNum('CHILD','CHILD','oninput="updateTOB()"'))}
+        ${cell(wrapNum('INFANT','INFANT','oninput="updateTOB()"'))}
       </div>
+
       <div class="cp-row cp-cols-4">
-        <div>${wrapNum('OA','OA').replace('id="OA"','id="OA" oninput="checkTOBCoherence()"')}</div>
-        <div>${wrapNum('OB','OB').replace('id="OB"','id="OB" oninput="checkTOBCoherence()"')}</div>
-        <div>${wrapNum('OC','OC').replace('id="OC"','id="OC" oninput="checkTOBCoherence()"')}</div>
-        <div>${wrapNum('OD','OD').replace('id="OD"','id="OD" oninput="checkTOBCoherence()"')}</div>
+        ${cell(wrapNum('OA','OA','oninput="checkTOBCoherence()"'))}
+        ${cell(wrapNum('OB','OB','oninput="checkTOBCoherence()"'))}
+        ${cell(wrapNum('OC','OC','oninput="checkTOBCoherence()"'))}
+        ${cell(wrapNum('OD','OD','oninput="checkTOBCoherence()"'))}
       </div>
+
       <div class="cp-row cp-cols-2">
-        <div>${wrapNum('BAGS','BAGS')}</div>
-        <div>${wrapNum('POIDS','POIDS')}</div>
+        ${cell(wrapNum('BAGS','BAGS'))}
+        ${cell(wrapNum('POIDS','POIDS'))}
       </div>
     `;
   }
 
   html += `
     <div class="cp-row cp-cols-1">
-      <div class="field">
-        <label class="label">TOB</label>
-        <div class="control">
-          <input class="input" type="text" id="TOB" readonly style="font-weight:900;">
+      ${cell(`
+        <div class="field">
+          <label class="label">TOB</label>
+          <div class="control">
+            <input class="input" type="text" id="TOB" readonly style="font-weight:900;">
+          </div>
         </div>
-      </div>
+      `)}
     </div>
   `;
 
   container.innerHTML = html;
+
   updateTOB();
   updateLIDVisibility();
-  updateHeaderOffset();
 }
 
 /* Affichage conditionnel LID (FR/RK uniquement) */
