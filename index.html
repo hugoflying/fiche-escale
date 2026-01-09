@@ -13,15 +13,24 @@
 :root{
   --bg: #f6f7fb;
   --card: #ffffff;
-  --text: #1f2937;
+  --text: #111827;
   --muted: #6b7280;
   --shadow: 0 10px 28px rgba(0,0,0,.08);
   --shadow2: 0 6px 18px rgba(0,0,0,.10);
   --radius: 14px;
+
+  --field-bg: #ffffff;
+  --field-text: #111827;
+  --field-border: rgba(17,24,39,.18);
+  --field-placeholder: rgba(107,114,128,.95);
+
+  --fixed-header-h: 140px; /* mis à jour en JS */
 }
+
 body{
   background: var(--bg);
   color: var(--text);
+  margin: 0;
 }
 body.dark{
   --bg: #0f1115;
@@ -30,33 +39,46 @@ body.dark{
   --muted: #9ca3af;
   --shadow: 0 10px 28px rgba(0,0,0,.45);
   --shadow2: 0 6px 18px rgba(0,0,0,.50);
+
+  --field-bg: #0f172a;
+  --field-text: #e5e7eb;
+  --field-border: rgba(229,231,235,.16);
+  --field-placeholder: rgba(156,163,175,.95);
 }
+
+/* ===== FIXED HEADER (TOPBAR + TIMERS) ===== */
+.fixed-header{
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 3000;
+  background: rgba(246,247,251,.82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+body.dark .fixed-header{
+  background: rgba(15,17,21,.82);
+  border-bottom-color: rgba(255,255,255,.08);
+}
+
+/* contenu du header */
+.fixed-header-inner{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* App */
 .app-wrap{
   max-width: 1120px;
   margin: 0 auto;
-  padding: 14px;
-}
-h1.title{
-  margin: 12px 0 12px;
+  padding: calc(var(--fixed-header-h) + 14px) 14px 14px;
 }
 
-/* Topbar sticky */
-.topbar{
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: rgba(246,247,251,.75);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0,0,0,.06);
-}
-body.dark .topbar{
-  background: rgba(15,17,21,.75);
-  border-bottom-color: rgba(255,255,255,.06);
-}
+/* Topbar row */
 .topbar-inner{
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 10px 14px;
   display:flex;
   gap:12px;
   align-items:center;
@@ -67,7 +89,7 @@ body.dark .topbar{
   display:flex;
   align-items:center;
   gap:10px;
-  min-width: 240px;
+  min-width: 220px;
 }
 .brand-badge{
   width: 34px; height: 34px;
@@ -78,57 +100,41 @@ body.dark .topbar{
 .brand-title{
   line-height: 1.05;
 }
-.brand-title strong{ display:block; font-size: 1rem; }
+.brand-title strong{ display:block; font-size: 1rem; color: var(--text); }
 .brand-title span{ display:block; font-size: .85rem; color: var(--muted); }
-
-/* Bulma tweaks */
-.card{
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  background: var(--card);
-}
-body.dark .card{ background: var(--card); }
-.card-header{
-  border-top-left-radius: var(--radius);
-  border-top-right-radius: var(--radius);
-  background: color-mix(in srgb, var(--card) 85%, #3b82f6 15%);
-}
-body.dark .card-header{
-  background: color-mix(in srgb, var(--card) 80%, #60a5fa 20%);
-}
-.card-header-title{
-  font-weight: 800;
-}
-.section-collapse{
-  cursor: pointer;
-  user-select: none;
-}
-.collapsed-body{ display: none; }
-
-/* Inputs */
-.input, .select select, .textarea{
-  border-radius: 12px;
-}
-.input.uppercase{ text-transform: uppercase; }
-.field .label{
-  font-weight: 800;
-}
 
 /* Tabs (vols) */
 #tab-bar{
   display:flex;
   gap:8px;
-  flex-wrap: wrap;
   align-items:center;
+  flex: 1 1 auto;
+
+  /* responsive important : scroll horizontal sur mobile */
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
 }
 #tab-bar .button{
   border-radius: 999px;
+  flex: 0 0 auto;
 }
 
-/* Timer chips */
+/* Toggles */
+.top-toggles{
+  display:flex;
+  gap:8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Timers chips */
 .timer-row{
   display:flex;
-  gap:12px;
+  gap:10px;
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -142,8 +148,9 @@ body.dark .card-header{
   align-items:center;
   justify-content: space-between;
   gap:10px;
+  color: var(--text);
 }
-.timer-chip .k{ font-weight: 800; }
+.timer-chip .k{ font-weight: 900; color: var(--text); }
 .timer-chip .v{
   font-weight: 900;
   padding: 6px 10px;
@@ -157,7 +164,54 @@ body.dark .card-header{
 #timer-h8{ background:#facc15 !important; color:#111 !important; }
 #timer-ctot{ background:#334155 !important; }
 
-/* Time buttons */
+/* Bulma tweaks */
+.card{
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  background: var(--card);
+  color: var(--text);
+}
+.card-header{
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 85%, #3b82f6 15%);
+}
+body.dark .card-header{
+  background: color-mix(in srgb, var(--card) 80%, #60a5fa 20%);
+}
+.card-header-title{
+  font-weight: 900;
+  color: var(--text) !important;
+}
+.section-collapse{
+  cursor: pointer;
+  user-select: none;
+}
+.collapsed-body{ display: none; }
+
+/* Inputs - FORCE light/dark correctness */
+.input, .select select, .textarea{
+  border-radius: 12px;
+  background: var(--field-bg) !important;
+  color: var(--field-text) !important;
+  border-color: var(--field-border) !important;
+}
+.input.uppercase{ text-transform: uppercase; }
+
+.input::placeholder, .textarea::placeholder{
+  color: var(--field-placeholder) !important;
+}
+
+.field .label{
+  font-weight: 900;
+  color: var(--text) !important;
+}
+
+.help, .tag.is-light{
+  color: var(--text);
+}
+
+/* Buttons */
 .btn-actions{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
@@ -166,19 +220,19 @@ body.dark .card-header{
 }
 .btn-actions .button{
   border-radius: 12px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 /* Popup */
 #popup{
   position: fixed;
-  top: 18px;
+  top: calc(var(--fixed-header-h) + 12px); /* pas sous le header */
   left: 50%;
   transform: translateX(-50%);
   padding: 12px 16px;
   border-radius: 12px;
   color:#fff;
-  z-index: 2000;
+  z-index: 4000;
   box-shadow: var(--shadow);
 }
 
@@ -194,7 +248,7 @@ body.dark .timeline-tick { background:#3e444b; }
 
 .timeline-tick-label {
   position: absolute; transform: translateX(-50%);
-  font-size: 14px; font-weight: 700; color:#444;
+  font-size: 14px; font-weight: 800; color:#111827;
 }
 body.dark .timeline-tick-label { color:#cfd4da; }
 
@@ -205,7 +259,7 @@ body.dark .timeline-tick-label { color:#cfd4da; }
 }
 .tl-label {
   padding: 4px 10px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
-  font-weight: 800;
+  font-weight: 900;
 }
 body.dark .tl-label { background:#232733; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
 
@@ -222,8 +276,9 @@ body.dark .tl-label { background:#232733; color:#f5f5f5; box-shadow: 0 0 0 1px r
 }
 .tl-range-label {
   position:absolute; top: -22px; left:50%; transform: translateX(-50%);
-  font-size: 13px; background: rgba(255,255,255,.9);
+  font-size: 13px; background: rgba(255,255,255,.92);
   padding: 2px 8px; border-radius: 10px; font-weight: 900;
+  color: #111;
 }
 body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 
@@ -247,7 +302,7 @@ body.dark .timeline-scroll{
 /* DL error */
 .dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
-/* CHIFFRES PORTE (ta grille) */
+/* CHIFFRES PORTE */
 #chiffres-porte .form-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 #chiffres-porte .cp-row{ grid-column: 1 / -1; display: grid; gap: 10px; margin-bottom: 10px; }
 #chiffres-porte .cp-cols-1{ grid-template-columns: 1fr; }
@@ -258,68 +313,82 @@ body.dark .timeline-scroll{
 #chiffres-porte summary { list-style: none; cursor: pointer; }
 #chiffres-porte summary::-webkit-details-marker { display: none; }
 
-/* Helpers */
-.form-group.full { flex: 1 1 100% !important; }
+/* ===== RESPONSIVE IMPORTANT ===== */
+@media (max-width: 768px){
+  .brandline{ min-width: 0; flex: 1 1 100%; }
+  .top-toggles{ width: 100%; justify-content: flex-start; }
+  #tab-bar{ width: 100%; }
+  .timer-chip{ min-width: 128px; }
+  .timeline-canvas{ min-width: 720px; } /* garde de la lisibilité en scroll */
+}
+@media (max-width: 420px){
+  .timer-chip{ min-width: 120px; padding: 9px 12px; }
+  .timer-chip .v{ min-width: 64px; }
+}
 </style>
 </head>
 
 <body onload="initForm()">
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="brandline">
-      <div class="brand-badge"></div>
-      <div class="brand-title">
-        <strong>SUIVI PERFORMANCE</strong>
-        <span>Interface Bulma • autosave • multi-vol</span>
+<!-- ===== FIXED HEADER : TOP BAR + TIMERS ===== -->
+<div class="fixed-header" id="fixedHeader">
+  <div class="fixed-header-inner">
+
+    <div class="topbar-inner">
+      <div class="brandline">
+        <div class="brand-badge"></div>
+        <div class="brand-title">
+          <strong>SUIVI PERFORMANCE</strong>
+          <span>Interface Bulma • autosave • multi-vol</span>
+        </div>
+      </div>
+
+      <!-- Tabs vols -->
+      <div id="tab-bar" class="buttons are-small"></div>
+
+      <!-- Toggles -->
+      <div class="buttons are-small top-toggles">
+        <label class="button is-light" style="gap:10px;">
+          <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)" style="margin:0;">
+          <span>Mode sombre</span>
+        </label>
+        <label class="button is-light" style="gap:10px;">
+          <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)" style="margin:0;">
+          <span>UTC</span>
+        </label>
       </div>
     </div>
 
-    <!-- Tabs vols -->
-    <div id="tab-bar" class="buttons are-small"></div>
+    <!-- Timers (fixes) -->
+    <div class="timer-row">
+      <div class="timer-chip">
+        <div class="k">HLE</div>
+        <div id="timer-h40" class="v">--:--</div>
+      </div>
+      <div class="timer-chip">
+        <div class="k">H-15</div>
+        <div id="timer-h15" class="v">--:--</div>
+      </div>
 
-    <!-- Toggles (référencés par ton JS) -->
-    <div class="buttons are-small">
-      <label class="button is-light" style="gap:10px;">
-        <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)" style="margin:0;">
-        <span>Mode sombre</span>
-      </label>
-      <label class="button is-light" style="gap:10px;">
-        <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)" style="margin:0;">
-        <span>UTC</span>
-      </label>
+      <div id="lidBlock" class="timer-chip" style="display:none;">
+        <div class="k">LID</div>
+        <div id="timer-h8" class="v">--:--</div>
+      </div>
+
+      <div class="timer-chip">
+        <div class="k">TOBT</div>
+        <div id="timer-tobt" class="v">--:--</div>
+      </div>
+      <div class="timer-chip">
+        <div class="k">CTOT</div>
+        <div id="timer-ctot" class="v">--:--</div>
+      </div>
     </div>
+
   </div>
 </div>
 
 <div class="app-wrap">
-
-  <!-- Timers -->
-  <div class="timer-row mb-4">
-    <div class="timer-chip">
-      <div class="k">HLE</div>
-      <div id="timer-h40" class="v">--:--</div>
-    </div>
-    <div class="timer-chip">
-      <div class="k">H-15</div>
-      <div id="timer-h15" class="v">--:--</div>
-    </div>
-
-    <div id="lidBlock" class="timer-chip" style="display:none;">
-      <div class="k">LID</div>
-      <div id="timer-h8" class="v">--:--</div>
-    </div>
-
-    <div class="timer-chip">
-      <div class="k">TOBT</div>
-      <div id="timer-tobt" class="v">--:--</div>
-    </div>
-    <div class="timer-chip">
-      <div class="k">CTOT</div>
-      <div id="timer-ctot" class="v">--:--</div>
-    </div>
-  </div>
 
   <!-- INFO VOL -->
   <div class="card mb-5">
@@ -669,6 +738,14 @@ function toggleCardBody(headerEl){
   if(icon) icon.textContent = collapsed ? '›' : '⌄';
 }
 
+/* ===== FIXED HEADER HEIGHT -> padding auto ===== */
+function updateHeaderOffset(){
+  const header = document.getElementById('fixedHeader');
+  if(!header) return;
+  const h = Math.ceil(header.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--fixed-header-h', h + 'px');
+}
+
 /* === Variables === */
 let isUTC=false;
 let manualSOBT=false;
@@ -768,6 +845,15 @@ function initForm(){
   if (currentTabId) loadTabData(currentTabId);
 
   setDefaultDateToTodayIfEmpty();
+
+  /* IMPORTANT: calc header height (fixed) */
+  updateHeaderOffset();
+  window.addEventListener('resize', ()=>{
+    updateHeaderOffset();
+    renderTimeline();
+  });
+
+  /* render */
   renderTimeline();
 }
 
@@ -797,7 +883,11 @@ function sanitizePositiveInt(inputEl){
 function attachAutoSave(){
   const handler=()=>{
     clearTimeout(saveTimer);
-    saveTimer=setTimeout(()=>{ saveCurrentTabData(); renderTimeline(); }, 300);
+    saveTimer=setTimeout(()=>{
+      saveCurrentTabData();
+      renderTimeline();
+      updateHeaderOffset();
+    }, 300);
   };
   document.addEventListener('input', handler, true);
   document.addEventListener('change', handler, true);
@@ -828,6 +918,8 @@ function renderTabs(){
     btn.ondblclick=()=>deleteTab(id);
     tabBar.appendChild(btn);
   });
+
+  updateHeaderOffset();
 }
 
 function createNewTab(){
@@ -840,6 +932,7 @@ function createNewTab(){
   localStorage.setItem('lastTabId',newId);
   saveCurrentTabData();
   renderTabs();
+  updateHeaderOffset();
 }
 
 function switchTab(id){
@@ -849,6 +942,7 @@ function switchTab(id){
   loadTabData(id);
   renderTabs();
   renderTimeline();
+  updateHeaderOffset();
 }
 
 function deleteTab(id){
@@ -861,6 +955,7 @@ function deleteTab(id){
   else createNewTab();
   renderTabs();
   renderTimeline();
+  updateHeaderOffset();
 }
 
 function clearFormFields(){
@@ -931,11 +1026,13 @@ function loadTabData(id){
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
+
+  updateHeaderOffset();
 }
 
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – ARR / DEP (ton code, juste Bulma wrapper léger) */
+/* TIMING FIELDS – ARR / DEP */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
@@ -1013,7 +1110,7 @@ function switchTimingPanel(mode){
   localStorage.setItem('timingPanel', mode);
 }
 
-/* CHARGEMENT / TOB (ton code intact) */
+/* CHARGEMENT / TOB */
 function generateChargementFields() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const container = document.getElementById('chargement-container');
@@ -1080,6 +1177,7 @@ function generateChargementFields() {
   container.innerHTML = html;
   updateTOB();
   updateLIDVisibility();
+  updateHeaderOffset();
 }
 
 /* Affichage conditionnel LID (FR/RK uniquement) */
@@ -1088,6 +1186,7 @@ function updateLIDVisibility(){
   const lid = document.getElementById('lidBlock');
   if(!lid) return;
   lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
+  updateHeaderOffset();
 }
 
 /* TOB + cohérence */
@@ -1158,6 +1257,7 @@ function updateAllCalculations() {
   applyPrestationsDefaults();
   updateLIDVisibility();
   renderTimeline();
+  updateHeaderOffset();
 }
 
 /* TIMERS HLE/H-15 */
@@ -1417,6 +1517,9 @@ function setDarkMode(enable, fromInit=false){
   const dt = document.getElementById('darkToggle');
   if(dt) dt.checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
+
+  updateHeaderOffset();
+  renderTimeline();
 }
 function setTimeModeUTC(enable, fromInit=false){
   const offsetHours = -new Date().getTimezoneOffset() / 60;
@@ -1722,7 +1825,7 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
-/* validateForm + save/reset (inchangé) */
+/* validateForm + save/reset */
 function validateForm() {
   const val = id => (document.getElementById(id)?.value || "");
   const dateRaw = val("Date");
