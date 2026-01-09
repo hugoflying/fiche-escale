@@ -1360,7 +1360,7 @@ function totalDelayMinutes(){
   const a = parseHHMM(ao);
   if (s==null || a==null) return null;
   let total = a - s;
-  if (total < 0) total += 1440;
+  if (total < 0) total += 1440; // overnight
   return total;
 }
 
@@ -1529,10 +1529,486 @@ function toExtended(t, min, max){
   return (t < startMod) ? t + 1440 : t;
 }
 
-/* (… le reste de ton code TIMELINE et validateForm etc. ne change pas …)
-   ==> IMPORTANT : colle ici, à la suite, TOUT ce que tu as après ce point
-   dans ton fichier actuel, jusqu’à </script></body></html>,
-   SANS la partie bloc-note (déjà supprimée). */
+function computeTimelineWindow(allTimes){
+  const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+  const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+
+  const haveStart = (H40 != null) || (SIBT != null);
+  const haveEnd   = (AOBT != null) || (TOBT != null);
+
+  if (haveStart && haveEnd) {
+    let startRef = null;
+    if (H40 != null && SIBT != null) startRef = (H40 < SIBT) ? H40 : SIBT;
+    else startRef = (H40 != null) ? H40 : SIBT;
+    let min = startRef - 5;
+    let endRef = (AOBT != null ? AOBT : TOBT);
+    let max = endRef + 5;
+
+    if (max <= min) max += 1440;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'(HLE<SIBT?HLE:SIBT) → AOBT|TOBT'};
+  }
+
+  const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
+  if (SOBT != null) {
+    let startRef = (SIBT != null) ? SIBT : (SOBT - 40);
+    let min = startRef - 5;
+    let endRef = (AOBT ?? TOBT ?? SOBT);
+    let max = endRef + 5;
+
+    if (max <= min) max += 1440;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'fallback SOBT'};
+  }
+
+  if (allTimes && allTimes.length){
+    let min = Math.min(...allTimes) - 10;
+    let max = Math.max(...allTimes) + 10;
+    if (max <= min) max += 1440;
+    if (max - min < 30) { min -= 10; max += 10; }
+    return {min, max, basis:'data'};
+  }
+
+  return {min:0, max:60, basis:'default'};
+}
+function getPairWindow(idA,idB){
+  const a = parseHHMM(document.getElementById(idA)?.value || '');
+  const b = parseHHMM(document.getElementById(idB)?.value || '');
+  if(a==null || b==null) return null;
+  return [Math.min(a,b), Math.max(a,b)];
+}
+function collectTimelineData(){
+  const fixedPoints = [];
+  const addPoint = (label, t, cls='tl--std')=>{ if(t==null) return; fixedPoints.push({label, t, cls}); };
+
+  const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
+  const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
+  const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
+  const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+  const CTOT = parseHHMM((document.getElementById('timer-ctot')?.textContent || '').replace('--:--',''));
+  const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
+  const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
+
+  addPoint('SIBT', SIBT, 'tl--std'); addPoint('AIBT', AIBT, 'tl--std');
+  addPoint('SOBT', SOBT, 'tl--std'); addPoint('AOBT', AOBT, 'tl--std');
+  addPoint('TOBT', TOBT, 'tl--tobt'); addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('HLE',  H40,  'tl--turn');
+  addPoint('H-15', H15,  'tl--turn');
+
+  /* Événements simples */
+  const singles = [
+    ['ArrPNT','Arrivée PNT'],
+    ['ArrPNC','Arrivée PNC'],
+    ['FermeturePorteAvion','Fermeture porte avion'],
+  ];
+  singles.forEach(([id,label])=>{
+    const t = parseHHMM(document.getElementById(id)?.value || '');
+    if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
+  });
+
+  /* Paires de durées */
+  const rows = [
+    {key:'debarq',  label:'Débarquement',         pair:getPairWindow('PremierDebarque','DernierDebarque'),                 cls:'tl--turn', color:null},
+    {key:'emb',     label:'Embarquement',         pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'),       cls:'tl--ops',  color:null},
+    {key:'avit',    label:'Avitair',              pair:getPairWindow('ArriveeFuel','DepartFuel'),                           cls:'tl--std',  color:'#ff9800'},
+    {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
+    {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},
+    {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
+    {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
+    {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
+    {key:'nayak',  label:'NAYAK',                 pair:getPairWindow('ArriveeNayak','DepartNayak'),                        cls:'tl--std',  color:'#000000'},
+  ];
+
+  const durations = rows
+    .filter(r=>r.pair!=null)
+    .map((r)=>({label:r.label, a:r.pair[0], b:r.pair[1], cls:r.cls, color:r.color}));
+
+  const allTimes = [ ...fixedPoints.map(p=>p.t), ...durations.flatMap(d=>[d.a,d.b]) ];
+  const windowInfo = computeTimelineWindow(allTimes);
+
+  return {fixedPoints, durations, windowInfo};
+}
+
+/* === AFFICHAGE TIMELINE === */
+function renderTimeline(){
+  const scroller = document.getElementById('timelineScroll');
+  const canvas   = document.getElementById('timelineCanvas');
+  if(!scroller || !canvas) return;
+
+  canvas.innerHTML = '';
+
+  const {fixedPoints, durations, windowInfo} = collectTimelineData();
+  const {min, max} = windowInfo;
+  if(min === undefined) return;
+
+  window._timelineCurrentRange = {min, max};
+  const total = Math.max(1, max - min);
+
+  const viewport = scroller.clientWidth || 1200;
+  const canvasPx = Math.max(viewport, Math.round(viewport * timelineZoom));
+  canvas.style.width = canvasPx + 'px';
+
+  const MIN_HEIGHT = 180;
+  const PT_LANE_H  = 50;
+  const DUR_LANE_H = 50;
+  const TOP_PAD    = 40;
+  const AFTER_POINTS = 28;
+  const AFTER_TRACK  = 36;
+  const BOTTOM_PAD   = 40;
+
+  const lanesEndX = [];
+  const pointEls = [];
+
+  fixedPoints.sort((a,b)=>a.t-b.t).forEach(p=>{
+    const tExt = toExtended(p.t, min, max);
+    const leftPct = 6 + ((tExt-min)/total)*88;
+
+    const el = document.createElement('div');
+    el.className = `tl-event ${p.cls}`;
+    el.style.left = `${leftPct}%`;
+    el.style.top  = `0px`;
+    el.style.visibility = 'hidden';
+
+    const dot = document.createElement('div'); dot.className = 'tl-dot';
+    const label = document.createElement('div'); label.className='tl-label';
+    label.textContent = showTimeLabels ? `${p.label} : ${fmtHHMM(p.t)}` : p.label;
+    el.appendChild(dot); el.appendChild(label);
+    canvas.appendChild(el);
+
+    const w = Math.max(label.offsetWidth, 12);
+    const centerX = (leftPct/100) * canvasPx;
+    const startX = centerX - (w/2) - 16;
+    const endX   = centerX + (w/2) + 16;
+
+    let lane = 0;
+    while(lanesEndX[lane] !== undefined && startX <= lanesEndX[lane]) lane++;
+    lanesEndX[lane] = endX;
+
+    pointEls.push({el, lane});
+  });
+
+  const pointLaneCount = lanesEndX.length || 0;
+  const trackY = TOP_PAD + pointLaneCount*PT_LANE_H + AFTER_POINTS;
+
+  const durItems = durations.map(d=>{
+    const aExt = toExtended(d.a, min, max);
+    const bExt = toExtended(d.b, min, max);
+    return { ...d, start: Math.min(aExt,bExt), end: Math.max(aExt,bExt) };
+  }).sort((x,y)=> x.start - y.start);
+
+  const durLanesEnd = [];
+  const LANE_PAD_MIN = 2;
+
+  function packLanes(items, pad = LANE_PAD_MIN){
+    const lanes = [];
+    return items.map(it => {
+      let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
+      if (laneIdx === -1) {
+        laneIdx = lanes.length;
+        lanes.push(it.end + pad);
+      } else {
+        lanes[laneIdx] = it.end + pad;
+      }
+      return { ...it, lane: laneIdx };
+    });
+  }
+
+  const durWithLane = packLanes(durItems);
+  const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
+
+  const finalHeight = Math.max(
+    MIN_HEIGHT,
+    trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
+  );
+  canvas.style.height = `${finalHeight}px`;
+
+  for(let t = Math.ceil(min); t <= Math.floor(max); t++){
+    const x = (t-min)/total;
+    const leftPct = 6 + x*88;
+
+    const vline = document.createElement('div');
+    vline.className = 'timeline-tick';
+    vline.style.left = `${leftPct}%`;
+    vline.style.top = `${8}px`;
+    vline.style.height = `${finalHeight - 36}px`;
+    canvas.appendChild(vline);
+
+    if(t % 5 === 0){
+      const lbl = document.createElement('div');
+      lbl.className = 'timeline-tick-label';
+      lbl.textContent = fmtHHMM(t);
+      lbl.style.left = `${leftPct}%`;
+      lbl.style.top = `${finalHeight - 18}px`;
+      canvas.appendChild(lbl);
+    }
+  }
+
+  const track = document.createElement('div');
+  track.className = 'timeline-track';
+  track.style.top = `${trackY}px`;
+  canvas.appendChild(track);
+
+  pointEls.forEach(({el,lane})=>{
+    el.style.top = `${TOP_PAD + lane*PT_LANE_H}px`;
+    el.style.visibility = 'visible';
+  });
+
+  const downStart = trackY + AFTER_TRACK;
+  durWithLane.forEach(d=>{
+    const leftStartPct = 6 + ((d.start-min)/total)*88;
+    const widthPct     = ((d.end-d.start)/total)*88;
+
+    const bar = document.createElement('div');
+    bar.className = `tl-range ${d.cls}`;
+    if(d.color){ bar.style.setProperty('--c', d.color); }
+    bar.style.left = `${leftStartPct}%`;
+    bar.style.width = `${widthPct}%`;
+    bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
+    bar.style.transform = 'translateX(-50%)';
+    canvas.appendChild(bar);
+
+    const lab = document.createElement('div');
+    lab.className = 'tl-range-label';
+    const durMin = Math.max(0, d.b - d.a);
+    lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
+    bar.appendChild(lab);
+  });
+
+  if(!timelineUserScrolled){
+    const centerMin = (min + max) / 2;
+    const midX = (centerMin - min) / total;
+    const centerLeft = midX * scroller.scrollWidth - scroller.clientWidth / 2;
+    scroller.scrollLeft = Math.max(0, centerLeft);
+  }
+
+  const lbl = document.getElementById('timelineZoomLabel');
+  if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
+}
+
+(function injectShowHoursToggle(){
+  const bar = document.querySelector('.timeline-toolbar');
+  if (bar) {
+    if (!document.getElementById('showTimesToggle')) {
+      const wrap = document.createElement('label');
+      wrap.style.display = 'flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '6px';
+      wrap.style.marginLeft = '8px';
+      wrap.style.flexWrap = 'wrap';
+      wrap.style.maxWidth = '100%';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.id = 'showTimesToggle'; cb.checked = true; showTimeLabels = true;
+      cb.addEventListener('change', () => { showTimeLabels = cb.checked; renderTimeline(); });
+
+      const span = document.createElement('span'); span.textContent = 'Heure sur étiquettes';
+      wrap.appendChild(cb); wrap.appendChild(span); bar.appendChild(wrap);
+    } else {
+      const cb = document.getElementById('showTimesToggle'); cb.checked = true; showTimeLabels = true;
+      const wrap = cb.closest('label');
+      if (wrap) {
+        wrap.style.display = 'flex';
+        wrap.style.alignItems = 'center';
+        wrap.style.gap = '6px';
+        wrap.style.marginLeft = '8px';
+        wrap.style.flexWrap = 'wrap';
+        wrap.style.maxWidth = '100%';
+      }
+    }
+  }
+  const scroller = document.getElementById('timelineScroll');
+  if (scroller) { ['wheel','mousedown','touchstart','keydown','scroll'].forEach(ev=>{
+    scroller.addEventListener(ev, () => { timelineUserScrolled = true; }, {passive:true});
+  });}
+})();
+
+/* Génération dynamique des champs "Numéro tag i" */
+function updateTagInputs(){
+  const nb = parseInt(document.getElementById('NbBagagesDecharges')?.value) || 0;
+  const wrap = document.getElementById('TagsContainer');
+  if(!wrap) return;
+
+  const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
+  let html = '';
+  for(let i=1; i<=count; i++){
+    html += `
+      <div class="form-group">
+        <label>Numéro tag ${i}
+          <input type="text" id="TagNumero${i}" inputmode="numeric" pattern="[0-9]*"
+                 oninput="sanitizeDigitsOnly(this)">
+        </label>
+      </div>`;
+  }
+  wrap.innerHTML = html;
+
+  // Réinjecter les valeurs sauvegardées (si présentes)
+  try{
+    const data = JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}');
+    for(let i=1; i<=count; i++){
+      const f = document.getElementById('TagNumero'+i);
+      if(f && data['TagNumero'+i] !== undefined) f.value = data['TagNumero'+i];
+    }
+  }catch(e){}
+}
+
+function validateForm() {
+
+    const val = id => (document.getElementById(id)?.value || "");
+
+    // -------------------------
+    // 1. DONNÉES DE BASE
+    // -------------------------
+    const dateRaw = val("Date");
+    const [yyyy, mm, dd] = dateRaw.split("-");
+    const dateTitre = `${dd}-${mm}-${yyyy}`;
+
+    const cie = val("Cie");
+    const vol = val("NVol");
+    const from = val("From");
+    const to = val("To");
+    const immat = val("Immat");
+    const rza = val("RZA");
+
+    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+
+
+    // -------------------------
+    // 2. LIFT
+    // -------------------------
+    const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
+    const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
+
+
+    // -------------------------
+    // 3. ASSISTANCES (affichage conditionnel)
+    // -------------------------
+    const assistances = [];
+
+    if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
+    if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
+    if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
+
+    const assistanceBlock = assistances.length > 0
+        ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
+        : "";
+
+
+    // -------------------------
+    // 4. PRESTATIONS
+    // -------------------------
+    let prestationsList = [];
+
+    const addIfYes = (label, id) => {
+        const v = document.getElementById(id).value;
+        if (v !== "N") prestationsList.push(label);
+    };
+
+    addIfYes("ASU", "ASU");
+    addIfYes("Flux RZA", "FluxRZA");
+    addIfYes("Eau potable", "EauPotable");
+    addIfYes("Vidange toilettes", "Vidange");
+    addIfYes("Ménage Assist'Air", "MenageAssist");
+    addIfYes("Ménage Atalian", "MenageAtalian");
+    addIfYes("Collecte d'ordures", "Ordures");
+    addIfYes("Toilet Kit", "ToiletKit");
+    addIfYes("Dégivrage", "Degivrage");
+    addIfYes("Push-Pull", "PushPull");
+    addIfYes("Échelle supplémentaire", "Echelle");
+
+    const prestationsText =
+         prestationsList.length > 0 ? `== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
+
+    // -------------------------
+    // 5. DL
+    // -------------------------
+    const dlLines = [];
+
+    if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
+    if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
+    if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
+
+    const dlBlock = dlLines.length > 0
+        ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
+        : "";
+
+
+    // -------------------------
+    // 6. JUSTIFICATION
+    // -------------------------
+    const justifBlock = val("DLJustif").trim() !== ""
+        ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
+        : "";
+
+
+    // -------------------------
+    // 7. FAITS SAILLANTS
+    // -------------------------
+    const faitsBlock = val("FaitsSaillants").trim() !== ""
+        ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
+        : "";
+
+
+    // -------------------------
+    // 8. MAIL COMPLET (CORRIGÉ)
+    // -------------------------
+    const body =
+`Vol : ${cie}${vol}
+Date : ${dateTitre}
+Rotation : ${from} - ${to}
+Immat : ${immat}
+RZA : ${rza}
+
+== HORAIRES ==
+
+SIBT : ${val("SIBT")}
+AIBT : ${val("AIBT")}
+-
+SOBT : ${val("SOBT")}
+AOBT : ${val("AOBT")}
+
+== TIMINGS ==
+
+Arrivée PNT : ${val("ArrPNT")}
+Arrivée PNC : ${val("ArrPNC")}
+
+Premier débarqué : ${val("PremierDebarque")}
+Dernier débarqué : ${val("DernierDebarque")}
+
+Premier embarqué : ${val("AvionPremierEmbarque")}
+Dernier embarqué : ${val("AvionDernierEmbarque")}
+
+Arrivée fuel : ${val("ArriveeFuel")}
+Départ fuel : ${val("DepartFuel")}
+
+Lift arrivée : ${liftArrivee}
+Lift départ  : ${liftDepart}
+
+Remise LID/LDS : ${val("RemiseLID")}
+Fermeture porte avion : ${val("FermeturePorteAvion")}
+
+== CHIFFRES PORTE ==
+
+TOB : ${val("TOB")}
+Bagages (hors GB) : ${val("BAGS")}
+
+${[
+  assistanceBlock,
+  prestationsText,
+  dlBlock,
+  justifBlock,
+  faitsBlock
+].filter(Boolean).join("\n")}`;
+
+
+    // -------------------------
+    // 9. OUVERTURE OUTLOOK
+    // -------------------------
+    window.location.href =
+        `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+}
 
 /* SAUVEGARDE MANUELLE */
 function manualSave() {
@@ -1550,4 +2026,3 @@ function clearAutoSave() {
 </script>
 </body>
 </html>
-
