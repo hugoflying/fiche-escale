@@ -4,16 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.4/dist/tailwind.min.css" rel="stylesheet">
 <style>
     
 /* RESET & BASE */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: Arial, sans-serif;
-  background: #ffffff;
-  color: #222;
-  padding: 12px;
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #222;
+    padding: 10px;
 }
 body.dark { background: #121212; color: #f8f9f9; }
 
@@ -21,33 +20,33 @@ h1 { text-align: center; margin: 10px 0 15px; }
 
 /* Sections (blocs) */
 section {
-  background: #f5f5f5;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 body.dark section { background: #1e1e1e; }
 
 /* Titres de sections */
 h2 {
-  font-size: 1.2rem;
-  margin: -12px -12px 10px -12px;
-  padding: 8px 12px;
-  border-bottom: 1px solid #ccc;
-  text-align: center;
-  cursor: pointer;
-  background: #e8f0fe;
-  color: #123;
-  border-left: 6px solid #1976d2;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+    font-size: 1.2rem;
+    margin: -12px -12px 10px -12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+    cursor: pointer;
+    background: #e8f0fe;
+    color: #123;
+    border-left: 6px solid #1976d2;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 body.dark h2 {
-  background: #242424;
-  color: #f5f5f5;
-  border-left: 6px solid #90caf9;
-  border-bottom-color: #3a3a3a;
+    background: #242424;
+    color: #f5f5f5;
+    border-left: 6px solid #90caf9;
+    border-bottom-color: #3a3a3a;
 }
 
 /* Collapse */
@@ -63,32 +62,32 @@ section.collapsed > *:not(h2) { display: none; }
 .form-group label,
 .form-group-3col label,
 .form-group-4col label {
-  font-size: 0.9rem;
-  font-weight: bold;
-  display: block;
-  margin-bottom: 3px;
-  text-align: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 3px;
+    text-align: center;
 }
 
 /* Champs */
 input, select {
-  width: 100%;
-  padding: 6px;
-  font-size: 0.95rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
+    width: 100%;
+    padding: 6px;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
 }
 textarea {
-  width: 100%;
-  padding: 6px;
-  font-size: 0.95rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  resize: both;
-  min-height: 60px;
-  text-align: left;
-  overflow: auto;
+    width: 100%;
+    padding: 6px;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: both;
+    min-height: 60px;
+    text-align: left;
+    overflow: auto;
 }
 
 /* Affichage visuel en MAJ */
@@ -96,28 +95,28 @@ input.uppercase { text-transform: uppercase; }
 
 /* Champ horaire + boutons */
 .form-group input[type="time"] {
-  width: 100%;
-  box-sizing: border-box;
-  text-align: center;
-  display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    display: block;
 }
 
 /* Boutons horaires */
 .btn-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  width: 100%;
-  gap: 5px;
-  margin-top: 5px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    gap: 5px;
+    margin-top: 5px;
 }
 button.action {
-  width: 100%;
-  padding: 10px;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform .15s ease, filter .2s ease;
+    width: 100%;
+    padding: 10px;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform .15s ease, filter .2s ease;
 }
 button.action:active { transform: scale(0.98); filter: brightness(0.95); }
 button.minus { background: #555; color: white; }
@@ -126,13 +125,13 @@ button.plus  { background: #555; color: white; }
 
 /* Boutons principaux */
 #validate, #save, #reset {
-  width: 100%;
-  padding: 12px;
-  font-size: 1.2rem;
-  border: none;
-  border-radius: 6px;
-  margin-top: 10px;
-  cursor: pointer;
+    width: 100%;
+    padding: 12px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 6px;
+    margin-top: 10px;
+    cursor: pointer;
 }
 #validate { background: #4caf50; color: white; }
 #save { background: #2196f3; color: white; margin: 15px 0; }
@@ -140,22 +139,22 @@ button.plus  { background: #555; color: white; }
 
 /* Timers (2 groupes) */
 .timer-box {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 32px;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
 }
 .timer-group { display: flex; gap: 20px; align-items: center; }
 .timer { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .timer-label { font-weight: bold; font-size: 1rem; }
 .timer-value {
-  background: #d32f2f;
-  color: #fff;
-  font-weight: bold;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 1.1rem;
+    background: #d32f2f;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1.1rem;
 }
 #timer-tobt { background: #2e7d32; }
 #timer-h8   { background: #ffd54f; color:#000; }
@@ -169,13 +168,13 @@ button.plus  { background: #555; color: white; }
 .switch { position: relative; display: inline-block; width: 60px; height: 28px; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background: #cfd4da; transition: .2s; border-radius: 999px;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background: #cfd4da; transition: .2s; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
 }
 .slider:before {
-  position: absolute; content: ""; height: 22px; width: 22px; left: 3px; top: 3px;
-  background: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.3);
+    position: absolute; content: ""; height: 22px; width: 22px; left: 3px; top: 3px;
+    background: #fff; transition: .2s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.3);
 }
 .switch input:checked + .slider { background: #1976d2; }
 .switch input:checked + .slider:before { transform: translateX(32px); }
@@ -185,27 +184,27 @@ button.plus  { background: #555; color: white; }
 
 /* Onglets */
 #tab-bar {
-  display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;
-  position: sticky; top: 0; background: #ffffff; z-index: 999; padding: 5px 0;
-  backdrop-filter: saturate(180%) blur(6px);
+    display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;
+    position: sticky; top: 0; background: #ffffff; z-index: 999; padding: 5px 0;
+    backdrop-filter: saturate(180%) blur(6px);
 }
 #tab-bar button {
-  border: none; cursor: pointer; border-radius: 8px;
-  font-size: 1.05rem; padding: 8px 14px; transition: background .15s ease, transform .12s ease;
-  background: #eef2f7;
+    border: none; cursor: pointer; border-radius: 8px;
+    font-size: 1.05rem; padding: 8px 14px; transition: background .15s ease, transform .12s ease;
+    background: #eef2f7;
 }
 #tab-bar button:hover { background: #e1e7f0; }
 #tab-bar button:active { transform: translateY(1px); }
 body.dark #tab-bar { background: #121212; }
 #tab-bar button:first-child {
-  font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
+    font-weight: bold; font-size: 1.1rem; background: #4caf50; color: #fff;
 }
 
 /* Popup notifications */
 #popup {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-  padding: 12px 20px; border-radius: 10px; font-size: 1rem; color: #fff;
-  display: none; z-index: 1000;
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    padding: 12px 20px; border-radius: 10px; font-size: 1rem; color: #fff;
+    display: none; z-index: 1000;
 }
 
 /* === TIMELINE (base) === */
@@ -404,325 +403,241 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 .form-group.full { flex: 1 1 100% !important; }
 .form-row-2 { display: contents; }
 
-/* === Option A : layout "app" === */
-:root { --app-max: 1100px; }
-
-.app-shell { max-width: var(--app-max); margin: 0 auto; }
-
-/* barre sections */
-#section-nav {
-  position: sticky; top: 0;
-  z-index: 1000;
-  background: rgba(255,255,255,.85);
-  backdrop-filter: blur(8px);
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(0,0,0,.08);
-}
-body.dark #section-nav{
-  background: rgba(18,18,18,.85);
-  border-bottom-color: rgba(255,255,255,.08);
-}
-
-.nav-row{
-  display:flex; gap:8px; flex-wrap:wrap;
-  align-items:center; justify-content:center;
-}
-
-.nav-chip{
-  border: 1px solid rgba(0,0,0,.12);
-  background: rgba(255,255,255,.9);
-  padding: 8px 12px;
-  border-radius: 999px;
-  cursor:pointer;
-  font-weight: 700;
-  user-select:none;
-  transition: transform .12s ease, background .15s ease;
-}
-.nav-chip:hover{ transform: translateY(-1px); }
-.nav-chip.active{
-  background:#1976d2; color:#fff;
-  border-color:#1976d2;
-}
-body.dark .nav-chip{
-  background: rgba(40,40,40,.9);
-  border-color: rgba(255,255,255,.12);
-  color:#eee;
-}
-body.dark .nav-chip.active{
-  background:#90caf9; border-color:#90caf9; color:#111;
-}
-
-/* vues */
-.view { display:none; }
-.view.active { display:block; }
-
-/* === HTML (de la nav jusqu'aux boutons finaux) === */
-
 </style>
 </head>
 <body onload="initForm()">
-  <div class="app-shell">
 
-    <!-- NAV SECTIONS (Option A) -->
-    <div id="section-nav">
-      <div class="nav-row">
-        <button type="button" class="nav-chip active" data-view="v-info">Info</button>
-        <button type="button" class="nav-chip" data-view="v-horaires">Horaires</button>
-        <button type="button" class="nav-chip" data-view="v-timing">Timing</button>
-        <button type="button" class="nav-chip" data-view="v-timeline">Timeline</button>
-        <button type="button" class="nav-chip" data-view="v-chiffres">Chiffres porte</button>
-        <button type="button" class="nav-chip" data-view="v-retards">Retards</button>
-        <button type="button" class="nav-chip" data-view="v-notes">Notes</button>
-        <button type="button" class="nav-chip" data-view="v-assist">Assistances</button>
-        <button type="button" class="nav-chip" data-view="v-presta">Prestations</button>
+<!-- Barre d’onglets -->
+<div id="tab-bar">
+  <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
+</div>
+
+<h1>SUIVI PERFORMANCE</h1>
+
+<!-- Timers -->
+<div class="timer-box">
+  <div class="timer-group">
+    <div class="timer"><div class="timer-label">HLE</div><div id="timer-h40" class="timer-value">--:--</div></div>
+    <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
+    <div id="lidBlock" class="timer" style="display:none;"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
+  </div>
+  <div class="timer-group">
+    <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
+    <div class="timer"><div class="timer-label">CTOT</div><div id="timer-ctot" class="timer-value">--:--</div></div>
+  </div>
+</div>
+
+<!-- INFO VOL -->
+<section>
+  <h2>INFO VOL</h2>
+  <div class="form-grid">
+
+    <div class="form-group">
+      <label>Date
+        <input type="date" id="Date">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>RZA
+        <input class="uppercase" type="text" id="RZA" maxlength="3">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Cie
+        <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
+          <option value="">--</option>
+          <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
+          <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
+          <option>V7</option><option>Autre</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>N° VOL
+        <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Provenance
+        <input class="uppercase" type="text" id="From" maxlength="3">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Destination
+        <input class="uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Immat
+        <input class="uppercase" type="text" id="Immat" maxlength="5">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>Parking
+        <select id="Parking">
+          <option value="">--</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+      </label>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- HORAIRES -->
+<section>
+  <h2>HORAIRES</h2>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>SIBT<input type="time" id="SIBT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
       </div>
     </div>
-
-    <!-- Barre d’onglets -->
-    <div id="tab-bar">
-      <button onclick="createNewTab()" style="padding:8px 15px;">+ Ajouter vol</button>
-    </div>
-
-    <h1>SUIVI PERFORMANCE</h1>
-
-    <!-- Timers -->
-    <div class="timer-box">
-      <div class="timer-group">
-        <div class="timer"><div class="timer-label">HLE</div><div id="timer-h40" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">H-15</div><div id="timer-h15" class="timer-value">--:--</div></div>
-        <div id="lidBlock" class="timer" style="display:none;"><div class="timer-label">LID</div><div id="timer-h8" class="timer-value">--:--</div></div>
-      </div>
-      <div class="timer-group">
-        <div class="timer"><div class="timer-label">TOBT</div><div id="timer-tobt" class="timer-value">--:--</div></div>
-        <div class="timer"><div class="timer-label">CTOT</div><div id="timer-ctot" class="timer-value">--:--</div></div>
+    <div class="form-group">
+      <label>AIBT<input type="time" id="AIBT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
       </div>
     </div>
-
-    <!-- VIEWS (Option A) -->
-    <div id="v-info" class="view active">
-      <!-- INFO VOL -->
-      <section>
-        <h2>INFO VOL</h2>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Date
-              <input type="date" id="Date">
-            </label>
-          </div>
-          <div class="form-group">
-            <label>RZA
-              <input class="uppercase" type="text" id="RZA" maxlength="3">
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>Cie
-              <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
-                <option value="">--</option>
-                <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
-                <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
-                <option>V7</option><option>Autre</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>N° vol
-              <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>Provenance
-              <input class="uppercase" type="text" id="From" maxlength="3">
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>Destination
-              <input class="uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>Immat
-              <input class="uppercase" type="text" id="Immat" maxlength="5">
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>Parking
-              <select id="Parking">
-                <option value="">--</option>
-                <option>1</option><option>2</option><option>3</option><option>4</option>
-                <option>5</option><option>6</option><option>7</option><option>8</option>
-                <option>9</option><option>10</option><option>11</option><option>12</option>
-              </select>
-            </label>
-          </div>
-        </div>
-      </section>
+    <div class="form-group">
+      <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
+      </div>
     </div>
-
-    <div id="v-horaires" class="view">
-      <!-- HORAIRES -->
-      <section>
-        <h2>HORAIRES</h2>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>SIBT<input type="time" id="SIBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>AIBT<input type="time" id="AIBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>SOBT<input type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()"></label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('SOBT',-1);manualSOBT=true;updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('SOBT');manualSOBT=true;updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('SOBT',1);manualSOBT=true;updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>AOBT<input type="time" id="AOBT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
-            <div class="btn-actions">
-              <button class="action minus" onclick="adjustTime('CTOT',-1);updateAllCalculations()">-1</button>
-              <button class="action now" onclick="setNow('CTOT');updateAllCalculations()">Now</button>
-              <button class="action plus" onclick="adjustTime('CTOT',1);updateAllCalculations()">+1</button>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div class="form-group">
+      <label>AOBT<input type="time" id="AOBT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
+      </div>
     </div>
-
-    <div id="v-timing" class="view">
-      <!-- TIMING -->
-      <section>
-        <h2>TIMING</h2>
-        <div id="timing-grid"></div>
-      </section>
+    <div class="form-group">
+      <label>CTOT<input type="time" id="CTOT" onchange="updateAllCalculations()"></label>
+      <div class="btn-actions">
+        <button class="action minus" onclick="adjustTime('CTOT',-1);updateAllCalculations()">-1</button>
+        <button class="action now" onclick="setNow('CTOT');updateAllCalculations()">Now</button>
+        <button class="action plus" onclick="adjustTime('CTOT',1);updateAllCalculations()">+1</button>
+      </div>
     </div>
+  </div>
+</section>
 
-    <div id="v-timeline" class="view">
-      <!-- TIMELINE -->
-      <section>
-        <h2>TIMELINE</h2>
+<!-- TIMING -->
+<section>
+  <h2>TIMING</h2>
+  <div id="timing-grid"></div>
+</section>
 
-        <div class="timeline-toolbar">
-          <button type="button" class="tl-btn" onclick="timelineZoomOut()">−</button>
-          <span id="timelineZoomLabel">100%</span>
-          <button type="button" class="tl-btn" onclick="timelineZoomIn()">+</button>
-          <div class="tl-sep"></div>
-          <button type="button" class="tl-btn" onclick="timelineScroll(-15)">◀ 15 min</button>
-          <button type="button" class="tl-btn" onclick="timelineScroll(15)">15 min ▶</button>
-          <div class="tl-sep"></div>
-          <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
-          <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
-            <input type="checkbox" id="showTimesToggle" checked
-                   onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
-            Afficher heure/durée sur étiquettes
-          </label>
-        </div>
+<!-- TIMELINE -->
+<section>
+  <h2>TIMELINE</h2>
 
-        <div class="timeline-scroll" id="timelineScroll">
-          <div id="timelineCanvas" class="timeline-canvas"></div>
-        </div>
-      </section>
-    </div>
+  <div class="timeline-toolbar">
+    <button type="button" class="tl-btn" onclick="timelineZoomOut()">−</button>
+    <span id="timelineZoomLabel">100%</span>
+    <button type="button" class="tl-btn" onclick="timelineZoomIn()">+</button>
+    <div class="tl-sep"></div>
+    <button type="button" class="tl-btn" onclick="timelineScroll(-15)">◀ 15 min</button>
+    <button type="button" class="tl-btn" onclick="timelineScroll(15)">15 min ▶</button>
+    <div class="tl-sep"></div>
+    <button type="button" class="tl-btn" onclick="timelineZoomReset()">Reset</button>
+    <label class="tl-toggle" title="Afficher l’heure à côté des étiquettes">
+      <input type="checkbox" id="showTimesToggle" checked
+             onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
+      Afficher heure/durée sur étiquettes
+    </label>
+  </div>
 
-    <div id="v-chiffres" class="view">
-      <!-- CHIFFRES PORTE -->
-      <section id="chiffres-porte">
-        <details id="cp-details" open>
-          <summary><h2>CHIFFRES PORTE</h2></summary>
-          <div id="chargement-container" class="form-grid"></div>
-        </details>
-      </section>
-    </div>
+  <div class="timeline-scroll" id="timelineScroll">
+    <div id="timelineCanvas" class="timeline-canvas"></div>
+  </div>
+</section>
 
-    <div id="v-retards" class="view">
-      <!-- RETARDS -->
-      <section>
-        <h2>RETARDS (Départ)</h2>
-        <div class="form-grid">
-          <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
-          <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" min="0" step="1" oninput="dldChanged(1)"></label></div>
-          <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
-          <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" min="0" step="1" oninput="dldChanged(2)"></label></div>
-          <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
-          <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3" min="0" step="1" oninput="dldChanged(3)"></label></div>
-        </div>
-      </section>
-    </div>
+<!-- CHIFFRES PORTE (rétractable – version <details>) -->
+<section id="chiffres-porte">
+  <details id="cp-details" open>
+    <summary><h2>CHIFFRES PORTE</h2></summary>
+    <div id="chargement-container" class="form-grid"></div>
+  </details>
+</section>
 
-    <div id="v-notes" class="view">
-      <!-- NOTES -->
-      <section>
-        <h2>DL JUSTIFICATIONS</h2>
-        <textarea id="DLJustif"></textarea>
-      </section>
+<!-- RETARDS -->
+<section>
+  <h2>RETARDS (Départ)</h2>
+  <div class="form-grid">
+    <div class="form-group"><label>DL Code 1<input type="text" id="DLcode1"></label></div>
+    <div class="form-group"><label>DL Durée 1 (min)<input type="number" id="DLduree1" min="0" step="1" oninput="dldChanged(1)"></label></div>
+    <div class="form-group"><label>DL Code 2<input type="text" id="DLcode2"></label></div>
+    <div class="form-group"><label>DL Durée 2 (min)<input type="number" id="DLduree2" min="0" step="1" oninput="dldChanged(2)"></label></div>
+    <div class="form-group"><label>DL Code 3<input type="text" id="DLcode3"></label></div>
+    <div class="form-group"><label>DL Durée 3 (min)<input type="number" id="DLduree3" min="0" step="1" oninput="dldChanged(3)"></label></div>
+  </div>
+</section>
 
-      <section>
-        <h2>FAITS SAILLANTS</h2>
-        <textarea id="FaitsSaillants"></textarea>
-      </section>
-    </div>
+<!-- DL JUSTIFICATION -->
+<section>
+  <h2>DL JUSTIFICATIONS</h2>
+  <textarea id="DLJustif"></textarea>
+</section>
 
-    <div id="v-assist" class="view">
-      <!-- ASSISTANCES -->
-      <section>
-        <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
-        <div class="form-grid">
-          <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-          <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-          <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
-          <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
-        </div>
-      </section>
-    </div>
+<!-- FAITS SAILLANTS -->
+<section>
+  <h2>FAITS SAILLANTS</h2>
+  <textarea id="FaitsSaillants"></textarea>
+</section>
 
-    <div id="v-presta" class="view">
-      <!-- PRESTATIONS -->
-      <section>
-        <h2>PRESTATIONS</h2>
-        <div class="form-grid">
-          <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
-          <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
-          <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
-          <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
-        </div>
-      </section>
-    </div>
+<!-- ASSISTANCES -->
+<section>
+  <h2>ASSISTANCES PRISES EN CHARGE A/D</h2>
+  <div class="form-grid">
+    <div class="form-group-4col"><label>WCHC<input type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+    <div class="form-group-4col"><label>WCHS<input type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+    <div class="form-group-4col"><label>WCHR<input type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></label></div>
+    <div class="form-group-4col"><label>Autre<input type="number" id="AutreAssist"></label></div>
+  </div>
+</section>
 
-    <!-- Boutons finaux -->
-    <button id="validate" onclick="validateForm()">VALIDER</button>
-    <button id="save" onclick="manualSave()">SAUVEGARDER</button>
-    <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
+<!-- PRESTATIONS -->
+<section>
+  <h2>PRESTATIONS</h2>
+  <div class="form-grid">
+    <div class="form-group-3col"><label>ASU<select id="ASU"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Flux RZA<select id="FluxRZA"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
+    <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
+    <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Push-Pull<select id="PushPull"><option>N</option><option>Y</option></select></label></div>
+    <div class="form-group-3col"><label>Echelle supplémentaire<select id="Echelle"><option>N</option><option>Y</option></select></label></div>
+  </div>
+</section>
+
+<!-- Boutons finaux -->
+<button id="validate" onclick="validateForm()">VALIDER</button>
+<button id="save" onclick="manualSave()">SAUVEGARDER</button>
+<button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <script>
 /* === Variables === */
@@ -832,7 +747,6 @@ function initForm(){
   setDefaultDateToTodayIfEmpty();
 
   renderTimeline();
-  renderTimeline();
 }
 
 /* date par défaut = aujourd’hui si vide */
@@ -931,6 +845,7 @@ function clearFormFields(){
     else el.value='';
   });
   document.getElementById('Date').valueAsDate=new Date();
+  document.getElementById('FNC').value='N';
   updateAllCalculations();
 }
 
@@ -1772,32 +1687,6 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
-function initSectionNav(){
-  const chips = document.querySelectorAll('#section-nav .nav-chip');
-  if(!chips.length) return;
-
-  const show = (viewId, fromInit=false)=>{
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    const target = document.getElementById(viewId);
-    if(target) target.classList.add('active');
-
-    chips.forEach(c=>c.classList.toggle('active', c.dataset.view === viewId));
-    localStorage.setItem('uiActiveView', viewId);
-
-    // IMPORTANT : la timeline dépend de la largeur visible
-    if(viewId === 'v-timeline'){
-      setTimeout(()=>{ try{ renderTimeline(); }catch(e){} }, 50);
-    }
-  };
-
-  chips.forEach(chip=>{
-    chip.addEventListener('click', ()=> show(chip.dataset.view));
-  });
-
-  const last = localStorage.getItem('uiActiveView') || 'v-info';
-  show(last, true);
-}
-    
  function validateForm() {
 
     const val = id => (document.getElementById(id)?.value || "");
