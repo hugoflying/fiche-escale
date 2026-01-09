@@ -302,17 +302,6 @@ body.dark .timeline-scroll{
 /* DL error */
 .dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
-/* CHIFFRES PORTE */
-#chiffres-porte .form-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-#chiffres-porte .cp-row{ grid-column: 1 / -1; display: grid; gap: 10px; margin-bottom: 10px; }
-#chiffres-porte .cp-cols-1{ grid-template-columns: 1fr; }
-#chiffres-porte .cp-cols-2{ grid-template-columns: repeat(2, minmax(140px,1fr)); }
-#chiffres-porte .cp-cols-3{ grid-template-columns: repeat(3, minmax(140px,1fr)); }
-#chiffres-porte .cp-cols-4{ grid-template-columns: repeat(4, minmax(140px,1fr)); }
-
-#chiffres-porte summary { list-style: none; cursor: pointer; }
-#chiffres-porte summary::-webkit-details-marker { display: none; }
-
 /* ===== RESPONSIVE IMPORTANT ===== */
 @media (max-width: 768px){
   .brandline{ min-width: 0; flex: 1 1 100%; }
@@ -422,7 +411,7 @@ body.dark .timeline-scroll{
           <div class="field">
             <label class="label">Cie</label>
             <div class="control select is-fullwidth">
-              <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
+              <select id="Cie" onchange="updateAllCalculations(); updateTabLabelInstant();">
                 <option value="">--</option>
                 <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
                 <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
@@ -573,20 +562,6 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <!-- CHIFFRES PORTE -->
-  <div class="card mb-5" id="chiffres-porte">
-    <header class="card-header">
-      <p class="card-header-title">CHIFFRES PORTE</p>
-      <span class="card-header-icon"><span class="icon">⇵</span></span>
-    </header>
-    <div class="card-content">
-      <details id="cp-details" open>
-        <summary class="mb-3"><span class="tag is-info is-light">Ouvrir / fermer</span></summary>
-        <div id="chargement-container" class="form-grid"></div>
-      </details>
-    </div>
-  </div>
-
   <!-- RETARDS -->
   <div class="card mb-5">
     <header class="card-header section-collapse" onclick="toggleCardBody(this)">
@@ -694,29 +669,6 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <!-- PRESTATIONS -->
-  <div class="card mb-6">
-    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
-      <p class="card-header-title">PRESTATIONS</p>
-      <span class="card-header-icon"><span class="icon">⌄</span></span>
-    </header>
-    <div class="card-content">
-      <div class="columns is-multiline">
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">ASU</label><div class="control select is-fullwidth"><select id="ASU"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Flux RZA</label><div class="control select is-fullwidth"><select id="FluxRZA"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Eau potable</label><div class="control select is-fullwidth"><select id="EauPotable"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Vidange toilettes</label><div class="control select is-fullwidth"><select id="Vidange"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Ménage Assist'Air</label><div class="control select is-fullwidth"><select id="MenageAssist"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Ménage Atalian</label><div class="control select is-fullwidth"><select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Collecte d'ordures</label><div class="control select is-fullwidth"><select id="Ordures"><option>Y</option><option>N</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Toilet Kit</label><div class="control select is-fullwidth"><select id="ToiletKit"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Dégivrage</label><div class="control select is-fullwidth"><select id="Degivrage"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Push-Pull</label><div class="control select is-fullwidth"><select id="PushPull"><option>N</option><option>Y</option></select></div></div></div>
-        <div class="column is-6-tablet is-3-desktop"><div class="field"><label class="label">Echelle supplémentaire</label><div class="control select is-fullwidth"><select id="Echelle"><option>N</option><option>Y</option></select></div></div></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Boutons finaux -->
   <div class="buttons is-centered">
     <button class="button is-success is-medium" id="validate" onclick="validateForm()">VALIDER</button>
@@ -799,21 +751,16 @@ function initForm(){
   else switchTab(tabs[0]);
 
   generateTimingFields();
-  generateChargementFields();
   attachAutoSave();
   window.addEventListener('beforeunload', saveCurrentTabData);
 
   document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
   document.getElementById('Cie').addEventListener('change', ()=>{
     updateTabLabelInstant();
-    generateChargementFields();
     updateAllCalculations();
   });
   document.getElementById('NVol').addEventListener('input', updateTabLabelInstant);
   document.getElementById('To').addEventListener('input', updateTabLabelInstant);
-
-  document.getElementById('From').addEventListener('input', applyPrestationsDefaults);
-  document.getElementById('To').addEventListener('input', applyPrestationsDefaults);
 
   setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
@@ -1021,7 +968,6 @@ function loadTabData(id){
   if(ut) ut.checked = isUTC;
 
   setDefaultDateToTodayIfEmpty();
-  generateChargementFields();
   updateAllCalculations();
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
@@ -1110,103 +1056,6 @@ function switchTimingPanel(mode){
   localStorage.setItem('timingPanel', mode);
 }
 
-/* CHARGEMENT / TOB */
-function generateChargementFields() {
-  const cie = (document.getElementById('Cie').value||'').toUpperCase();
-  const container = document.getElementById('chargement-container');
-  if(!container) return;
-
-  container.innerHTML = "";
-
-  // CSS local minimal (ancrage des champs) injecté UNE fois
-  if(!document.getElementById('cp-fix-style')){
-    const st = document.createElement('style');
-    st.id = 'cp-fix-style';
-    st.textContent = `
-      #chargement-container{ width:100%; }
-      #chargement-container .cp-row{ width:100%; max-width:100%; }
-      #chargement-container .cp-cell{ width:100%; max-width:100%; min-width:0; }
-      #chargement-container .cp-cell .field{ width:100%; }
-      #chargement-container .cp-cell .control{ width:100%; }
-      #chargement-container .cp-cell input{ width:100%; max-width:100%; box-sizing:border-box; }
-    `;
-    document.head.appendChild(st);
-  }
-
-  // wrapper "cell" qui ANCRE vraiment le champ dans la grille
-  const cell = (inner) => `<div class="cp-cell">${inner}</div>`;
-
-  const wrapNum = (id,label,extra='')=>`
-    <div class="field">
-      <label class="label">${label}</label>
-      <div class="control">
-        <input class="input" type="number" id="${id}" ${extra}>
-      </div>
-    </div>`;
-
-  let html = "";
-
-  if (cie === "FR" || cie === "RK") {
-    html += `
-      <div class="cp-row cp-cols-3">
-        ${cell(wrapNum('ADULT','ADULT','oninput="updateTOB()"'))}
-        ${cell(wrapNum('CHILD','CHILD','oninput="updateTOB()"'))}
-        ${cell(wrapNum('INFANT','INFANT','oninput="updateTOB()"'))}
-      </div>
-
-      <div class="cp-row cp-cols-3">
-        ${cell(wrapNum('FWD','FWD/OA','oninput="checkTOBCoherence()"'))}
-        ${cell(wrapNum('MID','MID/OB','oninput="checkTOBCoherence()"'))}
-        ${cell(wrapNum('AFT','AFT/OC','oninput="checkTOBCoherence()"'))}
-      </div>
-
-      <div class="cp-row cp-cols-2">
-        ${cell(wrapNum('BAGS','BAGS'))}
-        ${cell(wrapNum('ITG','ITG'))}
-      </div>
-    `;
-  } else {
-    html += `
-      <div class="cp-row cp-cols-4">
-        ${cell(wrapNum('MALE','MALE','oninput="updateTOB()"'))}
-        ${cell(wrapNum('FEMALE','FEMALE','oninput="updateTOB()"'))}
-        ${cell(wrapNum('CHILD','CHILD','oninput="updateTOB()"'))}
-        ${cell(wrapNum('INFANT','INFANT','oninput="updateTOB()"'))}
-      </div>
-
-      <div class="cp-row cp-cols-4">
-        ${cell(wrapNum('OA','OA','oninput="checkTOBCoherence()"'))}
-        ${cell(wrapNum('OB','OB','oninput="checkTOBCoherence()"'))}
-        ${cell(wrapNum('OC','OC','oninput="checkTOBCoherence()"'))}
-        ${cell(wrapNum('OD','OD','oninput="checkTOBCoherence()"'))}
-      </div>
-
-      <div class="cp-row cp-cols-2">
-        ${cell(wrapNum('BAGS','BAGS'))}
-        ${cell(wrapNum('POIDS','POIDS'))}
-      </div>
-    `;
-  }
-
-  html += `
-    <div class="cp-row cp-cols-1">
-      ${cell(`
-        <div class="field">
-          <label class="label">TOB</label>
-          <div class="control">
-            <input class="input" type="text" id="TOB" readonly style="font-weight:900;">
-          </div>
-        </div>
-      `)}
-    </div>
-  `;
-
-  container.innerHTML = html;
-
-  updateTOB();
-  updateLIDVisibility();
-}
-
 /* Affichage conditionnel LID (FR/RK uniquement) */
 function updateLIDVisibility(){
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
@@ -1214,62 +1063,6 @@ function updateLIDVisibility(){
   if(!lid) return;
   lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
   updateHeaderOffset();
-}
-
-/* TOB + cohérence */
-function updateTOB() {
-  const cie = document.getElementById('Cie').value;
-  let mainTotal = 0;
-  let infants = parseInt(document.getElementById('INFANT')?.value) || 0;
-
-  if (cie === "FR" || cie === "RK") {
-    mainTotal = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-                (parseInt(document.getElementById('CHILD')?.value) || 0);
-  } else {
-    mainTotal = (parseInt(document.getElementById('MALE')?.value) || 0) +
-                (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-                (parseInt(document.getElementById('CHILD')?.value) || 0);
-  }
-
-  let tobText = "";
-  if (mainTotal === 0 && infants === 0) tobText = "";
-  else if (infants > 0) tobText = `${mainTotal} + ${infants}`;
-  else tobText = `${mainTotal}`;
-
-  const tobField = document.getElementById('TOB');
-  if (tobField) tobField.value = tobText;
-
-  checkTOBCoherence();
-}
-
-/* COHÉRENCE TOB */
-function checkTOBCoherence() {
-  const cie = (document.getElementById('Cie').value||'').toUpperCase();
-  let tobMain = 0;
-
-  if (cie === "FR" || cie === "RK") {
-    tobMain = (parseInt(document.getElementById('ADULT')?.value) || 0) +
-              (parseInt(document.getElementById('CHILD')?.value) || 0);
-    const sum = (parseInt(document.getElementById('FWD')?.value) || 0) +
-                (parseInt(document.getElementById('MID')?.value) || 0) +
-                (parseInt(document.getElementById('AFT')?.value) || 0);
-    styleTOB(sum === tobMain);
-  } else {
-    tobMain = (parseInt(document.getElementById('MALE')?.value) || 0) +
-              (parseInt(document.getElementById('FEMALE')?.value) || 0) +
-              (parseInt(document.getElementById('CHILD')?.value) || 0);
-    const sum = (parseInt(document.getElementById('OA')?.value) || 0) +
-                (parseInt(document.getElementById('OB')?.value) || 0) +
-                (parseInt(document.getElementById('OC')?.value) || 0) +
-                (parseInt(document.getElementById('OD')?.value) || 0);
-    styleTOB(sum === tobMain);
-  }
-}
-function styleTOB(valid) {
-  const tobField = document.getElementById('TOB');
-  if (!tobField) return;
-  if (valid) { tobField.style.border = ""; tobField.style.color = ""; }
-  else { tobField.style.border = "2px solid #ef4444"; tobField.style.color = "#ef4444"; }
 }
 
 /* CALCULS */
@@ -1281,7 +1074,6 @@ function updateAllCalculations() {
   redistributeDL();
   updateLID();
   updateCTOTDisplay();
-  applyPrestationsDefaults();
   updateLIDVisibility();
   renderTimeline();
   updateHeaderOffset();
@@ -1498,23 +1290,6 @@ function clearDLBorders(){
     const el = document.getElementById(id);
     if(el) el.classList.remove('dl-error');
   });
-}
-
-/* PRESTATIONS AUTO */
-function applyPrestationsDefaults() {
-  const from = (document.getElementById('From').value||'').toUpperCase();
-  const to = (document.getElementById('To').value||'').toUpperCase();
-
-  if (from === "BVA") {
-    document.getElementById('Ordures').value = "N";
-    document.getElementById('EauPotable').value = "Y";
-    document.getElementById('MenageAssist').value = "N";
-  }
-  if (to === "BVA") {
-    document.getElementById('Ordures').value = "Y";
-    document.getElementById('Vidange').value = "Y";
-    document.getElementById('MenageAtalian').value = "T";
-  }
 }
 
 /* UTILITAIRES */
@@ -1880,27 +1655,6 @@ function validateForm() {
       ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
       : "";
 
-  let prestationsList = [];
-  const addIfYes = (label, id) => {
-      const v = document.getElementById(id).value;
-      if (v !== "N") prestationsList.push(label);
-  };
-
-  addIfYes("ASU", "ASU");
-  addIfYes("Flux RZA", "FluxRZA");
-  addIfYes("Eau potable", "EauPotable");
-  addIfYes("Vidange toilettes", "Vidange");
-  addIfYes("Ménage Assist'Air", "MenageAssist");
-  addIfYes("Ménage Atalian", "MenageAtalian");
-  addIfYes("Collecte d'ordures", "Ordures");
-  addIfYes("Toilet Kit", "ToiletKit");
-  addIfYes("Dégivrage", "Degivrage");
-  addIfYes("Push-Pull", "PushPull");
-  addIfYes("Échelle supplémentaire", "Echelle");
-
-  const prestationsText =
-       prestationsList.length > 0 ? `== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
-
   const dlLines = [];
   if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
   if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
@@ -1953,14 +1707,8 @@ Lift départ  : ${liftDepart}
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
 
-== CHIFFRES PORTE ==
-
-TOB : ${val("TOB")}
-Bagages (hors GB) : ${val("BAGS")}
-
 ${[
   assistanceBlock,
-  prestationsText,
   dlBlock,
   justifBlock,
   faitsBlock
