@@ -46,7 +46,7 @@ body.dark{
   --field-placeholder: rgba(156,163,175,.95);
 }
 
-/* ===== FIXED HEADER (TOPBAR + TIMERS) ===== */
+/* ===== FIXED HEADER ===== */
 .fixed-header{
   position: fixed;
   inset: 0 0 auto 0;
@@ -60,7 +60,6 @@ body.dark .fixed-header{
   border-bottom-color: rgba(255,255,255,.08);
 }
 
-/* contenu du header */
 .fixed-header-inner{
   max-width: 1120px;
   margin: 0 auto;
@@ -70,14 +69,13 @@ body.dark .fixed-header{
   gap: 10px;
 }
 
-/* App */
 .app-wrap{
   max-width: 1120px;
   margin: 0 auto;
   padding: calc(var(--fixed-header-h) + 14px) 14px 14px;
 }
 
-/* Topbar row */
+/* Topbar */
 .topbar-inner{
   display:flex;
   gap:12px;
@@ -85,22 +83,17 @@ body.dark .fixed-header{
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
+/* Titre centré */
 .brandline{
+  flex: 1 1 100%;
   display:flex;
   align-items:center;
-  gap:10px;
-  min-width: 220px;
+  justify-content: center;
 }
-.brand-badge{
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg,#3b82f6,#22c55e);
-  box-shadow: var(--shadow2);
-}
-.brand-title{
-  line-height: 1.05;
-}
-.brand-title strong{ display:block; font-size: 1rem; color: var(--text); }
+.brand-badge{ display:none; }
+.brand-title{ text-align:center; line-height: 1.05; }
+.brand-title strong{ display:block; font-size: 1.2rem; color: var(--text); }
 
 /* Toggles */
 .top-toggles{
@@ -108,6 +101,35 @@ body.dark .fixed-header{
   gap:8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  width: 100%;
+}
+
+/* Tabs row (au-dessus des timers, même style graphique) */
+.tabs-row{
+  display:flex;
+  justify-content:center;
+}
+.tabs-chip{
+  width: 100%;
+  max-width: 1120px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: var(--card);
+  box-shadow: var(--shadow2);
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+.tabs-chip .button{
+  border-radius: 999px;
+  flex: 0 0 auto;
+  font-weight: 900;
 }
 
 /* Timers chips */
@@ -142,35 +164,7 @@ body.dark .fixed-header{
 #timer-tobt{ background:#16a34a !important; }
 #timer-h8{ background:#facc15 !important; color:#111 !important; }
 #timer-ctot{ background:#334155 !important; }
-#timer-cd{ background:#60a5fa !important; color:#111 !important; }
-
-/* Tabs row (au-dessus des timers, même style graphique) */
-.tabs-row{
-  display:flex;
-  justify-content:center;
-}
-.tabs-chip{
-  width: 100%;
-  max-width: 1120px;
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: var(--card);
-  box-shadow: var(--shadow2);
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  scrollbar-width: thin;
-}
-.tabs-chip .button{
-  border-radius: 999px;
-  flex: 0 0 auto;
-  font-weight: 900;
-}
+#timer-cd{ background:#93c5fd !important; color:#111 !important; }
 
 /* Bulma tweaks */
 .card{
@@ -197,7 +191,7 @@ body.dark .card-header{
 }
 .collapsed-body{ display: none; }
 
-/* Inputs - FORCE light/dark correctness */
+/* Inputs */
 .input, .select select, .textarea{
   border-radius: 12px;
   background: var(--field-bg) !important;
@@ -205,18 +199,12 @@ body.dark .card-header{
   border-color: var(--field-border) !important;
 }
 .input.uppercase{ text-transform: uppercase; }
-
 .input::placeholder, .textarea::placeholder{
   color: var(--field-placeholder) !important;
 }
-
 .field .label{
   font-weight: 900;
   color: var(--text) !important;
-}
-
-.help, .tag.is-light{
-  color: var(--text);
 }
 
 /* Buttons */
@@ -310,18 +298,8 @@ body.dark .timeline-scroll{
 /* DL error */
 .dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
-/* ===== Titre centré + suppression sous-titre + suppression badge ===== */
-.brandline{
-  flex: 1 1 100%;
-  justify-content: center;
-}
-.brand-badge{ display:none; }
-.brand-title{ text-align:center; }
-.brand-title strong{ font-size: 1.2rem; }
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px){
-  .top-toggles{ width: 100%; justify-content: flex-start; }
   .timer-chip{ min-width: 128px; }
   .timeline-canvas{ min-width: 720px; }
 }
@@ -329,77 +307,12 @@ body.dark .timeline-scroll{
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
   .timer-chip .v{ min-width: 64px; }
 }
-
-/* ================================
-   MODE COMPACT CHAMPS (INFO+TIMING)
-   ================================ */
-.input, .select select, .textarea{
-  font-size: .85rem !important;
-  padding-left: .55rem !important;
-  padding-right: .55rem !important;
-  min-height: 2.05rem !important;
-  height: 2.05rem !important;
-  border-radius: 10px !important;
-}
-.textarea{
-  height: auto !important;
-  min-height: 6rem !important;
-}
-.field .label{
-  font-size: .78rem !important;
-  margin-bottom: .25rem !important;
-}
-.columns.is-multiline{
-  margin-left: -0.35rem !important;
-  margin-right: -0.35rem !important;
-}
-.columns.is-multiline > .column{
-  padding: 0.35rem !important;
-}
-.btn-actions{
-  gap: 4px !important;
-  margin-top: 6px !important;
-}
-.btn-actions .button{
-  padding: .25rem .45rem !important;
-  font-size: .75rem !important;
-  border-radius: 10px !important;
-}
-.card-content{
-  padding: .85rem !important;
-}
-@media (max-width: 768px){
-  .columns.is-multiline > .column.is-6-tablet,
-  .columns.is-multiline > .column.is-6-tablet.is-3-desktop,
-  .columns.is-multiline > .column.is-6-tablet.is-4-desktop{
-    flex: 0 0 50% !important;
-    max-width: 50% !important;
-  }
-  @media (min-width: 421px){
-    .columns.is-multiline > .column.is-6-tablet.is-4-desktop{
-      flex: 0 0 33.333% !important;
-      max-width: 33.333% !important;
-    }
-  }
-}
-@media (max-width: 420px){
-  .field .label{ font-size: .74rem !important; }
-  .input, .select select{
-    font-size: .82rem !important;
-    min-height: 1.95rem !important;
-    height: 1.95rem !important;
-  }
-  .btn-actions .button{
-    font-size: .72rem !important;
-    padding: .22rem .38rem !important;
-  }
-}
 </style>
 </head>
 
 <body onload="initForm()">
 
-<!-- ===== FIXED HEADER : TOP BAR + TABS + TIMERS ===== -->
+<!-- ===== FIXED HEADER ===== -->
 <div class="fixed-header" id="fixedHeader">
   <div class="fixed-header-inner">
 
@@ -429,7 +342,7 @@ body.dark .timeline-scroll{
       <div id="tab-bar" class="tabs-chip"></div>
     </div>
 
-    <!-- Timers (fixes) -->
+    <!-- Timers -->
     <div class="timer-row">
       <div class="timer-chip">
         <div class="k">HLE</div>
@@ -454,7 +367,6 @@ body.dark .timeline-scroll{
         <div id="timer-ctot" class="v">--:--</div>
       </div>
 
-      <!-- COUNTDOWN -->
       <div class="timer-chip">
         <div class="k">CD</div>
         <div id="timer-cd" class="v">--:--</div>
@@ -473,8 +385,9 @@ body.dark .timeline-scroll{
       <span class="card-header-icon" aria-label="more options"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline">
-        <div class="column is-6-tablet is-3-desktop">
+      <div class="columns is-multiline is-mobile">
+
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Date</label>
             <div class="control">
@@ -483,7 +396,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">RZA</label>
             <div class="control">
@@ -492,7 +405,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Cie</label>
             <div class="control select is-fullwidth">
@@ -506,7 +419,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">N° VOL</label>
             <div class="control">
@@ -515,7 +428,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Provenance</label>
             <div class="control">
@@ -524,7 +437,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Destination</label>
             <div class="control">
@@ -533,7 +446,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Immat</label>
             <div class="control">
@@ -542,8 +455,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <!-- Optionnel mais utile pour W4/W6 -->
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Type avion</label>
             <div class="control select is-fullwidth">
@@ -556,7 +468,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Parking</label>
             <div class="control select is-fullwidth">
@@ -581,13 +493,12 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline">
+      <div class="columns is-multiline is-mobile">
 
-        <!-- helper -->
         <script>
           function timeField(id,label,onchange){
             return `
-            <div class="column is-6-tablet is-4-desktop">
+            <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
               <div class="field">
                 <label class="label">${label}</label>
                 <div class="control">
@@ -608,7 +519,7 @@ body.dark .timeline-scroll{
           document.addEventListener("DOMContentLoaded", ()=>{
             const mount = document.getElementById('horairesMount');
             if(!mount) return;
-            mount.innerHTML = `<div class="columns is-multiline">
+            mount.innerHTML = `<div class="columns is-multiline is-mobile">
               ${timeField('SIBT','SIBT',"updateAllCalculations()")}
               ${timeField('AIBT','AIBT',"updateAllCalculations()")}
               ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()")}
@@ -668,40 +579,40 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline">
-        <div class="column is-6-tablet is-4-desktop">
+      <div class="columns is-multiline is-mobile">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Code 1</label>
             <div class="control"><input class="input" type="text" id="DLcode1"></div>
           </div>
         </div>
-        <div class="column is-6-tablet is-4-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Durée 1 (min)</label>
             <div class="control"><input class="input" type="number" id="DLduree1" min="0" step="1" oninput="dldChanged(1)"></div>
           </div>
         </div>
 
-        <div class="column is-6-tablet is-4-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Code 2</label>
             <div class="control"><input class="input" type="text" id="DLcode2"></div>
           </div>
         </div>
-        <div class="column is-6-tablet is-4-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Durée 2 (min)</label>
             <div class="control"><input class="input" type="number" id="DLduree2" min="0" step="1" oninput="dldChanged(2)"></div>
           </div>
         </div>
 
-        <div class="column is-6-tablet is-4-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Code 3</label>
             <div class="control"><input class="input" type="text" id="DLcode3"></div>
           </div>
         </div>
-        <div class="column is-6-tablet is-4-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">DL Durée 3 (min)</label>
             <div class="control"><input class="input" type="number" id="DLduree3" min="0" step="1" oninput="dldChanged(3)"></div>
@@ -739,26 +650,26 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div class="columns is-multiline">
-        <div class="column is-6-tablet is-3-desktop">
+      <div class="columns is-multiline is-mobile">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">WCHC</label>
             <div class="control"><input class="input" type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
           </div>
         </div>
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">WCHS</label>
             <div class="control"><input class="input" type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
           </div>
         </div>
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">WCHR</label>
             <div class="control"><input class="input" type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
           </div>
         </div>
-        <div class="column is-6-tablet is-3-desktop">
+        <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">Autre</label>
             <div class="control"><input class="input" type="number" id="AutreAssist"></div>
@@ -778,7 +689,7 @@ body.dark .timeline-scroll{
 </div>
 
 <script>
-/* Petite UX: collapse card body */
+/* Collapse */
 function toggleCardBody(headerEl){
   const card = headerEl.closest('.card');
   if(!card) return;
@@ -789,7 +700,7 @@ function toggleCardBody(headerEl){
   if(icon) icon.textContent = collapsed ? '›' : '⌄';
 }
 
-/* ===== FIXED HEADER HEIGHT -> padding auto ===== */
+/* Header height */
 function updateHeaderOffset(){
   const header = document.getElementById('fixedHeader');
   if(!header) return;
@@ -797,23 +708,23 @@ function updateHeaderOffset(){
   document.documentElement.style.setProperty('--fixed-header-h', h + 'px');
 }
 
-/* === Variables === */
+/* Vars */
 let isUTC=false;
 let manualSOBT=false;
 let currentTabId=null;
 let saveTimer=null;
 
-/* TIMELINE zoom & scroll */
+/* Timeline */
 let timelineZoom = 1;
 const TL_ZOOM_MIN = 0.5;
 const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
-/* TOBT brut (hors CTOT) stocké en minutes pour LID */
+/* TOBT brut (pour LID) */
 window._tobtRawMins = null;
 
-/* === DL auto tracking === */
+/* DL */
 let lastDLChanged = 1;
 
 /* ===== COUNTDOWN (CD) ===== */
@@ -837,11 +748,11 @@ function stopCountdown(){
   const el = document.getElementById('timer-cd');
   if(el) el.textContent = '--:--';
 }
-
 /* Règles CD:
-   - STOP si AOBT est renseigné
-   - si AIBT <= SIBT => CD = SOBT - now
-   - si AIBT >  SIBT => CD = TOBT - now
+   - stop si AOBT renseigné
+   - déclenche si SIBT + AIBT + SOBT
+   - si AIBT <= SIBT => SOBT - now
+   - si AIBT >  SIBT => TOBT - now
 */
 function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
@@ -891,20 +802,17 @@ function updateCountdownOnce(){
   const remainingSeconds = diffMin * 60 - now.secs;
   el.textContent = fmtMMSS(remainingSeconds);
 }
-
 function ensureCountdownRunning(){
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
-
   const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && !aobtTxt);
 
   if(!shouldRun){
     stopCountdown();
     return;
   }
-
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
@@ -913,7 +821,7 @@ function ensureCountdownRunning(){
   }
 }
 
-/* ===== TIMELINE zoom & scroll ===== */
+/* Timeline zoom */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
@@ -949,13 +857,13 @@ function initForm(){
   attachAutoSave();
   window.addEventListener('beforeunload', saveCurrentTabData);
 
-  document.getElementById('Parking').addEventListener('change', updateTabLabelInstant);
-  document.getElementById('Cie').addEventListener('change', ()=>{
+  document.getElementById('Parking')?.addEventListener('change', updateTabLabelInstant);
+  document.getElementById('Cie')?.addEventListener('change', ()=>{
     updateTabLabelInstant();
     updateAllCalculations();
   });
-  document.getElementById('NVol').addEventListener('input', updateTabLabelInstant);
-  document.getElementById('To').addEventListener('input', updateTabLabelInstant);
+  document.getElementById('NVol')?.addEventListener('input', updateTabLabelInstant);
+  document.getElementById('To')?.addEventListener('input', updateTabLabelInstant);
 
   setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
@@ -964,7 +872,7 @@ function initForm(){
   setDarkMode(storedDark, true);
   setTimeModeUTC(storedUTC, true);
 
-  // Recalcul instantané CD/TOBT si on modifie AIBT ou SOBT (input, pas seulement blur)
+  /* recalcul instantané (AIBT/SOBT etc.) */
   ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -988,11 +896,7 @@ function initForm(){
     });
   }
 
-  const lbl = document.getElementById('timelineZoomLabel');
-  if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
-
   if (currentTabId) loadTabData(currentTabId);
-
   setDefaultDateToTodayIfEmpty();
 
   updateHeaderOffset();
@@ -1005,13 +909,13 @@ function initForm(){
   ensureCountdownRunning();
 }
 
-/* date par défaut */
+/* date défaut */
 function setDefaultDateToTodayIfEmpty(){
   const d = document.getElementById('Date');
   if(d && !d.value){ d.valueAsDate = new Date(); }
 }
 
-/* Forcer MAJUSCULE */
+/* MAJUSCULE */
 function setupUppercaseInputs(ids){
   ids.forEach(id=>{
     const el = document.getElementById(id);
@@ -1022,7 +926,7 @@ function setupUppercaseInputs(ids){
   });
 }
 
-/* Empêcher négatifs / non-entiers */
+/* ints positifs */
 function sanitizePositiveInt(inputEl){
   inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
@@ -1044,6 +948,8 @@ function attachAutoSave(){
 /* Tabs */
 function renderTabs(){
   const tabBar=document.getElementById('tab-bar');
+  if(!tabBar) return;
+
   tabBar.innerHTML = `
     <button class="button is-success is-light" type="button" onclick="createNewTab()">+ Ajouter vol</button>
   `;
@@ -1129,11 +1035,11 @@ function saveCurrentTabData(){
   });
   data.modeDark=document.body.classList.contains('dark')?'1':'0';
   data.modeUTC=isUTC?'1':'0';
-  data.timer_h40=document.getElementById('timer-h40').textContent;
-  data.timer_h15=document.getElementById('timer-h15').textContent;
-  data.timer_h8=document.getElementById('timer-h8').textContent;
-  data.timer_tobt=document.getElementById('timer-tobt').textContent;
-  data.timer_ctot=document.getElementById('timer-ctot').textContent;
+  data.timer_h40=document.getElementById('timer-h40')?.textContent || '--:--';
+  data.timer_h15=document.getElementById('timer-h15')?.textContent || '--:--';
+  data.timer_h8=document.getElementById('timer-h8')?.textContent || '--:--';
+  data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
+  data.timer_ctot=document.getElementById('timer-ctot')?.textContent || '--:--';
   data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
   data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
   localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
@@ -1156,18 +1062,12 @@ function loadTabData(id){
 
   isUTC = (data.modeUTC === '1');
 
-  const h40  = document.getElementById('timer-h40');
-  const h15  = document.getElementById('timer-h15');
-  const h8   = document.getElementById('timer-h8');
-  const tobt = document.getElementById('timer-tobt');
-  const ctot = document.getElementById('timer-ctot');
-  const cd   = document.getElementById('timer-cd');
-  if(h40)  h40.textContent  = data.timer_h40  || '--:--';
-  if(h15)  h15.textContent  = data.timer_h15  || '--:--';
-  if(h8)   h8.textContent   = data.timer_h8   || '--:--';
-  if(tobt) tobt.textContent = data.timer_tobt || '--:--';
-  if(ctot) ctot.textContent = data.timer_ctot || '--:--';
-  if(cd)   cd.textContent   = data.timer_cd   || '--:--';
+  document.getElementById('timer-h40').textContent  = data.timer_h40  || '--:--';
+  document.getElementById('timer-h15').textContent  = data.timer_h15  || '--:--';
+  document.getElementById('timer-h8').textContent   = data.timer_h8   || '--:--';
+  document.getElementById('timer-tobt').textContent = data.timer_tobt || '--:--';
+  document.getElementById('timer-ctot').textContent = data.timer_ctot || '--:--';
+  document.getElementById('timer-cd').textContent   = data.timer_cd   || '--:--';
 
   const dt = document.getElementById('darkToggle');
   const ut = document.getElementById('utcToggle');
@@ -1191,7 +1091,7 @@ function generateTimingFields(){
   if(!container) return;
 
   const fieldHTML = (id,label,full=false)=>`
-    <div class="column ${full ? 'is-12' : 'is-6-tablet is-4-desktop'}">
+    <div class="column ${full ? 'is-12' : 'is-half-mobile is-one-third-tablet is-one-quarter-desktop'}">
       <div class="field">
         <label class="label">${label}</label>
         <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
@@ -1206,7 +1106,7 @@ function generateTimingFields(){
   let arr = `
     <div class="card mb-4">
       <header class="card-header"><p class="card-header-title">Arrivée</p></header>
-      <div class="card-content"><div class="columns is-multiline">
+      <div class="card-content"><div class="columns is-multiline is-mobile">
         ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
         ${fieldHTML('PremierDebarque','Premier débarqué')}
         ${fieldHTML('DernierDebarque','Dernier débarqué')}
@@ -1218,7 +1118,7 @@ function generateTimingFields(){
   let dep = `
     <div class="card">
       <header class="card-header"><p class="card-header-title">Départ</p></header>
-      <div class="card-content"><div class="columns is-multiline">
+      <div class="card-content"><div class="columns is-multiline is-mobile">
         ${fieldHTML('ArrPNT','Arrivée PNT')}
         ${fieldHTML('ArrPNC','Arrivée PNC')}
         ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
@@ -1263,7 +1163,7 @@ function switchTimingPanel(mode){
   localStorage.setItem('timingPanel', mode);
 }
 
-/* Affichage conditionnel LID (FR/RK uniquement) */
+/* LID visible FR/RK */
 function updateLIDVisibility(){
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const lid = document.getElementById('lidBlock');
@@ -1282,16 +1182,14 @@ function updateAllCalculations() {
   updateLID();
   updateCTOTDisplay();
   updateLIDVisibility();
-
   ensureCountdownRunning();
-
   renderTimeline();
   updateHeaderOffset();
 }
 
 /* TIMERS HLE/H-15 */
 function updateTimers() {
-  const sobt = document.getElementById('SOBT').value;
+  const sobt = document.getElementById('SOBT')?.value || '';
   if (!sobt) {
     ['timer-h40', 'timer-h15', 'timer-h8'].forEach(id => {
       const el = document.getElementById(id);
@@ -1307,7 +1205,7 @@ function updateTimers() {
   document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* LID = TOBT - 8 (HORS CTOT) */
+/* LID = TOBT - 8 */
 function updateLID() {
   const tobtRawMins = window._tobtRawMins;
   const el = document.getElementById('timer-h8');
@@ -1317,13 +1215,13 @@ function updateLID() {
   el.textContent = fmtHHMM(lid);
 }
 
-/* SOBT par défaut (conserve ton existant) */
+/* SOBT par défaut (base SIBT + 25/35) */
 function updateSOBTDefault() {
   if (manualSOBT) return;
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
-  const sibt = document.getElementById('SIBT').value;
-  const arrPNT = document.getElementById('ArrPNT')?.value;
-  const arrPNC = document.getElementById('ArrPNC')?.value;
+  const sibt = document.getElementById('SIBT')?.value || '';
+  const arrPNT = document.getElementById('ArrPNT')?.value || '';
+  const arrPNC = document.getElementById('ArrPNC')?.value || '';
   if (!sibt) return;
   if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
 
@@ -1338,10 +1236,10 @@ function updateSOBTDefault() {
 /* TOBT + règle CTOT */
 function updateTOBT() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
-  const sibttxt = document.getElementById('SIBT').value;
-  const aibttxt = document.getElementById('AIBT').value;
-  const sobttxt = document.getElementById('SOBT').value;
-  const ctottxt = document.getElementById('CTOT').value;
+  const sibttxt = document.getElementById('SIBT')?.value || '';
+  const aibttxt = document.getElementById('AIBT')?.value || '';
+  const sobttxt = document.getElementById('SOBT')?.value || '';
+  const ctottxt = document.getElementById('CTOT')?.value || '';
 
   if (!cie || !sibttxt || !sobttxt) {
     document.getElementById('timer-tobt').textContent = '--:--';
@@ -1363,7 +1261,6 @@ function updateTOBT() {
 
   let TOBT_raw;
 
-  // FR/RK (RYR) – turnaround 25 ou 35 si PNT/PNC rempli.
   if (cie === 'FR' || cie === 'RK') {
     if (!isDelayed) {
       TOBT_raw = new Date(SOBT);
@@ -1372,9 +1269,7 @@ function updateTOBT() {
       const candidate = addMin(AIBT, turn);
       TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
     }
-  }
-  // W4/W6 – si retard: A320=30, A321=35. (Si type vide -> 30)
-  else if (cie === 'W4' || cie === 'W6') {
+  } else if (cie === 'W4' || cie === 'W6') {
     if (!isDelayed) {
       TOBT_raw = new Date(SOBT);
     } else {
@@ -1383,9 +1278,7 @@ function updateTOBT() {
       const candidate = addMin(AIBT, turn);
       TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
     }
-  }
-  // autres compagnies: fallback simple (conserve une logique proche de ton ancien)
-  else {
+  } else {
     if (aibttxt && AIBT > SIBT) {
       const diff = (SOBT - SIBT) / 60000;
       TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
@@ -1394,11 +1287,9 @@ function updateTOBT() {
     }
   }
 
-  // ne jamais être avant SOBT
   if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
   window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
 
-  // Ajustement CTOT: si CTOT > TOBT+15 => TOBT = CTOT-15 ; et TOBT >= SOBT
   let TOBT_adj = new Date(TOBT_raw);
   if (ctottxt) {
     const [cH, cM] = ctottxt.split(':').map(Number);
@@ -1414,15 +1305,15 @@ function updateTOBT() {
 
 /* CTOT (affichage) */
 function updateCTOTDisplay(){
-  const ctot = document.getElementById('CTOT').value;
+  const ctot = document.getElementById('CTOT')?.value || '';
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
 /* DL CODES */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
-  const sibttxt = document.getElementById('SIBT').value;
-  const aibttxt = document.getElementById('AIBT').value;
+  const sibttxt = document.getElementById('SIBT')?.value || '';
+  const aibttxt = document.getElementById('AIBT')?.value || '';
   if (!sibttxt || !aibttxt) return;
 
   const [sH, sM] = sibttxt.split(':').map(Number);
@@ -1442,12 +1333,12 @@ function updateDLCode() {
   }
 }
 
-/* ====== DL DURÉES — répartition auto & contrôle ====== */
+/* DL DURÉES */
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
 
 function totalDelayMinutes(){
-  const so = document.getElementById('SOBT').value;
-  const ao = document.getElementById('AOBT').value;
+  const so = document.getElementById('SOBT')?.value || '';
+  const ao = document.getElementById('AOBT')?.value || '';
   if(!so || !ao) return null;
   const s = parseHHMM(so);
   const a = parseHHMM(ao);
@@ -1522,7 +1413,7 @@ function clearDLBorders(){
   });
 }
 
-/* UTILITAIRES */
+/* Utils time */
 function setNow(fieldId) {
   const now = new Date();
   const hh = isUTC ? now.getUTCHours() : now.getHours();
@@ -1531,7 +1422,7 @@ function setNow(fieldId) {
 }
 function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
-  if (!input.value) return;
+  if (!input || !input.value) return;
   let [hh, mm] = input.value.split(':').map(Number);
   let total = hh * 60 + mm + delta;
   if (total < 0) total += 1440;
@@ -1549,7 +1440,6 @@ function setDarkMode(enable, fromInit=false){
   const dt = document.getElementById('darkToggle');
   if(dt) dt.checked = enable;
   localStorage.setItem('modeDark', enable ? '1' : '0');
-
   updateHeaderOffset();
   renderTimeline();
 }
@@ -1576,7 +1466,7 @@ function setTimeModeUTC(enable, fromInit=false){
   updateAllCalculations();
 }
 
-/* POPUP */
+/* Popup */
 function showPopup(message, color = "#2563eb", duration = 2000) {
   const popup = document.createElement('div');
   popup.id = "popup";
@@ -1586,7 +1476,7 @@ function showPopup(message, color = "#2563eb", duration = 2000) {
   setTimeout(() => popup.remove(), duration);
 }
 
-/* TIMELINE helpers */
+/* Timeline helpers */
 let showTimeLabels = true;
 let timelineUserScrolled = false;
 
@@ -1704,7 +1594,7 @@ function collectTimelineData(){
   return {fixedPoints, durations, windowInfo};
 }
 
-/* === AFFICHAGE TIMELINE === */
+/* Render timeline */
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -1857,7 +1747,7 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
-/* validateForm + save/reset */
+/* validateForm */
 function validateForm() {
   const val = id => (document.getElementById(id)?.value || "");
   const dateRaw = val("Date");
