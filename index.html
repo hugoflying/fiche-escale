@@ -971,9 +971,9 @@ function loadTabData(id){
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
+}
 
-
-    /* Mise à jour label onglet */
+/* Mise à jour label onglet */
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS – ARR / DEP */
@@ -1032,10 +1032,13 @@ function switchTimingPanel(mode){
   const depPanel=document.getElementById('panel-dep');
   const btnArr=document.getElementById('seg-arr');
   const btnDep=document.getElementById('seg-dep');
+
   [arrPanel,depPanel].forEach(p=>p&&p.classList.remove('active'));
   [btnArr,btnDep].forEach(b=>b&&b.classList.remove('active'));
+
   if(mode==='arr'){ if(arrPanel) arrPanel.classList.add('active'); if(btnArr) btnArr.classList.add('active'); }
   else { if(depPanel) depPanel.classList.add('active'); if(btnDep) btnDep.classList.add('active'); }
+
   localStorage.setItem('timingPanel', mode);
 }
 
