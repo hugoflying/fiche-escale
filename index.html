@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
 <style>
     
 /* RESET & BASE */
@@ -403,9 +404,104 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 .form-group.full { flex: 1 1 100% !important; }
 .form-row-2 { display: contents; }
 
+/* === Option A : layout "app" === */
+:root { --app-max: 1100px; }
+
+body { padding: 12px; }
+.app-shell { max-width: var(--app-max); margin: 0 auto; }
+
+/* barre sections */
+#section-nav {
+  position: sticky; top: 0;
+  z-index: 1000;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(8px);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+body.dark #section-nav{
+  background: rgba(18,18,18,.85);
+  border-bottom-color: rgba(255,255,255,.08);
+}
+
+.nav-row{
+  display:flex; gap:8px; flex-wrap:wrap;
+  align-items:center; justify-content:center;
+}
+
+.nav-chip{
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.9);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor:pointer;
+  font-weight: 700;
+  user-select:none;
+  transition: transform .12s ease, background .15s ease;
+}
+.nav-chip:hover{ transform: translateY(-1px); }
+.nav-chip.active{
+  background:#1976d2; color:#fff;
+  border-color:#1976d2;
+}
+body.dark .nav-chip{
+  background: rgba(40,40,40,.9);
+  border-color: rgba(255,255,255,.12);
+  color:#eee;
+}
+body.dark .nav-chip.active{
+  background:#90caf9; border-color:#90caf9; color:#111;
+}
+
+/* vues */
+.view { display:none; }
+.view.active { display:block; }
+
+/* sections : on garde ton style, mais on évite les marges énormes */
+section { margin-bottom: 14px; }
+
+/* barre actions sticky */
+#actions-bar{
+  position: sticky;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px);
+  padding: 10px;
+  border-top: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  margin-top: 12px;
+}
+body.dark #actions-bar{
+  background: rgba(18,18,18,.92);
+  border-top-color: rgba(255,255,255,.08);
+}
+
+.actions-row{
+  display:flex; gap:10px; flex-wrap:wrap;
+}
+.actions-row button{ flex:1 1 200px; }
+
 </style>
 </head>
 <body onload="initForm()">
+    <div class="app-shell">
+
+  <!-- NAV SECTIONS (Option A) -->
+  <div id="section-nav">
+    <div class="nav-row">
+      <button type="button" class="nav-chip active" data-view="v-info">Info</button>
+      <button type="button" class="nav-chip" data-view="v-horaires">Horaires</button>
+      <button type="button" class="nav-chip" data-view="v-timing">Timing</button>
+      <button type="button" class="nav-chip" data-view="v-timeline">Timeline</button>
+      <button type="button" class="nav-chip" data-view="v-chiffres">Chiffres porte</button>
+      <button type="button" class="nav-chip" data-view="v-retards">Retards</button>
+      <button type="button" class="nav-chip" data-view="v-notes">Notes</button>
+      <button type="button" class="nav-chip" data-view="v-assist">Assistances</button>
+      <button type="button" class="nav-chip" data-view="v-presta">Prestations</button>
+    </div>
+  </div>
+
 
 <!-- Barre d’onglets -->
 <div id="tab-bar">
@@ -1687,6 +1783,32 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
+function initSectionNav(){
+  const chips = document.querySelectorAll('#section-nav .nav-chip');
+  if(!chips.length) return;
+
+  const show = (viewId, fromInit=false)=>{
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target = document.getElementById(viewId);
+    if(target) target.classList.add('active');
+
+    chips.forEach(c=>c.classList.toggle('active', c.dataset.view === viewId));
+    localStorage.setItem('uiActiveView', viewId);
+
+    // IMPORTANT : la timeline dépend de la largeur visible
+    if(viewId === 'v-timeline'){
+      setTimeout(()=>{ try{ renderTimeline(); }catch(e){} }, 50);
+    }
+  };
+
+  chips.forEach(chip=>{
+    chip.addEventListener('click', ()=> show(chip.dataset.view));
+  });
+
+  const last = localStorage.getItem('uiActiveView') || 'v-info';
+  show(last, true);
+}
+    
  function validateForm() {
 
     const val = id => (document.getElementById(id)?.value || "");
