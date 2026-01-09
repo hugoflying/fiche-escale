@@ -526,8 +526,10 @@ body.dark #actions-bar{
 <!-- INFO VOL -->
 <section>
   <h2>INFO VOL</h2>
+
   <div class="form-grid">
 
+    <!-- DATE / RZA -->
     <div class="form-group">
       <label>Date
         <input type="date" id="Date">
@@ -540,6 +542,7 @@ body.dark #actions-bar{
       </label>
     </div>
 
+    <!-- COMPAGNIE / VOL -->
     <div class="form-group">
       <label>Cie
         <select id="Cie" onchange="updateAllCalculations(); generateChargementFields(); updateTabLabelInstant();">
@@ -552,11 +555,12 @@ body.dark #actions-bar{
     </div>
 
     <div class="form-group">
-      <label>N° VOL
+      <label>N° vol
         <input class="uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
       </label>
     </div>
 
+    <!-- ROUTE -->
     <div class="form-group">
       <label>Provenance
         <input class="uppercase" type="text" id="From" maxlength="3">
@@ -569,6 +573,7 @@ body.dark #actions-bar{
       </label>
     </div>
 
+    <!-- AVION / POSITION -->
     <div class="form-group">
       <label>Immat
         <input class="uppercase" type="text" id="Immat" maxlength="5">
