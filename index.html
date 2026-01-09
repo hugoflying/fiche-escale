@@ -372,6 +372,12 @@ body.dark .timeline-scroll{
         <div class="k">CTOT</div>
         <div id="timer-ctot" class="v">--:--</div>
       </div>
+
+      <!-- COUNTDOWN -->
+      <div class="timer-chip">
+        <div class="k">CD</div>
+        <div id="timer-cd" class="v">--:--</div>
+      </div>
     </div>
 
   </div>
@@ -718,6 +724,96 @@ window._tobtRawMins = null;
 /* === DL auto tracking === */
 let lastDLChanged = 1;
 
+/* ===== COUNTDOWN (CD) ===== */
+let countdownTimer = null;
+
+function getNowMinutes(){
+  const now = new Date();
+  const h = isUTC ? now.getUTCHours() : now.getHours();
+  const m = isUTC ? now.getUTCMinutes() : now.getMinutes();
+  const s = isUTC ? now.getUTCSeconds() : now.getSeconds();
+  return { mins: h*60 + m, secs: s };
+}
+function fmtMMSS(totalSeconds){
+  totalSeconds = Math.max(0, totalSeconds);
+  const mm = Math.floor(totalSeconds / 60);
+  const ss = totalSeconds % 60;
+  return `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function stopCountdown(){
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+  const el = document.getElementById('timer-cd');
+  if(el) el.textContent = '--:--';
+}
+function updateCountdownOnce(){
+  const el = document.getElementById('timer-cd');
+  if(!el) return;
+
+  const sibtTxt = document.getElementById('SIBT')?.value || '';
+  const aibtTxt = document.getElementById('AIBT')?.value || '';
+  const sobtTxt = document.getElementById('SOBT')?.value || '';
+  const aobtTxt = document.getElementById('AOBT')?.value || '';
+
+  // Condition demandée : SOBT + AOBT obligatoires, et déclenchement à l’entrée AIBT
+  if(!aibtTxt || !sobtTxt || !aobtTxt || !sibtTxt){
+    el.textContent = '--:--';
+    return;
+  }
+
+  const SIBT = parseHHMM(sibtTxt);
+  const AIBT = parseHHMM(aibtTxt);
+  const SOBT = parseHHMM(sobtTxt);
+
+  if(SIBT == null || AIBT == null || SOBT == null){
+    el.textContent = '--:--';
+    return;
+  }
+
+  let remainingSeconds = null;
+
+  // Si AIBT <= SIBT => countdown = SOBT - heure actuelle
+  if (AIBT <= SIBT){
+    const now = getNowMinutes();
+    let diffMin = SOBT - now.mins;
+    if(diffMin < 0) diffMin += 1440; // wrap jour suivant
+    remainingSeconds = diffMin * 60 - now.secs;
+  }
+  // Si AIBT > SIBT => countdown = TOBT - AIBT
+  else {
+    const tobtTxt = (document.getElementById('timer-tobt')?.textContent || '').trim();
+    const TOBT = parseHHMM(tobtTxt);
+    if(TOBT == null){
+      el.textContent = '--:--';
+      return;
+    }
+    let diffMin = TOBT - AIBT;
+    if(diffMin < 0) diffMin += 1440;
+    remainingSeconds = diffMin * 60; // AIBT est à la minute près
+  }
+
+  el.textContent = (remainingSeconds == null) ? '--:--' : fmtMMSS(remainingSeconds);
+}
+function ensureCountdownRunning(){
+  const sibtTxt = document.getElementById('SIBT')?.value || '';
+  const aibtTxt = document.getElementById('AIBT')?.value || '';
+  const sobtTxt = document.getElementById('SOBT')?.value || '';
+  const aobtTxt = document.getElementById('AOBT')?.value || '';
+
+  const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && aobtTxt);
+
+  if(!shouldRun){
+    stopCountdown();
+    return;
+  }
+
+  if(!countdownTimer){
+    updateCountdownOnce();
+    countdownTimer = setInterval(updateCountdownOnce, 1000);
+  } else {
+    updateCountdownOnce();
+  }
+}
+
 /* Zoom helpers */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
@@ -802,6 +898,7 @@ function initForm(){
 
   /* render */
   renderTimeline();
+  ensureCountdownRunning();
 }
 
 /* date par défaut = aujourd’hui si vide */
@@ -883,6 +980,7 @@ function createNewTab(){
 }
 
 function switchTab(id){
+  stopCountdown();
   saveCurrentTabData();
   currentTabId=id;
   localStorage.setItem('lastTabId',id);
@@ -893,6 +991,7 @@ function switchTab(id){
 }
 
 function deleteTab(id){
+  stopCountdown();
   if(!confirm("Supprimer cet onglet ?")) return;
   let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
   tabs=tabs.filter(t=>t!==id);
@@ -931,6 +1030,7 @@ function saveCurrentTabData(){
   data.timer_h8=document.getElementById('timer-h8').textContent;
   data.timer_tobt=document.getElementById('timer-tobt').textContent;
   data.timer_ctot=document.getElementById('timer-ctot').textContent;
+  data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
   data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
   localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
   localStorage.setItem('lastTabId',currentTabId);
@@ -938,6 +1038,7 @@ function saveCurrentTabData(){
 }
 
 function loadTabData(id){
+  stopCountdown();
   const data = JSON.parse(localStorage.getItem('tab-'+id) || '{}');
 
   document.querySelectorAll('input, select, textarea').forEach(el=>{
@@ -956,11 +1057,13 @@ function loadTabData(id){
   const h8   = document.getElementById('timer-h8');
   const tobt = document.getElementById('timer-tobt');
   const ctot = document.getElementById('timer-ctot');
+  const cd   = document.getElementById('timer-cd');
   if(h40)  h40.textContent  = data.timer_h40  || '--:--';
   if(h15)  h15.textContent  = data.timer_h15  || '--:--';
   if(h8)   h8.textContent   = data.timer_h8   || '--:--';
   if(tobt) tobt.textContent = data.timer_tobt || '--:--';
   if(ctot) ctot.textContent = data.timer_ctot || '--:--';
+  if(cd)   cd.textContent   = data.timer_cd   || '--:--';
 
   const dt = document.getElementById('darkToggle');
   const ut = document.getElementById('utcToggle');
@@ -1075,6 +1178,9 @@ function updateAllCalculations() {
   updateLID();
   updateCTOTDisplay();
   updateLIDVisibility();
+
+  ensureCountdownRunning();
+
   renderTimeline();
   updateHeaderOffset();
 }
