@@ -153,9 +153,10 @@ body.dark .fixed-header{
   justify-content:center;
 }
 
-/* CTOT éditable (pill input) */
+/* CTOT éditable (même look que les autres timers) */
 .ctot-pill{
-  width: 92px;
+  width: auto;
+  min-width: 70px;              /* comme .v */
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
@@ -163,15 +164,23 @@ body.dark .fixed-header{
   color:#fff !important;
   font-weight: 900 !important;
   border-radius: 999px !important;
-  padding: 6px 10px !important;
-  min-width: 92px;
+  padding: 6px 10px !important; /* comme .v */
   text-align:center;
+  height: auto;
+  line-height: 1.2;
+  font-size: 1rem;              /* même taille que les autres */
+  appearance: none;
+  -webkit-appearance: none;
 }
 .ctot-pill::-webkit-datetime-edit{ color:#fff; }
-.ctot-pill::-webkit-calendar-picker-indicator{ filter: invert(1); opacity: .85; }
+/* enlever le symbole horloge */
+.ctot-pill::-webkit-calendar-picker-indicator{
+  display:none;
+  -webkit-appearance:none;
+}
 
 #timer-tobt{ background:#16a34a !important; }
-#timer-h8{ background:#facc15 !important; color:#111 !important; }
+#timer-h8{ background:#facc15 !important; color:#fff !important; } /* LID en blanc */
 #timer-cd{ background:#93c5fd !important; color:#111 !important; }
 
 /* Bulma tweaks */
@@ -286,7 +295,7 @@ body.dark .card-header{
   transform: translateX(18px);
 }
 
-/* ===== LOAD ARR chip + popover ===== */
+/* ===== LOAD popovers ===== */
 .chip-btn{
   border: none;
   cursor: pointer;
@@ -323,9 +332,40 @@ body.dark #loadArrPopover{
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
-#loadArrPopover .field .label{
-  font-size: .9rem;
+#loadArrPopover .field .label{ font-size: .9rem; }
+
+#loadExpPopover, #loadFinalPopover{
+  position: fixed;
+  top: calc(var(--fixed-header-h) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 28px));
+  background: var(--card);
+  box-shadow: var(--shadow);
+  border-radius: 16px;
+  z-index: 4500;
+  display: none;
+  padding: 12px;
+  border: 1px solid rgba(0,0,0,.08);
 }
+body.dark #loadExpPopover, body.dark #loadFinalPopover{
+  border-color: rgba(255,255,255,.10);
+}
+#loadExpPopover .hdr, #loadFinalPopover .hdr{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+#loadExpPopover .hdr strong, #loadFinalPopover .hdr strong{ font-weight: 900; }
+#loadExpPopover .grid, #loadFinalPopover .grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+#loadExpPopover .field .label, #loadFinalPopover .field .label{ font-size: .9rem; }
+
 #loadArrBackdrop{
   position: fixed;
   inset: 0;
@@ -333,6 +373,15 @@ body.dark #loadArrPopover{
   z-index: 4400;
   display:none;
 }
+
+.prm-row{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr auto;
+  gap:10px;
+  align-items:end;
+  margin-bottom:10px;
+}
+.prm-row .button{ border-radius: 12px; }
 
 /* === TIMELINE (inchangé) === */
 .timeline-track {
@@ -408,20 +457,23 @@ body.dark .timeline-scroll{
 @media (max-width: 420px){
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
   .timer-chip .v{ min-width: 64px; }
-  .ctot-pill{ width: 86px; min-width: 86px; }
+  .ctot-pill{ min-width: 64px; }
 }
 </style>
 </head>
 
 <body onload="initForm()">
 
-<!-- LOAD ARR popover -->
-<div id="loadArrBackdrop" onclick="hideLoadArr()"></div>
+<!-- BACKDROP commun -->
+<div id="loadArrBackdrop" onclick="hideAllLoadPopovers()" style="display:none;"></div>
+
+<!-- ===== LOAD ARR popover ===== -->
 <div id="loadArrPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD ARR.</strong>
-    <button class="button is-small is-light" type="button" onclick="hideLoadArr()">Fermer</button>
+    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
+
   <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
@@ -429,17 +481,160 @@ body.dark .timeline-scroll{
         <input class="input" id="LoadPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
+
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
         <input class="input" id="LoadBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
+
     <div class="field">
-      <label class="label">PRM</label>
+      <label class="label">CARGO</label>
       <div class="control">
-        <input class="input" id="LoadPRM" type="text" placeholder="ex: WCHC2">
+        <input class="input" id="LoadCARGO" type="text" placeholder="">
       </div>
+    </div>
+  </div>
+
+  <hr style="margin:12px 0;">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+    <strong style="font-weight:900;">PRM</strong>
+    <button class="button is-small is-link" type="button" onclick="addPRMRow('arr')">+ Ajouter</button>
+  </div>
+
+  <input type="hidden" id="LoadPRMData" value="[]">
+  <div id="LoadPRMRows"></div>
+</div>
+
+<!-- ===== LOAD EXP popover ===== -->
+<div id="loadExpPopover" role="dialog" aria-modal="true">
+  <div class="hdr">
+    <strong>LOAD EXP.</strong>
+    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
+  </div>
+
+  <div class="grid">
+    <div class="field">
+      <label class="label">PAX</label>
+      <div class="control">
+        <input class="input" id="ExpPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">BAGS</label>
+      <div class="control">
+        <input class="input" id="ExpBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">CARGO</label>
+      <div class="control">
+        <input class="input" id="ExpCARGO" type="text" placeholder="">
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin:12px 0;">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+    <strong style="font-weight:900;">PRM</strong>
+    <button class="button is-small is-link" type="button" onclick="addPRMRow('exp')">+ Ajouter</button>
+  </div>
+
+  <input type="hidden" id="ExpPRMData" value="[]">
+  <div id="ExpPRMRows"></div>
+</div>
+
+<!-- ===== LOAD FINAL popover ===== -->
+<div id="loadFinalPopover" role="dialog" aria-modal="true">
+  <div class="hdr">
+    <strong>LOAD FINAL</strong>
+    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
+  </div>
+
+  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+    <div class="field">
+      <label class="label">MALE</label>
+      <div class="control">
+        <input class="input" id="FinalMALE" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">FEMALE</label>
+      <div class="control">
+        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">ADULT</label>
+      <div class="control">
+        <input class="input" id="FinalADULT" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); updateFinalTOB();">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">CHILD</label>
+      <div class="control">
+        <input class="input" id="FinalCHILD" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); updateFinalTOB();">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">INFANT</label>
+      <div class="control">
+        <input class="input" id="FinalINFANT" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); updateFinalTOB();">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">TOB</label>
+      <div class="control">
+        <input class="input" id="FinalTOB" type="text" readonly style="font-weight:900; text-align:center;">
+      </div>
+    </div>
+  </div>
+
+  <hr style="margin:12px 0;">
+
+  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+    <div class="field">
+      <label class="label">LIBRE 1</label>
+      <div class="control"><input class="input" id="FinalFREE1" type="text" inputmode="numeric" oninput="digitsOnly(this)"></div>
+    </div>
+    <div class="field">
+      <label class="label">LIBRE 2</label>
+      <div class="control"><input class="input" id="FinalFREE2" type="text" inputmode="numeric" oninput="digitsOnly(this)"></div>
+    </div>
+    <div class="field">
+      <label class="label">LIBRE 3</label>
+      <div class="control"><input class="input" id="FinalFREE3" type="text" inputmode="numeric" oninput="digitsOnly(this)"></div>
+    </div>
+  </div>
+
+  <hr style="margin:12px 0;">
+
+  <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+    <div class="field">
+      <label class="label">OA</label>
+      <div class="control"><input class="input" id="FinalOA" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+    <div class="field">
+      <label class="label">OB</label>
+      <div class="control"><input class="input" id="FinalOB" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+    <div class="field">
+      <label class="label">OC</label>
+      <div class="control"><input class="input" id="FinalOC" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+    <div class="field">
+      <label class="label">OD</label>
+      <div class="control"><input class="input" id="FinalOD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
     </div>
   </div>
 </div>
@@ -499,7 +694,6 @@ body.dark .timeline-scroll{
 
       <div class="timer-chip">
         <div class="k">CTOT</div>
-        <!-- CTOT éditable ici -->
         <input id="CTOT" class="ctot-pill" type="time" onchange="updateAllCalculations()">
       </div>
 
@@ -541,7 +735,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <!-- Ligne 2: Airline + FLT NUMBER + FROM + TO (même ligne tablette/desktop) -->
+        <!-- Ligne 2: Airline + FLT NUMBER + FROM + TO -->
         <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">AIRLINE</label>
@@ -583,7 +777,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <!-- Ligne 3: Registration + A/C TYPE + Parking -->
+        <!-- Ligne 3: Registration + A/C TYPE + Parking + LOAD buttons -->
         <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
           <div class="field">
             <label class="label">REGISTRATION</label>
@@ -613,19 +807,11 @@ body.dark .timeline-scroll{
               </select>
             </div>
           </div>
-
-          <!-- LOAD ARR chip -->
-          <div style="margin-top:10px; display:flex; justify-content:flex-start;">
-            <button type="button" class="timer-chip chip-btn" style="min-width: 170px;" onclick="toggleLoadArr()">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#2563eb;">ARR.</div>
-            </button>
-          </div>
         </div>
 
         <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
           <div class="field">
-            <label class="label">Parking</label>
+            <label class="label">PARKING</label>
             <div class="control select is-fullwidth">
               <select id="Parking">
                 <option value="">--</option>
@@ -634,6 +820,26 @@ body.dark .timeline-scroll{
                 <option>9</option><option>10</option><option>11</option><option>12</option>
               </select>
             </div>
+
+            <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-start; flex-wrap:wrap;">
+              <button type="button" class="timer-chip chip-btn" style="min-width: 170px;" onclick="toggleLoadArr()">
+                <div class="k">LOAD</div>
+                <div class="v" style="background:#2563eb;">ARR.</div>
+              </button>
+
+              <button type="button" class="timer-chip chip-btn" style="min-width: 170px;" onclick="toggleLoadExp()">
+                <div class="k">LOAD</div>
+                <div class="v" style="background:#0ea5e9;">EXP.</div>
+              </button>
+            </div>
+
+            <div style="margin-top:10px; display:flex; justify-content:flex-start;">
+              <button type="button" class="timer-chip chip-btn" style="min-width: 350px;" onclick="toggleLoadFinal()">
+                <div class="k">LOAD</div>
+                <div class="v" style="background:#111827;">FINAL</div>
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -779,17 +985,7 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <!-- NOTES -->
-  <div class="card mb-5">
-    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
-      <p class="card-header-title">DL JUSTIFICATIONS</p>
-      <span class="card-header-icon"><span class="icon">⌄</span></span>
-    </header>
-    <div class="card-content">
-      <textarea class="textarea" id="DLJustif" placeholder="Justifications…"></textarea>
-    </div>
-  </div>
-
+  <!-- FAITS SAILLANTS -->
   <div class="card mb-5">
     <header class="card-header section-collapse" onclick="toggleCardBody(this)">
       <p class="card-header-title">FAITS SAILLANTS</p>
@@ -797,42 +993,6 @@ body.dark .timeline-scroll{
     </header>
     <div class="card-content">
       <textarea class="textarea" id="FaitsSaillants" placeholder="Faits saillants…"></textarea>
-    </div>
-  </div>
-
-  <!-- ASSISTANCES -->
-  <div class="card mb-5">
-    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
-      <p class="card-header-title">ASSISTANCES PRISES EN CHARGE A/D</p>
-      <span class="card-header-icon"><span class="icon">⌄</span></span>
-    </header>
-    <div class="card-content">
-      <div class="columns is-multiline">
-        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">WCHC</label>
-            <div class="control"><input class="input" type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
-          </div>
-        </div>
-        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">WCHS</label>
-            <div class="control"><input class="input" type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
-          </div>
-        </div>
-        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">WCHR</label>
-            <div class="control"><input class="input" type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
-          </div>
-        </div>
-        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">Autre</label>
-            <div class="control"><input class="input" type="number" id="AutreAssist"></div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -884,26 +1044,10 @@ window._tobtRawMins = null;
 /* DL */
 let lastDLChanged = 1;
 
-/* ===== LOAD ARR popover ===== */
+/* ===== helpers digits only ===== */
 function digitsOnly(el){
   el.value = (el.value || '').replace(/[^0-9]/g,'');
 }
-function showLoadArr(){
-  document.getElementById('loadArrBackdrop').style.display = '';
-  document.getElementById('loadArrPopover').style.display = 'block';
-}
-function hideLoadArr(){
-  document.getElementById('loadArrBackdrop').style.display = 'none';
-  document.getElementById('loadArrPopover').style.display = 'none';
-}
-function toggleLoadArr(){
-  const p = document.getElementById('loadArrPopover');
-  if(!p) return;
-  (p.style.display === 'block') ? hideLoadArr() : showLoadArr();
-}
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape') hideLoadArr();
-});
 
 /* ===== COUNTDOWN (CD) ===== */
 let countdownTimer = null;
@@ -1023,6 +1167,206 @@ function timelineScroll(deltaMinutes){
   scroller.scrollLeft += deltaMinutes * pxPerMin;
 }
 
+/* ===== LOAD POPovers (ARR / EXP / FINAL) ===== */
+function showBackdrop(){
+  const b = document.getElementById('loadArrBackdrop');
+  if(b) b.style.display = '';
+}
+function hideBackdrop(){
+  const b = document.getElementById('loadArrBackdrop');
+  if(b) b.style.display = 'none';
+}
+function hideAllLoadPopovers(){
+  ['loadArrPopover','loadExpPopover','loadFinalPopover'].forEach(id=>{
+    const p = document.getElementById(id);
+    if(p) p.style.display = 'none';
+  });
+  hideBackdrop();
+}
+
+function showPopover(id){
+  hideAllLoadPopovers();
+  showBackdrop();
+  const p = document.getElementById(id);
+  if(p) p.style.display = 'block';
+}
+
+function toggleLoadArr(){ showPopover('loadArrPopover'); renderPRMRows('arr'); }
+function toggleLoadExp(){ showPopover('loadExpPopover'); renderPRMRows('exp'); }
+function toggleLoadFinal(){ showPopover('loadFinalPopover'); updateFinalTOB(); }
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') hideAllLoadPopovers();
+});
+
+/* ===== PRM multi-lignes (ARR/EXP) ===== */
+const PRM_TYPES = ['WCHR','WCHS','WCHC','BLND','DPNA','UMNR','OTHER'];
+
+function getPRMIds(mode){
+  if(mode === 'exp'){
+    return { dataId:'ExpPRMData', rowsId:'ExpPRMRows' };
+  }
+  return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' }; // arr par défaut
+}
+
+function readPRMData(mode){
+  const {dataId} = getPRMIds(mode);
+  const raw = document.getElementById(dataId)?.value || '[]';
+  try{
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){
+    return [];
+  }
+}
+function writePRMData(mode, arr){
+  const {dataId} = getPRMIds(mode);
+  const el = document.getElementById(dataId);
+  if(el) el.value = JSON.stringify(arr || []);
+}
+
+function addPRMRow(mode){
+  const arr = readPRMData(mode);
+  arr.push({ type:'WCHR', seat:'' });
+  writePRMData(mode, arr);
+  renderPRMRows(mode);
+  saveCurrentTabData();
+}
+
+function removePRMRow(mode, idx){
+  const arr = readPRMData(mode);
+  arr.splice(idx,1);
+  writePRMData(mode, arr);
+  renderPRMRows(mode);
+  saveCurrentTabData();
+}
+
+function renderPRMRows(mode){
+  const {rowsId} = getPRMIds(mode);
+  const wrap = document.getElementById(rowsId);
+  if(!wrap) return;
+
+  const data = readPRMData(mode);
+  if(!data.length){
+    wrap.innerHTML = `<p class="has-text-grey" style="margin:6px 0 0;">Aucune assistance.</p>`;
+    return;
+  }
+
+  wrap.innerHTML = data.map((row, idx)=>{
+    const opts = PRM_TYPES.map(t=>`<option value="${t}" ${row.type===t?'selected':''}>${t}</option>`).join('');
+    return `
+      <div class="prm-row">
+        <div class="field">
+          <label class="label">TYPE</label>
+          <div class="control select is-fullwidth">
+            <select data-mode="${mode}" data-idx="${idx}" data-k="type" onchange="onPRMChange(this)">${opts}</select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">SIÈGE</label>
+          <div class="control">
+            <input class="input uppercase" type="text" maxlength="4"
+              value="${(row.seat||'')}"
+              data-mode="${mode}" data-idx="${idx}" data-k="seat"
+              oninput="onPRMInput(this)">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">&nbsp;</label>
+          <button class="button is-light" type="button" onclick="removePRMRow('${mode}',${idx})">Suppr.</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function onPRMChange(sel){
+  const mode = sel.getAttribute('data-mode');
+  const idx = parseInt(sel.getAttribute('data-idx'),10);
+  const k = sel.getAttribute('data-k');
+  const data = readPRMData(mode);
+  if(!data[idx]) return;
+  data[idx][k] = sel.value;
+  writePRMData(mode, data);
+  saveCurrentTabData();
+}
+
+function onPRMInput(inp){
+  inp.value = (inp.value||'').toUpperCase();
+  const mode = inp.getAttribute('data-mode');
+  const idx = parseInt(inp.getAttribute('data-idx'),10);
+  const k = inp.getAttribute('data-k');
+  const data = readPRMData(mode);
+  if(!data[idx]) return;
+  data[idx][k] = inp.value;
+  writePRMData(mode, data);
+  saveCurrentTabData();
+}
+
+/* ===== FINAL : calcul ADULT + TOB + contrôle OA/OB/OC/OD ===== */
+function asInt(id){
+  const v = (document.getElementById(id)?.value || '').trim();
+  if(v === '') return null;
+  const n = parseInt(v,10);
+  return isNaN(n) ? null : n;
+}
+
+function syncAdultIfNeeded(){
+  const m = asInt('FinalMALE');
+  const f = asInt('FinalFEMALE');
+  const adultEl = document.getElementById('FinalADULT');
+  if(!adultEl) return;
+
+  if(m != null && f != null){
+    adultEl.value = String(m + f);
+    adultEl.readOnly = true;
+  }else{
+    adultEl.readOnly = false;
+  }
+}
+
+function updateFinalTOB(){
+  syncAdultIfNeeded();
+
+  const m = asInt('FinalMALE');
+  const f = asInt('FinalFEMALE');
+  const a = asInt('FinalADULT');
+  const c = asInt('FinalCHILD')  ?? 0;
+  const i = asInt('FinalINFANT') ?? 0;
+
+  let main = null;
+
+  // priorité : MALE+FEMALE+CHILD si MALE & FEMALE remplis
+  if(m != null && f != null){
+    main = (m + f) + c;
+  }else if(a != null){
+    // sinon ADULT + CHILD
+    main = a + c;
+  }
+
+  const tobEl = document.getElementById('FinalTOB');
+  if(!tobEl) return;
+
+  if(main == null){
+    tobEl.value = '';
+    tobEl.style.color = '';
+    return;
+  }
+
+  tobEl.value = (i > 0) ? `(${main} + ${i})` : `${main}`;
+
+  // contrôle OA/OB/OC/OD == main (sans infants)
+  const oa = asInt('FinalOA') ?? 0;
+  const ob = asInt('FinalOB') ?? 0;
+  const oc = asInt('FinalOC') ?? 0;
+  const od = asInt('FinalOD') ?? 0;
+  const sum = oa + ob + oc + od;
+
+  tobEl.style.color = (sum === main) ? '' : '#ef4444';
+}
+
 /* INIT */
 function initForm(){
   renderTabs();
@@ -1052,10 +1396,13 @@ function initForm(){
   setTimeModeUTC(storedUTC, true);
 
   /* recalcul instantané */
-  ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion'].forEach(id=>{
+  ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion',
+   'LoadPAX','LoadBAGS','LoadCARGO','ExpPAX','ExpBAGS','ExpCARGO',
+   'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD'
+  ].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
-    el.addEventListener('input', ()=>{ updateAllCalculations(); });
+    el.addEventListener('input', ()=>{ updateAllCalculations(); updateFinalTOB(); });
   });
 
   const scroller = document.getElementById('timelineScroll');
@@ -1086,6 +1433,10 @@ function initForm(){
 
   renderTimeline();
   ensureCountdownRunning();
+
+  renderPRMRows('arr');
+  renderPRMRows('exp');
+  updateFinalTOB();
 }
 
 /* date défaut */
@@ -1103,11 +1454,6 @@ function setupUppercaseInputs(ids){
     el.addEventListener('input', toUpper);
     el.addEventListener('blur', toUpper);
   });
-}
-
-/* ints positifs */
-function sanitizePositiveInt(inputEl){
-  inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
 /* Autosave */
@@ -1201,7 +1547,17 @@ function clearFormFields(){
   });
   const d = document.getElementById('Date');
   if(d) d.valueAsDate=new Date();
+
+  // reset PRM json
+  const prmA = document.getElementById('LoadPRMData');
+  const prmE = document.getElementById('ExpPRMData');
+  if(prmA) prmA.value = '[]';
+  if(prmE) prmE.value = '[]';
+
   updateAllCalculations();
+  updateFinalTOB();
+  renderPRMRows('arr');
+  renderPRMRows('exp');
 }
 
 function saveCurrentTabData(){
@@ -1264,6 +1620,10 @@ function loadTabData(id){
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
+
+  renderPRMRows('arr');
+  renderPRMRows('exp');
+  updateFinalTOB();
 
   updateHeaderOffset();
 }
@@ -1785,7 +2145,7 @@ function collectTimelineData(){
   return {fixedPoints, durations, windowInfo};
 }
 
-/* Render timeline (inchangé) */
+/* Render timeline */
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -1958,15 +2318,6 @@ function validateForm() {
   const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
   const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
 
-  const assistances = [];
-  if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
-  if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
-  if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
-
-  const assistanceBlock = assistances.length > 0
-      ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
-      : "";
-
   const dlLines = [];
   if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
   if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
@@ -1976,13 +2327,25 @@ function validateForm() {
       ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
       : "";
 
-  const justifBlock = val("DLJustif").trim() !== ""
-      ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
-      : "";
-
   const faitsBlock = val("FaitsSaillants").trim() !== ""
       ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
       : "";
+
+  const prmArr = (() => {
+    try{
+      const a = JSON.parse(val("LoadPRMData") || "[]");
+      if(!a.length) return "PRM : ";
+      return a.map(x=>`- ${x.type || 'OTHER'} ${x.seat || ''}`.trim()).join("\n");
+    }catch(e){ return "PRM : "; }
+  })();
+
+  const prmExp = (() => {
+    try{
+      const a = JSON.parse(val("ExpPRMData") || "[]");
+      if(!a.length) return "PRM : ";
+      return a.map(x=>`- ${x.type || 'OTHER'} ${x.seat || ''}`.trim()).join("\n");
+    }catch(e){ return "PRM : "; }
+  })();
 
   const body =
 `Vol : ${cie}${vol}
@@ -2024,12 +2387,29 @@ Fermeture porte avion : ${val("FermeturePorteAvion")}
 == LOAD ARR ==
 PAX : ${val("LoadPAX")}
 BAGS : ${val("LoadBAGS")}
-PRM : ${val("LoadPRM")}
+CARGO : ${val("LoadCARGO")}
+${prmArr}
+
+== LOAD EXP ==
+PAX : ${val("ExpPAX")}
+BAGS : ${val("ExpBAGS")}
+CARGO : ${val("ExpCARGO")}
+${prmExp}
+
+== LOAD FINAL ==
+MALE : ${val("FinalMALE")}
+FEMALE : ${val("FinalFEMALE")}
+ADULT : ${val("FinalADULT")}
+CHILD : ${val("FinalCHILD")}
+INFANT : ${val("FinalINFANT")}
+TOB : ${val("FinalTOB")}
+OA : ${val("FinalOA")} / OB : ${val("FinalOB")} / OC : ${val("FinalOC")} / OD : ${val("FinalOD")}
+LIBRE 1 : ${val("FinalFREE1")}
+LIBRE 2 : ${val("FinalFREE2")}
+LIBRE 3 : ${val("FinalFREE3")}
 
 ${[
-  assistanceBlock,
   dlBlock,
-  justifBlock,
   faitsBlock
 ].filter(Boolean).join("\n")}`;
 
