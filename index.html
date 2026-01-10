@@ -153,10 +153,9 @@ body.dark .fixed-header{
   justify-content:center;
 }
 
-/* CTOT éditable, même taille que .v */
+/* CTOT éditable (pill input) */
 .ctot-pill{
-  width: 86px;
-  min-width: 70px;
+  width: 92px;
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
@@ -165,17 +164,14 @@ body.dark .fixed-header{
   font-weight: 900 !important;
   border-radius: 999px !important;
   padding: 6px 10px !important;
+  min-width: 92px;
   text-align:center;
-  -webkit-appearance: none;
-  appearance: none;
 }
-/* enlève l’icône horloge */
-.ctot-pill::-webkit-calendar-picker-indicator{ display:none; -webkit-appearance:none; }
-.ctot-pill::-webkit-clear-button{ display:none; }
-.ctot-pill::-webkit-inner-spin-button{ display:none; }
+.ctot-pill::-webkit-datetime-edit{ color:#fff; }
+.ctot-pill::-webkit-calendar-picker-indicator{ filter: invert(1); opacity: .85; }
 
 #timer-tobt{ background:#16a34a !important; }
-#timer-h8{ background:#facc15 !important; color:#fff !important; } /* LID blanc */
+#timer-h8{ background:#facc15 !important; color:#111 !important; }
 #timer-cd{ background:#93c5fd !important; color:#111 !important; }
 
 /* Bulma tweaks */
@@ -290,20 +286,19 @@ body.dark .card-header{
   transform: translateX(18px);
 }
 
-/* ===== LOAD chips ===== */
-.timer-chip.chip-btn{
+/* ===== LOAD ARR chip + popover ===== */
+.chip-btn{
   border: none;
   cursor: pointer;
 }
-.timer-chip.chip-btn:active{ transform: translateY(1px); }
+.chip-btn:active{ transform: translateY(1px); }
 
-/* ===== Popovers ===== */
-.popover{
+#loadArrPopover{
   position: fixed;
   top: calc(var(--fixed-header-h) + 16px);
   left: 50%;
   transform: translateX(-50%);
-  width: min(720px, calc(100vw - 28px));
+  width: min(520px, calc(100vw - 28px));
   background: var(--card);
   box-shadow: var(--shadow);
   border-radius: 16px;
@@ -312,17 +307,26 @@ body.dark .card-header{
   padding: 12px;
   border: 1px solid rgba(0,0,0,.08);
 }
-body.dark .popover{ border-color: rgba(255,255,255,.10); }
-.popover .hdr{
+body.dark #loadArrPopover{
+  border-color: rgba(255,255,255,.10);
+}
+#loadArrPopover .hdr{
   display:flex;
   align-items:center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
 }
-.popover .hdr strong{ font-weight: 900; }
-
-.backdrop{
+#loadArrPopover .hdr strong{ font-weight: 900; }
+#loadArrPopover .grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+#loadArrPopover .field .label{
+  font-size: .9rem;
+}
+#loadArrBackdrop{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.25);
@@ -330,259 +334,111 @@ body.dark .popover{ border-color: rgba(255,255,255,.10); }
   display:none;
 }
 
-/* ARR/EXP grid */
-.grid-4{
-  display:grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+/* === TIMELINE (inchangé) === */
+.timeline-track {
+  position: absolute; left:6%; right:6%;
+  height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
 }
-@media (max-width: 520px){
-  .grid-4{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.dark .timeline-track{ background:#2e2e2e; }
+
+.timeline-tick { position: absolute; width: 1px; background:rgba(0,0,0,0.08); }
+body.dark .timeline-tick { background:#3e444b; }
+
+.timeline-tick-label {
+  position: absolute; transform: translateX(-50%);
+  font-size: 14px; font-weight: 800; color:#111827;
 }
-.prm-table{
-  width:100%;
-  border-radius: 14px;
-  overflow:hidden;
+body.dark .timeline-tick-label { color:#cfd4da; }
+
+.tl-event, .tl-range { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height:1; z-index: 1; }
+.tl-dot {
+  width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+  margin: 0 auto 4px;
+}
+.tl-label {
+  padding: 4px 10px; border-radius: 999px; background: #f1f3f5; color:#111; font-size: 14px; box-shadow: 0 0 0 1px rgba(0,0,0,.07);
+  font-weight: 900;
+}
+body.dark .tl-label { background:#232733; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
+
+.tl--std  { --c:#64748b; }
+.tl--tobt { --c:#16a34a; }
+.tl--ctot { --c:#334155; }
+.tl--ops  { --c:#2563eb; }
+.tl--turn { --c:#ef4444; }
+.tl-event .tl-dot { background: var(--c); }
+
+.tl-range {
+  height: 16px; background: color-mix(in srgb, var(--c) 42%, transparent);
+  border: 2px solid var(--c); border-radius: 999px; z-index: 2;
+}
+.tl-range-label {
+  position:absolute; top: -22px; left:50%; transform: translateX(-50%);
+  font-size: 13px; background: rgba(255,255,255,.92);
+  padding: 2px 8px; border-radius: 10px; font-weight: 900;
+  color: #111;
+}
+body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
+
+.timeline-toolbar{
+  display:flex; align-items:center; gap:8px; margin: 4px 0 10px;
+  flex-wrap: wrap;
+}
+.tl-sep{ width:1px; height:22px; background:#cfd4da; }
+body.dark .tl-sep{ background:#3a3a3a; }
+.timeline-scroll{
+  overflow-x:auto; overflow-y:hidden;
+  border-radius: 16px;
+  background: var(--card);
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
-body.dark .prm-table{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.10); }
-.prm-row{
-  display:grid;
-  grid-template-columns: 1.2fr .8fr auto;
-  gap: 10px;
-  padding: 10px;
-  border-top: 1px solid rgba(0,0,0,.08);
+body.dark .timeline-scroll{
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
 }
-body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
-.prm-row:first-child{ border-top: 0; }
-.prm-actions{
-  display:flex;
-  justify-content:flex-end;
-  margin-top: 10px;
-  gap: 10px;
-}
+.timeline-canvas{ position:relative; min-width:600px; width:100%; }
 
-/* FINAL grid */
-.grid-final{
-  display:grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-}
-@media (max-width: 768px){
-  .grid-final{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.final-tob{
-  font-weight: 900 !important;
-}
-.tob-bad{
-  border: 2px solid #ef4444 !important;
-  color: #ef4444 !important;
-}
+/* DL error */
+.dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px){
   .timer-chip{ min-width: 128px; }
-  .ctot-pill{ width: 82px; }
+  .timeline-canvas{ min-width: 720px; }
 }
 @media (max-width: 420px){
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
   .timer-chip .v{ min-width: 64px; }
-  .ctot-pill{ width: 78px; min-width: 64px; }
+  .ctot-pill{ width: 86px; min-width: 86px; }
 }
 </style>
 </head>
 
 <body onload="initForm()">
 
-<!-- ===== Backdrops + Popovers ===== -->
-<div id="bd-arr" class="backdrop" onclick="hidePopover('arr')"></div>
-<div id="bd-exp" class="backdrop" onclick="hidePopover('exp')"></div>
-<div id="bd-final" class="backdrop" onclick="hidePopover('final')"></div>
-
-<!-- LOAD ARR -->
-<div id="pop-arr" class="popover" role="dialog" aria-modal="true">
+<!-- LOAD ARR popover -->
+<div id="loadArrBackdrop" onclick="hideLoadArr()"></div>
+<div id="loadArrPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD ARR.</strong>
-    <button class="button is-small is-light" type="button" onclick="hidePopover('arr')">Fermer</button>
+    <button class="button is-small is-light" type="button" onclick="hideLoadArr()">Fermer</button>
   </div>
-
-  <div class="grid-4">
+  <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
       <div class="control">
-        <input class="input" id="Arr_PAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="LoadPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="Arr_BAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="LoadBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
     <div class="field">
-      <label class="label">CARGO</label>
+      <label class="label">PRM</label>
       <div class="control">
-        <input class="input" id="Arr_CARGO" type="text" placeholder="...">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">PRM LINES</label>
-      <div class="control">
-        <input class="input" id="Arr_PRMCount" type="text" readonly value="0" style="font-weight:900;text-align:center;">
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:12px;">
-    <div class="prm-table" id="Arr_PRMTable"></div>
-    <div class="prm-actions">
-      <button class="button is-link is-light" type="button" onclick="addPRMRow('Arr')">+ Ajouter PRM</button>
-      <button class="button is-danger is-light" type="button" onclick="clearPRMRows('Arr')">Vider</button>
-    </div>
-  </div>
-</div>
-
-<!-- LOAD EXP -->
-<div id="pop-exp" class="popover" role="dialog" aria-modal="true">
-  <div class="hdr">
-    <strong>LOAD EXP.</strong>
-    <button class="button is-small is-light" type="button" onclick="hidePopover('exp')">Fermer</button>
-  </div>
-
-  <div class="grid-4">
-    <div class="field">
-      <label class="label">PAX</label>
-      <div class="control">
-        <input class="input" id="Exp_PAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">BAGS</label>
-      <div class="control">
-        <input class="input" id="Exp_BAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">CARGO</label>
-      <div class="control">
-        <input class="input" id="Exp_CARGO" type="text" placeholder="...">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">PRM LINES</label>
-      <div class="control">
-        <input class="input" id="Exp_PRMCount" type="text" readonly value="0" style="font-weight:900;text-align:center;">
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:12px;">
-    <div class="prm-table" id="Exp_PRMTable"></div>
-    <div class="prm-actions">
-      <button class="button is-link is-light" type="button" onclick="addPRMRow('Exp')">+ Ajouter PRM</button>
-      <button class="button is-danger is-light" type="button" onclick="clearPRMRows('Exp')">Vider</button>
-    </div>
-  </div>
-</div>
-
-<!-- LOAD FINAL -->
-<div id="pop-final" class="popover" role="dialog" aria-modal="true">
-  <div class="hdr">
-    <strong>LOAD FINAL</strong>
-    <button class="button is-small is-light" type="button" onclick="hidePopover('final')">Fermer</button>
-  </div>
-
-  <div class="grid-final">
-    <div class="field">
-      <label class="label">MALE</label>
-      <div class="control">
-        <input class="input" id="Final_MALE" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">FEMALE</label>
-      <div class="control">
-        <input class="input" id="Final_FEMALE" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">ADULT</label>
-      <div class="control">
-        <input class="input" id="Final_ADULT" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">CHILD</label>
-      <div class="control">
-        <input class="input" id="Final_CHILD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-      </div>
-    </div>
-    <div class="field">
-      <label class="label">INFANT</label>
-      <div class="control">
-        <input class="input" id="Final_INFANT" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-      </div>
-    </div>
-  </div>
-
-  <div class="columns is-multiline" style="margin-top:10px;">
-    <div class="column is-full-mobile is-one-third-tablet">
-      <div class="field">
-        <label class="label">TOB</label>
-        <div class="control">
-          <input class="input final-tob" id="Final_TOB" type="text" readonly style="text-align:center;">
-        </div>
-      </div>
-    </div>
-    <div class="column is-full-mobile is-one-third-tablet">
-      <div class="field">
-        <label class="label">BAGS</label>
-        <div class="control">
-          <input class="input" id="Final_BAGS" type="text" inputmode="numeric" oninput="digitsOnly(this)">
-        </div>
-      </div>
-    </div>
-    <div class="column is-full-mobile is-one-third-tablet">
-      <div class="field">
-        <label class="label">ITG</label>
-        <div class="control">
-          <input class="input" id="Final_ITG" type="text" inputmode="numeric" oninput="digitsOnly(this)">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="columns is-multiline">
-    <div class="column is-full-mobile is-one-quarter-tablet">
-      <div class="field">
-        <label class="label">OA</label>
-        <div class="control">
-          <input class="input" id="Final_OA" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-        </div>
-      </div>
-    </div>
-    <div class="column is-full-mobile is-one-quarter-tablet">
-      <div class="field">
-        <label class="label">OB</label>
-        <div class="control">
-          <input class="input" id="Final_OB" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-        </div>
-      </div>
-    </div>
-    <div class="column is-full-mobile is-one-quarter-tablet">
-      <div class="field">
-        <label class="label">OC</label>
-        <div class="control">
-          <input class="input" id="Final_OC" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-        </div>
-      </div>
-    </div>
-    <div class="column is-full-mobile is-one-quarter-tablet">
-      <div class="field">
-        <label class="label">OD</label>
-        <div class="control">
-          <input class="input" id="Final_OD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalCalc();">
-        </div>
+        <input class="input" id="LoadPRM" type="text" placeholder="ex: WCHC2">
       </div>
     </div>
   </div>
@@ -643,6 +499,7 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
 
       <div class="timer-chip">
         <div class="k">CTOT</div>
+        <!-- CTOT éditable ici -->
         <input id="CTOT" class="ctot-pill" type="time" onchange="updateAllCalculations()">
       </div>
 
@@ -666,7 +523,7 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
     <div class="card-content">
       <div class="columns is-multiline">
 
-        <!-- Ligne 1: DATE + RZA -->
+        <!-- Ligne 1: DATE + RZA uniquement -->
         <div class="column is-6">
           <div class="field">
             <label class="label">DATE</label>
@@ -684,7 +541,7 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
           </div>
         </div>
 
-        <!-- Ligne 2 -->
+        <!-- Ligne 2: Airline + FLT NUMBER + FROM + TO (même ligne tablette/desktop) -->
         <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">AIRLINE</label>
@@ -726,7 +583,7 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
           </div>
         </div>
 
-        <!-- Ligne 3 -->
+        <!-- Ligne 3: Registration + A/C TYPE + Parking -->
         <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
           <div class="field">
             <label class="label">REGISTRATION</label>
@@ -756,11 +613,19 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
               </select>
             </div>
           </div>
+
+          <!-- LOAD ARR chip -->
+          <div style="margin-top:10px; display:flex; justify-content:flex-start;">
+            <button type="button" class="timer-chip chip-btn" style="min-width: 170px;" onclick="toggleLoadArr()">
+              <div class="k">LOAD</div>
+              <div class="v" style="background:#2563eb;">ARR.</div>
+            </button>
+          </div>
         </div>
 
         <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
           <div class="field">
-            <label class="label">PARKING</label>
+            <label class="label">Parking</label>
             <div class="control select is-fullwidth">
               <select id="Parking">
                 <option value="">--</option>
@@ -769,26 +634,6 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
                 <option>9</option><option>10</option><option>11</option><option>12</option>
               </select>
             </div>
-          </div>
-        </div>
-
-        <!-- Ligne seule: boutons LOAD sous PARKING -->
-        <div class="column is-12">
-          <div style="display:flex; gap:12px; flex-wrap:wrap;">
-            <button type="button" class="timer-chip chip-btn" style="min-width: 190px;" onclick="showPopover('arr')">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#2563eb;">ARR.</div>
-            </button>
-
-            <button type="button" class="timer-chip chip-btn" style="min-width: 190px;" onclick="showPopover('exp')">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#2563eb;">EXP.</div>
-            </button>
-
-            <button type="button" class="timer-chip chip-btn" style="min-width: 190px;" onclick="showPopover('final')">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#2563eb;">FINAL</div>
-            </button>
           </div>
         </div>
 
@@ -831,6 +676,7 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
             if(!mount) return;
 
             const half = "is-full-mobile is-half-tablet is-half-desktop";
+
             mount.innerHTML = `<div class="columns is-multiline">
               ${timeField('SIBT','SIBT',"updateAllCalculations()", half)}
               ${timeField('AIBT','AIBT',"updateAllCalculations()", half)}
@@ -933,7 +779,17 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
     </div>
   </div>
 
-  <!-- FAITS SAILLANTS -->
+  <!-- NOTES -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">DL JUSTIFICATIONS</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <textarea class="textarea" id="DLJustif" placeholder="Justifications…"></textarea>
+    </div>
+  </div>
+
   <div class="card mb-5">
     <header class="card-header section-collapse" onclick="toggleCardBody(this)">
       <p class="card-header-title">FAITS SAILLANTS</p>
@@ -941,6 +797,42 @@ body.dark .prm-row{ border-top-color: rgba(255,255,255,.10); }
     </header>
     <div class="card-content">
       <textarea class="textarea" id="FaitsSaillants" placeholder="Faits saillants…"></textarea>
+    </div>
+  </div>
+
+  <!-- ASSISTANCES -->
+  <div class="card mb-5">
+    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+      <p class="card-header-title">ASSISTANCES PRISES EN CHARGE A/D</p>
+      <span class="card-header-icon"><span class="icon">⌄</span></span>
+    </header>
+    <div class="card-content">
+      <div class="columns is-multiline">
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
+          <div class="field">
+            <label class="label">WCHC</label>
+            <div class="control"><input class="input" type="number" id="WCHC" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
+          </div>
+        </div>
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
+          <div class="field">
+            <label class="label">WCHS</label>
+            <div class="control"><input class="input" type="number" id="WCHS" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
+          </div>
+        </div>
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
+          <div class="field">
+            <label class="label">WCHR</label>
+            <div class="control"><input class="input" type="number" id="WCHR" min="0" step="1" oninput="sanitizePositiveInt(this)"></div>
+          </div>
+        </div>
+        <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
+          <div class="field">
+            <label class="label">Autre</label>
+            <div class="control"><input class="input" type="number" id="AutreAssist"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -992,158 +884,28 @@ window._tobtRawMins = null;
 /* DL */
 let lastDLChanged = 1;
 
-/* ===== Helpers ===== */
-function digitsOnly(el){ el.value = (el.value || '').replace(/[^0-9]/g,''); }
-function sanitizePositiveInt(inputEl){ inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,''); }
-function setupUppercaseInputs(ids){
-  ids.forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
-    el.addEventListener('input', toUpper);
-    el.addEventListener('blur', toUpper);
-  });
+/* ===== LOAD ARR popover ===== */
+function digitsOnly(el){
+  el.value = (el.value || '').replace(/[^0-9]/g,'');
 }
-
-/* ===== Popovers ===== */
-function showPopover(kind){
-  const bd = document.getElementById('bd-'+kind);
-  const pop = document.getElementById('pop-'+kind);
-  if(bd) bd.style.display = '';
-  if(pop) pop.style.display = 'block';
+function showLoadArr(){
+  document.getElementById('loadArrBackdrop').style.display = '';
+  document.getElementById('loadArrPopover').style.display = 'block';
 }
-function hidePopover(kind){
-  const bd = document.getElementById('bd-'+kind);
-  const pop = document.getElementById('pop-'+kind);
-  if(bd) bd.style.display = 'none';
-  if(pop) pop.style.display = 'none';
+function hideLoadArr(){
+  document.getElementById('loadArrBackdrop').style.display = 'none';
+  document.getElementById('loadArrPopover').style.display = 'none';
+}
+function toggleLoadArr(){
+  const p = document.getElementById('loadArrPopover');
+  if(!p) return;
+  (p.style.display === 'block') ? hideLoadArr() : showLoadArr();
 }
 document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){
-    ['arr','exp','final'].forEach(hidePopover);
-  }
+  if(e.key === 'Escape') hideLoadArr();
 });
 
-/* ===== PRM rows (ARR / EXP) ===== */
-const PRM_TYPES = ['WCHR','WCHS','WCHC','BLND','DPNA','UMNR','OTHER'];
-
-function prmRowHTML(prefix, idx){
-  const typeId = `${prefix}_PRMType_${idx}`;
-  const seatId = `${prefix}_PRMSeat_${idx}`;
-  return `
-    <div class="prm-row" data-idx="${idx}">
-      <div class="field">
-        <label class="label">TYPE</label>
-        <div class="control select is-fullwidth">
-          <select id="${typeId}">
-            <option value="">--</option>
-            ${PRM_TYPES.map(t=>`<option>${t}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">SEAT</label>
-        <div class="control">
-          <input class="input uppercase" id="${seatId}" type="text" placeholder="01A" maxlength="4">
-        </div>
-      </div>
-      <div class="field" style="display:flex;align-items:flex-end;">
-        <button class="button is-danger is-light" type="button" onclick="removePRMRow('${prefix}', ${idx})">Suppr.</button>
-      </div>
-    </div>
-  `;
-}
-
-function getPRMIndices(prefix){
-  const table = document.getElementById(prefix+'_PRMTable');
-  if(!table) return [];
-  return [...table.querySelectorAll('.prm-row')].map(r=>parseInt(r.getAttribute('data-idx'),10)).filter(n=>!isNaN(n));
-}
-
-function setPRMCount(prefix){
-  const indices = getPRMIndices(prefix);
-  const countEl = document.getElementById(prefix+'_PRMCount');
-  if(countEl) countEl.value = String(indices.length);
-}
-
-function addPRMRow(prefix){
-  const table = document.getElementById(prefix+'_PRMTable');
-  if(!table) return;
-  const indices = getPRMIndices(prefix);
-  const next = indices.length ? Math.max(...indices) + 1 : 1;
-  table.insertAdjacentHTML('beforeend', prmRowHTML(prefix, next));
-  setupUppercaseInputs([`${prefix}_PRMSeat_${next}`]);
-  setPRMCount(prefix);
-  updateHeaderOffset();
-}
-
-function removePRMRow(prefix, idx){
-  const table = document.getElementById(prefix+'_PRMTable');
-  if(!table) return;
-  const row = table.querySelector(`.prm-row[data-idx="${idx}"]`);
-  if(row) row.remove();
-  setPRMCount(prefix);
-}
-
-function clearPRMRows(prefix){
-  const table = document.getElementById(prefix+'_PRMTable');
-  if(!table) return;
-  table.innerHTML = '';
-  setPRMCount(prefix);
-}
-
-function ensureAtLeastOnePRM(prefix){
-  const table = document.getElementById(prefix+'_PRMTable');
-  if(!table) return;
-  if(table.children.length === 0) addPRMRow(prefix);
-}
-
-/* ===== FINAL calc ===== */
-function updateFinalCalc(){
-  const male = parseInt(document.getElementById('Final_MALE')?.value || '0', 10) || 0;
-  const female = parseInt(document.getElementById('Final_FEMALE')?.value || '0', 10) || 0;
-  const child = parseInt(document.getElementById('Final_CHILD')?.value || '0', 10) || 0;
-  const infant = parseInt(document.getElementById('Final_INFANT')?.value || '0', 10) || 0;
-
-  const maleFilled = (document.getElementById('Final_MALE')?.value || '') !== '';
-  const femaleFilled = (document.getElementById('Final_FEMALE')?.value || '') !== '';
-
-  const adultEl = document.getElementById('Final_ADULT');
-  if(adultEl && maleFilled && femaleFilled){
-    adultEl.value = String(male + female);
-  }
-
-  const adult = parseInt(adultEl?.value || '0', 10) || 0;
-
-  // TOB: (MALE+FEMALE+CHILD) OR (ADULT+CHILD), + infants séparés (ex "232 + 2")
-  let mainTotal = 0;
-  if(maleFilled && femaleFilled){
-    mainTotal = male + female + child;
-  } else {
-    mainTotal = adult + child;
-  }
-
-  const tobEl = document.getElementById('Final_TOB');
-  let tobText = '';
-  if(mainTotal === 0 && infant === 0) tobText = '';
-  else if(infant > 0) tobText = `${mainTotal} + ${infant}`;
-  else tobText = `${mainTotal}`;
-  if(tobEl) tobEl.value = tobText;
-
-  // check OA..OD sums == mainTotal
-  const oa = parseInt(document.getElementById('Final_OA')?.value || '0', 10) || 0;
-  const ob = parseInt(document.getElementById('Final_OB')?.value || '0', 10) || 0;
-  const oc = parseInt(document.getElementById('Final_OC')?.value || '0', 10) || 0;
-  const od = parseInt(document.getElementById('Final_OD')?.value || '0', 10) || 0;
-  const sum = oa + ob + oc + od;
-
-  if(tobEl){
-    const ok = (mainTotal === 0) ? true : (sum === mainTotal);
-    tobEl.classList.toggle('tob-bad', !ok);
-  }
-}
-
-/* ===== Countdown (CD) ===== */
+/* ===== COUNTDOWN (CD) ===== */
 let countdownTimer = null;
 
 function getNowMinutes(){
@@ -1289,12 +1051,7 @@ function initForm(){
   setDarkMode(storedDark, true);
   setTimeModeUTC(storedUTC, true);
 
-  // PRM tables: assure une ligne au minimum
-  ensureAtLeastOnePRM('Arr');
-  ensureAtLeastOnePRM('Exp');
-  updateFinalCalc();
-
-  // recalcul instantané
+  /* recalcul instantané */
   ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion'].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -1335,6 +1092,22 @@ function initForm(){
 function setDefaultDateToTodayIfEmpty(){
   const d = document.getElementById('Date');
   if(d && !d.value){ d.valueAsDate = new Date(); }
+}
+
+/* MAJUSCULE */
+function setupUppercaseInputs(ids){
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const toUpper = ()=>{ el.value = (el.value||'').toUpperCase(); };
+    el.addEventListener('input', toUpper);
+    el.addEventListener('blur', toUpper);
+  });
+}
+
+/* ints positifs */
+function sanitizePositiveInt(inputEl){
+  inputEl.value = (inputEl.value || '').replace(/[^0-9]/g,'');
 }
 
 /* Autosave */
@@ -1426,12 +1199,6 @@ function clearFormFields(){
     else if(el.tagName==='SELECT') el.selectedIndex=0;
     else el.value='';
   });
-  clearPRMRows('Arr');
-  clearPRMRows('Exp');
-  ensureAtLeastOnePRM('Arr');
-  ensureAtLeastOnePRM('Exp');
-  updateFinalCalc();
-
   const d = document.getElementById('Date');
   if(d) d.valueAsDate=new Date();
   updateAllCalculations();
@@ -1455,7 +1222,6 @@ function saveCurrentTabData(){
   data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
 
   data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
-
   localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
   localStorage.setItem('lastTabId',currentTabId);
   renderTabs();
@@ -1492,11 +1258,6 @@ function loadTabData(id){
 
   const darkLabel = document.getElementById('darkLabel');
   if(darkLabel) darkLabel.textContent = document.body.classList.contains('dark') ? 'Sombre' : 'Clair';
-
-  // PRM count refresh (table déjà dans le DOM via autosave ids)
-  setPRMCount('Arr');
-  setPRMCount('Exp');
-  updateFinalCalc();
 
   setDefaultDateToTodayIfEmpty();
   updateAllCalculations();
@@ -1927,7 +1688,6 @@ function toExtended(t, min, max){
   return (t < startMod) ? t + 1440 : t;
 }
 
-/* Timeline window/data/render (inchangé par rapport à ta base) */
 function computeTimelineWindow(allTimes){
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
@@ -2024,6 +1784,8 @@ function collectTimelineData(){
 
   return {fixedPoints, durations, windowInfo};
 }
+
+/* Render timeline (inchangé) */
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -2177,23 +1939,10 @@ function renderTimeline(){
 }
 
 /* validateForm */
-function readPRMLines(prefix){
-  const indices = getPRMIndices(prefix);
-  const lines = [];
-  indices.forEach(idx=>{
-    const type = (document.getElementById(`${prefix}_PRMType_${idx}`)?.value || '').trim();
-    const seat = (document.getElementById(`${prefix}_PRMSeat_${idx}`)?.value || '').trim().toUpperCase();
-    if(type || seat){
-      lines.push(`${type || '—'} ${seat ? '('+seat+')' : ''}`.trim());
-    }
-  });
-  return lines;
-}
-
 function validateForm() {
   const val = id => (document.getElementById(id)?.value || "");
   const dateRaw = val("Date");
-  const [yyyy, mm, dd] = (dateRaw || '---- -- --').split("-");
+  const [yyyy, mm, dd] = dateRaw.split("-");
   const dateTitre = `${dd}-${mm}-${yyyy}`;
 
   const cie = val("Cie");
@@ -2209,6 +1958,15 @@ function validateForm() {
   const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
   const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
 
+  const assistances = [];
+  if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
+  if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
+  if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
+
+  const assistanceBlock = assistances.length > 0
+      ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
+      : "";
+
   const dlLines = [];
   if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
   if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
@@ -2218,12 +1976,13 @@ function validateForm() {
       ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
       : "";
 
+  const justifBlock = val("DLJustif").trim() !== ""
+      ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
+      : "";
+
   const faitsBlock = val("FaitsSaillants").trim() !== ""
       ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
       : "";
-
-  const arrPRM = readPRMLines('Arr');
-  const expPRM = readPRMLines('Exp');
 
   const body =
 `Vol : ${cie}${vol}
@@ -2234,6 +1993,7 @@ Type avion : ${typeAvion}
 RZA : ${rza}
 
 == HORAIRES ==
+
 SIBT : ${val("SIBT")}
 AIBT : ${val("AIBT")}
 -
@@ -2241,32 +2001,8 @@ SOBT : ${val("SOBT")}
 AOBT : ${val("AOBT")}
 CTOT : ${val("CTOT")}
 
-== LOAD ARR ==
-PAX : ${val("Arr_PAX")}
-BAGS : ${val("Arr_BAGS")}
-CARGO : ${val("Arr_CARGO")}
-PRM :
-${arrPRM.length ? arrPRM.map(x=>' - '+x).join('\n') : ' - (vide)'}
-
-== LOAD EXP ==
-PAX : ${val("Exp_PAX")}
-BAGS : ${val("Exp_BAGS")}
-CARGO : ${val("Exp_CARGO")}
-PRM :
-${expPRM.length ? expPRM.map(x=>' - '+x).join('\n') : ' - (vide)'}
-
-== LOAD FINAL ==
-MALE : ${val("Final_MALE")}
-FEMALE : ${val("Final_FEMALE")}
-ADULT : ${val("Final_ADULT")}
-CHILD : ${val("Final_CHILD")}
-INFANT : ${val("Final_INFANT")}
-TOB : ${val("Final_TOB")}
-BAGS : ${val("Final_BAGS")}
-ITG : ${val("Final_ITG")}
-OA/OB/OC/OD : ${val("Final_OA")} / ${val("Final_OB")} / ${val("Final_OC")} / ${val("Final_OD")}
-
 == TIMINGS ==
+
 Arrivée PNT : ${val("ArrPNT")}
 Arrivée PNC : ${val("ArrPNC")}
 
@@ -2285,8 +2021,15 @@ Lift départ  : ${liftDepart}
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
 
+== LOAD ARR ==
+PAX : ${val("LoadPAX")}
+BAGS : ${val("LoadBAGS")}
+PRM : ${val("LoadPRM")}
+
 ${[
+  assistanceBlock,
   dlBlock,
+  justifBlock,
   faitsBlock
 ].filter(Boolean).join("\n")}`;
 
