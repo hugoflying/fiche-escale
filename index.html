@@ -147,7 +147,7 @@ body.dark .fixed-header{
   justify-content:center;
 }
 
-/* CTOT éditable (même look que les autres timers) */
+/* CTOT éditable */
 .ctot-pill{
   width: auto;
   min-width: 70px;
@@ -202,6 +202,10 @@ body.dark .card-header{
 .input.uppercase{ text-transform: uppercase; }
 .input::placeholder, .textarea::placeholder{ color: var(--field-placeholder) !important; }
 .field .label{ font-weight: 900; color: var(--text) !important; }
+
+/* FORCE couleur TOB (sinon Bulma + !important bloque) */
+#FinalTOB.is-invalid{ color:#ef4444 !important; }
+#FinalTOB.is-valid{ color: var(--field-text) !important; }
 
 /* Buttons */
 .btn-actions{
@@ -303,6 +307,7 @@ body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopove
   display:none;
 }
 
+/* PRM rows */
 .prm-row{
   display:grid;
   grid-template-columns: 1.2fr .8fr auto;
@@ -312,7 +317,7 @@ body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopove
 }
 .prm-row .button{ border-radius: 12px; }
 
-/* LOAD buttons row (sous REG/A-C/PARKING, alignés sur la même ligne) */
+/* LOAD buttons row */
 .load-row-below{
   display:flex;
   gap:10px;
@@ -434,7 +439,7 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <hr style="margin:12px 0;">
+  <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
@@ -475,7 +480,7 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <hr style="margin:12px 0;">
+  <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
@@ -497,47 +502,52 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">MALE</label>
       <div class="control">
-        <input class="input" id="FinalMALE" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
+        <input class="input" id="FinalMALE" type="text" inputmode="numeric" placeholder="0"
+               oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
       </div>
     </div>
 
     <div class="field">
       <label class="label">FEMALE</label>
       <div class="control">
-        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
+        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric" placeholder="0"
+               oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
       </div>
     </div>
 
     <div class="field">
       <label class="label">ADULT</label>
       <div class="control">
-        <input class="input" id="FinalADULT" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); updateFinalTOB();">
+        <input class="input" id="FinalADULT" type="text" inputmode="numeric" placeholder="0"
+               oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
 
     <div class="field">
       <label class="label">CHILD</label>
       <div class="control">
-        <input class="input" id="FinalCHILD" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); updateFinalTOB();">
+        <input class="input" id="FinalCHILD" type="text" inputmode="numeric" placeholder="0"
+               oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
 
     <div class="field">
       <label class="label">INFANT</label>
       <div class="control">
-        <input class="input" id="FinalINFANT" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this); updateFinalTOB();">
+        <input class="input" id="FinalINFANT" type="text" inputmode="numeric" placeholder="0"
+               oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
 
     <div class="field">
       <label class="label">TOB</label>
       <div class="control">
-        <input class="input" id="FinalTOB" type="text" readonly style="font-weight:900; text-align:center;">
+        <input class="input is-valid" id="FinalTOB" type="text" readonly style="font-weight:900; text-align:center;">
       </div>
     </div>
   </div>
 
-  <hr style="margin:12px 0;">
+  <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
   <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
     <div class="field">
@@ -555,6 +565,24 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">OD</label>
       <div class="control"><input class="input" id="FinalOD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+  </div>
+
+  <!-- NEW section -->
+  <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
+
+  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+    <div class="field">
+      <label class="label">BAGS</label>
+      <div class="control"><input class="input" id="FinalBAGS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
+    </div>
+    <div class="field">
+      <label class="label">POIDS</label>
+      <div class="control"><input class="input" id="FinalPOIDS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
+    </div>
+    <div class="field">
+      <label class="label">GB</label>
+      <div class="control"><input class="input" id="FinalGB" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
     </div>
   </div>
 </div>
@@ -738,7 +766,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <!-- NEW ROW: LOAD buttons under REG/A-C/PARK -->
+        <!-- LOAD buttons row -->
         <div class="column is-12">
           <div class="load-row-below">
             <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
@@ -753,7 +781,7 @@ body.dark .timeline-scroll{
 
             <button type="button" class="timer-chip chip-btn" onclick="toggleLoadFinal()">
               <div class="k">LOAD</div>
-              <div class="v" style="background:#7c3aed;">FINAL</div> <!-- violet -->
+              <div class="v" style="background:#7c3aed;">FINAL</div>
             </button>
           </div>
         </div>
@@ -942,7 +970,7 @@ const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
-/* TOBT brut (pour LID) + TOBT affiché (pour countdown) */
+/* TOBT brut + TOBT affiché */
 window._tobtRawMins = null;
 window._tobtAdjMins = null;
 
@@ -950,9 +978,7 @@ window._tobtAdjMins = null;
 let lastDLChanged = 1;
 
 /* digits only */
-function digitsOnly(el){
-  el.value = (el.value || '').replace(/[^0-9]/g,'');
-}
+function digitsOnly(el){ el.value = (el.value || '').replace(/[^0-9]/g,''); }
 
 /* ===== COUNTDOWN (CD) ===== */
 let countdownTimer = null;
@@ -975,51 +1001,34 @@ function stopCountdown(){
   const el = document.getElementById('timer-cd');
   if(el) el.textContent = '--:--';
 }
-
 function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
 
   const aobtTxt = document.getElementById('AOBT')?.value || '';
-  if(aobtTxt){
-    stopCountdown();
-    return;
-  }
+  if(aobtTxt){ stopCountdown(); return; }
 
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
-
-  if(!aibtTxt || !sobtTxt || !sibtTxt){
-    el.textContent = '--:--';
-    return;
-  }
+  if(!aibtTxt || !sobtTxt || !sibtTxt){ el.textContent = '--:--'; return; }
 
   const SIBT = parseHHMM(sibtTxt);
   const AIBT = parseHHMM(aibtTxt);
   const SOBT = parseHHMM(sobtTxt);
-  if(SIBT == null || AIBT == null || SOBT == null){
-    el.textContent = '--:--';
-    return;
-  }
+  if(SIBT == null || AIBT == null || SOBT == null){ el.textContent = '--:--'; return; }
 
   let targetMin = null;
-
-  if (AIBT <= SIBT){
-    targetMin = SOBT;
-  } else {
+  if (AIBT <= SIBT) targetMin = SOBT;
+  else {
     const tobt = window._tobtAdjMins;
-    if(tobt == null){
-      el.textContent = '--:--';
-      return;
-    }
+    if(tobt == null){ el.textContent = '--:--'; return; }
     targetMin = tobt;
   }
 
   const now = getNowMinutes();
   let diffMin = targetMin - now.mins;
   if(diffMin < 0) diffMin += 1440;
-
   const remainingSeconds = diffMin * 60 - now.secs;
   el.textContent = fmtMMSS(remainingSeconds);
 }
@@ -1029,17 +1038,12 @@ function ensureCountdownRunning(){
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
   const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && !aobtTxt);
+  if(!shouldRun){ stopCountdown(); return; }
 
-  if(!shouldRun){
-    stopCountdown();
-    return;
-  }
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
-  } else {
-    updateCountdownOnce();
-  }
+  } else updateCountdownOnce();
 }
 
 /* Timeline zoom */
@@ -1059,14 +1063,8 @@ function timelineSetZoom(z){
 }
 
 /* ===== LOAD POPovers ===== */
-function showBackdrop(){
-  const b = document.getElementById('loadArrBackdrop');
-  if(b) b.style.display = '';
-}
-function hideBackdrop(){
-  const b = document.getElementById('loadArrBackdrop');
-  if(b) b.style.display = 'none';
-}
+function showBackdrop(){ const b = document.getElementById('loadArrBackdrop'); if(b) b.style.display = ''; }
+function hideBackdrop(){ const b = document.getElementById('loadArrBackdrop'); if(b) b.style.display = 'none'; }
 function hideAllLoadPopovers(){
   ['loadArrPopover','loadExpPopover','loadFinalPopover'].forEach(id=>{
     const p = document.getElementById(id);
@@ -1089,9 +1087,7 @@ document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideAllLoadPo
 const PRM_TYPES = ['WCHR','WCHS','WCHC','BLND','DPNA','UMNR','OTHER'];
 
 function getPRMIds(mode){
-  if(mode === 'exp'){
-    return { dataId:'ExpPRMData', rowsId:'ExpPRMRows' };
-  }
+  if(mode === 'exp') return { dataId:'ExpPRMData', rowsId:'ExpPRMRows' };
   return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' };
 }
 function readPRMData(mode){
@@ -1203,6 +1199,12 @@ function syncAdultIfNeeded(){
     adultEl.readOnly = false;
   }
 }
+function setTOBValidity(isValid){
+  const tobEl = document.getElementById('FinalTOB');
+  if(!tobEl) return;
+  tobEl.classList.toggle('is-invalid', !isValid);
+  tobEl.classList.toggle('is-valid', isValid);
+}
 function updateFinalTOB(){
   syncAdultIfNeeded();
 
@@ -1221,20 +1223,19 @@ function updateFinalTOB(){
 
   if(main == null){
     tobEl.value = '';
-    tobEl.style.color = '';
+    setTOBValidity(true);
     return;
   }
 
   tobEl.value = `${main} + ${i}`;
 
-  // IMPORTANT: OA+OB+OC+OD doit == main (sans infant)
   const oa = asInt('FinalOA') ?? 0;
   const ob = asInt('FinalOB') ?? 0;
   const oc = asInt('FinalOC') ?? 0;
   const od = asInt('FinalOD') ?? 0;
   const sum = oa + ob + oc + od;
 
-  tobEl.style.color = (sum === main) ? '' : '#ef4444';
+  setTOBValidity(sum === main);
 }
 
 /* INIT */
@@ -1268,7 +1269,8 @@ function initForm(){
   [
     'AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion',
     'LoadPAX','LoadBAGS','LoadCARGO','ExpPAX','ExpBAGS','ExpCARGO',
-    'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD'
+    'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD',
+    'FinalBAGS','FinalPOIDS','FinalGB'
   ].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -1739,7 +1741,6 @@ function updateDLCode() {
 
 /* DL redistribution */
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
-
 function totalDelayMinutes(){
   const so = document.getElementById('SOBT')?.value || '';
   const ao = document.getElementById('AOBT')?.value || '';
@@ -1919,7 +1920,6 @@ function computeTimelineWindow(allTimes){
     let min = startRef - 5;
     let endRef = (AOBT != null ? AOBT : TOBT);
     let max = endRef + 5;
-
     if (max <= min) max += 1440;
     if (max - min < 30) { min -= 10; max += 10; }
     return {min, max};
@@ -1931,7 +1931,6 @@ function computeTimelineWindow(allTimes){
     let min = startRef - 5;
     let endRef = (AOBT ?? TOBT ?? SOBT);
     let max = endRef + 5;
-
     if (max <= min) max += 1440;
     if (max - min < 30) { min -= 10; max += 10; }
     return {min, max};
@@ -2175,7 +2174,6 @@ function validateForm() {
   if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
   if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
   if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
-
   const dlBlock = dlLines.length > 0 ? `\n== DL ==\n\n${dlLines.join("\n")}\n` : "";
 
   const faitsBlock = val("FaitsSaillants").trim() !== "" ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n` : "";
@@ -2253,6 +2251,7 @@ CHILD : ${val("FinalCHILD")}
 INFANT : ${val("FinalINFANT")}
 TOB : ${val("FinalTOB")}
 OA : ${val("FinalOA")} / OB : ${val("FinalOB")} / OC : ${val("FinalOC")} / OD : ${val("FinalOD")}
+BAGS : ${val("FinalBAGS")} / POIDS : ${val("FinalPOIDS")} / GB : ${val("FinalGB")}
 
 ${[dlBlock, faitsBlock].filter(Boolean).join("\n")}`;
 
@@ -2264,7 +2263,6 @@ function manualSave() {
   saveCurrentTabData();
   showPopup("Enregistrement réussi", "#2563eb", 2000);
 }
-
 function clearAutoSave() {
   if (confirm("Tout réinitialiser ?")) {
     localStorage.clear();
