@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
 
 <style>
-/* === BASE === */
 :root{
   --bg: #f6f7fb;
   --card: #ffffff;
@@ -24,14 +23,10 @@
   --field-border: rgba(17,24,39,.18);
   --field-placeholder: rgba(107,114,128,.95);
 
-  --fixed-header-h: 140px; /* mis à jour en JS */
+  --fixed-header-h: 140px;
 }
 
-body{
-  background: var(--bg);
-  color: var(--text);
-  margin: 0;
-}
+body{ background: var(--bg); color: var(--text); margin: 0; }
 body.dark{
   --bg: #0f1115;
   --card: #151922;
@@ -91,7 +86,6 @@ body.dark .fixed-header{
   align-items:center;
   justify-content: center;
 }
-.brand-badge{ display:none; }
 .brand-title{ text-align:center; line-height: 1.05; }
 .brand-title strong{ display:block; font-size: 1.2rem; color: var(--text); }
 
@@ -194,14 +188,8 @@ body.dark .fixed-header{
 body.dark .card-header{
   background: color-mix(in srgb, var(--card) 80%, #60a5fa 20%);
 }
-.card-header-title{
-  font-weight: 900;
-  color: var(--text) !important;
-}
-.section-collapse{
-  cursor: pointer;
-  user-select: none;
-}
+.card-header-title{ font-weight: 900; color: var(--text) !important; }
+.section-collapse{ cursor: pointer; user-select: none; }
 .collapsed-body{ display: none; }
 
 /* Inputs */
@@ -212,13 +200,8 @@ body.dark .card-header{
   border-color: var(--field-border) !important;
 }
 .input.uppercase{ text-transform: uppercase; }
-.input::placeholder, .textarea::placeholder{
-  color: var(--field-placeholder) !important;
-}
-.field .label{
-  font-weight: 900;
-  color: var(--text) !important;
-}
+.input::placeholder, .textarea::placeholder{ color: var(--field-placeholder) !important; }
+.field .label{ font-weight: 900; color: var(--text) !important; }
 
 /* Buttons */
 .btn-actions{
@@ -227,10 +210,7 @@ body.dark .card-header{
   gap: 6px;
   margin-top: 8px;
 }
-.btn-actions .button{
-  border-radius: 12px;
-  font-weight: 900;
-}
+.btn-actions .button{ border-radius: 12px; font-weight: 900; }
 
 /* Popup toast */
 #popup{
@@ -259,43 +239,26 @@ body.dark .card-header{
   font-weight: 900;
   color: var(--text);
 }
-.toggle input{
-  position:absolute;
-  opacity:0;
-  pointer-events:none;
-}
+.toggle input{ position:absolute; opacity:0; pointer-events:none; }
 .toggle .track{
-  width: 44px;
-  height: 26px;
-  border-radius: 999px;
+  width: 44px; height: 26px; border-radius: 999px;
   background: rgba(148,163,184,.55);
-  position: relative;
-  flex: 0 0 auto;
+  position: relative; flex: 0 0 auto;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 .toggle .thumb{
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  background: #fff;
-  position:absolute;
-  top: 2px;
-  left: 2px;
+  width: 22px; height: 22px; border-radius: 999px;
+  background: #fff; position:absolute; top: 2px; left: 2px;
   transition: transform .18s ease, background .18s ease;
   box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
 .toggle input:checked + .track{
   background: color-mix(in srgb, #3b82f6 70%, #22c55e 30%);
 }
-.toggle input:checked + .track .thumb{
-  transform: translateX(18px);
-}
+.toggle input:checked + .track .thumb{ transform: translateX(18px); }
 
 /* ===== LOAD popovers ===== */
-.chip-btn{
-  border: none;
-  cursor: pointer;
-}
+.chip-btn{ border: none; cursor: pointer; }
 .chip-btn:active{ transform: translateY(1px); }
 
 #loadArrPopover, #loadExpPopover, #loadFinalPopover{
@@ -349,17 +312,15 @@ body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopove
 }
 .prm-row .button{ border-radius: 12px; }
 
-/* LOAD buttons row (même look que HLE etc) */
-.load-row{
+/* LOAD buttons row (sous REG/A-C/PARKING, alignés sur la même ligne) */
+.load-row-below{
   display:flex;
   gap:10px;
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin-top: 10px;
+  margin-top: 12px;
 }
-.load-row .timer-chip{
-  min-width: 170px; /* harmonisé */
-}
+.load-row-below .timer-chip{ min-width: 170px; }
 
 /* === TIMELINE === */
 .timeline-track {
@@ -609,7 +570,6 @@ body.dark .timeline-scroll{
         </div>
       </div>
 
-      <!-- Toggles -->
       <div class="top-toggles" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
         <label class="toggle">
           <span id="darkLabel">Clair</span>
@@ -625,12 +585,10 @@ body.dark .timeline-scroll{
       </div>
     </div>
 
-    <!-- Tabs vols -->
     <div class="tabs-row">
       <div id="tab-bar" class="tabs-chip"></div>
     </div>
 
-    <!-- Timers -->
     <div class="timer-row">
       <div class="timer-chip">
         <div class="k">HLE</div>
@@ -676,7 +634,6 @@ body.dark .timeline-scroll{
     <div class="card-content">
       <div class="columns is-multiline">
 
-        <!-- Ligne 1: DATE + RZA uniquement -->
         <div class="column is-6">
           <div class="field">
             <label class="label">DATE</label>
@@ -694,7 +651,6 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <!-- Ligne 2: Airline + FLT NUMBER + FROM + TO -->
         <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
           <div class="field">
             <label class="label">AIRLINE</label>
@@ -736,7 +692,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
-        <!-- Ligne 3: Registration + A/C TYPE + Parking + LOAD buttons -->
+        <!-- Row REG / A/C / PARK -->
         <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
           <div class="field">
             <label class="label">REGISTRATION</label>
@@ -779,25 +735,26 @@ body.dark .timeline-scroll{
                 <option>9</option><option>10</option><option>11</option><option>12</option>
               </select>
             </div>
+          </div>
+        </div>
 
-            <!-- LOAD buttons: UNE SEULE LIGNE, MEME VISUEL -->
-            <div class="load-row">
-              <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
-                <div class="k">LOAD</div>
-                <div class="v" style="background:#2563eb;">ARR.</div>
-              </button>
+        <!-- NEW ROW: LOAD buttons under REG/A-C/PARK -->
+        <div class="column is-12">
+          <div class="load-row-below">
+            <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
+              <div class="k">LOAD</div>
+              <div class="v" style="background:#2563eb;">ARR.</div>
+            </button>
 
-              <button type="button" class="timer-chip chip-btn" onclick="toggleLoadExp()">
-                <div class="k">LOAD</div>
-                <div class="v" style="background:#0ea5e9;">EXP.</div>
-              </button>
+            <button type="button" class="timer-chip chip-btn" onclick="toggleLoadExp()">
+              <div class="k">LOAD</div>
+              <div class="v" style="background:#0ea5e9;">EXP.</div>
+            </button>
 
-              <button type="button" class="timer-chip chip-btn" onclick="toggleLoadFinal()">
-                <div class="k">LOAD</div>
-                <div class="v" style="background:#111827;">FINAL</div>
-              </button>
-            </div>
-
+            <button type="button" class="timer-chip chip-btn" onclick="toggleLoadFinal()">
+              <div class="k">LOAD</div>
+              <div class="v" style="background:#7c3aed;">FINAL</div> <!-- violet -->
+            </button>
           </div>
         </div>
 
@@ -838,9 +795,7 @@ body.dark .timeline-scroll{
           document.addEventListener("DOMContentLoaded", ()=>{
             const mount = document.getElementById('horairesMount');
             if(!mount) return;
-
             const half = "is-full-mobile is-half-tablet is-half-desktop";
-
             mount.innerHTML = `<div class="columns is-multiline">
               ${timeField('SIBT','SIBT',"updateAllCalculations()", half)}
               ${timeField('AIBT','AIBT',"updateAllCalculations()", half)}
@@ -946,7 +901,6 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <!-- Boutons finaux -->
   <div class="buttons is-centered">
     <button class="button is-success is-medium" id="validate" onclick="validateForm()">VALIDER</button>
     <button class="button is-link is-medium" id="save" onclick="manualSave()">SAUVEGARDER</button>
@@ -995,7 +949,7 @@ window._tobtAdjMins = null;
 /* DL */
 let lastDLChanged = 1;
 
-/* ===== helpers digits only ===== */
+/* digits only */
 function digitsOnly(el){
   el.value = (el.value || '').replace(/[^0-9]/g,'');
 }
@@ -1022,12 +976,6 @@ function stopCountdown(){
   if(el) el.textContent = '--:--';
 }
 
-/* Règles CD:
-   - stop si AOBT renseigné
-   - déclenche si SIBT + AIBT + SOBT
-   - si AIBT <= SIBT => SOBT - now
-   - si AIBT >  SIBT => TOBT(affiché) - now
-*/
 function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
@@ -1060,7 +1008,6 @@ function updateCountdownOnce(){
   if (AIBT <= SIBT){
     targetMin = SOBT;
   } else {
-    // utiliser la valeur calculée (fiable), pas un parsing du texte
     const tobt = window._tobtAdjMins;
     if(tobt == null){
       el.textContent = '--:--';
@@ -1111,7 +1058,7 @@ function timelineSetZoom(z){
   scroller.scrollLeft = prevCenterRatio * scroller.scrollWidth - scroller.clientWidth/2;
 }
 
-/* ===== LOAD POPovers (ARR / EXP / FINAL) ===== */
+/* ===== LOAD POPovers ===== */
 function showBackdrop(){
   const b = document.getElementById('loadArrBackdrop');
   if(b) b.style.display = '';
@@ -1127,21 +1074,16 @@ function hideAllLoadPopovers(){
   });
   hideBackdrop();
 }
-
 function showPopover(id){
   hideAllLoadPopovers();
   showBackdrop();
   const p = document.getElementById(id);
   if(p) p.style.display = 'block';
 }
-
 function toggleLoadArr(){ showPopover('loadArrPopover'); renderPRMRows('arr'); }
 function toggleLoadExp(){ showPopover('loadExpPopover'); renderPRMRows('exp'); }
 function toggleLoadFinal(){ showPopover('loadFinalPopover'); updateFinalTOB(); }
-
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape') hideAllLoadPopovers();
-});
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideAllLoadPopovers(); });
 
 /* ===== PRM multi-lignes (ARR/EXP) ===== */
 const PRM_TYPES = ['WCHR','WCHS','WCHC','BLND','DPNA','UMNR','OTHER'];
@@ -1152,23 +1094,19 @@ function getPRMIds(mode){
   }
   return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' };
 }
-
 function readPRMData(mode){
   const {dataId} = getPRMIds(mode);
   const raw = document.getElementById(dataId)?.value || '[]';
   try{
     const arr = JSON.parse(raw);
     return Array.isArray(arr) ? arr : [];
-  }catch(e){
-    return [];
-  }
+  }catch(e){ return []; }
 }
 function writePRMData(mode, arr){
   const {dataId} = getPRMIds(mode);
   const el = document.getElementById(dataId);
   if(el) el.value = JSON.stringify(arr || []);
 }
-
 function addPRMRow(mode){
   const arr = readPRMData(mode);
   arr.push({ type:'WCHR', seat:'' });
@@ -1176,7 +1114,6 @@ function addPRMRow(mode){
   renderPRMRows(mode);
   saveCurrentTabData();
 }
-
 function removePRMRow(mode, idx){
   const arr = readPRMData(mode);
   arr.splice(idx,1);
@@ -1184,7 +1121,6 @@ function removePRMRow(mode, idx){
   renderPRMRows(mode);
   saveCurrentTabData();
 }
-
 function renderPRMRows(mode){
   const {rowsId} = getPRMIds(mode);
   const wrap = document.getElementById(rowsId);
@@ -1225,7 +1161,6 @@ function renderPRMRows(mode){
     `;
   }).join('');
 }
-
 function onPRMChange(sel){
   const mode = sel.getAttribute('data-mode');
   const idx = parseInt(sel.getAttribute('data-idx'),10);
@@ -1236,7 +1171,6 @@ function onPRMChange(sel){
   writePRMData(mode, data);
   saveCurrentTabData();
 }
-
 function onPRMInput(inp){
   inp.value = (inp.value||'').toUpperCase();
   const mode = inp.getAttribute('data-mode');
@@ -1256,7 +1190,6 @@ function asInt(id){
   const n = parseInt(v,10);
   return isNaN(n) ? null : n;
 }
-
 function syncAdultIfNeeded(){
   const m = asInt('FinalMALE');
   const f = asInt('FinalFEMALE');
@@ -1270,7 +1203,6 @@ function syncAdultIfNeeded(){
     adultEl.readOnly = false;
   }
 }
-
 function updateFinalTOB(){
   syncAdultIfNeeded();
 
@@ -1280,13 +1212,9 @@ function updateFinalTOB(){
   const c = asInt('FinalCHILD')  ?? 0;
   const i = asInt('FinalINFANT') ?? 0;
 
-  let main = null;
-
-  if(m != null && f != null){
-    main = (m + f) + c;
-  }else if(a != null){
-    main = a + c;
-  }
+  let main = null; // TOB sans infant
+  if(m != null && f != null) main = (m + f) + c;
+  else if(a != null) main = a + c;
 
   const tobEl = document.getElementById('FinalTOB');
   if(!tobEl) return;
@@ -1297,9 +1225,9 @@ function updateFinalTOB(){
     return;
   }
 
-  // toujours afficher "+ 0" si 0 infant
   tobEl.value = `${main} + ${i}`;
 
+  // IMPORTANT: OA+OB+OC+OD doit == main (sans infant)
   const oa = asInt('FinalOA') ?? 0;
   const ob = asInt('FinalOB') ?? 0;
   const oc = asInt('FinalOC') ?? 0;
@@ -1337,9 +1265,10 @@ function initForm(){
   setDarkMode(storedDark, true);
   setTimeModeUTC(storedUTC, true);
 
-  ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion',
-   'LoadPAX','LoadBAGS','LoadCARGO','ExpPAX','ExpBAGS','ExpCARGO',
-   'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD'
+  [
+    'AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion',
+    'LoadPAX','LoadBAGS','LoadCARGO','ExpPAX','ExpBAGS','ExpCARGO',
+    'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD'
   ].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
@@ -1386,7 +1315,7 @@ function setDefaultDateToTodayIfEmpty(){
   if(d && !d.value){ d.valueAsDate = new Date(); }
 }
 
-/* MAJUSCULE */
+/* uppercase */
 function setupUppercaseInputs(ids){
   ids.forEach(id=>{
     const el = document.getElementById(id);
@@ -1689,17 +1618,16 @@ function updateTimers() {
   document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* LID = TOBT - 8 (sur TOBT brut) */
+/* LID = TOBT - 8 */
 function updateLID() {
   const tobtRawMins = window._tobtRawMins;
   const el = document.getElementById('timer-h8');
   if (!el) return;
   if (tobtRawMins == null) { el.textContent = "--:--"; return; }
-  const lid = tobtRawMins - 8;
-  el.textContent = fmtHHMM(lid);
+  el.textContent = fmtHHMM(tobtRawMins - 8);
 }
 
-/* SOBT par défaut (base SIBT + 25/35) */
+/* SOBT par défaut */
 function updateSOBTDefault() {
   if (manualSOBT) return;
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
@@ -1747,17 +1675,15 @@ function updateTOBT() {
   let TOBT_raw;
 
   if (cie === 'FR' || cie === 'RK') {
-    if (!isDelayed) {
-      TOBT_raw = new Date(SOBT);
-    } else {
+    if (!isDelayed) TOBT_raw = new Date(SOBT);
+    else {
       const turn = crewChange ? 35 : 25;
       const candidate = addMin(AIBT, turn);
       TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
     }
   } else if (cie === 'W4' || cie === 'W6') {
-    if (!isDelayed) {
-      TOBT_raw = new Date(SOBT);
-    } else {
+    if (!isDelayed) TOBT_raw = new Date(SOBT);
+    else {
       const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
       const turn = (type === 'A321') ? 35 : 30;
       const candidate = addMin(AIBT, turn);
@@ -1767,9 +1693,7 @@ function updateTOBT() {
     if (aibttxt && AIBT > SIBT) {
       const diff = (SOBT - SIBT) / 60000;
       TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
-    } else {
-      TOBT_raw = new Date(SOBT);
-    }
+    } else TOBT_raw = new Date(SOBT);
   }
 
   if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
@@ -1806,7 +1730,6 @@ function updateDLCode() {
     if (cie === 'FR' || cie === 'RK') document.getElementById('DLcode1').value = '93';
     else if (cie === 'W4' || cie === 'W6') document.getElementById('DLcode1').value = '93A';
     else document.getElementById('DLcode1').value = '';
-
     document.getElementById('DLduree1').value = Math.round((AIBT - SIBT) / 60000) || '';
   } else {
     document.getElementById('DLcode1').value = '';
@@ -1814,7 +1737,7 @@ function updateDLCode() {
   }
 }
 
-/* DL DURÉES */
+/* DL redistribution */
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
 
 function totalDelayMinutes(){
@@ -1828,7 +1751,6 @@ function totalDelayMinutes(){
   if (total < 0) total += 1440;
   return total;
 }
-
 function redistributeDL(){
   const total = totalDelayMinutes();
   const f1 = document.getElementById('DLduree1');
@@ -1840,10 +1762,7 @@ function redistributeDL(){
   let d2 = parseInt(f2.value)||0;
   let d3 = parseInt(f3.value)||0;
 
-  if(total==null){
-    clearDLBorders();
-    return;
-  }
+  if(total==null){ clearDLBorders(); return; }
 
   d1 = Math.max(0, Math.min(d1, total));
 
@@ -1867,13 +1786,9 @@ function redistributeDL(){
   f3.value = d3 || '';
 
   const sum = d1 + d2 + d3;
-  if (sum > total){
-    markLastFilledDLError();
-  } else {
-    clearDLBorders();
-  }
+  if (sum > total) markLastFilledDLError();
+  else clearDLBorders();
 }
-
 function markLastFilledDLError(){
   clearDLBorders();
   const f1 = document.getElementById('DLduree1');
@@ -1886,7 +1801,6 @@ function markLastFilledDLError(){
   else if (d2 > 0) f2.classList.add('dl-error');
   else if (d1 > 0) f1.classList.add('dl-error');
 }
-
 function clearDLBorders(){
   ['DLduree1','DLduree2','DLduree3'].forEach(id=>{
     const el = document.getElementById(id);
@@ -1930,7 +1844,6 @@ function setDarkMode(enable, fromInit=false){
   updateHeaderOffset();
   renderTimeline();
 }
-
 function setTimeModeUTC(enable, fromInit=false){
   const offsetHours = -new Date().getTimezoneOffset() / 60;
 
@@ -1990,7 +1903,6 @@ function toExtended(t, min, max){
   const startMod = ((min % 1440) + 1440) % 1440;
   return (t < startMod) ? t + 1440 : t;
 }
-
 function computeTimelineWindow(allTimes){
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
@@ -2087,8 +1999,6 @@ function collectTimelineData(){
 
   return {fixedPoints, durations, windowInfo};
 }
-
-/* Render timeline */
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -2266,13 +2176,9 @@ function validateForm() {
   if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
   if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
 
-  const dlBlock = dlLines.length > 0
-      ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
-      : "";
+  const dlBlock = dlLines.length > 0 ? `\n== DL ==\n\n${dlLines.join("\n")}\n` : "";
 
-  const faitsBlock = val("FaitsSaillants").trim() !== ""
-      ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
-      : "";
+  const faitsBlock = val("FaitsSaillants").trim() !== "" ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n` : "";
 
   const prmArr = (() => {
     try{
@@ -2348,10 +2254,7 @@ INFANT : ${val("FinalINFANT")}
 TOB : ${val("FinalTOB")}
 OA : ${val("FinalOA")} / OB : ${val("FinalOB")} / OC : ${val("FinalOC")} / OD : ${val("FinalOD")}
 
-${[
-  dlBlock,
-  faitsBlock
-].filter(Boolean).join("\n")}`;
+${[dlBlock, faitsBlock].filter(Boolean).join("\n")}`;
 
   window.location.href =
       `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
