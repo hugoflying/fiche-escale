@@ -156,7 +156,7 @@ body.dark .fixed-header{
 /* CTOT éditable (même look que les autres timers) */
 .ctot-pill{
   width: auto;
-  min-width: 70px;              /* comme .v */
+  min-width: 70px;
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
@@ -164,23 +164,19 @@ body.dark .fixed-header{
   color:#fff !important;
   font-weight: 900 !important;
   border-radius: 999px !important;
-  padding: 6px 10px !important; /* comme .v */
+  padding: 6px 10px !important;
   text-align:center;
   height: auto;
   line-height: 1.2;
-  font-size: 1rem;              /* même taille que les autres */
+  font-size: 1rem;
   appearance: none;
   -webkit-appearance: none;
 }
 .ctot-pill::-webkit-datetime-edit{ color:#fff; }
-/* enlever le symbole horloge */
-.ctot-pill::-webkit-calendar-picker-indicator{
-  display:none;
-  -webkit-appearance:none;
-}
+.ctot-pill::-webkit-calendar-picker-indicator{ display:none; -webkit-appearance:none; }
 
 #timer-tobt{ background:#16a34a !important; }
-#timer-h8{ background:#facc15 !important; color:#fff !important; } /* LID en blanc */
+#timer-h8{ background:#facc15 !important; color:#fff !important; } /* LID blanc */
 #timer-cd{ background:#93c5fd !important; color:#111 !important; }
 
 /* Bulma tweaks */
@@ -302,7 +298,7 @@ body.dark .card-header{
 }
 .chip-btn:active{ transform: translateY(1px); }
 
-#loadArrPopover{
+#loadArrPopover, #loadExpPopover, #loadFinalPopover{
   position: fixed;
   top: calc(var(--fixed-header-h) + 16px);
   left: 50%;
@@ -316,55 +312,25 @@ body.dark .card-header{
   padding: 12px;
   border: 1px solid rgba(0,0,0,.08);
 }
-body.dark #loadArrPopover{
+body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopover{
   border-color: rgba(255,255,255,.10);
 }
-#loadArrPopover .hdr{
+#loadArrPopover .hdr, #loadExpPopover .hdr, #loadFinalPopover .hdr{
   display:flex;
   align-items:center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
 }
-#loadArrPopover .hdr strong{ font-weight: 900; }
-#loadArrPopover .grid{
+#loadArrPopover .hdr strong, #loadExpPopover .hdr strong, #loadFinalPopover .hdr strong{ font-weight: 900; }
+#loadArrPopover .grid, #loadExpPopover .grid, #loadFinalPopover .grid{
   display:grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
-#loadArrPopover .field .label{ font-size: .9rem; }
-
-#loadExpPopover, #loadFinalPopover{
-  position: fixed;
-  top: calc(var(--fixed-header-h) + 16px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(520px, calc(100vw - 28px));
-  background: var(--card);
-  box-shadow: var(--shadow);
-  border-radius: 16px;
-  z-index: 4500;
-  display: none;
-  padding: 12px;
-  border: 1px solid rgba(0,0,0,.08);
+#loadArrPopover .field .label, #loadExpPopover .field .label, #loadFinalPopover .field .label{
+  font-size: .9rem;
 }
-body.dark #loadExpPopover, body.dark #loadFinalPopover{
-  border-color: rgba(255,255,255,.10);
-}
-#loadExpPopover .hdr, #loadFinalPopover .hdr{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-#loadExpPopover .hdr strong, #loadFinalPopover .hdr strong{ font-weight: 900; }
-#loadExpPopover .grid, #loadFinalPopover .grid{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-#loadExpPopover .field .label, #loadFinalPopover .field .label{ font-size: .9rem; }
 
 #loadArrBackdrop{
   position: fixed;
@@ -383,7 +349,19 @@ body.dark #loadExpPopover, body.dark #loadFinalPopover{
 }
 .prm-row .button{ border-radius: 12px; }
 
-/* === TIMELINE (inchangé) === */
+/* LOAD buttons row (même look que HLE etc) */
+.load-row{
+  display:flex;
+  gap:10px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+.load-row .timer-chip{
+  min-width: 170px; /* harmonisé */
+}
+
+/* === TIMELINE === */
 .timeline-track {
   position: absolute; left:6%; right:6%;
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
@@ -433,8 +411,6 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
   display:flex; align-items:center; gap:8px; margin: 4px 0 10px;
   flex-wrap: wrap;
 }
-.tl-sep{ width:1px; height:22px; background:#cfd4da; }
-body.dark .tl-sep{ background:#3a3a3a; }
 .timeline-scroll{
   overflow-x:auto; overflow-y:hidden;
   border-radius: 16px;
@@ -597,23 +573,6 @@ body.dark .timeline-scroll{
       <div class="control">
         <input class="input" id="FinalTOB" type="text" readonly style="font-weight:900; text-align:center;">
       </div>
-    </div>
-  </div>
-
-  <hr style="margin:12px 0;">
-
-  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
-    <div class="field">
-      <label class="label">LIBRE 1</label>
-      <div class="control"><input class="input" id="FinalFREE1" type="text" inputmode="numeric" oninput="digitsOnly(this)"></div>
-    </div>
-    <div class="field">
-      <label class="label">LIBRE 2</label>
-      <div class="control"><input class="input" id="FinalFREE2" type="text" inputmode="numeric" oninput="digitsOnly(this)"></div>
-    </div>
-    <div class="field">
-      <label class="label">LIBRE 3</label>
-      <div class="control"><input class="input" id="FinalFREE3" type="text" inputmode="numeric" oninput="digitsOnly(this)"></div>
     </div>
   </div>
 
@@ -821,20 +780,19 @@ body.dark .timeline-scroll{
               </select>
             </div>
 
-            <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-start; flex-wrap:wrap;">
-              <button type="button" class="timer-chip chip-btn" style="min-width: 170px;" onclick="toggleLoadArr()">
+            <!-- LOAD buttons: UNE SEULE LIGNE, MEME VISUEL -->
+            <div class="load-row">
+              <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
                 <div class="k">LOAD</div>
                 <div class="v" style="background:#2563eb;">ARR.</div>
               </button>
 
-              <button type="button" class="timer-chip chip-btn" style="min-width: 170px;" onclick="toggleLoadExp()">
+              <button type="button" class="timer-chip chip-btn" onclick="toggleLoadExp()">
                 <div class="k">LOAD</div>
                 <div class="v" style="background:#0ea5e9;">EXP.</div>
               </button>
-            </div>
 
-            <div style="margin-top:10px; display:flex; justify-content:flex-start;">
-              <button type="button" class="timer-chip chip-btn" style="min-width: 350px;" onclick="toggleLoadFinal()">
+              <button type="button" class="timer-chip chip-btn" onclick="toggleLoadFinal()">
                 <div class="k">LOAD</div>
                 <div class="v" style="background:#111827;">FINAL</div>
               </button>
@@ -918,15 +876,7 @@ body.dark .timeline-scroll{
         <button type="button" class="button is-small" onclick="timelineZoomOut()">−</button>
         <span class="tag is-light" id="timelineZoomLabel">100%</span>
         <button type="button" class="button is-small" onclick="timelineZoomIn()">+</button>
-        <div class="tl-sep"></div>
-        <button type="button" class="button is-small" onclick="timelineScroll(-15)">◀ 15 min</button>
-        <button type="button" class="button is-small" onclick="timelineScroll(15)">15 min ▶</button>
-        <div class="tl-sep"></div>
         <button type="button" class="button is-small is-light" onclick="timelineZoomReset()">Reset</button>
-        <label class="checkbox ml-2" title="Afficher l’heure à côté des étiquettes" style="display:flex;align-items:center;gap:8px;">
-          <input type="checkbox" id="showTimesToggle" checked onchange="try{ showTimeLabels=this.checked; renderTimeline(); }catch(e){}">
-          <span>Afficher heure/durée</span>
-        </label>
       </div>
 
       <div class="timeline-scroll" id="timelineScroll">
@@ -1038,8 +988,9 @@ const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
-/* TOBT brut (pour LID) */
+/* TOBT brut (pour LID) + TOBT affiché (pour countdown) */
 window._tobtRawMins = null;
+window._tobtAdjMins = null;
 
 /* DL */
 let lastDLChanged = 1;
@@ -1075,7 +1026,7 @@ function stopCountdown(){
    - stop si AOBT renseigné
    - déclenche si SIBT + AIBT + SOBT
    - si AIBT <= SIBT => SOBT - now
-   - si AIBT >  SIBT => TOBT - now
+   - si AIBT >  SIBT => TOBT(affiché) - now
 */
 function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
@@ -1109,13 +1060,13 @@ function updateCountdownOnce(){
   if (AIBT <= SIBT){
     targetMin = SOBT;
   } else {
-    const tobtTxt = (document.getElementById('timer-tobt')?.textContent || '').trim();
-    const TOBT = parseHHMM(tobtTxt);
-    if(TOBT == null){
+    // utiliser la valeur calculée (fiable), pas un parsing du texte
+    const tobt = window._tobtAdjMins;
+    if(tobt == null){
       el.textContent = '--:--';
       return;
     }
-    targetMin = TOBT;
+    targetMin = tobt;
   }
 
   const now = getNowMinutes();
@@ -1159,13 +1110,6 @@ function timelineSetZoom(z){
   renderTimeline();
   scroller.scrollLeft = prevCenterRatio * scroller.scrollWidth - scroller.clientWidth/2;
 }
-function timelineScroll(deltaMinutes){
-  const scroller = document.getElementById('timelineScroll');
-  if(!scroller || !_timelineCurrentRange) return;
-  const totalMin = _timelineCurrentRange.max - _timelineCurrentRange.min;
-  const pxPerMin = (scroller.scrollWidth) / Math.max(1,totalMin);
-  scroller.scrollLeft += deltaMinutes * pxPerMin;
-}
 
 /* ===== LOAD POPovers (ARR / EXP / FINAL) ===== */
 function showBackdrop(){
@@ -1206,7 +1150,7 @@ function getPRMIds(mode){
   if(mode === 'exp'){
     return { dataId:'ExpPRMData', rowsId:'ExpPRMRows' };
   }
-  return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' }; // arr par défaut
+  return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' };
 }
 
 function readPRMData(mode){
@@ -1338,11 +1282,9 @@ function updateFinalTOB(){
 
   let main = null;
 
-  // priorité : MALE+FEMALE+CHILD si MALE & FEMALE remplis
   if(m != null && f != null){
     main = (m + f) + c;
   }else if(a != null){
-    // sinon ADULT + CHILD
     main = a + c;
   }
 
@@ -1355,9 +1297,9 @@ function updateFinalTOB(){
     return;
   }
 
-  tobEl.value = (i > 0) ? `(${main} + ${i})` : `${main}`;
+  // toujours afficher "+ 0" si 0 infant
+  tobEl.value = `${main} + ${i}`;
 
-  // contrôle OA/OB/OC/OD == main (sans infants)
   const oa = asInt('FinalOA') ?? 0;
   const ob = asInt('FinalOB') ?? 0;
   const oc = asInt('FinalOC') ?? 0;
@@ -1395,7 +1337,6 @@ function initForm(){
   setDarkMode(storedDark, true);
   setTimeModeUTC(storedUTC, true);
 
-  /* recalcul instantané */
   ['AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion',
    'LoadPAX','LoadBAGS','LoadCARGO','ExpPAX','ExpBAGS','ExpCARGO',
    'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD'
@@ -1548,7 +1489,6 @@ function clearFormFields(){
   const d = document.getElementById('Date');
   if(d) d.valueAsDate=new Date();
 
-  // reset PRM json
   const prmA = document.getElementById('LoadPRMData');
   const prmE = document.getElementById('ExpPRMData');
   if(prmA) prmA.value = '[]';
@@ -1749,7 +1689,7 @@ function updateTimers() {
   document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* LID = TOBT - 8 */
+/* LID = TOBT - 8 (sur TOBT brut) */
 function updateLID() {
   const tobtRawMins = window._tobtRawMins;
   const el = document.getElementById('timer-h8');
@@ -1788,6 +1728,7 @@ function updateTOBT() {
   if (!cie || !sibttxt || !sobttxt) {
     document.getElementById('timer-tobt').textContent = '--:--';
     window._tobtRawMins = null;
+    window._tobtAdjMins = null;
     return;
   }
 
@@ -1842,6 +1783,8 @@ function updateTOBT() {
     if (CTOT > tobtPlus15) TOBT_adj = new Date(CTOT.getTime() - 15*60000);
     if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
   }
+
+  window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
 
   document.getElementById('timer-tobt').textContent =
     `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
@@ -2067,7 +2010,7 @@ function computeTimelineWindow(allTimes){
 
     if (max <= min) max += 1440;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'(HLE<SIBT?HLE:SIBT) → AOBT|TOBT'};
+    return {min, max};
   }
 
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
@@ -2079,7 +2022,7 @@ function computeTimelineWindow(allTimes){
 
     if (max <= min) max += 1440;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'fallback SOBT'};
+    return {min, max};
   }
 
   if (allTimes && allTimes.length){
@@ -2087,10 +2030,10 @@ function computeTimelineWindow(allTimes){
     let max = Math.max(...allTimes) + 10;
     if (max <= min) max += 1440;
     if (max - min < 30) { min -= 10; max += 10; }
-    return {min, max, basis:'data'};
+    return {min, max};
   }
 
-  return {min:0, max:60, basis:'default'};
+  return {min:0, max:60};
 }
 function getPairWindow(idA,idB){
   const a = parseHHMM(document.getElementById(idA)?.value || '');
@@ -2404,9 +2347,6 @@ CHILD : ${val("FinalCHILD")}
 INFANT : ${val("FinalINFANT")}
 TOB : ${val("FinalTOB")}
 OA : ${val("FinalOA")} / OB : ${val("FinalOB")} / OC : ${val("FinalOC")} / OD : ${val("FinalOD")}
-LIBRE 1 : ${val("FinalFREE1")}
-LIBRE 2 : ${val("FinalFREE2")}
-LIBRE 3 : ${val("FinalFREE3")}
 
 ${[
   dlBlock,
