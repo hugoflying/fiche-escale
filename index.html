@@ -1020,13 +1020,19 @@ function fmtMMSSSigned(totalSeconds){
   return `${isOver ? '+' : ''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
 }
 
-function stopCountdown(){
+function stopCountdown(resetDisplay=true){
   if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
   const el = document.getElementById('timer-cd');
-  if(el){
+  if(!el) return;
+  if(resetDisplay){
     el.textContent = '--:--';
     el.classList.remove('cd-over');
   }
+}
+
+function freezeCountdown(){
+  // on coupe juste l'interval, on ne touche pas au texte affiché
+  if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
 }
 
 function updateCountdownOnce(){
@@ -1034,7 +1040,7 @@ function updateCountdownOnce(){
   if(!el) return;
 
   const aobtTxt = document.getElementById('AOBT')?.value || '';
-  if(aobtTxt){ stopCountdown(); return; }
+  if(aobtTxt){ freezeCountdown(); return; }
 
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
@@ -1073,13 +1079,21 @@ function ensureCountdownRunning(){
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
+
   const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && !aobtTxt);
-  if(!shouldRun){ stopCountdown(); return; }
+
+  if(!shouldRun){
+    if(aobtTxt) freezeCountdown();
+    else stopCountdown(true);
+    return;
+  }
 
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
-  } else updateCountdownOnce();
+  } else {
+    updateCountdownOnce();
+  }
 }
 
 /* Timeline zoom */
