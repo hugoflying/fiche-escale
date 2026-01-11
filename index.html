@@ -1039,39 +1039,82 @@ function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
 
-  const aobtTxt = document.getElementById('AOBT')?.value || '';
-  if(aobtTxt){ freezeCountdown(); return; }
-
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
-  if(!aibtTxt || !sobtTxt || !sibtTxt){ el.textContent = '--:--'; el.classList.remove('cd-over'); return; }
+  const aobtTxt = document.getElementById('AOBT')?.value || '';
+
+  if(!aibtTxt || !sobtTxt || !sibtTxt){
+    el.textContent = '--:--';
+    el.classList.remove('cd-over');
+    return;
+  }
 
   const SIBT = parseHHMM(sibtTxt);
   const AIBT = parseHHMM(aibtTxt);
   const SOBT = parseHHMM(sobtTxt);
-  if(SIBT == null || AIBT == null || SOBT == null){ el.textContent = '--:--'; el.classList.remove('cd-over'); return; }
+  if(SIBT == null || AIBT == null || SOBT == null){
+    el.textContent = '--:--';
+    el.classList.remove('cd-over');
+    return;
+  }
 
+  // cible = SOBT si retard AIBT<=SIBT, sinon TOBT adj
   let targetMin = null;
-
   if (AIBT <= SIBT) targetMin = SOBT;
   else {
     const tobt = window._tobtAdjMins;
-    if(tobt == null){ el.textContent = '--:--'; el.classList.remove('cd-over'); return; }
+    if(tobt == null){
+      el.textContent = '--:--';
+      el.classList.remove('cd-over');
+      return;
+    }
     targetMin = tobt;
   }
 
+  // ===== CAS AOBT : on fige MAIS on recalcule selon AOBT =====
+  if(aobtTxt){
+    const AOBT = parseHHMM(aobtTxt);
+    if(AOBT == null){
+      el.textContent = '--:--';
+      el.classList.remove('cd-over');
+      return;
+    }
+
+    // diff = AOBT - cible (signé, gère minuit)
+    let diffMin = AOBT - targetMin;
+    if(diffMin > 720) diffMin -= 1440;
+    if(diffMin < -720) diffMin += 1440;
+
+    const totalSeconds = diffMin * 60;
+    const sign = totalSeconds >= 0 ? '+' : '-';
+    const abs = Math.abs(totalSeconds);
+    const mm = Math.floor(abs / 60);
+    const ss = abs % 60;
+
+    el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+
+    // rouge si + (retard)
+    el.classList.toggle('cd-over', totalSeconds > 0);
+    return;
+  }
+
+  // ===== CAS NORMAL : live avec NOW (décompte puis +) =====
   const now = getNowMinutes();
 
-  // delta signé (secondes) : >0 avant, <0 après (dépassement)
-  let deltaSeconds = (targetMin - now.mins) * 60 - now.secs;
+  let diffMin = targetMin - now.mins;
+  if(diffMin < -720) diffMin += 1440;
+  if(diffMin > 720) diffMin -= 1440;
 
-  // anti-bug autour de minuit : on prend l'occurrence la plus proche (+/- 12h)
-  if(deltaSeconds < -43200) deltaSeconds += 86400;
-  if(deltaSeconds >  43200) deltaSeconds -= 86400;
+  const remainingSeconds = diffMin * 60 - now.secs;
 
-  el.textContent = fmtMMSSSigned(deltaSeconds);
-  el.classList.toggle('cd-over', deltaSeconds < 0);
+  const sign = remainingSeconds <= 0 ? '+' : ''; // quand on dépasse => +
+  const abs = Math.abs(remainingSeconds);
+  const mm = Math.floor(abs / 60);
+  const ss = abs % 60;
+
+  el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  el.classList.toggle('cd-over', remainingSeconds < 0); // rouge quand on est passé à +
 }
 
 function ensureCountdownRunning(){
@@ -1080,14 +1123,22 @@ function ensureCountdownRunning(){
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  const shouldRun = !!(sibtTxt && aibtTxt && sobtTxt && !aobtTxt);
+  const baseOK = !!(sibtTxt && aibtTxt && sobtTxt);
 
-  if(!shouldRun){
-    if(aobtTxt) freezeCountdown();
-    else stopCountdown(true);
+  // Si AOBT est rempli : pas d'interval, mais on recalcule l'affichage (donc ça suit si tu modifies AOBT)
+  if(baseOK && aobtTxt){
+    freezeCountdown();
+    updateCountdownOnce();
     return;
   }
 
+  // Si base incomplète : on stop + reset
+  if(!baseOK){
+    stopCountdown(true);
+    return;
+  }
+
+  // Live
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
