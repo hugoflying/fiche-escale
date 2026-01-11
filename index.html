@@ -1665,9 +1665,13 @@ function updateLID() {
   el.textContent = fmtHHMM(tobtRawMins - 8);
 }
 
-/* SOBT par défaut */
 function updateSOBTDefault() {
-  if (manualSOBT) return;
+  const sobtEl = document.getElementById('SOBT');
+  if(!sobtEl) return;
+
+  // Si SOBT a déjà une valeur, on ne touche plus (tu peux donc la modifier librement)
+  if ((sobtEl.value || '').trim() !== '') return;
+
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibt = document.getElementById('SIBT')?.value || '';
   const arrPNT = document.getElementById('ArrPNT')?.value || '';
@@ -1680,7 +1684,7 @@ function updateSOBTDefault() {
   let add = 35;
   if (cie === "FR" || cie === "RK") add = (arrPNT || arrPNC) ? 35 : 25;
   const sobtCalc = new Date(base.getTime() + add * 60000);
-  document.getElementById('SOBT').value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
+  sobtEl.value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
 /* TOBT + règle CTOT */
