@@ -432,49 +432,37 @@ body.dark .timeline-scroll{
 <div id="loadArrPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD ARR.</strong>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <button class="button is-small is-danger is-light"
-              type="button"
-              title="Vider LOAD ARR"
-              onclick="clearLoadArrPopover()">🗑️</button>
-      <button class="button is-small is-light"
-              type="button"
-              onclick="hideAllLoadPopovers()">Fermer</button>
-    </div>
+    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
 
   <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
       <div class="control">
-        <input class="input" id="LoadPAX" type="text" inputmode="numeric"
-               placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="LoadPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="LoadBAGS" type="text" inputmode="numeric"
-               placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="LoadBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">CARGO</label>
       <div class="control">
-        <input class="input" id="LoadCARGO" type="text">
+        <input class="input" id="LoadCARGO" type="text" placeholder="">
       </div>
     </div>
   </div>
 
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
-    <button class="button is-small is-link"
-            type="button"
-            onclick="addPRMRow('arr')">+ Ajouter</button>
+    <button class="button is-small is-link" type="button" onclick="addPRMRow('arr')">+ Ajouter</button>
   </div>
 
   <input type="hidden" id="LoadPRMData" value="[]">
@@ -485,49 +473,37 @@ body.dark .timeline-scroll{
 <div id="loadExpPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD EXP.</strong>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <button class="button is-small is-danger is-light"
-              type="button"
-              title="Vider LOAD EXP"
-              onclick="clearLoadExpPopover()">🗑️</button>
-      <button class="button is-small is-light"
-              type="button"
-              onclick="hideAllLoadPopovers()">Fermer</button>
-    </div>
+    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
 
   <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
       <div class="control">
-        <input class="input" id="ExpPAX" type="text" inputmode="numeric"
-               placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="ExpPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="ExpBAGS" type="text" inputmode="numeric"
-               placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="ExpBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">CARGO</label>
       <div class="control">
-        <input class="input" id="ExpCARGO" type="text">
+        <input class="input" id="ExpCARGO" type="text" placeholder="">
       </div>
     </div>
   </div>
 
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
-  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
-    <button class="button is-small is-link"
-            type="button"
-            onclick="addPRMRow('exp')">+ Ajouter</button>
+    <button class="button is-small is-link" type="button" onclick="addPRMRow('exp')">+ Ajouter</button>
   </div>
 
   <input type="hidden" id="ExpPRMData" value="[]">
@@ -538,22 +514,14 @@ body.dark .timeline-scroll{
 <div id="loadFinalPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD FINAL</strong>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <button class="button is-small is-danger is-light"
-              type="button"
-              title="Vider LOAD FINAL"
-              onclick="clearLoadFinalPopover()">🗑️</button>
-      <button class="button is-small is-light"
-              type="button"
-              onclick="hideAllLoadPopovers()">Fermer</button>
-    </div>
+    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
 
   <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
     <div class="field">
       <label class="label">MALE</label>
       <div class="control">
-        <input class="input" id="FinalMALE" type="text" inputmode="numeric"
+        <input class="input" id="FinalMALE" type="text" inputmode="numeric" placeholder="0"
                oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
       </div>
     </div>
@@ -561,7 +529,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">FEMALE</label>
       <div class="control">
-        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric"
+        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric" placeholder="0"
                oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
       </div>
     </div>
@@ -569,7 +537,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">ADULT</label>
       <div class="control">
-        <input class="input" id="FinalADULT" type="text" inputmode="numeric"
+        <input class="input" id="FinalADULT" type="text" inputmode="numeric" placeholder="0"
                oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
@@ -577,7 +545,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">CHILD</label>
       <div class="control">
-        <input class="input" id="FinalCHILD" type="text" inputmode="numeric"
+        <input class="input" id="FinalCHILD" type="text" inputmode="numeric" placeholder="0"
                oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
@@ -585,7 +553,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">INFANT</label>
       <div class="control">
-        <input class="input" id="FinalINFANT" type="text" inputmode="numeric"
+        <input class="input" id="FinalINFANT" type="text" inputmode="numeric" placeholder="0"
                oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
@@ -593,8 +561,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">TOB</label>
       <div class="control">
-        <input class="input is-valid" id="FinalTOB" type="text"
-               readonly style="font-weight:900; text-align:center;">
+        <input class="input is-valid" id="FinalTOB" type="text" readonly style="font-weight:900; text-align:center;">
       </div>
     </div>
   </div>
@@ -602,20 +569,23 @@ body.dark .timeline-scroll{
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
   <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
-    <div class="field"><label class="label">OA</label><input class="input" id="FinalOA" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    <div class="field"><label class="label">OB</label><input class="input" id="FinalOB" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    <div class="field"><label class="label">OC</label><input class="input" id="FinalOC" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    <div class="field"><label class="label">OD</label><input class="input" id="FinalOD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    <div class="field">
+      <label class="label">OA</label>
+      <div class="control"><input class="input" id="FinalOA" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+    <div class="field">
+      <label class="label">OB</label>
+      <div class="control"><input class="input" id="FinalOB" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+    <div class="field">
+      <label class="label">OC</label>
+      <div class="control"><input class="input" id="FinalOC" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
+    <div class="field">
+      <label class="label">OD</label>
+      <div class="control"><input class="input" id="FinalOD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    </div>
   </div>
-
-  <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
-
-  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
-    <div class="field"><label class="label">BAGS</label><input class="input" id="FinalBAGS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
-    <div class="field"><label class="label">POIDS</label><input class="input" id="FinalPOIDS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
-    <div class="field"><label class="label">GB</label><input class="input" id="FinalGB" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
-  </div>
-</div>
 
   <!-- NEW section -->
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
@@ -636,23 +606,41 @@ body.dark .timeline-scroll{
   </div>
 </div>
 
-<!-- ===== FIXED HEADER (réduit) ===== -->
+<!-- ===== FIXED HEADER ===== -->
 <div class="fixed-header" id="fixedHeader">
   <div class="fixed-header-inner">
 
-    <!-- BARRE DES VOLS -->
+    <div class="topbar-inner">
+      <div class="brandline">
+        <div class="brand-title">
+          <strong>SUIVI PERFORMANCE</strong>
+        </div>
+      </div>
+
+      <div class="top-toggles" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
+        <label class="toggle">
+          <span id="darkLabel">Clair</span>
+          <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+
+        <label class="toggle">
+          <span id="tzLabel">Locale</span>
+          <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
+      </div>
+    </div>
+
     <div class="tabs-row">
       <div id="tab-bar" class="tabs-chip"></div>
     </div>
 
-    <!-- TIMERS -->
     <div class="timer-row">
-
       <div class="timer-chip">
         <div class="k">HLE</div>
         <div id="timer-h40" class="v">--:--</div>
       </div>
-
       <div class="timer-chip">
         <div class="k">H-15</div>
         <div id="timer-h15" class="v">--:--</div>
@@ -663,37 +651,20 @@ body.dark .timeline-scroll{
         <div id="timer-h8" class="v">--:--</div>
       </div>
 
-<!-- TOBT ÉDITABLE -->
-<div class="timer-chip">
-  <div class="k">TOBT</div>
-  <input
-    id="TOBT_MANUAL"
-    class="ctot-pill"
-    type="time"
-    readonly
-    style="background:#16a34a !important;"
-    onclick="enableManualTOBTEdit()"
-    onfocus="enableManualTOBTEdit()"
-    onchange="setManualTOBTFromInput()"
-    onblur="setManualTOBTFromInput()">
-</div>
-
-      <!-- CTOT -->
       <div class="timer-chip">
-        <div class="k">CTOT</div>
-        <input
-          id="CTOT"
-          class="ctot-pill"
-          type="time"
-          onchange="updateAllCalculations()">
+        <div class="k">TOBT</div>
+        <div id="timer-tobt" class="v">--:--</div>
       </div>
 
-      <!-- CD -->
+      <div class="timer-chip">
+        <div class="k">CTOT</div>
+        <input id="CTOT" class="ctot-pill" type="time" onchange="updateAllCalculations()">
+      </div>
+
       <div class="timer-chip">
         <div class="k">CD</div>
         <div id="timer-cd" class="v">--:--</div>
       </div>
-
     </div>
 
   </div>
@@ -1005,10 +976,32 @@ function updateHeaderOffset(){
   document.documentElement.style.setProperty('--fixed-header-h', h + 'px');
 }
 
+/* Vars */
+let isUTC=false;
+let manualSOBT=false;
+let currentTabId=null;
+let saveTimer=null;
+
+/* Timeline */
+let timelineZoom = 1;
+const TL_ZOOM_MIN = 0.5;
+const TL_ZOOM_MAX = 8;
+const TL_ZOOM_STEP = 0.25;
+window._timelineCurrentRange = null;
+
+/* TOBT brut + TOBT affiché */
+window._tobtRawMins = null;
+window._tobtAdjMins = null;
+
+/* DL */
+let lastDLChanged = 1;
+
 /* digits only */
 function digitsOnly(el){ el.value = (el.value || '').replace(/[^0-9]/g,''); }
 
 /* ===== COUNTDOWN (CD) ===== */
+let countdownTimer = null;
+
 function getNowMinutes(){
   const now = new Date();
   const h = isUTC ? now.getUTCHours() : now.getHours();
@@ -1020,8 +1013,10 @@ function getNowMinutes(){
 function fmtMMSSSigned(totalSeconds){
   const isOver = totalSeconds < 0;
   const abs = Math.abs(totalSeconds);
+
   const mm = Math.floor(abs / 60);
   const ss = abs % 60;
+
   return `${isOver ? '+' : ''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
 }
 
@@ -1036,6 +1031,7 @@ function stopCountdown(resetDisplay=true){
 }
 
 function freezeCountdown(){
+  // on coupe juste l'interval, on ne touche pas au texte affiché
   if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
 }
 
@@ -1097,6 +1093,8 @@ function updateCountdownOnce(){
     const ss = abs % 60;
 
     el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+
+    // rouge si + (retard)
     el.classList.toggle('cd-over', totalSeconds > 0);
     return;
   }
@@ -1110,13 +1108,13 @@ function updateCountdownOnce(){
 
   const remainingSeconds = diffMin * 60 - now.secs;
 
-  const sign = remainingSeconds <= 0 ? '+' : '';
+  const sign = remainingSeconds <= 0 ? '+' : ''; // quand on dépasse => +
   const abs = Math.abs(remainingSeconds);
   const mm = Math.floor(abs / 60);
   const ss = abs % 60;
 
   el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  el.classList.toggle('cd-over', remainingSeconds < 0);
+  el.classList.toggle('cd-over', remainingSeconds < 0); // rouge quand on est passé à +
 }
 
 function ensureCountdownRunning(){
@@ -1127,17 +1125,20 @@ function ensureCountdownRunning(){
 
   const baseOK = !!(sibtTxt && aibtTxt && sobtTxt);
 
+  // Si AOBT est rempli : pas d'interval, mais on recalcule l'affichage (donc ça suit si tu modifies AOBT)
   if(baseOK && aobtTxt){
     freezeCountdown();
     updateCountdownOnce();
     return;
   }
 
+  // Si base incomplète : on stop + reset
   if(!baseOK){
     stopCountdown(true);
     return;
   }
 
+  // Live
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
@@ -1150,7 +1151,6 @@ function ensureCountdownRunning(){
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
-
 function timelineSetZoom(z){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -1166,7 +1166,6 @@ function timelineSetZoom(z){
 /* ===== LOAD POPovers ===== */
 function showBackdrop(){ const b = document.getElementById('loadArrBackdrop'); if(b) b.style.display = ''; }
 function hideBackdrop(){ const b = document.getElementById('loadArrBackdrop'); if(b) b.style.display = 'none'; }
-
 function hideAllLoadPopovers(){
   ['loadArrPopover','loadExpPopover','loadFinalPopover'].forEach(id=>{
     const p = document.getElementById(id);
@@ -1174,26 +1173,24 @@ function hideAllLoadPopovers(){
   });
   hideBackdrop();
 }
-
 function showPopover(id){
   hideAllLoadPopovers();
   showBackdrop();
   const p = document.getElementById(id);
   if(p) p.style.display = 'block';
 }
-
 function toggleLoadArr(){ showPopover('loadArrPopover'); renderPRMRows('arr'); }
 function toggleLoadExp(){ showPopover('loadExpPopover'); renderPRMRows('exp'); }
 function toggleLoadFinal(){ showPopover('loadFinalPopover'); updateFinalTOB(); }
-
 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideAllLoadPopovers(); });
 
 /* ===== PRM multi-lignes (ARR/EXP) ===== */
+const PRM_TYPES = ['WCHR','WCHS','WCHC','BLND','DPNA','UMNR','OTHER'];
+
 function getPRMIds(mode){
   if(mode === 'exp') return { dataId:'ExpPRMData', rowsId:'ExpPRMRows' };
   return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' };
 }
-
 function readPRMData(mode){
   const {dataId} = getPRMIds(mode);
   const raw = document.getElementById(dataId)?.value || '[]';
@@ -1202,13 +1199,11 @@ function readPRMData(mode){
     return Array.isArray(arr) ? arr : [];
   }catch(e){ return []; }
 }
-
 function writePRMData(mode, arr){
   const {dataId} = getPRMIds(mode);
   const el = document.getElementById(dataId);
   if(el) el.value = JSON.stringify(arr || []);
 }
-
 function addPRMRow(mode){
   const arr = readPRMData(mode);
   arr.push({ type:'WCHR', seat:'' });
@@ -1216,7 +1211,6 @@ function addPRMRow(mode){
   renderPRMRows(mode);
   saveCurrentTabData();
 }
-
 function removePRMRow(mode, idx){
   const arr = readPRMData(mode);
   arr.splice(idx,1);
@@ -1224,7 +1218,6 @@ function removePRMRow(mode, idx){
   renderPRMRows(mode);
   saveCurrentTabData();
 }
-
 function renderPRMRows(mode){
   const {rowsId} = getPRMIds(mode);
   const wrap = document.getElementById(rowsId);
@@ -1265,7 +1258,6 @@ function renderPRMRows(mode){
     `;
   }).join('');
 }
-
 function onPRMChange(sel){
   const mode = sel.getAttribute('data-mode');
   const idx = parseInt(sel.getAttribute('data-idx'),10);
@@ -1276,7 +1268,6 @@ function onPRMChange(sel){
   writePRMData(mode, data);
   saveCurrentTabData();
 }
-
 function onPRMInput(inp){
   inp.value = (inp.value||'').toUpperCase();
   const mode = inp.getAttribute('data-mode');
@@ -1296,7 +1287,6 @@ function asInt(id){
   const n = parseInt(v,10);
   return isNaN(n) ? null : n;
 }
-
 function syncAdultIfNeeded(){
   const m = asInt('FinalMALE');
   const f = asInt('FinalFEMALE');
@@ -1310,14 +1300,12 @@ function syncAdultIfNeeded(){
     adultEl.readOnly = false;
   }
 }
-
 function setTOBValidity(isValid){
   const tobEl = document.getElementById('FinalTOB');
   if(!tobEl) return;
   tobEl.classList.toggle('is-invalid', !isValid);
   tobEl.classList.toggle('is-valid', isValid);
 }
-
 function updateFinalTOB(){
   syncAdultIfNeeded();
 
@@ -1327,7 +1315,7 @@ function updateFinalTOB(){
   const c = asInt('FinalCHILD')  ?? 0;
   const i = asInt('FinalINFANT') ?? 0;
 
-  let main = null;
+  let main = null; // TOB sans infant
   if(m != null && f != null) main = (m + f) + c;
   else if(a != null) main = a + c;
 
@@ -1546,38 +1534,29 @@ function clearFormFields(){
 
 function saveCurrentTabData(){
   if(!currentTabId) return;
-
-  let data = {};
-
+  let data={};
   document.querySelectorAll('input, select, textarea').forEach(el=>{
     if(!el.id) return;
-    if(el.type === 'checkbox') data[el.id] = el.checked ? '1' : '0';
-    else data[el.id] = el.value;
+    if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
+    else data[el.id]=el.value;
   });
+  data.modeDark=document.body.classList.contains('dark')?'1':'0';
+  data.modeUTC=isUTC?'1':'0';
 
-  data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
-  data.modeUTC  = isUTC ? '1' : '0';
-
-  data.manualTOBT = manualTOBT ? '1' : '0';
-  data.manualTOBTmins = (manualTOBTmins == null) ? '' : String(manualTOBTmins);
-
-  data.timer_h40  = document.getElementById('timer-h40')?.textContent || '--:--';
-  data.timer_h15  = document.getElementById('timer-h15')?.textContent || '--:--';
-  data.timer_h8   = document.getElementById('timer-h8')?.textContent || '--:--';
-  data.timer_tobt = document.getElementById('timer-tobt')?.textContent || '--:--';
-  data.timer_cd   = document.getElementById('timer-cd')?.textContent || '--:--';
+  data.timer_h40=document.getElementById('timer-h40')?.textContent || '--:--';
+  data.timer_h15=document.getElementById('timer-h15')?.textContent || '--:--';
+  data.timer_h8=document.getElementById('timer-h8')?.textContent || '--:--';
+  data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
+  data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
 
   data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
-
-  localStorage.setItem('tab-'+currentTabId, JSON.stringify(data));
-  localStorage.setItem('lastTabId', currentTabId);
-
+  localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
+  localStorage.setItem('lastTabId',currentTabId);
   renderTabs();
 }
 
 function loadTabData(id){
   stopCountdown();
-
   const data = JSON.parse(localStorage.getItem('tab-'+id) || '{}');
 
   document.querySelectorAll('input, select, textarea').forEach(el=>{
@@ -1590,11 +1569,6 @@ function loadTabData(id){
   else document.body.classList.remove('dark');
 
   isUTC = (data.modeUTC === '1');
-
-  manualTOBT = (data.manualTOBT === '1');
-  manualTOBTmins = (data.manualTOBTmins !== undefined && data.manualTOBTmins !== '')
-    ? parseInt(data.manualTOBTmins, 10)
-    : null;
 
   document.getElementById('timer-h40').textContent  = data.timer_h40  || '--:--';
   document.getElementById('timer-h15').textContent  = data.timer_h15  || '--:--';
@@ -1614,16 +1588,7 @@ function loadTabData(id){
   if(darkLabel) darkLabel.textContent = document.body.classList.contains('dark') ? 'Sombre' : 'Clair';
 
   setDefaultDateToTodayIfEmpty();
-
   updateAllCalculations();
-
-  const chip = document.getElementById('TOBT_MANUAL');
-  if(chip){
-    chip.readOnly = true;
-    if(manualTOBT && manualTOBTmins != null){
-      chip.value = fmtHHMM(manualTOBTmins);
-    }
-  }
 
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
@@ -1769,6 +1734,7 @@ function updateSOBTDefault() {
   const sobtEl = document.getElementById('SOBT');
   if(!sobtEl) return;
 
+  // Si SOBT a déjà une valeur, on ne touche plus (tu peux donc la modifier librement)
   if ((sobtEl.value || '').trim() !== '') return;
 
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
@@ -1794,17 +1760,10 @@ function updateTOBT() {
   const sobttxt = document.getElementById('SOBT')?.value || '';
   const ctottxt = document.getElementById('CTOT')?.value || '';
 
-  const chip = document.getElementById('TOBT_MANUAL');
-  const timer = document.getElementById('timer-tobt'); // (si tu as ce div quelque part)
-
   if (!cie || !sibttxt || !sobttxt) {
-    if(timer) timer.textContent = '--:--';
+    document.getElementById('timer-tobt').textContent = '--:--';
     window._tobtRawMins = null;
     window._tobtAdjMins = null;
-    if(chip){
-      chip.value = '';
-      chip.readOnly = true;
-    }
     return;
   }
 
@@ -1822,33 +1781,26 @@ function updateTOBT() {
 
   let TOBT_raw;
 
-  // ===== MODE MANUEL =====
-  if(manualTOBT && manualTOBTmins != null){
-    TOBT_raw = new Date();
-    TOBT_raw.setHours(Math.floor(manualTOBTmins/60), manualTOBTmins%60, 0, 0);
-  } else {
-    // ===== MODE AUTO =====
-    if (cie === 'FR' || cie === 'RK') {
-      if (!isDelayed) TOBT_raw = new Date(SOBT);
-      else {
-        const turn = crewChange ? 35 : 25;
-        const candidate = addMin(AIBT, turn);
-        TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
-      }
-    } else if (cie === 'W4' || cie === 'W6') {
-      if (!isDelayed) TOBT_raw = new Date(SOBT);
-      else {
-        const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
-        const turn = (type === 'A321') ? 35 : 30;
-        const candidate = addMin(AIBT, turn);
-        TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
-      }
-    } else {
-      if (aibttxt && AIBT > SIBT) {
-        const diff = (SOBT - SIBT) / 60000;
-        TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
-      } else TOBT_raw = new Date(SOBT);
+  if (cie === 'FR' || cie === 'RK') {
+    if (!isDelayed) TOBT_raw = new Date(SOBT);
+    else {
+      const turn = crewChange ? 35 : 25;
+      const candidate = addMin(AIBT, turn);
+      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
     }
+  } else if (cie === 'W4' || cie === 'W6') {
+    if (!isDelayed) TOBT_raw = new Date(SOBT);
+    else {
+      const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
+      const turn = (type === 'A321') ? 35 : 30;
+      const candidate = addMin(AIBT, turn);
+      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
+    }
+  } else {
+    if (aibttxt && AIBT > SIBT) {
+      const diff = (SOBT - SIBT) / 60000;
+      TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
+    } else TOBT_raw = new Date(SOBT);
   }
 
   if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
@@ -1865,46 +1817,8 @@ function updateTOBT() {
 
   window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
 
-  const hh = String(TOBT_adj.getHours()).padStart(2,'0');
-  const mm = String(TOBT_adj.getMinutes()).padStart(2,'0');
-
-  if(timer) timer.textContent = `${hh}:${mm}`;
-
-  // synchro chip
-  if(chip){
-    chip.value = `${hh}:${mm}`;
-    chip.readOnly = true;
-  }
-}
-
-function enableManualTOBTEdit(){
-  const el = document.getElementById('TOBT_MANUAL');
-  if(!el) return;
-  el.readOnly = false;
-}
-
-function setManualTOBTFromInput(){
-  const el = document.getElementById('TOBT_MANUAL');
-  if(!el) return;
-
-  const v = (el.value || '').trim();
-
-  if(!v){
-    manualTOBT = false;
-    manualTOBTmins = null;
-    el.readOnly = true;
-    updateAllCalculations();
-    return;
-  }
-
-  const m = parseHHMM(v);
-  if(m == null) return;
-
-  manualTOBT = true;
-  manualTOBTmins = m;
-  el.readOnly = true;
-
-  updateAllCalculations();
+  document.getElementById('timer-tobt').textContent =
+    `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
 }
 
 /* DL CODES */
@@ -1930,61 +1844,8 @@ function updateDLCode() {
   }
 }
 
-function clearLoadArrPopover(){
-  if(!confirm("Vider toutes les valeurs de LOAD ARR ?")) return;
-
-  const set = (id, v='') => { const el = document.getElementById(id); if(el) el.value = v; };
-
-  set('LoadPAX'); set('LoadBAGS'); set('LoadCARGO');
-
-  const prm = document.getElementById('LoadPRMData');
-  if(prm) prm.value = '[]';
-  renderPRMRows('arr');
-
-  saveCurrentTabData();
-  updateAllCalculations();
-}
-
-function clearLoadExpPopover(){
-  if(!confirm("Vider toutes les valeurs de LOAD EXP ?")) return;
-
-  const set = (id, v='') => { const el = document.getElementById(id); if(el) el.value = v; };
-
-  set('ExpPAX'); set('ExpBAGS'); set('ExpCARGO');
-
-  const prm = document.getElementById('ExpPRMData');
-  if(prm) prm.value = '[]';
-  renderPRMRows('exp');
-
-  saveCurrentTabData();
-  updateAllCalculations();
-}
-
-function clearLoadFinalPopover(){
-  if(!confirm("Vider toutes les valeurs de LOAD FINAL ?")) return;
-
-  const ids = [
-    'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalTOB',
-    'FinalOA','FinalOB','FinalOC','FinalOD',
-    'FinalBAGS','FinalPOIDS','FinalGB'
-  ];
-  ids.forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.value = '';
-  });
-
-  const adultEl = document.getElementById('FinalADULT');
-  if(adultEl) adultEl.readOnly = false;
-
-  updateFinalTOB();
-  saveCurrentTabData();
-  updateAllCalculations();
-}
-
 /* DL redistribution */
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
-
 function totalDelayMinutes(){
   const so = document.getElementById('SOBT')?.value || '';
   const ao = document.getElementById('AOBT')?.value || '';
@@ -1996,7 +1857,6 @@ function totalDelayMinutes(){
   if (total < 0) total += 1440;
   return total;
 }
-
 function redistributeDL(){
   const total = totalDelayMinutes();
   const f1 = document.getElementById('DLduree1');
@@ -2035,7 +1895,6 @@ function redistributeDL(){
   if (sum > total) markLastFilledDLError();
   else clearDLBorders();
 }
-
 function markLastFilledDLError(){
   clearDLBorders();
   const f1 = document.getElementById('DLduree1');
@@ -2048,7 +1907,6 @@ function markLastFilledDLError(){
   else if (d2 > 0) f2.classList.add('dl-error');
   else if (d1 > 0) f1.classList.add('dl-error');
 }
-
 function clearDLBorders(){
   ['DLduree1','DLduree2','DLduree3'].forEach(id=>{
     const el = document.getElementById(id);
@@ -2063,7 +1921,6 @@ function setNow(fieldId) {
   const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
   document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
-
 function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
   if (!input || !input.value) return;
@@ -2093,7 +1950,6 @@ function setDarkMode(enable, fromInit=false){
   updateHeaderOffset();
   renderTimeline();
 }
-
 function setTimeModeUTC(enable, fromInit=false){
   const offsetHours = -new Date().getTimezoneOffset() / 60;
 
@@ -2134,25 +1990,25 @@ function showPopup(message, color = "#2563eb", duration = 2000) {
 }
 
 /* Timeline helpers */
+let showTimeLabels = true;
+let timelineUserScrolled = false;
+
 function parseHHMM(str){
   if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
   const [h,m] = str.split(':').map(Number);
   return h*60 + m;
 }
-
 function fmtHHMM(mins){
   mins = ((mins % 1440) + 1440) % 1440;
   const h = Math.floor(mins/60), m = mins%60;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
-
 function toExtended(t, min, max){
   const wraps = (max > 1440);
   if (!wraps) return t;
   const startMod = ((min % 1440) + 1440) % 1440;
   return (t < startMod) ? t + 1440 : t;
 }
-
 function computeTimelineWindow(allTimes){
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
@@ -2195,14 +2051,12 @@ function computeTimelineWindow(allTimes){
 
   return {min:0, max:60};
 }
-
 function getPairWindow(idA,idB){
   const a = parseHHMM(document.getElementById(idA)?.value || '');
   const b = parseHHMM(document.getElementById(idB)?.value || '');
   if(a==null || b==null) return null;
   return [Math.min(a,b), Math.max(a,b)];
 }
-
 function collectTimelineData(){
   const fixedPoints = [];
   const addPoint = (label, t, cls='tl--std')=>{ if(t==null) return; fixedPoints.push({label, t, cls}); };
@@ -2249,7 +2103,6 @@ function collectTimelineData(){
 
   return {fixedPoints, durations, windowInfo};
 }
-
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
