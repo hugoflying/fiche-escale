@@ -432,37 +432,49 @@ body.dark .timeline-scroll{
 <div id="loadArrPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD ARR.</strong>
-    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="button is-small is-danger is-light"
+              type="button"
+              title="Vider LOAD ARR"
+              onclick="clearLoadArrPopover()">🗑️</button>
+      <button class="button is-small is-light"
+              type="button"
+              onclick="hideAllLoadPopovers()">Fermer</button>
+    </div>
   </div>
 
   <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
       <div class="control">
-        <input class="input" id="LoadPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="LoadPAX" type="text" inputmode="numeric"
+               placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="LoadBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="LoadBAGS" type="text" inputmode="numeric"
+               placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">CARGO</label>
       <div class="control">
-        <input class="input" id="LoadCARGO" type="text" placeholder="">
+        <input class="input" id="LoadCARGO" type="text">
       </div>
     </div>
   </div>
 
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
-    <button class="button is-small is-link" type="button" onclick="addPRMRow('arr')">+ Ajouter</button>
+    <button class="button is-small is-link"
+            type="button"
+            onclick="addPRMRow('arr')">+ Ajouter</button>
   </div>
 
   <input type="hidden" id="LoadPRMData" value="[]">
@@ -473,37 +485,49 @@ body.dark .timeline-scroll{
 <div id="loadExpPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD EXP.</strong>
-    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="button is-small is-danger is-light"
+              type="button"
+              title="Vider LOAD EXP"
+              onclick="clearLoadExpPopover()">🗑️</button>
+      <button class="button is-small is-light"
+              type="button"
+              onclick="hideAllLoadPopovers()">Fermer</button>
+    </div>
   </div>
 
   <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
       <div class="control">
-        <input class="input" id="ExpPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="ExpPAX" type="text" inputmode="numeric"
+               placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="ExpBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
+        <input class="input" id="ExpBAGS" type="text" inputmode="numeric"
+               placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
     <div class="field">
       <label class="label">CARGO</label>
       <div class="control">
-        <input class="input" id="ExpCARGO" type="text" placeholder="">
+        <input class="input" id="ExpCARGO" type="text">
       </div>
     </div>
   </div>
 
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
-    <button class="button is-small is-link" type="button" onclick="addPRMRow('exp')">+ Ajouter</button>
+    <button class="button is-small is-link"
+            type="button"
+            onclick="addPRMRow('exp')">+ Ajouter</button>
   </div>
 
   <input type="hidden" id="ExpPRMData" value="[]">
@@ -514,14 +538,22 @@ body.dark .timeline-scroll{
 <div id="loadFinalPopover" role="dialog" aria-modal="true">
   <div class="hdr">
     <strong>LOAD FINAL</strong>
-    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="button is-small is-danger is-light"
+              type="button"
+              title="Vider LOAD FINAL"
+              onclick="clearLoadFinalPopover()">🗑️</button>
+      <button class="button is-small is-light"
+              type="button"
+              onclick="hideAllLoadPopovers()">Fermer</button>
+    </div>
   </div>
 
   <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
     <div class="field">
       <label class="label">MALE</label>
       <div class="control">
-        <input class="input" id="FinalMALE" type="text" inputmode="numeric" placeholder="0"
+        <input class="input" id="FinalMALE" type="text" inputmode="numeric"
                oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
       </div>
     </div>
@@ -529,7 +561,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">FEMALE</label>
       <div class="control">
-        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric" placeholder="0"
+        <input class="input" id="FinalFEMALE" type="text" inputmode="numeric"
                oninput="digitsOnly(this); syncAdultIfNeeded(); updateFinalTOB();">
       </div>
     </div>
@@ -537,7 +569,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">ADULT</label>
       <div class="control">
-        <input class="input" id="FinalADULT" type="text" inputmode="numeric" placeholder="0"
+        <input class="input" id="FinalADULT" type="text" inputmode="numeric"
                oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
@@ -545,7 +577,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">CHILD</label>
       <div class="control">
-        <input class="input" id="FinalCHILD" type="text" inputmode="numeric" placeholder="0"
+        <input class="input" id="FinalCHILD" type="text" inputmode="numeric"
                oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
@@ -553,7 +585,7 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">INFANT</label>
       <div class="control">
-        <input class="input" id="FinalINFANT" type="text" inputmode="numeric" placeholder="0"
+        <input class="input" id="FinalINFANT" type="text" inputmode="numeric"
                oninput="digitsOnly(this); updateFinalTOB();">
       </div>
     </div>
@@ -561,7 +593,8 @@ body.dark .timeline-scroll{
     <div class="field">
       <label class="label">TOB</label>
       <div class="control">
-        <input class="input is-valid" id="FinalTOB" type="text" readonly style="font-weight:900; text-align:center;">
+        <input class="input is-valid" id="FinalTOB" type="text"
+               readonly style="font-weight:900; text-align:center;">
       </div>
     </div>
   </div>
@@ -569,23 +602,20 @@ body.dark .timeline-scroll{
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
   <div class="grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
-    <div class="field">
-      <label class="label">OA</label>
-      <div class="control"><input class="input" id="FinalOA" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    </div>
-    <div class="field">
-      <label class="label">OB</label>
-      <div class="control"><input class="input" id="FinalOB" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    </div>
-    <div class="field">
-      <label class="label">OC</label>
-      <div class="control"><input class="input" id="FinalOC" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    </div>
-    <div class="field">
-      <label class="label">OD</label>
-      <div class="control"><input class="input" id="FinalOD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
-    </div>
+    <div class="field"><label class="label">OA</label><input class="input" id="FinalOA" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    <div class="field"><label class="label">OB</label><input class="input" id="FinalOB" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    <div class="field"><label class="label">OC</label><input class="input" id="FinalOC" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
+    <div class="field"><label class="label">OD</label><input class="input" id="FinalOD" type="text" inputmode="numeric" oninput="digitsOnly(this); updateFinalTOB();"></div>
   </div>
+
+  <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
+
+  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+    <div class="field"><label class="label">BAGS</label><input class="input" id="FinalBAGS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
+    <div class="field"><label class="label">POIDS</label><input class="input" id="FinalPOIDS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
+    <div class="field"><label class="label">GB</label><input class="input" id="FinalGB" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
+  </div>
+</div>
 
   <!-- NEW section -->
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
@@ -606,41 +636,23 @@ body.dark .timeline-scroll{
   </div>
 </div>
 
-<!-- ===== FIXED HEADER ===== -->
+<!-- ===== FIXED HEADER (réduit) ===== -->
 <div class="fixed-header" id="fixedHeader">
   <div class="fixed-header-inner">
 
-    <div class="topbar-inner">
-      <div class="brandline">
-        <div class="brand-title">
-          <strong>SUIVI PERFORMANCE</strong>
-        </div>
-      </div>
-
-      <div class="top-toggles" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
-        <label class="toggle">
-          <span id="darkLabel">Clair</span>
-          <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)">
-          <span class="track"><span class="thumb"></span></span>
-        </label>
-
-        <label class="toggle">
-          <span id="tzLabel">Locale</span>
-          <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)">
-          <span class="track"><span class="thumb"></span></span>
-        </label>
-      </div>
-    </div>
-
+    <!-- BARRE DES VOLS -->
     <div class="tabs-row">
       <div id="tab-bar" class="tabs-chip"></div>
     </div>
 
+    <!-- TIMERS -->
     <div class="timer-row">
+
       <div class="timer-chip">
         <div class="k">HLE</div>
         <div id="timer-h40" class="v">--:--</div>
       </div>
+
       <div class="timer-chip">
         <div class="k">H-15</div>
         <div id="timer-h15" class="v">--:--</div>
@@ -651,20 +663,37 @@ body.dark .timeline-scroll{
         <div id="timer-h8" class="v">--:--</div>
       </div>
 
-      <div class="timer-chip">
-        <div class="k">TOBT</div>
-        <div id="timer-tobt" class="v">--:--</div>
-      </div>
+<!-- TOBT ÉDITABLE -->
+<div class="timer-chip">
+  <div class="k">TOBT</div>
+  <input
+    id="TOBT_MANUAL"
+    class="ctot-pill"
+    type="time"
+    readonly
+    style="background:#16a34a !important;"
+    onclick="enableManualTOBTEdit()"
+    onfocus="enableManualTOBTEdit()"
+    onchange="setManualTOBTFromInput()"
+    onblur="setManualTOBTFromInput()">
+</div>
 
+      <!-- CTOT -->
       <div class="timer-chip">
         <div class="k">CTOT</div>
-        <input id="CTOT" class="ctot-pill" type="time" onchange="updateAllCalculations()">
+        <input
+          id="CTOT"
+          class="ctot-pill"
+          type="time"
+          onchange="updateAllCalculations()">
       </div>
 
+      <!-- CD -->
       <div class="timer-chip">
         <div class="k">CD</div>
         <div id="timer-cd" class="v">--:--</div>
       </div>
+
     </div>
 
   </div>
@@ -981,6 +1010,11 @@ let isUTC=false;
 let manualSOBT=false;
 let currentTabId=null;
 let saveTimer=null;
+
+/* ===== TOBT MANUEL ===== */
+let manualTOBT = false;
+let manualTOBTmins = null;
+
 
 /* Timeline */
 let timelineZoom = 1;
@@ -1534,48 +1568,71 @@ function clearFormFields(){
 
 function saveCurrentTabData(){
   if(!currentTabId) return;
-  let data={};
+
+  let data = {};
+
   document.querySelectorAll('input, select, textarea').forEach(el=>{
     if(!el.id) return;
-    if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
-    else data[el.id]=el.value;
+    if(el.type === 'checkbox') data[el.id] = el.checked ? '1' : '0';
+    else data[el.id] = el.value;
   });
-  data.modeDark=document.body.classList.contains('dark')?'1':'0';
-  data.modeUTC=isUTC?'1':'0';
 
-  data.timer_h40=document.getElementById('timer-h40')?.textContent || '--:--';
-  data.timer_h15=document.getElementById('timer-h15')?.textContent || '--:--';
-  data.timer_h8=document.getElementById('timer-h8')?.textContent || '--:--';
-  data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
-  data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
+  // modes
+  data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
+  data.modeUTC  = isUTC ? '1' : '0';
 
+  // TOBT manuel
+  data.manualTOBT = manualTOBT ? '1' : '0';
+  data.manualTOBTmins = (manualTOBTmins == null) ? '' : String(manualTOBTmins);
+
+  // timers affichés (pour continuité visuelle)
+  data.timer_h40  = document.getElementById('timer-h40')?.textContent || '--:--';
+  data.timer_h15  = document.getElementById('timer-h15')?.textContent || '--:--';
+  data.timer_h8   = document.getElementById('timer-h8')?.textContent || '--:--';
+  data.timer_tobt = document.getElementById('timer-tobt')?.textContent || '--:--';
+  data.timer_cd   = document.getElementById('timer-cd')?.textContent || '--:--';
+
+  // panneau timing actif
   data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
-  localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
-  localStorage.setItem('lastTabId',currentTabId);
+
+  localStorage.setItem('tab-'+currentTabId, JSON.stringify(data));
+  localStorage.setItem('lastTabId', currentTabId);
+
   renderTabs();
 }
 
 function loadTabData(id){
   stopCountdown();
+
   const data = JSON.parse(localStorage.getItem('tab-'+id) || '{}');
 
+  // Remplissage champs
   document.querySelectorAll('input, select, textarea').forEach(el=>{
     if(!el.id || data[el.id] === undefined) return;
     if(el.type === 'checkbox') el.checked = (data[el.id] === '1');
     else el.value = data[el.id];
   });
 
+  // modes
   if(data.modeDark === '1') document.body.classList.add('dark');
   else document.body.classList.remove('dark');
 
   isUTC = (data.modeUTC === '1');
 
+  // restauration TOBT manuel
+  manualTOBT = (data.manualTOBT === '1');
+  manualTOBTmins = (data.manualTOBTmins !== undefined && data.manualTOBTmins !== '')
+    ? parseInt(data.manualTOBTmins, 10)
+    : null;
+
+  // timers visuels
   document.getElementById('timer-h40').textContent  = data.timer_h40  || '--:--';
   document.getElementById('timer-h15').textContent  = data.timer_h15  || '--:--';
   document.getElementById('timer-h8').textContent   = data.timer_h8   || '--:--';
   document.getElementById('timer-tobt').textContent = data.timer_tobt || '--:--';
   document.getElementById('timer-cd').textContent   = data.timer_cd   || '--:--';
 
+  // switches UI
   const dt = document.getElementById('darkToggle');
   const ut = document.getElementById('utcToggle');
   if(dt) dt.checked = document.body.classList.contains('dark');
@@ -1588,11 +1645,24 @@ function loadTabData(id){
   if(darkLabel) darkLabel.textContent = document.body.classList.contains('dark') ? 'Sombre' : 'Clair';
 
   setDefaultDateToTodayIfEmpty();
+
+  // recalcul global (TOBT incluse)
   updateAllCalculations();
 
+  // synchro chip TOBT après calcul
+  const chip = document.getElementById('TOBT_MANUAL');
+  if(chip){
+    chip.readOnly = true;
+    if(manualTOBT && manualTOBTmins != null){
+      chip.value = fmtHHMM(manualTOBTmins);
+    }
+  }
+
+  // panneau timing
   const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
   switchTimingPanel(savedPanel);
 
+  // PRM + FINAL
   renderPRMRows('arr');
   renderPRMRows('exp');
   updateFinalTOB();
@@ -1760,10 +1830,17 @@ function updateTOBT() {
   const sobttxt = document.getElementById('SOBT')?.value || '';
   const ctottxt = document.getElementById('CTOT')?.value || '';
 
+  const chip = document.getElementById('TOBT_MANUAL');
+  const timer = document.getElementById('timer-tobt');
+
   if (!cie || !sibttxt || !sobttxt) {
-    document.getElementById('timer-tobt').textContent = '--:--';
+    if(timer) timer.textContent = '--:--';
     window._tobtRawMins = null;
     window._tobtAdjMins = null;
+    if(chip){
+      chip.value = '';
+      chip.readOnly = true;
+    }
     return;
   }
 
@@ -1781,26 +1858,33 @@ function updateTOBT() {
 
   let TOBT_raw;
 
-  if (cie === 'FR' || cie === 'RK') {
-    if (!isDelayed) TOBT_raw = new Date(SOBT);
-    else {
-      const turn = crewChange ? 35 : 25;
-      const candidate = addMin(AIBT, turn);
-      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
-    }
-  } else if (cie === 'W4' || cie === 'W6') {
-    if (!isDelayed) TOBT_raw = new Date(SOBT);
-    else {
-      const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
-      const turn = (type === 'A321') ? 35 : 30;
-      const candidate = addMin(AIBT, turn);
-      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
-    }
+  // ===== MODE MANUEL =====
+  if(manualTOBT && manualTOBTmins != null){
+    TOBT_raw = new Date();
+    TOBT_raw.setHours(Math.floor(manualTOBTmins/60), manualTOBTmins%60, 0, 0);
   } else {
-    if (aibttxt && AIBT > SIBT) {
-      const diff = (SOBT - SIBT) / 60000;
-      TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
-    } else TOBT_raw = new Date(SOBT);
+    // ===== MODE AUTO (ton calcul existant) =====
+    if (cie === 'FR' || cie === 'RK') {
+      if (!isDelayed) TOBT_raw = new Date(SOBT);
+      else {
+        const turn = crewChange ? 35 : 25;
+        const candidate = addMin(AIBT, turn);
+        TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
+      }
+    } else if (cie === 'W4' || cie === 'W6') {
+      if (!isDelayed) TOBT_raw = new Date(SOBT);
+      else {
+        const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
+        const turn = (type === 'A321') ? 35 : 30;
+        const candidate = addMin(AIBT, turn);
+        TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
+      }
+    } else {
+      if (aibttxt && AIBT > SIBT) {
+        const diff = (SOBT - SIBT) / 60000;
+        TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
+      } else TOBT_raw = new Date(SOBT);
+    }
   }
 
   if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
@@ -1817,8 +1901,47 @@ function updateTOBT() {
 
   window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
 
-  document.getElementById('timer-tobt').textContent =
-    `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
+  const hh = String(TOBT_adj.getHours()).padStart(2,'0');
+  const mm = String(TOBT_adj.getMinutes()).padStart(2,'0');
+
+  if(timer) timer.textContent = `${hh}:${mm}`;
+
+  // synchro chip (toujours)
+  if(chip){
+    chip.value = `${hh}:${mm}`;
+    chip.readOnly = true;
+  }
+}
+
+function enableManualTOBTEdit(){
+  const el = document.getElementById('TOBT_MANUAL');
+  if(!el) return;
+  el.readOnly = false;
+}
+
+function setManualTOBTFromInput(){
+  const el = document.getElementById('TOBT_MANUAL');
+  if(!el) return;
+
+  const v = (el.value || '').trim();
+
+  // Si tu effaces : retour auto
+  if(!v){
+    manualTOBT = false;
+    manualTOBTmins = null;
+    el.readOnly = true;
+    updateAllCalculations();
+    return;
+  }
+
+  const m = parseHHMM(v);
+  if(m == null) return;
+
+  manualTOBT = true;
+  manualTOBTmins = m;
+  el.readOnly = true;
+
+  updateAllCalculations();
 }
 
 /* DL CODES */
@@ -1844,6 +1967,61 @@ function updateDLCode() {
   }
 }
 
+  function clearLoadArrPopover(){
+  if(!confirm("Vider toutes les valeurs de LOAD ARR ?")) return;
+
+  const set = (id, v='') => { const el = document.getElementById(id); if(el) el.value = v; };
+
+  set('LoadPAX'); set('LoadBAGS'); set('LoadCARGO');
+
+  // PRM
+  const prm = document.getElementById('LoadPRMData');
+  if(prm) prm.value = '[]';
+  renderPRMRows('arr');
+
+  saveCurrentTabData();
+  updateAllCalculations();
+}
+
+function clearLoadExpPopover(){
+  if(!confirm("Vider toutes les valeurs de LOAD EXP ?")) return;
+
+  const set = (id, v='') => { const el = document.getElementById(id); if(el) el.value = v; };
+
+  set('ExpPAX'); set('ExpBAGS'); set('ExpCARGO');
+
+  // PRM
+  const prm = document.getElementById('ExpPRMData');
+  if(prm) prm.value = '[]';
+  renderPRMRows('exp');
+
+  saveCurrentTabData();
+  updateAllCalculations();
+}
+
+function clearLoadFinalPopover(){
+  if(!confirm("Vider toutes les valeurs de LOAD FINAL ?")) return;
+
+  const ids = [
+    'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalTOB',
+    'FinalOA','FinalOB','FinalOC','FinalOD',
+    'FinalBAGS','FinalPOIDS','FinalGB'
+  ];
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(id === 'FinalTOB') el.value = '';
+    else el.value = '';
+  });
+
+  // remettre ADULT éditable
+  const adultEl = document.getElementById('FinalADULT');
+  if(adultEl) adultEl.readOnly = false;
+
+  updateFinalTOB();
+  saveCurrentTabData();
+  updateAllCalculations();
+}
 /* DL redistribution */
 function dldChanged(index){ lastDLChanged = index; redistributeDL(); }
 function totalDelayMinutes(){
