@@ -173,6 +173,12 @@ body.dark .fixed-header{
 #timer-h8{ background:#facc15 !important; color:#fff !important; } /* LID blanc */
 #timer-cd{ background:#93c5fd !important; color:#111 !important; }
 
+/* CD en dépassement (après 0) */
+#timer-cd.cd-over{
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
 /* Bulma tweaks */
 .card{
   border-radius: var(--radius);
@@ -400,6 +406,19 @@ body.dark .timeline-scroll{
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
   .timer-chip .v{ min-width: 64px; }
   .ctot-pill{ min-width: 64px; }
+}
+
+/* Forcer 2 colonnes sur "petites tablettes" (600–768px) */
+@media (min-width: 600px) and (max-width: 768px){
+  .columns.is-multiline > .column.is-full-mobile.is-one-quarter-tablet,
+  .columns.is-multiline > .column.is-full-mobile.is-one-third-tablet,
+  .columns.is-multiline > .column.is-full-mobile.is-half-tablet,
+  .column.is-full-mobile.is-half-tablet,
+  .column.is-full-mobile.is-one-third-tablet,
+  .column.is-full-mobile.is-one-quarter-tablet{
+    flex: 0 0 50% !important;
+    width: 50% !important;
+  }
 }
 </style>
 </head>
@@ -990,17 +1009,26 @@ function getNowMinutes(){
   const s = isUTC ? now.getUTCSeconds() : now.getSeconds();
   return { mins: h*60 + m, secs: s };
 }
-function fmtMMSS(totalSeconds){
-  totalSeconds = Math.max(0, totalSeconds);
-  const mm = Math.floor(totalSeconds / 60);
-  const ss = totalSeconds % 60;
-  return `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+
+function fmtMMSSSigned(totalSeconds){
+  const isOver = totalSeconds < 0;
+  const abs = Math.abs(totalSeconds);
+
+  const mm = Math.floor(abs / 60);
+  const ss = abs % 60;
+
+  return `${isOver ? '+' : ''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
 }
+
 function stopCountdown(){
   if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
   const el = document.getElementById('timer-cd');
-  if(el) el.textContent = '--:--';
+  if(el){
+    el.textContent = '--:--';
+    el.classList.remove('cd-over');
+  }
 }
+
 function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
@@ -1011,27 +1039,35 @@ function updateCountdownOnce(){
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
-  if(!aibtTxt || !sobtTxt || !sibtTxt){ el.textContent = '--:--'; return; }
+  if(!aibtTxt || !sobtTxt || !sibtTxt){ el.textContent = '--:--'; el.classList.remove('cd-over'); return; }
 
   const SIBT = parseHHMM(sibtTxt);
   const AIBT = parseHHMM(aibtTxt);
   const SOBT = parseHHMM(sobtTxt);
-  if(SIBT == null || AIBT == null || SOBT == null){ el.textContent = '--:--'; return; }
+  if(SIBT == null || AIBT == null || SOBT == null){ el.textContent = '--:--'; el.classList.remove('cd-over'); return; }
 
   let targetMin = null;
+
   if (AIBT <= SIBT) targetMin = SOBT;
   else {
     const tobt = window._tobtAdjMins;
-    if(tobt == null){ el.textContent = '--:--'; return; }
+    if(tobt == null){ el.textContent = '--:--'; el.classList.remove('cd-over'); return; }
     targetMin = tobt;
   }
 
   const now = getNowMinutes();
-  let diffMin = targetMin - now.mins;
-  if(diffMin < 0) diffMin += 1440;
-  const remainingSeconds = diffMin * 60 - now.secs;
-  el.textContent = fmtMMSS(remainingSeconds);
+
+  // delta signé (secondes) : >0 avant, <0 après (dépassement)
+  let deltaSeconds = (targetMin - now.mins) * 60 - now.secs;
+
+  // anti-bug autour de minuit : on prend l'occurrence la plus proche (+/- 12h)
+  if(deltaSeconds < -43200) deltaSeconds += 86400;
+  if(deltaSeconds >  43200) deltaSeconds -= 86400;
+
+  el.textContent = fmtMMSSSigned(deltaSeconds);
+  el.classList.toggle('cd-over', deltaSeconds < 0);
 }
+
 function ensureCountdownRunning(){
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
