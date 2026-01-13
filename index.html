@@ -213,15 +213,6 @@ body.dark .card-header{
 #FinalTOB.is-invalid{ color:#ef4444 !important; }
 #FinalTOB.is-valid{ color: var(--field-text) !important; }
 
-/* Buttons */
-.btn-actions{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin-top: 8px;
-}
-.btn-actions .button{ border-radius: 12px; font-weight: 900; }
-
 /* Popup toast */
 #popup{
   position: fixed;
@@ -397,6 +388,43 @@ body.dark .timeline-scroll{
 /* DL error */
 .dl-error { border: 2px solid #ef4444 !important; border-radius: 12px; }
 
+/* ====== NEW: time controls inline (- / ⏱ / + inside “cell”) ====== */
+.time-inline .control.has-addons{
+  width: 100%;
+}
+.time-inline .button.is-small{
+  padding-left: .55rem;
+  padding-right: .55rem;
+  height: 2.5em;
+  border-radius: 12px !important;
+  font-weight: 900;
+}
+.time-inline .button.is-small.is-light{
+  background: color-mix(in srgb, var(--card) 85%, #94a3b8 15%);
+  border-color: var(--field-border);
+  color: var(--text);
+}
+body.dark .time-inline .button.is-small.is-light{
+  background: color-mix(in srgb, var(--card) 85%, #0b1220 15%);
+}
+.time-inline .input[type="time"]{
+  height: 2.5em;
+  border-radius: 12px !important;
+  text-align: center;
+  font-weight: 900;
+  min-width: 0;
+}
+.time-inline .button.is-small.now-btn{
+  width: 2.6em;
+  padding-left: 0;
+  padding-right: 0;
+}
+.time-inline .buttons-compact{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px){
   .timer-chip{ min-width: 128px; }
@@ -406,6 +434,9 @@ body.dark .timeline-scroll{
   .timer-chip{ min-width: 120px; padding: 9px 12px; }
   .timer-chip .v{ min-width: 64px; }
   .ctot-pill{ min-width: 64px; }
+
+  .time-inline .button.is-small{ padding-left: .45rem; padding-right: .45rem; }
+  .time-inline .button.is-small.now-btn{ width: 2.3em; }
 }
 
 /* Forcer 2 colonnes sur "petites tablettes" (600–768px) */
@@ -819,18 +850,28 @@ body.dark .timeline-scroll{
       <div class="columns is-multiline">
 
         <script>
-          function timeField(id,label,onchange, colClass){
+          function timeInlineControl(id){
+            return `
+              <div class="control has-addons">
+                <button class="button is-small is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()" aria-label="-1 minute">−</button>
+                <input class="input" type="time" id="${id}" onchange="updateAllCalculations()">
+                <button class="button is-small is-light now-btn" type="button" onclick="setNow('${id}');updateAllCalculations()" aria-label="Now">⏱</button>
+                <button class="button is-small is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()" aria-label="+1 minute">+</button>
+              </div>
+            `;
+          }
+
+          function timeField(id,label, onchange, colClass){
+            const onchg = onchange || "updateAllCalculations()";
             return `
             <div class="column ${colClass}">
-              <div class="field">
+              <div class="field time-inline">
                 <label class="label">${label}</label>
-                <div class="control">
-                  <input class="input" type="time" id="${id}" onchange="${onchange}">
-                </div>
-                <div class="btn-actions">
-                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-                  <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+                <div class="control has-addons">
+                  <button class="button is-small is-light" type="button" onclick="adjustTime('${id}',-1);${onchg}" aria-label="-1 minute">−</button>
+                  <input class="input" type="time" id="${id}" onchange="${onchg}">
+                  <button class="button is-small is-light now-btn" type="button" onclick="setNow('${id}');${onchg}" aria-label="Now">⏱</button>
+                  <button class="button is-small is-light" type="button" onclick="adjustTime('${id}',1);${onchg}" aria-label="+1 minute">+</button>
                 </div>
               </div>
             </div>`;
@@ -856,7 +897,7 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
-  <!-- TIMING -->
+  <!-- TIMING (tous les champs sur une seule grille 2 colonnes) -->
   <div class="card mb-5">
     <header class="card-header section-collapse" onclick="toggleCardBody(this)">
       <p class="card-header-title">TIMING</p>
@@ -1010,16 +1051,6 @@ function getNowMinutes(){
   return { mins: h*60 + m, secs: s };
 }
 
-function fmtMMSSSigned(totalSeconds){
-  const isOver = totalSeconds < 0;
-  const abs = Math.abs(totalSeconds);
-
-  const mm = Math.floor(abs / 60);
-  const ss = abs % 60;
-
-  return `${isOver ? '+' : ''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-}
-
 function stopCountdown(resetDisplay=true){
   if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
   const el = document.getElementById('timer-cd');
@@ -1029,10 +1060,19 @@ function stopCountdown(resetDisplay=true){
     el.classList.remove('cd-over');
   }
 }
-
 function freezeCountdown(){
-  // on coupe juste l'interval, on ne touche pas au texte affiché
   if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
+}
+
+function parseHHMM(str){
+  if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
+  const [h,m] = str.split(':').map(Number);
+  return h*60 + m;
+}
+function fmtHHMM(mins){
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
 function updateCountdownOnce(){
@@ -1059,7 +1099,6 @@ function updateCountdownOnce(){
     return;
   }
 
-  // cible = SOBT si retard AIBT<=SIBT, sinon TOBT adj
   let targetMin = null;
   if (AIBT <= SIBT) targetMin = SOBT;
   else {
@@ -1072,7 +1111,6 @@ function updateCountdownOnce(){
     targetMin = tobt;
   }
 
-  // ===== CAS AOBT : on fige MAIS on recalcule selon AOBT =====
   if(aobtTxt){
     const AOBT = parseHHMM(aobtTxt);
     if(AOBT == null){
@@ -1081,7 +1119,6 @@ function updateCountdownOnce(){
       return;
     }
 
-    // diff = AOBT - cible (signé, gère minuit)
     let diffMin = AOBT - targetMin;
     if(diffMin > 720) diffMin -= 1440;
     if(diffMin < -720) diffMin += 1440;
@@ -1093,28 +1130,24 @@ function updateCountdownOnce(){
     const ss = abs % 60;
 
     el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-
-    // rouge si + (retard)
     el.classList.toggle('cd-over', totalSeconds > 0);
     return;
   }
 
-  // ===== CAS NORMAL : live avec NOW (décompte puis +) =====
   const now = getNowMinutes();
-
   let diffMin = targetMin - now.mins;
   if(diffMin < -720) diffMin += 1440;
   if(diffMin > 720) diffMin -= 1440;
 
   const remainingSeconds = diffMin * 60 - now.secs;
 
-  const sign = remainingSeconds <= 0 ? '+' : ''; // quand on dépasse => +
+  const sign = remainingSeconds <= 0 ? '+' : '';
   const abs = Math.abs(remainingSeconds);
   const mm = Math.floor(abs / 60);
   const ss = abs % 60;
 
   el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  el.classList.toggle('cd-over', remainingSeconds < 0); // rouge quand on est passé à +
+  el.classList.toggle('cd-over', remainingSeconds < 0);
 }
 
 function ensureCountdownRunning(){
@@ -1125,20 +1158,17 @@ function ensureCountdownRunning(){
 
   const baseOK = !!(sibtTxt && aibtTxt && sobtTxt);
 
-  // Si AOBT est rempli : pas d'interval, mais on recalcule l'affichage (donc ça suit si tu modifies AOBT)
   if(baseOK && aobtTxt){
     freezeCountdown();
     updateCountdownOnce();
     return;
   }
 
-  // Si base incomplète : on stop + reset
   if(!baseOK){
     stopCountdown(true);
     return;
   }
 
-  // Live
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
@@ -1315,7 +1345,7 @@ function updateFinalTOB(){
   const c = asInt('FinalCHILD')  ?? 0;
   const i = asInt('FinalINFANT') ?? 0;
 
-  let main = null; // TOB sans infant
+  let main = null;
   if(m != null && f != null) main = (m + f) + c;
   else if(a != null) main = a + c;
 
@@ -1549,7 +1579,6 @@ function saveCurrentTabData(){
   data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
   data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
 
-  data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
   localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
   localStorage.setItem('lastTabId',currentTabId);
   renderTabs();
@@ -1590,9 +1619,6 @@ function loadTabData(id){
   setDefaultDateToTodayIfEmpty();
   updateAllCalculations();
 
-  const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
-  switchTimingPanel(savedPanel);
-
   renderPRMRows('arr');
   renderPRMRows('exp');
   updateFinalTOB();
@@ -1602,82 +1628,45 @@ function loadTabData(id){
 
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – ARR / DEP */
+/* ===== TIMING FIELDS – tous visibles, 2 colonnes ===== */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label,full=false)=>`
-    <div class="column ${full ? 'is-12' : 'is-full-mobile is-one-third-tablet is-one-quarter-desktop'}">
-      <div class="field">
+  const col2 = 'is-full-mobile is-half-tablet is-half-desktop';
+
+  const field = (id,label, full=false)=>`
+    <div class="column ${full ? 'is-12' : col2}">
+      <div class="field time-inline">
         <label class="label">${label}</label>
-        <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
-        <div class="btn-actions">
-          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-          <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+        <div class="control has-addons">
+          <button class="button is-small is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()" aria-label="-1 minute">−</button>
+          <input class="input" type="time" id="${id}" onchange="updateAllCalculations()">
+          <button class="button is-small is-light now-btn" type="button" onclick="setNow('${id}');updateAllCalculations()" aria-label="Now">⏱</button>
+          <button class="button is-small is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()" aria-label="+1 minute">+</button>
         </div>
       </div>
     </div>`;
 
-  let arr = `
-    <div class="card mb-4">
-      <header class="card-header"><p class="card-header-title">Arrivée</p></header>
-      <div class="card-content"><div class="columns is-multiline">
-        ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
-        ${fieldHTML('PremierDebarque','Premier débarqué')}
-        ${fieldHTML('DernierDebarque','Dernier débarqué')}
-        ${fieldHTML('ArriveeLiftArr','Arrivée lift')}
-        ${fieldHTML('DepartLiftArr','Départ lift')}
-      </div></div>
-    </div>`;
+  container.innerHTML = `
+    <div class="columns is-multiline">
+      ${field('ArriveeFuel','Arrivée Avitair', true)}
+      ${field('PremierDebarque','Premier débarqué')}
+      ${field('DernierDebarque','Dernier débarqué')}
+      ${field('ArriveeLiftArr','Arrivée lift')}
+      ${field('DepartLiftArr','Départ lift')}
 
-  let dep = `
-    <div class="card">
-      <header class="card-header"><p class="card-header-title">Départ</p></header>
-      <div class="card-content"><div class="columns is-multiline">
-        ${fieldHTML('ArrPNT','Arrivée PNT')}
-        ${fieldHTML('ArrPNC','Arrivée PNC')}
-        ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
-        ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
-        ${fieldHTML('ArriveeLift','Arrivée lift')}
-        ${fieldHTML('DepartLift','Départ lift')}
-        ${fieldHTML('DepartFuel','Départ Avitair',true)}
-        ${fieldHTML('RemiseLID','Remise LID/LDS')}
-        ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
-      </div></div>
-    </div>`;
-
-  const toggle = `
-    <div class="tabs is-toggle is-toggle-rounded is-centered mb-4">
-      <ul>
-        <li id="seg-arr-li"><a onclick="switchTimingPanel('arr')"><span>Arrivée</span></a></li>
-        <li id="seg-dep-li"><a onclick="switchTimingPanel('dep')"><span>Départ</span></a></li>
-      </ul>
-    </div>`;
-
-  container.innerHTML = toggle + `
-    <div id="panel-arr" style="display:none;">${arr}</div>
-    <div id="panel-dep" style="display:none;">${dep}</div>
+      ${field('ArrPNT','Arrivée PNT')}
+      ${field('ArrPNC','Arrivée PNC')}
+      ${field('AvionPremierEmbarque','Premier embarqué')}
+      ${field('AvionDernierEmbarque','Dernier embarqué')}
+      ${field('ArriveeLift','Arrivée lift')}
+      ${field('DepartLift','Départ lift')}
+      ${field('DepartFuel','Départ Avitair', true)}
+      ${field('RemiseLID','Remise LID/LDS')}
+      ${field('FermeturePorteAvion','Fermeture porte avion')}
+    </div>
   `;
-
-  const saved = localStorage.getItem('timingPanel') || 'dep';
-  switchTimingPanel(saved);
-}
-
-function switchTimingPanel(mode){
-  const arrPanel=document.getElementById('panel-arr');
-  const depPanel=document.getElementById('panel-dep');
-  const liArr=document.getElementById('seg-arr-li');
-  const liDep=document.getElementById('seg-dep-li');
-
-  if(arrPanel) arrPanel.style.display = (mode==='arr') ? '' : 'none';
-  if(depPanel) depPanel.style.display = (mode==='dep') ? '' : 'none';
-
-  if(liArr) liArr.classList.toggle('is-active', mode==='arr');
-  if(liDep) liDep.classList.toggle('is-active', mode!=='arr');
-
-  localStorage.setItem('timingPanel', mode);
 }
 
 /* LID visible FR/RK */
@@ -1734,7 +1723,6 @@ function updateSOBTDefault() {
   const sobtEl = document.getElementById('SOBT');
   if(!sobtEl) return;
 
-  // Si SOBT a déjà une valeur, on ne touche plus (tu peux donc la modifier librement)
   if ((sobtEl.value || '').trim() !== '') return;
 
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
@@ -1993,16 +1981,6 @@ function showPopup(message, color = "#2563eb", duration = 2000) {
 let showTimeLabels = true;
 let timelineUserScrolled = false;
 
-function parseHHMM(str){
-  if(!str || !/^\d{2}:\d{2}$/.test(str)) return null;
-  const [h,m] = str.split(':').map(Number);
-  return h*60 + m;
-}
-function fmtHHMM(mins){
-  mins = ((mins % 1440) + 1440) % 1440;
-  const h = Math.floor(mins/60), m = mins%60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-}
 function toExtended(t, min, max){
   const wraps = (max > 1440);
   if (!wraps) return t;
