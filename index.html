@@ -409,7 +409,7 @@ body.dark .timeline-scroll{
 }
 
 /* Forcer 2 colonnes sur "petites tablettes" (600–768px) */
-@media (min-width: 360px) and (max-width: 1024px){
+@media (min-width: 600px) and (max-width: 768px){
   .columns.is-multiline > .column.is-full-mobile.is-one-quarter-tablet,
   .columns.is-multiline > .column.is-full-mobile.is-one-third-tablet,
   .columns.is-multiline > .column.is-full-mobile.is-half-tablet,
@@ -1534,26 +1534,24 @@ function clearFormFields(){
 
 function saveCurrentTabData(){
   if(!currentTabId) return;
-
-  let data = {};
+  let data={};
   document.querySelectorAll('input, select, textarea').forEach(el=>{
     if(!el.id) return;
-    if(el.type === 'checkbox') data[el.id] = el.checked ? '1' : '0';
-    else data[el.id] = el.value;
+    if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
+    else data[el.id]=el.value;
   });
+  data.modeDark=document.body.classList.contains('dark')?'1':'0';
+  data.modeUTC=isUTC?'1':'0';
 
-  data.modeDark = document.body.classList.contains('dark') ? '1' : '0';
-  data.modeUTC  = isUTC ? '1' : '0';
+  data.timer_h40=document.getElementById('timer-h40')?.textContent || '--:--';
+  data.timer_h15=document.getElementById('timer-h15')?.textContent || '--:--';
+  data.timer_h8=document.getElementById('timer-h8')?.textContent || '--:--';
+  data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
+  data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
 
-  data.timer_h40  = document.getElementById('timer-h40')?.textContent || '--:--';
-  data.timer_h15  = document.getElementById('timer-h15')?.textContent || '--:--';
-  data.timer_h8   = document.getElementById('timer-h8')?.textContent || '--:--';
-  data.timer_tobt = document.getElementById('timer-tobt')?.textContent || '--:--';
-  data.timer_cd   = document.getElementById('timer-cd')?.textContent || '--:--';
-
-  localStorage.setItem('tab-'+currentTabId, JSON.stringify(data));
-  localStorage.setItem('lastTabId', currentTabId);
-
+  data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
+  localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
+  localStorage.setItem('lastTabId',currentTabId);
   renderTabs();
 }
 
@@ -1592,6 +1590,9 @@ function loadTabData(id){
   setDefaultDateToTodayIfEmpty();
   updateAllCalculations();
 
+  const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
+  switchTimingPanel(savedPanel);
+
   renderPRMRows('arr');
   renderPRMRows('exp');
   updateFinalTOB();
@@ -1601,61 +1602,82 @@ function loadTabData(id){
 
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – UNE SEULE PAGE (groupés par lignes) */
+/* TIMING FIELDS – ARR / DEP */
 function generateTimingFields(){
-  const container = document.getElementById('timing-grid');
+  const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const pairRow = (id1, label1, id2, label2)=>`
-    <div class="columns is-multiline">
-      <div class="column is-full-mobile is-half-tablet is-half-desktop">
-        <div class="field">
-          <label class="label">${label1}</label>
-          <div class="control"><input class="input" type="time" id="${id1}" onchange="updateAllCalculations()"></div>
-          <div class="btn-actions">
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('${id1}',-1);updateAllCalculations()">-1</button>
-            <button class="button is-link" type="button" onclick="setNow('${id1}');updateAllCalculations()">Now</button>
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('${id1}',1);updateAllCalculations()">+1</button>
-          </div>
+  const fieldHTML = (id,label,full=false)=>`
+    <div class="column ${full ? 'is-12' : 'is-full-mobile is-one-third-tablet is-one-quarter-desktop'}">
+      <div class="field">
+        <label class="label">${label}</label>
+        <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
+        <div class="btn-actions">
+          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+          <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
         </div>
       </div>
+    </div>`;
 
-      <div class="column is-full-mobile is-half-tablet is-half-desktop">
-        <div class="field">
-          <label class="label">${label2}</label>
-          <div class="control"><input class="input" type="time" id="${id2}" onchange="updateAllCalculations()"></div>
-          <div class="btn-actions">
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('${id2}',-1);updateAllCalculations()">-1</button>
-            <button class="button is-link" type="button" onclick="setNow('${id2}');updateAllCalculations()">Now</button>
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('${id2}',1);updateAllCalculations()">+1</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+  let arr = `
+    <div class="card mb-4">
+      <header class="card-header"><p class="card-header-title">Arrivée</p></header>
+      <div class="card-content"><div class="columns is-multiline">
+        ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
+        ${fieldHTML('PremierDebarque','Premier débarqué')}
+        ${fieldHTML('DernierDebarque','Dernier débarqué')}
+        ${fieldHTML('ArriveeLiftArr','Arrivée lift')}
+        ${fieldHTML('DepartLiftArr','Départ lift')}
+      </div></div>
+    </div>`;
 
-  container.innerHTML = `
+  let dep = `
     <div class="card">
-      <header class="card-header"><p class="card-header-title">TIMINGS</p></header>
-      <div class="card-content">
+      <header class="card-header"><p class="card-header-title">Départ</p></header>
+      <div class="card-content"><div class="columns is-multiline">
+        ${fieldHTML('ArrPNT','Arrivée PNT')}
+        ${fieldHTML('ArrPNC','Arrivée PNC')}
+        ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
+        ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
+        ${fieldHTML('ArriveeLift','Arrivée lift')}
+        ${fieldHTML('DepartLift','Départ lift')}
+        ${fieldHTML('DepartFuel','Départ Avitair',true)}
+        ${fieldHTML('RemiseLID','Remise LID/LDS')}
+        ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
+      </div></div>
+    </div>`;
 
-        ${pairRow('ArrPNT','Arrivée PNT','ArrPNC','Arrivée PNC')}
+  const toggle = `
+    <div class="tabs is-toggle is-toggle-rounded is-centered mb-4">
+      <ul>
+        <li id="seg-arr-li"><a onclick="switchTimingPanel('arr')"><span>Arrivée</span></a></li>
+        <li id="seg-dep-li"><a onclick="switchTimingPanel('dep')"><span>Départ</span></a></li>
+      </ul>
+    </div>`;
 
-        ${pairRow('PremierDebarque','Premier débarqué','DernierDebarque','Dernier débarqué')}
-
-        ${pairRow('AvionPremierEmbarque','Premier embarqué','AvionDernierEmbarque','Dernier embarqué')}
-
-        ${pairRow('ArriveeFuel','Arrivée fuel','DepartFuel','Départ fuel')}
-
-        ${pairRow('ArriveeLiftArr','Arrivée lift (arr)','DepartLiftArr','Départ lift (arr)')}
-
-        ${pairRow('ArriveeLift','Arrivée lift (dep)','DepartLift','Départ lift (dep)')}
-
-        ${pairRow('RemiseLID','Remise LID/LDS','FermeturePorteAvion','Fermeture porte avion')}
-
-      </div>
-    </div>
+  container.innerHTML = toggle + `
+    <div id="panel-arr" style="display:none;">${arr}</div>
+    <div id="panel-dep" style="display:none;">${dep}</div>
   `;
+
+  const saved = localStorage.getItem('timingPanel') || 'dep';
+  switchTimingPanel(saved);
+}
+
+function switchTimingPanel(mode){
+  const arrPanel=document.getElementById('panel-arr');
+  const depPanel=document.getElementById('panel-dep');
+  const liArr=document.getElementById('seg-arr-li');
+  const liDep=document.getElementById('seg-dep-li');
+
+  if(arrPanel) arrPanel.style.display = (mode==='arr') ? '' : 'none';
+  if(depPanel) depPanel.style.display = (mode==='dep') ? '' : 'none';
+
+  if(liArr) liArr.classList.toggle('is-active', mode==='arr');
+  if(liDep) liDep.classList.toggle('is-active', mode!=='arr');
+
+  localStorage.setItem('timingPanel', mode);
 }
 
 /* LID visible FR/RK */
