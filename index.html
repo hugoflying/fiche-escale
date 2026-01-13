@@ -71,8 +71,8 @@ body.dark{
 
 /* ===== FIXED BAR (tabs + timers only) ===== */
 .fixed-bar{
-  position: fixed;
-  inset: 0 0 auto 0;
+  position: sticky;
+  top: 0;
   z-index: 3000;
   background: rgba(246,247,251,.82);
   backdrop-filter: blur(10px);
@@ -94,7 +94,7 @@ body.dark .fixed-bar{
 .app-wrap{
   max-width: 1120px;
   margin: 0 auto;
-  padding: calc(var(--fixed-header-h) + 14px) 14px 14px;
+  padding: 14px 14px 14px; /* au lieu de calc(...) */
 }
 
 /* Tabs row */
@@ -223,12 +223,18 @@ body.dark .card-header{
 
 /* Buttons */
 .btn-actions{
-  display:grid;
+  display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin-top: 8px;
+  gap: 4px;
+  margin-top: 6px;
 }
-.btn-actions .button{ border-radius: 12px; font-weight: 900; }
+
+.btn-actions .button{
+  border-radius: 10px;
+  font-weight: 900;
+  padding: 0.35rem 0.45rem;
+  min-width: 0;
+}
 
 /* Popup toast */
 #popup{
@@ -1595,43 +1601,43 @@ function generateTimingFields(){
   const col = "is-full-mobile is-half-tablet is-half-desktop";
 
   const fieldHTML = (id,label)=>`
-    <div class="column ${col}">
-      <div class="field">
-        <label class="label">${label}</label>
-        <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
-        <div class="btn-actions">
-          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-          <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-        </div>
+  <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
+    <div class="field">
+      <label class="label">${label}</label>
+      <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
+      <div class="btn-actions">
+        <button class="button is-small is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+        <button class="button is-small is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+        <button class="button is-small is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
       </div>
-    </div>`;
-
-  container.innerHTML = `
-    <div class="columns is-multiline">
-      ${fieldHTML('ArrPNT','Arrivée PNT')}
-      ${fieldHTML('ArrPNC','Arrivée PNC')}
-
-      ${fieldHTML('PremierDebarque','Premier débarqué')}
-      ${fieldHTML('DernierDebarque','Dernier débarqué')}
-
-      ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
-      ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
-
-      ${fieldHTML('ArriveeFuel','Arrivée fuel')}
-      ${fieldHTML('DepartFuel','Départ fuel')}
-
-      ${fieldHTML('ArriveeLiftArr','Arrivée lift (arr)')}
-      ${fieldHTML('DepartLiftArr','Départ lift (arr)')}
-
-      ${fieldHTML('ArriveeLift','Arrivée lift (dep)')}
-      ${fieldHTML('DepartLift','Départ lift (dep)')}
-
-      ${fieldHTML('RemiseLID','Remise LID/LDS')}
-      ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
     </div>
-  `;
-}
+  </div>`;
+
+ container.innerHTML = `
+  <div class="columns is-multiline">
+    ${fieldHTML('ArrPNT','Arrivée PNT')}
+    ${fieldHTML('ArrPNC','Arrivée PNC')}
+
+    ${fieldHTML('PremierDebarque','Premier débarqué')}
+    ${fieldHTML('DernierDebarque','Dernier débarqué')}
+
+    ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
+    ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
+
+    ${fieldHTML('ArriveeFuel','Arrivée Avitair')}
+    ${fieldHTML('DepartFuel','Départ Avitair')}
+
+    ${fieldHTML('ArriveeLiftArr','Arrivée lift (arr)')}
+    ${fieldHTML('DepartLiftArr','Départ lift (arr)')}
+
+    ${fieldHTML('ArriveeLift','Arrivée lift (dep)')}
+    ${fieldHTML('DepartLift','Départ lift (dep)')}
+
+    ${fieldHTML('RemiseLID','Remise LID/LDS')}
+    ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
+  </div>
+`;
+
 
 /* LID visible FR/RK */
 function updateLIDVisibility(){
@@ -1687,19 +1693,22 @@ function updateSOBTDefault() {
   const sobtEl = document.getElementById('SOBT');
   if(!sobtEl) return;
 
-  if ((sobtEl.value || '').trim() !== '') return;
+  // On bloque seulement si SOBT a été modifiée volontairement
+  if (manualSOBT) return;
 
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibt = document.getElementById('SIBT')?.value || '';
   const arrPNT = document.getElementById('ArrPNT')?.value || '';
   const arrPNC = document.getElementById('ArrPNC')?.value || '';
-  if (!sibt) return;
+  if (!sibt) { sobtEl.value = ''; return; }
   if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
 
   let [sH, sM] = sibt.split(':').map(Number);
-  const base = new Date(); base.setHours(sH, sM);
+  const base = new Date(); base.setHours(sH, sM, 0, 0);
+
   let add = 35;
   if (cie === "FR" || cie === "RK") add = (arrPNT || arrPNC) ? 35 : 25;
+
   const sobtCalc = new Date(base.getTime() + add * 60000);
   sobtEl.value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
@@ -1871,18 +1880,28 @@ function setNow(fieldId) {
   const now = new Date();
   const hh = isUTC ? now.getUTCHours() : now.getHours();
   const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-  document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  document.getElementById(fieldId).value =
+    `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+
+  if (fieldId === 'SOBT') manualSOBT = true;
 }
-function adjustTime(fieldId, delta) {
+
+ function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
   if (!input || !input.value) return;
+
   let [hh, mm] = input.value.split(':').map(Number);
   let total = hh * 60 + mm + delta;
+
   if (total < 0) total += 1440;
   if (total >= 1440) total -= 1440;
+
   hh = Math.floor(total / 60);
   mm = total % 60;
+
   input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+
+  if (fieldId === 'SOBT') manualSOBT = true;
 }
 
 /* Switches */
@@ -2330,4 +2349,3 @@ function clearAutoSave() {
 
 </body>
 </html>
-
