@@ -217,6 +217,39 @@ body.dark .card-header{
 .input::placeholder, .textarea::placeholder{ color: var(--field-placeholder) !important; }
 .field .label{ font-weight: 900; color: var(--text) !important; }
 
+/* === Centrage robuste des champs time/date (PC + Android + iOS) === */
+input[type="time"],
+input[type="date"]{
+  text-align: center !important;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+input[type="time"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit{
+  text-align: center;
+}
+
+input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper{
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field,
+input[type="time"]::-webkit-datetime-edit-text{
+  text-align: center;
+}
+
+/* Firefox */
+input[type="time"],
+input[type="date"]{
+  text-align-last: center;
+}
+
 /* FORCE couleur TOB (sinon Bulma + !important bloque) */
 #FinalTOB.is-invalid{ color:#ef4444 !important; }
 #FinalTOB.is-valid{ color: var(--field-text) !important; }
