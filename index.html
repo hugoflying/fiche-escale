@@ -941,51 +941,61 @@ html{
 </div>
 
   <!-- HORAIRES -->
-  <div class="card mb-5">
-    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
-      <p class="card-header-title">HORAIRES</p>
-      <span class="card-header-icon"><span class="icon">⌄</span></span>
-    </header>
-    <div class="card-content">
-      <div class="columns is-multiline">
+<div class="card mb-5">
+  <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+    <p class="card-header-title">HORAIRES</p>
+    <span class="card-header-icon"><span class="icon">⌄</span></span>
+  </header>
 
-        <script>
-          function timeField(id,label,onchange, colClass){
-            return `
-            <div class="column ${colClass}">
-              <div class="field">
-                <label class="label">${label}</label>
-                <div class="control">
-                  <input class="input" type="time" id="${id}" onchange="${onchange}">
-                </div>
-                <div class="btn-actions">
-                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-                  <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-                </div>
+  <div class="card-content">
+    <div class="columns is-multiline">
+
+      <script>
+        function timeField(id,label,onchange, colClass){
+          return `
+          <div class="column ${colClass}">
+            <div class="field">
+              <label class="label">${label}</label>
+              <div class="control">
+                <input class="input" type="time" id="${id}" onchange="${onchange}">
               </div>
-            </div>`;
-          }
-        </script>
+              <div class="btn-actions">
+                <button class="button is-dark is-light" type="button"
+                  onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+                <button class="button is-link" type="button"
+                  onclick="setNow('${id}');updateAllCalculations()">Now</button>
+                <button class="button is-dark is-light" type="button"
+                  onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+              </div>
+            </div>
+          </div>`;
+        }
+      </script>
 
-        <div id="horairesMount" class="column is-12"></div>
-        <script>
-          document.addEventListener("DOMContentLoaded", ()=>{
-            const mount = document.getElementById('horairesMount');
-            if(!mount) return;
-            const half = "is-full-mobile is-half-tablet is-half-desktop";
-            mount.innerHTML = `<div class="columns is-multiline">
-              ${timeField('SIBT','SIBT',"updateAllCalculations()", half)}
-              ${timeField('AIBT','AIBT',"updateAllCalculations()", half)}
-              ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()", half)}
-              ${timeField('AOBT','AOBT',"updateAllCalculations()", half)}
-            </div>`;
-          });
-        </script>
+      <div id="horairesMount" class="column is-12"></div>
 
-      </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", ()=>{
+          const mount = document.getElementById('horairesMount');
+          if(!mount) return;
+
+          /* 4 champs SUR UNE SEULE LIGNE */
+          const q = "is-full-mobile is-one-quarter-tablet is-one-quarter-desktop";
+
+          mount.innerHTML = `
+            <div class="columns is-multiline">
+              ${timeField('SIBT','SIBT',"updateAllCalculations()", q)}
+              ${timeField('AIBT','AIBT',"updateAllCalculations()", q)}
+              ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()", q)}
+              ${timeField('AOBT','AOBT',"updateAllCalculations()", q)}
+            </div>
+          `;
+        });
+      </script>
+
     </div>
   </div>
+</div>
 
   <!-- TIMING -->
   <div class="card mb-5">
@@ -1748,13 +1758,12 @@ function loadTabData(id){
 
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* TIMING FIELDS – ARR / DEP */
 function generateTimingFields(){
   const container = document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label,full=false)=>`
-    <div class="column ${full ? 'is-12' : 'is-full-mobile is-one-third-tablet is-one-quarter-desktop'}">
+  const fieldHTML = (id,label)=>`
+    <div class="column is-full-mobile is-one-third-tablet is-one-quarter-desktop">
       <div class="field">
         <label class="label">${label}</label>
         <div class="control">
@@ -1775,7 +1784,7 @@ function generateTimingFields(){
     <div class="card mb-4">
       <div class="card-content">
         <div class="columns is-multiline">
-          ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
+          ${fieldHTML('ArriveeFuel','Arrivée Avitair')}
           ${fieldHTML('PremierDebarque','Premier débarqué')}
           ${fieldHTML('DernierDebarque','Dernier débarqué')}
           ${fieldHTML('ArriveeLiftArr','Arrivée lift')}
@@ -1796,7 +1805,7 @@ function generateTimingFields(){
           ${fieldHTML('DepartLift','Départ lift')}
           ${fieldHTML('RemiseLID','Remise LID/LDS')}
           ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
-          ${fieldHTML('DepartFuel','Départ Avitair',true)}
+          ${fieldHTML('DepartFuel','Départ Avitair')}
         </div>
       </div>
     </div>`;
