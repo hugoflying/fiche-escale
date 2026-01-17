@@ -568,7 +568,8 @@ html{
 
 #info-vol-card .select:not(.is-multiple)::after{
   right: .9em !important;
-  top: calc(var(--compact-input-h) / 2) !important;
+  top: 50% !important;
+  margin-top: 0 !important; /* IMPORTANT : annule Bulma */
   transform: translateY(-50%) rotate(-45deg) !important;
   border-width: 2px !important;
   border-color: currentColor !important;
