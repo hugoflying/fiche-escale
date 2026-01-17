@@ -1845,35 +1845,90 @@ function updateTOBT() {
   const ctottxt = document.getElementById('CTOT')?.value || '';
 
   // Basé BVA : pas besoin de SIBT/AIBT, SOBT suffit
-  if (!cie || !sobttxt || (!isBasedBVA && !sibttxt)) {
+  if (!cie || !sobttxt || (!isBasedBVA && (!sibttxt || !aibttxt))) {
     document.getElementById('timer-tobt').textContent = '--:--';
     window._tobtRawMins = null;
     window._tobtAdjMins = null;
     return;
   }
 
-  // Si FROM=BVA : TOBT_raw = SOBT (puis règle CTOT)
-  if(isBasedBVA){
-    const [soH, soM] = sobttxt.split(':').map(Number);
-    const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
-
-    let TOBT_raw = new Date(SOBT);
-    window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
-
-    let TOBT_adj = new Date(TOBT_raw);
-    if (ctottxt) {
-      const [cH, cM] = ctottxt.split(':').map(Number);
-      const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
-      const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
-      if (CTOT > tobtPlus15) TOBT_adj = new Date(CTOT.getTime() - 15*60000);
-      if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
-    }
-
-    window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
-    document.getElementById('timer-tobt').textContent =
-      `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
+  // Helpers minutes
+  const SOBTmins = parseHHMM(sobttxt);
+  if (SOBTmins == null) {
+    document.getElementById('timer-tobt').textContent = '--:--';
+    window._tobtRawMins = null;
+    window._tobtAdjMins = null;
     return;
   }
+
+  // ===== CAS FROM=BVA : TOBT_raw = SOBT (puis règle CTOT) =====
+  if (isBasedBVA) {
+    let tobtRaw = SOBTmins;
+
+    window._tobtRawMins = tobtRaw;
+
+    let tobtAdj = tobtRaw;
+
+    if (ctottxt) {
+      const CTOTmins = parseHHMM(ctottxt);
+      if (CTOTmins != null) {
+        // CTOT doit être <= TOBT + 15, sinon on décale TOBT à CTOT-15
+        const tobtPlus15 = (tobtAdj + 15) % 1440;
+        // on compare en minutes "étendues"
+        const CTOText = toExtended(CTOTmins, tobtAdj, tobtAdj + 180); // fenêtre large
+        const TOBT15ext = toExtended(tobtPlus15, tobtAdj, tobtAdj + 180);
+        if (CTOText > TOBT15ext) tobtAdj = (CTOTmins - 15 + 1440) % 1440;
+
+        // jamais avant SOBT
+        const tobtAdjExt = toExtended(tobtAdj, SOBTmins, SOBTmins + 180);
+        const sobtExt = toExtended(SOBTmins, SOBTmins, SOBTmins + 180);
+        if (tobtAdjExt < sobtExt) tobtAdj = SOBTmins;
+      }
+    }
+
+    window._tobtAdjMins = tobtAdj;
+    document.getElementById('timer-tobt').textContent = fmtHHMM(tobtAdj);
+    return;
+  }
+
+  // ===== CAS NORMAL : TOBT_raw = SOBT + retard arrivée (AIBT - SIBT si >0) =====
+  const SIBTmins = parseHHMM(sibttxt);
+  const AIBTmins = parseHHMM(aibttxt);
+  if (SIBTmins == null || AIBTmins == null) {
+    document.getElementById('timer-tobt').textContent = '--:--';
+    window._tobtRawMins = null;
+    window._tobtAdjMins = null;
+    return;
+  }
+
+  let delay = AIBTmins - SIBTmins;
+  if (delay < 0) delay += 1440;          // gestion passage minuit
+  if (AIBTmins <= SIBTmins) delay = 0;   // pas de retard si arrivé à l’heure/avant
+
+  let tobtRaw = (SOBTmins + delay) % 1440;
+  window._tobtRawMins = tobtRaw;
+
+  let tobtAdj = tobtRaw;
+
+  // Règle CTOT : CTOT <= TOBT + 15 sinon TOBT = CTOT - 15, jamais avant SOBT
+  if (ctottxt) {
+    const CTOTmins = parseHHMM(ctottxt);
+    if (CTOTmins != null) {
+      const tobtPlus15 = (tobtAdj + 15) % 1440;
+
+      const CTOText = toExtended(CTOTmins, tobtAdj, tobtAdj + 180);
+      const TOBT15ext = toExtended(tobtPlus15, tobtAdj, tobtAdj + 180);
+      if (CTOText > TOBT15ext) tobtAdj = (CTOTmins - 15 + 1440) % 1440;
+
+      const tobtAdjExt = toExtended(tobtAdj, SOBTmins, SOBTmins + 180);
+      const sobtExt = toExtended(SOBTmins, SOBTmins, SOBTmins + 180);
+      if (tobtAdjExt < sobtExt) tobtAdj = SOBTmins;
+    }
+  }
+
+  window._tobtAdjMins = tobtAdj;
+  document.getElementById('timer-tobt').textContent = fmtHHMM(tobtAdj);
+}
 
 /* DL CODES */
 function updateDLCode() {
