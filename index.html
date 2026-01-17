@@ -420,60 +420,128 @@ body.dark .timeline-scroll{
     width: 33.333% !important;
   }
 }
-/* ===== COMPACT HORAIRES + TIMING (tablette friendly) ===== */
+/* =========================================================
+   COMPACT + UNIFORME : INFO VOL / HORAIRES / TIMING / RETARDS
+   + boutons -1 / Now / +1 plus hauts et moins larges
+   ========================================================= */
 
-/* Réduire l’espace “cellule” (colonnes) uniquement dans HORAIRES + TIMING */
+html{
+  --compact-col-pad: .28rem;
+  --compact-field-mb: .42rem;
+  --compact-label-size: .78rem;
+  --compact-input-h: 2.15em;
+  --compact-input-fs: .95rem;
+
+  /* tap target tablette */
+  --tap-btn-h: 2.35em;
+  --tap-btn-fs: .80rem;
+}
+
+/* 1) Réduire padding des colonnes / marges des fields dans les 4 zones */
+#info-vol-card .column,
 #horairesMount .column,
-#timing-grid .column{
-  padding: .35rem !important;        /* Bulma = .75rem par défaut */
+#timing-grid .column,
+.card:has(#DLcode1) .column,
+.card:has(#DLduree1) .column{
+  padding: var(--compact-col-pad) !important;
 }
 
-/* Réduire l’espace vertical des champs */
+#info-vol-card .field,
 #horairesMount .field,
-#timing-grid .field{
-  margin-bottom: .45rem !important;
+#timing-grid .field,
+.card:has(#DLcode1) .field,
+.card:has(#DLduree1) .field{
+  margin-bottom: var(--compact-field-mb) !important;
 }
 
-/* Labels plus petits */
+/* Labels plus petits partout dans ces zones */
+#info-vol-card .label,
 #horairesMount .label,
-#timing-grid .label{
-  font-size: .78rem !important;
-  margin-bottom: .25rem !important;
+#timing-grid .label,
+.card:has(#DLcode1) .label,
+.card:has(#DLduree1) .label{
+  font-size: var(--compact-label-size) !important;
+  margin-bottom: .22rem !important;
 }
 
-/* Inputs plus compacts */
+/* Inputs/select uniformes + compacts (hauteur identique) */
+#info-vol-card .input,
+#info-vol-card .select select,
 #horairesMount .input,
-#timing-grid .input{
-  height: 2.15em !important;
+#horairesMount .select select,
+#timing-grid .input,
+#timing-grid .select select,
+.card:has(#DLcode1) .input,
+.card:has(#DLcode1) .select select,
+.card:has(#DLduree1) .input,
+.card:has(#DLduree1) .select select{
+  height: var(--compact-input-h) !important;
   padding: .35em .55em !important;
-  font-size: .95rem !important;
+  font-size: var(--compact-input-fs) !important;
 }
 
-/* ===== Boutons -1 / Now / +1 uniformisés et plus petits ===== */
-#horairesMount .btn-actions,
+/* Retards : forcer taille identique sur input number aussi */
+#DLduree1, #DLduree2, #DLduree3{
+  height: var(--compact-input-h) !important;
+  padding: .35em .55em !important;
+  font-size: var(--compact-input-fs) !important;
+}
+
+/* 2) Boutons -1 / Now / +1 : plus hauts (sécurise le clic tablette) */
+#horairesMount .btn-actions .button,
+#timing-grid .btn-actions .button{
+  height: var(--tap-btn-h) !important;
+  min-height: var(--tap-btn-h) !important;
+  font-size: var(--tap-btn-fs) !important;
+  line-height: 1 !important;
+  padding: .2em .3em !important;
+  border-radius: 12px !important;
+}
+
+/* 3) Réduire la largeur des boutons dans TIMING (sans réduire la hauteur) */
 #timing-grid .btn-actions{
-  margin-top: 6px !important;
+  grid-template-columns: 46px 1fr 46px !important;
   gap: 6px !important;
 }
 
-/* Même taille pour les 3 boutons */
-#horairesMount .btn-actions .button,
-#timing-grid .btn-actions .button{
-  width: 100% !important;            /* chaque colonne = même largeur */
-  min-width: 0 !important;
-  height: 2.05em !important;
-  padding: .2em .3em !important;
-  font-size: .78rem !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
+/* OPTIONNEL : même logique dans HORAIRES */
+#horairesMount .btn-actions{
+  grid-template-columns: 46px 1fr 46px !important;
 }
 
-/* Optionnel: si “Now” force encore des retours, tu peux compresser un poil */
+/* 4) INFO VOL : LOAD en colonne à droite */
+#info-vol-card .load-side{
+  display:flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  justify-content: flex-start;
+  margin-top: 2px;
+}
+#info-vol-card .load-side .timer-chip{
+  width: 100%;
+  min-width: 0 !important;
+}
+
+/* Sur mobile : repasse en ligne */
 @media (max-width: 768px){
-  #horairesMount .btn-actions .button,
-  #timing-grid .btn-actions .button{
-    font-size: .74rem !important;
+  #info-vol-card .load-side{
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
   }
+  #info-vol-card .load-side .timer-chip{
+    width: auto;
+    min-width: 170px;
+  }
+}
+
+/* 5) Condenser aussi l’intérieur des cards */
+#info-vol-card .card-content,
+.card:has(#horairesMount) .card-content,
+.card:has(#timing-grid) .card-content,
+.card:has(#DLcode1) .card-content{
+  padding: 1rem !important;
 }
 </style>
 </head>
@@ -727,142 +795,150 @@ body.dark .timeline-scroll{
 
 <div class="app-wrap">
 
-  <!-- INFO VOL -->
-  <div class="card mb-5">
-    <header class="card-header section-collapse" onclick="toggleCardBody(this)">
-      <p class="card-header-title">INFO VOL</p>
-      <span class="card-header-icon" aria-label="more options"><span class="icon">⌄</span></span>
-    </header>
-    <div class="card-content">
-      <div class="columns is-multiline">
+<!-- INFO VOL -->
+<div class="card mb-5" id="info-vol-card">
+  <header class="card-header section-collapse" onclick="toggleCardBody(this)">
+    <p class="card-header-title">INFO VOL</p>
+    <span class="card-header-icon"><span class="icon">⌄</span></span>
+  </header>
 
-        <div class="column is-6">
-          <div class="field">
-            <label class="label">DATE</label>
-            <div class="control">
-              <input class="input" type="date" id="Date">
+  <div class="card-content">
+    <div class="columns is-variable is-2">
+
+      <!-- GAUCHE : champs -->
+      <div class="column is-9-desktop is-8-tablet is-12-mobile">
+        <div class="columns is-multiline">
+
+          <div class="column is-6">
+            <div class="field">
+              <label class="label">DATE</label>
+              <div class="control">
+                <input class="input" type="date" id="Date">
+              </div>
             </div>
           </div>
-        </div>
-        <div class="column is-6">
-          <div class="field">
-            <label class="label">RZA</label>
-            <div class="control">
-              <input class="input uppercase" type="text" id="RZA" maxlength="3">
+
+          <div class="column is-6">
+            <div class="field">
+              <label class="label">RZA</label>
+              <div class="control">
+                <input class="input uppercase" type="text" id="RZA" maxlength="3">
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">AIRLINE</label>
-            <div class="control select is-fullwidth">
-              <select id="Cie" onchange="updateAllCalculations(); updateTabLabelInstant();">
-                <option value="">--</option>
-                <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
-                <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
-                <option>V7</option><option>Autre</option>
-              </select>
+          <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
+            <div class="field">
+              <label class="label">AIRLINE</label>
+              <div class="control select is-fullwidth">
+                <select id="Cie" onchange="updateAllCalculations(); updateTabLabelInstant();">
+                  <option value="">--</option>
+                  <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
+                  <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
+                  <option>V7</option><option>Autre</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">FLT. NUMBER</label>
-            <div class="control">
-              <input class="input uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
+          <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
+            <div class="field">
+              <label class="label">FLT. NUMBER</label>
+              <div class="control">
+                <input class="input uppercase" type="text" id="NVol" oninput="updateTabLabelInstant()">
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">FROM</label>
-            <div class="control">
-              <input class="input uppercase" type="text" id="From" maxlength="3">
+          <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
+            <div class="field">
+              <label class="label">FROM</label>
+              <div class="control">
+                <input class="input uppercase" type="text" id="From" maxlength="3">
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
-          <div class="field">
-            <label class="label">TO</label>
-            <div class="control">
-              <input class="input uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
+          <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
+            <div class="field">
+              <label class="label">TO</label>
+              <div class="control">
+                <input class="input uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Row REG / A/C / PARK -->
-        <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
-          <div class="field">
-            <label class="label">REGISTRATION</label>
-            <div class="control">
-              <input class="input uppercase" type="text" id="Immat" maxlength="6">
+          <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
+            <div class="field">
+              <label class="label">REGISTRATION</label>
+              <div class="control">
+                <input class="input uppercase" type="text" id="Immat" maxlength="6">
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
-          <div class="field">
-            <label class="label">A/C TYPE</label>
-            <div class="control select is-fullwidth">
-              <select id="TypeAvion" onchange="updateAllCalculations()">
-                <option value="">--</option>
-                <option>OTHER</option>
-                <option>A319</option>
-                <option>A320</option>
-                <option>A20N</option>
-                <option>A321</option>
-                <option>A21N</option>
-                <option>A21NY</option>
-                <option>B737-400</option>
-                <option>B737-700</option>
-                <option>B737-800</option>
-                <option>B737-8200</option>
-              </select>
+          <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
+            <div class="field">
+              <label class="label">A/C TYPE</label>
+              <div class="control select is-fullwidth">
+                <select id="TypeAvion" onchange="updateAllCalculations()">
+                  <option value="">--</option>
+                  <option>OTHER</option>
+                  <option>A319</option>
+                  <option>A320</option>
+                  <option>A20N</option>
+                  <option>A321</option>
+                  <option>A21N</option>
+                  <option>A21NY</option>
+                  <option>B737-400</option>
+                  <option>B737-700</option>
+                  <option>B737-800</option>
+                  <option>B737-8200</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
-          <div class="field">
-            <label class="label">PARKING</label>
-            <div class="control select is-fullwidth">
-              <select id="Parking">
-                <option value="">--</option>
-                <option>1</option><option>2</option><option>3</option><option>4</option>
-                <option>5</option><option>6</option><option>7</option><option>8</option>
-                <option>9</option><option>10</option><option>11</option><option>12</option>
-              </select>
+          <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
+            <div class="field">
+              <label class="label">PARKING</label>
+              <div class="control select is-fullwidth">
+                <select id="Parking">
+                  <option value="">--</option>
+                  <option>1</option><option>2</option><option>3</option><option>4</option>
+                  <option>5</option><option>6</option><option>7</option><option>8</option>
+                  <option>9</option><option>10</option><option>11</option><option>12</option>
+                </select>
+              </div>
             </div>
           </div>
+
         </div>
-
-        <!-- LOAD buttons row -->
-        <div class="column is-12">
-          <div class="load-row-below">
-            <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#2563eb;">ARR.</div>
-            </button>
-
-            <button type="button" class="timer-chip chip-btn" onclick="toggleLoadExp()">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#0ea5e9;">EXP.</div>
-            </button>
-
-            <button type="button" class="timer-chip chip-btn" onclick="toggleLoadFinal()">
-              <div class="k">LOAD</div>
-              <div class="v" style="background:#7c3aed;">FINAL</div>
-            </button>
-          </div>
-        </div>
-
       </div>
+
+      <!-- DROITE : LOAD -->
+      <div class="column is-3-desktop is-4-tablet is-12-mobile">
+        <div class="load-side">
+          <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
+            <div class="k">LOAD</div>
+            <div class="v" style="background:#2563eb;">ARR.</div>
+          </button>
+
+          <button type="button" class="timer-chip chip-btn" onclick="toggleLoadExp()">
+            <div class="k">LOAD</div>
+            <div class="v" style="background:#0ea5e9;">EXP.</div>
+          </button>
+
+          <button type="button" class="timer-chip chip-btn" onclick="toggleLoadFinal()">
+            <div class="k">LOAD</div>
+            <div class="v" style="background:#7c3aed;">FINAL</div>
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
+</div>
 
   <!-- HORAIRES -->
   <div class="card mb-5">
