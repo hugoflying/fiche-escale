@@ -1659,7 +1659,7 @@ function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS – ARR / DEP */
 function generateTimingFields(){
-  const container=document.getElementById('timing-grid');
+  const container = document.getElementById('timing-grid');
   if(!container) return;
 
   const fieldHTML = (id,label,full=false)=>`
@@ -1703,9 +1703,9 @@ function generateTimingFields(){
           ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
           ${fieldHTML('ArriveeLift','Arrivée lift')}
           ${fieldHTML('DepartLift','Départ lift')}
-          ${fieldHTML('DepartFuel','Départ Avitair',true)}
           ${fieldHTML('RemiseLID','Remise LID/LDS')}
           ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
+          ${fieldHTML('DepartFuel','Départ Avitair',true)}
         </div>
       </div>
     </div>`;
