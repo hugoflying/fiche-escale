@@ -830,40 +830,40 @@ html{
 <div class="card mb-5" id="info-vol-card">
   <header class="card-header section-collapse" onclick="toggleCardBody(this)">
     <p class="card-header-title">INFO VOL</p>
-    <span class="card-header-icon" aria-label="more options"><span class="icon">⌄</span></span>
+    <span class="card-header-icon"><span class="icon">⌄</span></span>
   </header>
 
   <div class="card-content">
-    <div class="columns is-variable is-1">
+    <div class="columns is-variable is-2">
 
-      <!-- COLONNE GAUCHE : 2 LIGNES DE CHAMPS -->
+      <!-- CHAMPS : 2 LIGNES -->
       <div class="column is-9-desktop is-8-tablet is-12-mobile">
-        <div class="columns is-multiline is-variable is-1">
+        <div class="columns is-multiline is-variable is-2">
 
-          <!-- LIGNE 1 : DATE / RZA / AIRLINE / FLT NUMBER -->
-          <div class="column is-narrow">
+          <!-- LIGNE 1 -->
+          <div class="column is-3">
             <div class="field">
               <label class="label">DATE</label>
-              <div class="control" style="max-width:170px;">
+              <div class="control">
                 <input class="input" type="date" id="Date">
               </div>
             </div>
           </div>
 
-          <div class="column is-narrow">
+          <div class="column is-2">
             <div class="field">
               <label class="label">RZA</label>
-              <div class="control" style="max-width:90px;">
+              <div class="control">
                 <input class="input uppercase" type="text" id="RZA" maxlength="3">
               </div>
             </div>
           </div>
 
-          <div class="column is-narrow">
+          <div class="column is-2">
             <div class="field">
               <label class="label">AIRLINE</label>
-              <div class="control select is-fullwidth" style="min-width:140px;">
-                <select id="Cie" onchange="updateAllCalculations(); updateTabLabelInstant();">
+              <div class="control select is-fullwidth">
+                <select id="Cie" onchange="updateAllCalculations();updateTabLabelInstant();">
                   <option value="">--</option>
                   <option>FR</option><option>RK</option><option>W4</option><option>W6</option>
                   <option>H4</option><option>H6</option><option>U5</option><option>U7</option>
@@ -873,7 +873,7 @@ html{
             </div>
           </div>
 
-          <div class="column">
+          <div class="column is-5">
             <div class="field">
               <label class="label">FLT. NUMBER</label>
               <div class="control">
@@ -882,26 +882,26 @@ html{
             </div>
           </div>
 
-          <!-- LIGNE 2 : FROM / TO / REG / A/C TYPE / PARKING -->
-          <div class="column is-narrow">
+          <!-- LIGNE 2 -->
+          <div class="column is-2">
             <div class="field">
               <label class="label">FROM</label>
-              <div class="control" style="max-width:90px;">
+              <div class="control">
                 <input class="input uppercase" type="text" id="From" maxlength="3">
               </div>
             </div>
           </div>
 
-          <div class="column is-narrow">
+          <div class="column is-2">
             <div class="field">
               <label class="label">TO</label>
-              <div class="control" style="max-width:90px;">
+              <div class="control">
                 <input class="input uppercase" type="text" id="To" maxlength="3" oninput="updateTabLabelInstant()">
               </div>
             </div>
           </div>
 
-          <div class="column">
+          <div class="column is-3">
             <div class="field">
               <label class="label">REGISTRATION</label>
               <div class="control">
@@ -910,32 +910,26 @@ html{
             </div>
           </div>
 
-          <div class="column is-narrow">
+          <div class="column is-3">
             <div class="field">
               <label class="label">A/C TYPE</label>
-              <div class="control select is-fullwidth" style="min-width:160px;">
+              <div class="control select is-fullwidth">
                 <select id="TypeAvion" onchange="updateAllCalculations()">
                   <option value="">--</option>
-                  <option>A319</option>
-                  <option>A320</option>
-                  <option>A20N</option>
-                  <option>A321</option>
-                  <option>A21N</option>
-                  <option>A21NY</option>
-                  <option>B737-400</option>
-                  <option>B737-700</option>
-                  <option>B737-800</option>
-                  <option>B737-8200</option>
-                  <option>Autre/option>
+                  <option>OTHER</option>
+                  <option>A319</option><option>A320</option><option>A20N</option>
+                  <option>A321</option><option>A21N</option><option>A21NY</option>
+                  <option>B737-400</option><option>B737-700</option>
+                  <option>B737-800</option><option>B737-8200</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <div class="column is-narrow">
+          <div class="column is-2">
             <div class="field">
               <label class="label">PARKING</label>
-              <div class="control select is-fullwidth" style="max-width:120px;">
+              <div class="control select is-fullwidth">
                 <select id="Parking">
                   <option value="">--</option>
                   <option>1</option><option>2</option><option>3</option><option>4</option>
@@ -949,7 +943,7 @@ html{
         </div>
       </div>
 
-      <!-- COLONNE DROITE : LOAD -->
+      <!-- LOAD -->
       <div class="column is-3-desktop is-4-tablet is-12-mobile">
         <div class="load-side">
           <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
