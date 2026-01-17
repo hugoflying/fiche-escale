@@ -543,6 +543,25 @@ html{
 .card:has(#DLcode1) .card-content{
   padding: 1rem !important;
 }
+  /* ===== FIX SELECT (INFO VOL) ===== */
+/* Recentrer la flèche et le texte dans les select Bulma compactés */
+
+#info-vol-card .select{
+  height: var(--compact-input-h);
+}
+
+#info-vol-card .select select{
+  height: var(--compact-input-h) !important;
+  line-height: calc(var(--compact-input-h) - 2px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Flèche Bulma (pseudo-element) recentrée verticalement */
+#info-vol-card .select:not(.is-multiple)::after{
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
 </style>
 </head>
 
