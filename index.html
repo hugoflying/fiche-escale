@@ -408,16 +408,71 @@ body.dark .timeline-scroll{
   .ctot-pill{ min-width: 64px; }
 }
 
-/* Forcer 2 colonnes sur "petites tablettes" (600–768px) */
-@media (min-width: 600px) and (max-width: 768px){
+/* Forcer 3 colonnes sur tablettes (600–900px) */
+@media (min-width: 600px) and (max-width: 900px){
   .columns.is-multiline > .column.is-full-mobile.is-one-quarter-tablet,
   .columns.is-multiline > .column.is-full-mobile.is-one-third-tablet,
   .columns.is-multiline > .column.is-full-mobile.is-half-tablet,
   .column.is-full-mobile.is-half-tablet,
   .column.is-full-mobile.is-one-third-tablet,
   .column.is-full-mobile.is-one-quarter-tablet{
-    flex: 0 0 50% !important;
-    width: 50% !important;
+    flex: 0 0 33.333% !important;
+    width: 33.333% !important;
+  }
+}
+/* ===== COMPACT HORAIRES + TIMING (tablette friendly) ===== */
+
+/* Réduire l’espace “cellule” (colonnes) uniquement dans HORAIRES + TIMING */
+#horairesMount .column,
+#timing-grid .column{
+  padding: .35rem !important;        /* Bulma = .75rem par défaut */
+}
+
+/* Réduire l’espace vertical des champs */
+#horairesMount .field,
+#timing-grid .field{
+  margin-bottom: .45rem !important;
+}
+
+/* Labels plus petits */
+#horairesMount .label,
+#timing-grid .label{
+  font-size: .78rem !important;
+  margin-bottom: .25rem !important;
+}
+
+/* Inputs plus compacts */
+#horairesMount .input,
+#timing-grid .input{
+  height: 2.15em !important;
+  padding: .35em .55em !important;
+  font-size: .95rem !important;
+}
+
+/* ===== Boutons -1 / Now / +1 uniformisés et plus petits ===== */
+#horairesMount .btn-actions,
+#timing-grid .btn-actions{
+  margin-top: 6px !important;
+  gap: 6px !important;
+}
+
+/* Même taille pour les 3 boutons */
+#horairesMount .btn-actions .button,
+#timing-grid .btn-actions .button{
+  width: 100% !important;            /* chaque colonne = même largeur */
+  min-width: 0 !important;
+  height: 2.05em !important;
+  padding: .2em .3em !important;
+  font-size: .78rem !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+/* Optionnel: si “Now” force encore des retours, tu peux compresser un poil */
+@media (max-width: 768px){
+  #horairesMount .btn-actions .button,
+  #timing-grid .btn-actions .button{
+    font-size: .74rem !important;
   }
 }
 </style>
