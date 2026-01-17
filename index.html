@@ -543,13 +543,17 @@ html{
 .card:has(#DLcode1) .card-content{
   padding: 1rem !important;
 }
-  /* ===== FIX SELECT (INFO VOL) ===== */
-/* Recentrer la flèche et le texte dans les select Bulma compactés */
+/* ===== FIX DEFINITIF SELECT (INFO VOL) ===== */
 
-#info-vol-card .select{
-  height: var(--compact-input-h);
+/* Supprimer l'apparence native (chevron OS) */
+#info-vol-card select{
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
 }
 
+/* Hauteur + centrage du texte */
+#info-vol-card .select,
 #info-vol-card .select select{
   height: var(--compact-input-h) !important;
   line-height: calc(var(--compact-input-h) - 2px) !important;
@@ -557,10 +561,13 @@ html{
   padding-bottom: 0 !important;
 }
 
-/* Flèche Bulma (pseudo-element) recentrée verticalement */
+/* Flèche Bulma centrée */
 #info-vol-card .select:not(.is-multiple)::after{
+  right: .9em !important;
   top: 50% !important;
-  transform: translateY(-50%) !important;
+  transform: translateY(-50%) rotate(-45deg) !important;
+  border-width: 2px !important;
+  border-color: currentColor !important;
 }
 </style>
 </head>
@@ -902,7 +909,6 @@ html{
               <div class="control select is-fullwidth">
                 <select id="TypeAvion" onchange="updateAllCalculations()">
                   <option value="">--</option>
-                  <option>OTHER</option>
                   <option>A319</option>
                   <option>A320</option>
                   <option>A20N</option>
@@ -913,6 +919,7 @@ html{
                   <option>B737-700</option>
                   <option>B737-800</option>
                   <option>B737-8200</option>
+                  <option>OTHER</option>
                 </select>
               </div>
             </div>
