@@ -967,7 +967,7 @@ html{
   </div>
 </div>
 
-  <!-- HORAIRES -->
+ <!-- HORAIRES -->
 <div class="card mb-5">
   <header class="card-header section-collapse" onclick="toggleCardBody(this)">
     <p class="card-header-title">HORAIRES</p>
@@ -1006,15 +1006,19 @@ html{
           const mount = document.getElementById('horairesMount');
           if(!mount) return;
 
-          /* 4 champs SUR UNE SEULE LIGNE */
-          const half = "is-half-mobile is-one-quarter-tablet is-one-quarter-desktop";
+          /* 
+            Mobile : 2 par ligne
+            Tablette+ : 4 par ligne
+          */
+          const col =
+            "is-half-mobile is-one-quarter-tablet is-one-quarter-desktop";
 
           mount.innerHTML = `
             <div class="columns is-multiline">
-              ${timeField('SIBT','SIBT',"updateAllCalculations()", q)}
-              ${timeField('AIBT','AIBT',"updateAllCalculations()", q)}
-              ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()", q)}
-              ${timeField('AOBT','AOBT',"updateAllCalculations()", q)}
+              ${timeField('SIBT','SIBT',"updateAllCalculations()", col)}
+              ${timeField('AIBT','AIBT',"updateAllCalculations()", col)}
+              ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()", col)}
+              ${timeField('AOBT','AOBT',"updateAllCalculations()", col)}
             </div>
           `;
         });
