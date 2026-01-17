@@ -1094,37 +1094,54 @@ function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
 
+  const fromTxt = (document.getElementById('From')?.value || '').toUpperCase();
+  const isBasedBVA = (fromTxt === 'BVA');
+
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  if(!aibtTxt || !sobtTxt || !sibtTxt){
+  // SOBT est indispensable. SIBT/AIBT seulement si pas basé BVA.
+  if(!sobtTxt || (!isBasedBVA && (!sibtTxt || !aibtTxt))){
     el.textContent = '--:--';
     el.classList.remove('cd-over');
     return;
   }
 
-  const SIBT = parseHHMM(sibtTxt);
-  const AIBT = parseHHMM(aibtTxt);
   const SOBT = parseHHMM(sobtTxt);
-  if(SIBT == null || AIBT == null || SOBT == null){
+  if(SOBT == null){
     el.textContent = '--:--';
     el.classList.remove('cd-over');
     return;
   }
 
-  // cible = SOBT si retard AIBT<=SIBT, sinon TOBT adj
+  // cible:
+  // - si FROM=BVA : TOBT (si dispo) sinon SOBT
+  // - sinon : SOBT si pas de retard (AIBT<=SIBT), sinon TOBT adj
   let targetMin = null;
-  if (AIBT <= SIBT) targetMin = SOBT;
-  else {
-    const tobt = window._tobtAdjMins;
-    if(tobt == null){
+
+  if(isBasedBVA){
+    targetMin = (window._tobtAdjMins != null) ? window._tobtAdjMins : SOBT;
+  }else{
+    const SIBT = parseHHMM(sibtTxt);
+    const AIBT = parseHHMM(aibtTxt);
+    if(SIBT == null || AIBT == null){
       el.textContent = '--:--';
       el.classList.remove('cd-over');
       return;
     }
-    targetMin = tobt;
+
+    if (AIBT <= SIBT) targetMin = SOBT;
+    else{
+      const tobt = window._tobtAdjMins;
+      if(tobt == null){
+        el.textContent = '--:--';
+        el.classList.remove('cd-over');
+        return;
+      }
+      targetMin = tobt;
+    }
   }
 
   // ===== CAS AOBT : on fige MAIS on recalcule selon AOBT =====
@@ -1136,7 +1153,6 @@ function updateCountdownOnce(){
       return;
     }
 
-    // diff = AOBT - cible (signé, gère minuit)
     let diffMin = AOBT - targetMin;
     if(diffMin > 720) diffMin -= 1440;
     if(diffMin < -720) diffMin += 1440;
@@ -1148,8 +1164,6 @@ function updateCountdownOnce(){
     const ss = abs % 60;
 
     el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-
-    // rouge si + (retard)
     el.classList.toggle('cd-over', totalSeconds > 0);
     return;
   }
@@ -1163,37 +1177,38 @@ function updateCountdownOnce(){
 
   const remainingSeconds = diffMin * 60 - now.secs;
 
-  const sign = remainingSeconds <= 0 ? '+' : ''; // quand on dépasse => +
+  const sign = remainingSeconds <= 0 ? '+' : '';
   const abs = Math.abs(remainingSeconds);
   const mm = Math.floor(abs / 60);
   const ss = abs % 60;
 
   el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  el.classList.toggle('cd-over', remainingSeconds < 0); // rouge quand on est passé à +
+  el.classList.toggle('cd-over', remainingSeconds < 0);
 }
 
 function ensureCountdownRunning(){
+  const fromTxt = (document.getElementById('From')?.value || '').toUpperCase();
+  const isBasedBVA = (fromTxt === 'BVA');
+
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  const baseOK = !!(sibtTxt && aibtTxt && sobtTxt);
+  const baseOK = isBasedBVA ? !!sobtTxt : !!(sibtTxt && aibtTxt && sobtTxt);
 
-  // Si AOBT est rempli : pas d'interval, mais on recalcule l'affichage (donc ça suit si tu modifies AOBT)
+  // Si AOBT est rempli : pas d'interval, on recalcule juste l'affichage
   if(baseOK && aobtTxt){
     freezeCountdown();
     updateCountdownOnce();
     return;
   }
 
-  // Si base incomplète : on stop + reset
   if(!baseOK){
     stopCountdown(true);
     return;
   }
 
-  // Live
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
@@ -1821,71 +1836,44 @@ function updateSOBTDefault() {
 /* TOBT + règle CTOT */
 function updateTOBT() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
+  const fromTxt = (document.getElementById('From')?.value || '').toUpperCase();
+  const isBasedBVA = (fromTxt === 'BVA');
+
   const sibttxt = document.getElementById('SIBT')?.value || '';
   const aibttxt = document.getElementById('AIBT')?.value || '';
   const sobttxt = document.getElementById('SOBT')?.value || '';
   const ctottxt = document.getElementById('CTOT')?.value || '';
 
-  if (!cie || !sibttxt || !sobttxt) {
+  // Basé BVA : pas besoin de SIBT/AIBT, SOBT suffit
+  if (!cie || !sobttxt || (!isBasedBVA && !sibttxt)) {
     document.getElementById('timer-tobt').textContent = '--:--';
     window._tobtRawMins = null;
     window._tobtAdjMins = null;
     return;
   }
 
-  const [sH, sM] = sibttxt.split(':').map(Number);
-  const [aH, aM] = aibttxt ? aibttxt.split(':').map(Number) : [sH, sM];
-  const [soH, soM] = sobttxt.split(':').map(Number);
+  // Si FROM=BVA : TOBT_raw = SOBT (puis règle CTOT)
+  if(isBasedBVA){
+    const [soH, soM] = sobttxt.split(':').map(Number);
+    const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
 
-  const SIBT = new Date(); SIBT.setHours(sH, sM, 0, 0);
-  const AIBT = new Date(); AIBT.setHours(aH, aM, 0, 0);
-  const SOBT = new Date(); SOBT.setHours(soH, soM, 0, 0);
+    let TOBT_raw = new Date(SOBT);
+    window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
 
-  const isDelayed = (aibttxt && (AIBT > SIBT));
-  const crewChange = !!(document.getElementById('ArrPNT')?.value || document.getElementById('ArrPNC')?.value);
-  const addMin = (d, m)=> new Date(d.getTime() + m*60000);
-
-  let TOBT_raw;
-
-  if (cie === 'FR' || cie === 'RK') {
-    if (!isDelayed) TOBT_raw = new Date(SOBT);
-    else {
-      const turn = crewChange ? 35 : 25;
-      const candidate = addMin(AIBT, turn);
-      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
+    let TOBT_adj = new Date(TOBT_raw);
+    if (ctottxt) {
+      const [cH, cM] = ctottxt.split(':').map(Number);
+      const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
+      const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
+      if (CTOT > tobtPlus15) TOBT_adj = new Date(CTOT.getTime() - 15*60000);
+      if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
     }
-  } else if (cie === 'W4' || cie === 'W6') {
-    if (!isDelayed) TOBT_raw = new Date(SOBT);
-    else {
-      const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
-      const turn = (type === 'A321') ? 35 : 30;
-      const candidate = addMin(AIBT, turn);
-      TOBT_raw = (candidate <= SOBT) ? new Date(SOBT) : candidate;
-    }
-  } else {
-    if (aibttxt && AIBT > SIBT) {
-      const diff = (SOBT - SIBT) / 60000;
-      TOBT_raw = new Date(AIBT.getTime() + diff * 60000);
-    } else TOBT_raw = new Date(SOBT);
+
+    window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
+    document.getElementById('timer-tobt').textContent =
+      `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
+    return;
   }
-
-  if (TOBT_raw < SOBT) TOBT_raw = new Date(SOBT);
-  window._tobtRawMins = TOBT_raw.getHours() * 60 + TOBT_raw.getMinutes();
-
-  let TOBT_adj = new Date(TOBT_raw);
-  if (ctottxt) {
-    const [cH, cM] = ctottxt.split(':').map(Number);
-    const CTOT = new Date(); CTOT.setHours(cH, cM, 0, 0);
-    const tobtPlus15 = new Date(TOBT_adj.getTime() + 15*60000);
-    if (CTOT > tobtPlus15) TOBT_adj = new Date(CTOT.getTime() - 15*60000);
-    if (TOBT_adj < SOBT) TOBT_adj = new Date(SOBT);
-  }
-
-  window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
-
-  document.getElementById('timer-tobt').textContent =
-    `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
-}
 
 /* DL CODES */
 function updateDLCode() {
