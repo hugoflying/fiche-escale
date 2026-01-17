@@ -23,8 +23,7 @@
   --field-border: rgba(17,24,39,.18);
   --field-placeholder: rgba(107,114,128,.95);
 
-  /* hauteur DU SEUL bandeau figé (tabs + timers) */
-  --fixed-header-h: 92px;
+  --fixed-header-h: 140px;
 }
 
 body{ background: var(--bg); color: var(--text); margin: 0; }
@@ -42,16 +41,37 @@ body.dark{
   --field-placeholder: rgba(156,163,175,.95);
 }
 
-/* ===== TOP (NON-FIXED) ===== */
-.topbar{
-  position: relative;
-  z-index: 10;
-  background: transparent;
+/* ===== FIXED HEADER ===== */
+.fixed-header{
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 3000;
+  background: rgba(246,247,251,.82);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,.08);
 }
-.topbar-inner{
+body.dark .fixed-header{
+  background: rgba(15,17,21,.82);
+  border-bottom-color: rgba(255,255,255,.08);
+}
+
+.fixed-header-inner{
   max-width: 1120px;
   margin: 0 auto;
-  padding: 10px 14px 6px;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.app-wrap{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: calc(var(--fixed-header-h) + 14px) 14px 14px;
+}
+
+/* Topbar */
+.topbar-inner{
   display:flex;
   gap:12px;
   align-items:center;
@@ -68,34 +88,6 @@ body.dark{
 }
 .brand-title{ text-align:center; line-height: 1.05; }
 .brand-title strong{ display:block; font-size: 1.2rem; color: var(--text); }
-
-/* ===== FIXED BAR (tabs + timers only) ===== */
-.fixed-bar{
-  position: sticky;
-  top: 0;
-  z-index: 3000;
-  background: rgba(246,247,251,.82);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0,0,0,.08);
-}
-body.dark .fixed-bar{
-  background: rgba(15,17,21,.82);
-  border-bottom-color: rgba(255,255,255,.08);
-}
-.fixed-bar-inner{
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 8px 14px 10px;
-  display:flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.app-wrap{
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 14px 14px 14px;
-}
 
 /* Tabs row */
 .tabs-row{ display:flex; justify-content:center; }
@@ -178,8 +170,10 @@ body.dark .fixed-bar{
 .ctot-pill::-webkit-calendar-picker-indicator{ display:none; -webkit-appearance:none; }
 
 #timer-tobt{ background:#16a34a !important; }
-#timer-h8{ background:#facc15 !important; color:#fff !important; }
+#timer-h8{ background:#facc15 !important; color:#fff !important; } /* LID blanc */
 #timer-cd{ background:#93c5fd !important; color:#111 !important; }
+
+/* CD en dépassement (après 0) */
 #timer-cd.cd-over{
   background: #fee2e2 !important;
   color: #ef4444 !important;
@@ -215,64 +209,18 @@ body.dark .card-header{
 .input::placeholder, .textarea::placeholder{ color: var(--field-placeholder) !important; }
 .field .label{ font-weight: 900; color: var(--text) !important; }
 
-/* === Centrage robuste des champs time/date (PC + Android + iOS) === */
-input[type="time"],
-input[type="date"]{
-  text-align: center !important;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
-}
-input[type="time"]::-webkit-datetime-edit,
-input[type="date"]::-webkit-datetime-edit{ text-align: center; }
-input[type="time"]::-webkit-datetime-edit-fields-wrapper,
-input[type="date"]::-webkit-datetime-edit-fields-wrapper{
-  display: inline-flex;
-  justify-content: center;
-  width: 100%;
-}
-input[type="time"]::-webkit-datetime-edit-hour-field,
-input[type="time"]::-webkit-datetime-edit-minute-field,
-input[type="time"]::-webkit-datetime-edit-ampm-field,
-input[type="time"]::-webkit-datetime-edit-text{ text-align: center; }
-/* Firefox */
-input[type="time"],
-input[type="date"]{ text-align-last: center; }
-
-/* FORCE couleur TOB */
+/* FORCE couleur TOB (sinon Bulma + !important bloque) */
 #FinalTOB.is-invalid{ color:#ef4444 !important; }
 #FinalTOB.is-valid{ color: var(--field-text) !important; }
 
-/* Buttons (global) */
+/* Buttons */
 .btn-actions{
-  display:flex;
-  gap:6px;
-  margin-top: 6px;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
 }
-.btn-actions .button{
-  flex: 1 1 0;
-  border-radius: 12px;
-  font-weight: 900;
-  padding: 0.35rem 0.45rem;
-  min-width: 0;
-  height: 32px;
-}
-.btn-actions .button.is-link{ min-width: 0; }
-
-/* === Compact timing/horaires for tablets === */
-.field.compact .input{
-  height: 36px;
-  padding: 0.35rem 0.6rem;
-  font-weight: 800;
-}
-.field.compact .label{
-  font-size: .95rem;
-  margin-bottom: .25rem;
-}
-.field.compact .btn-actions .button{
-  height: 30px;
-  padding: 0.25rem 0.35rem;
-  font-size: .85rem;
-}
+.btn-actions .button{ border-radius: 12px; font-weight: 900; }
 
 /* Popup toast */
 #popup{
@@ -323,106 +271,57 @@ input[type="date"]{ text-align-last: center; }
 .chip-btn{ border: none; cursor: pointer; }
 .chip-btn:active{ transform: translateY(1px); }
 
-#loadArrPopover, #loadExpPopover, #loadFinalPopover, #snyDepPopover{
+#loadArrPopover, #loadExpPopover, #loadFinalPopover{
   position: fixed;
   top: calc(var(--fixed-header-h) + 16px);
   left: 50%;
   transform: translateX(-50%);
-  width: min(560px, calc(100vw - 28px));
-  background: linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, #60a5fa 8%), var(--card));
+  width: min(520px, calc(100vw - 28px));
+  background: var(--card);
   box-shadow: var(--shadow);
   border-radius: 16px;
   z-index: 4500;
   display: none;
   padding: 12px;
-  border: 1px solid rgba(0,0,0,.10);
+  border: 1px solid rgba(0,0,0,.08);
 }
-body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopover, body.dark #snyDepPopover{
+body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopover{
   border-color: rgba(255,255,255,.10);
-  background: linear-gradient(180deg, color-mix(in srgb, var(--card) 90%, #60a5fa 10%), var(--card));
 }
-#loadArrPopover .hdr, #loadExpPopover .hdr, #loadFinalPopover .hdr, #snyDepPopover .hdr{
+#loadArrPopover .hdr, #loadExpPopover .hdr, #loadFinalPopover .hdr{
   display:flex;
   align-items:center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
-  cursor: move;
-  user-select:none;
-  padding: 6px 8px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--card) 86%, #94a3b8 14%);
 }
-body.dark #loadArrPopover .hdr,
-body.dark #loadExpPopover .hdr,
-body.dark #loadFinalPopover .hdr,
-body.dark #snyDepPopover .hdr{
-  background: color-mix(in srgb, var(--card) 82%, #475569 18%);
-}
-#loadArrPopover .hdr strong, #loadExpPopover .hdr strong, #loadFinalPopover .hdr strong, #snyDepPopover .hdr strong{ font-weight: 900; }
-
-#loadArrPopover .grid, #loadExpPopover .grid, #loadFinalPopover .grid, #snyDepPopover .grid{
+#loadArrPopover .hdr strong, #loadExpPopover .hdr strong, #loadFinalPopover .hdr strong{ font-weight: 900; }
+#loadArrPopover .grid, #loadExpPopover .grid, #loadFinalPopover .grid{
   display:grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
-#loadArrPopover .field .label, #loadExpPopover .field .label, #loadFinalPopover .field .label, #snyDepPopover .field .label{
+#loadArrPopover .field .label, #loadExpPopover .field .label, #loadFinalPopover .field .label{
   font-size: .9rem;
 }
 
-/* Backdrop (plus marqué) */
 #loadArrBackdrop{
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(2px);
+  background: rgba(0,0,0,.25);
   z-index: 4400;
   display:none;
 }
 
-/* PAX split */
-.pax-split{
+/* PRM rows */
+.prm-row{
   display:grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap:8px;
-  align-items:center;
-}
-.pax-plus{
-  font-weight: 900;
-  color: var(--text);
-  opacity: .85;
-  padding: 0 2px;
-}
-
-/* H1..H4 under BAGS */
-.hold-grid{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin-top: 8px;
-}
-.hold-grid .field{ margin-bottom: 0; }
-
-/* validate class */
-.is-invalid-outline{
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 2px rgba(239,68,68,.15) !important;
-}
-
-/* PRM fixed rows */
-.prm-fixed{
-  display:grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 1.2fr .8fr auto;
   gap:10px;
-  align-items:center;
+  align-items:end;
   margin-bottom:10px;
 }
-.prm-fixed .tag{
-  justify-content:center;
-  font-weight: 900;
-  border-radius: 999px;
-  padding: 0.45rem 0.8rem;
-}
+.prm-row .button{ border-radius: 12px; }
 
 /* LOAD buttons row */
 .load-row-below{
@@ -440,13 +339,16 @@ body.dark #snyDepPopover .hdr{
   height: 4px; background:#cfd4da; transform:translateY(-50%); border-radius:4px;
 }
 body.dark .timeline-track{ background:#2e2e2e; }
+
 .timeline-tick { position: absolute; width: 1px; background:rgba(0,0,0,0.08); }
 body.dark .timeline-tick { background:#3e444b; }
+
 .timeline-tick-label {
   position: absolute; transform: translateX(-50%);
   font-size: 14px; font-weight: 800; color:#111827;
 }
 body.dark .timeline-tick-label { color:#cfd4da; }
+
 .tl-event, .tl-range { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; line-height:1; z-index: 1; }
 .tl-dot {
   width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15);
@@ -457,12 +359,14 @@ body.dark .timeline-tick-label { color:#cfd4da; }
   font-weight: 900;
 }
 body.dark .tl-label { background:#232733; color:#f5f5f5; box-shadow: 0 0 0 1px rgba(255,255,255,.08); }
+
 .tl--std  { --c:#64748b; }
 .tl--tobt { --c:#16a34a; }
 .tl--ctot { --c:#334155; }
 .tl--ops  { --c:#2563eb; }
 .tl--turn { --c:#ef4444; }
 .tl-event .tl-dot { background: var(--c); }
+
 .tl-range {
   height: 16px; background: color-mix(in srgb, var(--c) 42%, transparent);
   border: 2px solid var(--c); border-radius: 999px; z-index: 2;
@@ -474,6 +378,7 @@ body.dark .tl-label { background:#232733; color:#f5f5f5; box-shadow: 0 0 0 1px r
   color: #111;
 }
 body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
+
 .timeline-toolbar{
   display:flex; align-items:center; gap:8px; margin: 4px 0 10px;
   flex-wrap: wrap;
@@ -525,45 +430,23 @@ body.dark .timeline-scroll{
 
 <!-- ===== LOAD ARR popover ===== -->
 <div id="loadArrPopover" role="dialog" aria-modal="true">
-  <div class="hdr" data-drag="loadArrPopover">
+  <div class="hdr">
     <strong>LOAD ARR.</strong>
     <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
 
-  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+  <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
-      <div class="control pax-split">
-        <input class="input" id="LoadPAX1" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);syncPAX('arr')">
-        <span class="pax-plus">+</span>
-        <input class="input" id="LoadPAX2" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);syncPAX('arr')">
+      <div class="control">
+        <input class="input" id="LoadPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
-      <input type="hidden" id="LoadPAX" value="">
     </div>
 
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="LoadBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('arr');">
-      </div>
-
-      <div class="hold-grid">
-        <div class="field">
-          <label class="label">H1</label>
-          <div class="control"><input class="input" id="LoadH1" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('arr');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H2</label>
-          <div class="control"><input class="input" id="LoadH2" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('arr');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H3</label>
-          <div class="control"><input class="input" id="LoadH3" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('arr');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H4</label>
-          <div class="control"><input class="input" id="LoadH4" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('arr');"></div>
-        </div>
+        <input class="input" id="LoadBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
@@ -579,53 +462,32 @@ body.dark .timeline-scroll{
 
   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
+    <button class="button is-small is-link" type="button" onclick="addPRMRow('arr')">+ Ajouter</button>
   </div>
 
-  <input type="hidden" id="LoadPRMData" value="{}">
+  <input type="hidden" id="LoadPRMData" value="[]">
   <div id="LoadPRMRows"></div>
 </div>
 
 <!-- ===== LOAD EXP popover ===== -->
 <div id="loadExpPopover" role="dialog" aria-modal="true">
-  <div class="hdr" data-drag="loadExpPopover">
+  <div class="hdr">
     <strong>LOAD EXP.</strong>
     <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
 
-  <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+  <div class="grid">
     <div class="field">
       <label class="label">PAX</label>
-      <div class="control pax-split">
-        <input class="input" id="ExpPAX1" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);syncPAX('exp')">
-        <span class="pax-plus">+</span>
-        <input class="input" id="ExpPAX2" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);syncPAX('exp')">
+      <div class="control">
+        <input class="input" id="ExpPAX" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
-      <input type="hidden" id="ExpPAX" value="">
     </div>
 
     <div class="field">
       <label class="label">BAGS</label>
       <div class="control">
-        <input class="input" id="ExpBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('exp');">
-      </div>
-
-      <div class="hold-grid">
-        <div class="field">
-          <label class="label">H1</label>
-          <div class="control"><input class="input" id="ExpH1" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('exp');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H2</label>
-          <div class="control"><input class="input" id="ExpH2" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('exp');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H3</label>
-          <div class="control"><input class="input" id="ExpH3" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('exp');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H4</label>
-          <div class="control"><input class="input" id="ExpH4" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('exp');"></div>
-        </div>
+        <input class="input" id="ExpBAGS" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this)">
       </div>
     </div>
 
@@ -641,15 +503,16 @@ body.dark .timeline-scroll{
 
   <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
     <strong style="font-weight:900;">PRM</strong>
+    <button class="button is-small is-link" type="button" onclick="addPRMRow('exp')">+ Ajouter</button>
   </div>
 
-  <input type="hidden" id="ExpPRMData" value="{}">
+  <input type="hidden" id="ExpPRMData" value="[]">
   <div id="ExpPRMRows"></div>
 </div>
 
 <!-- ===== LOAD FINAL popover ===== -->
 <div id="loadFinalPopover" role="dialog" aria-modal="true">
-  <div class="hdr" data-drag="loadFinalPopover">
+  <div class="hdr">
     <strong>LOAD FINAL</strong>
     <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
   </div>
@@ -724,38 +587,18 @@ body.dark .timeline-scroll{
     </div>
   </div>
 
+  <!-- NEW section -->
   <hr style="margin:12px 0; border-top:2px solid #111; opacity:.85;">
 
   <div class="grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
     <div class="field">
       <label class="label">BAGS</label>
-      <div class="control"><input class="input" id="FinalBAGS" type="text" inputmode="numeric" oninput="digitsOnly(this);validateBags('final');"></div>
-
-      <div class="hold-grid">
-        <div class="field">
-          <label class="label">H1</label>
-          <div class="control"><input class="input" id="FinalH1" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('final');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H2</label>
-          <div class="control"><input class="input" id="FinalH2" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('final');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H3</label>
-          <div class="control"><input class="input" id="FinalH3" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('final');"></div>
-        </div>
-        <div class="field">
-          <label class="label">H4</label>
-          <div class="control"><input class="input" id="FinalH4" type="text" inputmode="numeric" placeholder="0" oninput="digitsOnly(this);validateBags('final');"></div>
-        </div>
-      </div>
+      <div class="control"><input class="input" id="FinalBAGS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
     </div>
-
     <div class="field">
       <label class="label">POIDS</label>
       <div class="control"><input class="input" id="FinalPOIDS" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
     </div>
-
     <div class="field">
       <label class="label">GB</label>
       <div class="control"><input class="input" id="FinalGB" type="text" inputmode="numeric" oninput="digitsOnly(this);"></div>
@@ -763,50 +606,31 @@ body.dark .timeline-scroll{
   </div>
 </div>
 
-<!-- ===== SNY DEP popover ===== -->
-<div id="snyDepPopover" role="dialog" aria-modal="true">
-  <div class="hdr" data-drag="snyDepPopover">
-    <strong>SNY DEP.</strong>
-    <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
-  </div>
+<!-- ===== FIXED HEADER ===== -->
+<div class="fixed-header" id="fixedHeader">
+  <div class="fixed-header-inner">
 
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;">
-    <span class="has-text-grey" style="font-weight:800;">Crewcodes DHC (6 lettres)</span>
-    <button class="button is-small is-link" type="button" onclick="addSnyRow()">+ Ajouter</button>
-  </div>
+    <div class="topbar-inner">
+      <div class="brandline">
+        <div class="brand-title">
+          <strong>SUIVI PERFORMANCE</strong>
+        </div>
+      </div>
 
-  <input type="hidden" id="SnyDepData" value="[]">
-  <div id="SnyDepRows"></div>
-</div>
+      <div class="top-toggles" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
+        <label class="toggle">
+          <span id="darkLabel">Clair</span>
+          <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
 
-<!-- ===== TOPBAR (NOT FIXED) ===== -->
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="brandline">
-      <div class="brand-title">
-        <strong>SUIVI PERFORMANCE</strong>
+        <label class="toggle">
+          <span id="tzLabel">Locale</span>
+          <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)">
+          <span class="track"><span class="thumb"></span></span>
+        </label>
       </div>
     </div>
-
-    <div class="top-toggles" style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; width:100%;">
-      <label class="toggle">
-        <span id="darkLabel">Clair</span>
-        <input id="darkToggle" type="checkbox" onchange="setDarkMode(this.checked)">
-        <span class="track"><span class="thumb"></span></span>
-      </label>
-
-      <label class="toggle">
-        <span id="tzLabel">Locale</span>
-        <input id="utcToggle" type="checkbox" onchange="setTimeModeUTC(this.checked)">
-        <span class="track"><span class="thumb"></span></span>
-      </label>
-    </div>
-  </div>
-</div>
-
-<!-- ===== FIXED BAR (tabs + timers only) ===== -->
-<div class="fixed-bar" id="fixedBar">
-  <div class="fixed-bar-inner">
 
     <div class="tabs-row">
       <div id="tab-bar" class="tabs-chip"></div>
@@ -915,6 +739,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
+        <!-- Row REG / A/C / PARK -->
         <div class="column is-full-mobile is-one-third-tablet is-one-third-desktop">
           <div class="field">
             <label class="label">REGISTRATION</label>
@@ -960,6 +785,7 @@ body.dark .timeline-scroll{
           </div>
         </div>
 
+        <!-- LOAD buttons row -->
         <div class="column is-12">
           <div class="load-row-below">
             <button type="button" class="timer-chip chip-btn" onclick="toggleLoadArr()">
@@ -976,11 +802,6 @@ body.dark .timeline-scroll{
               <div class="k">LOAD</div>
               <div class="v" style="background:#7c3aed;">FINAL</div>
             </button>
-
-            <button type="button" class="timer-chip chip-btn" onclick="toggleSnyDep()">
-              <div class="k">SNY</div>
-              <div class="v" style="background:#111827;">DEP.</div>
-            </button>
           </div>
         </div>
 
@@ -995,7 +816,43 @@ body.dark .timeline-scroll{
       <span class="card-header-icon"><span class="icon">⌄</span></span>
     </header>
     <div class="card-content">
-      <div id="horairesMount"></div>
+      <div class="columns is-multiline">
+
+        <script>
+          function timeField(id,label,onchange, colClass){
+            return `
+            <div class="column ${colClass}">
+              <div class="field">
+                <label class="label">${label}</label>
+                <div class="control">
+                  <input class="input" type="time" id="${id}" onchange="${onchange}">
+                </div>
+                <div class="btn-actions">
+                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+                  <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+                  <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+                </div>
+              </div>
+            </div>`;
+          }
+        </script>
+
+        <div id="horairesMount" class="column is-12"></div>
+        <script>
+          document.addEventListener("DOMContentLoaded", ()=>{
+            const mount = document.getElementById('horairesMount');
+            if(!mount) return;
+            const half = "is-full-mobile is-half-tablet is-half-desktop";
+            mount.innerHTML = `<div class="columns is-multiline">
+              ${timeField('SIBT','SIBT',"updateAllCalculations()", half)}
+              ${timeField('AIBT','AIBT',"updateAllCalculations()", half)}
+              ${timeField('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()", half)}
+              ${timeField('AOBT','AOBT',"updateAllCalculations()", half)}
+            </div>`;
+          });
+        </script>
+
+      </div>
     </div>
   </div>
 
@@ -1100,10 +957,7 @@ body.dark .timeline-scroll{
 </div>
 
 <script>
-
-/* =========================
-   UI / COLLAPSE
-========================= */
+/* Collapse */
 function toggleCardBody(headerEl){
   const card = headerEl.closest('.card');
   if(!card) return;
@@ -1114,9 +968,9 @@ function toggleCardBody(headerEl){
   if(icon) icon.textContent = collapsed ? '›' : '⌄';
 }
 
-/* Header height (ONLY fixed bar) */
+/* Header height */
 function updateHeaderOffset(){
-  const header = document.getElementById('fixedBar');
+  const header = document.getElementById('fixedHeader');
   if(!header) return;
   const h = Math.ceil(header.getBoundingClientRect().height);
   document.documentElement.style.setProperty('--fixed-header-h', h + 'px');
@@ -1145,17 +999,7 @@ let lastDLChanged = 1;
 /* digits only */
 function digitsOnly(el){ el.value = (el.value || '').replace(/[^0-9]/g,''); }
 
-/* =========================
-   BASED AIRCRAFT (FROM=BVA)
-========================= */
-function isBasedAtBVA(){
-  const from = (document.getElementById('From')?.value || '').trim().toUpperCase();
-  return from === 'BVA';
-}
-
-/* =========================
-   COUNTDOWN (CD)
-========================= */
+/* ===== COUNTDOWN (CD) ===== */
 let countdownTimer = null;
 
 function getNowMinutes(){
@@ -1164,6 +1008,16 @@ function getNowMinutes(){
   const m = isUTC ? now.getUTCMinutes() : now.getMinutes();
   const s = isUTC ? now.getUTCSeconds() : now.getSeconds();
   return { mins: h*60 + m, secs: s };
+}
+
+function fmtMMSSSigned(totalSeconds){
+  const isOver = totalSeconds < 0;
+  const abs = Math.abs(totalSeconds);
+
+  const mm = Math.floor(abs / 60);
+  const ss = abs % 60;
+
+  return `${isOver ? '+' : ''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
 }
 
 function stopCountdown(resetDisplay=true){
@@ -1175,7 +1029,9 @@ function stopCountdown(resetDisplay=true){
     el.classList.remove('cd-over');
   }
 }
+
 function freezeCountdown(){
+  // on coupe juste l'interval, on ne touche pas au texte affiché
   if(countdownTimer){ clearInterval(countdownTimer); countdownTimer = null; }
 }
 
@@ -1183,71 +1039,11 @@ function updateCountdownOnce(){
   const el = document.getElementById('timer-cd');
   if(!el) return;
 
-  const based = isBasedAtBVA();
-
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  // Cas BVA (avion basé) : pas besoin SIBT/AIBT
-  if(based){
-    if(!sobtTxt){
-      el.textContent = '--:--';
-      el.classList.remove('cd-over');
-      return;
-    }
-    const SOBT = parseHHMM(sobtTxt);
-    if(SOBT == null){
-      el.textContent = '--:--';
-      el.classList.remove('cd-over');
-      return;
-    }
-
-    // cible = TOBT affiché si dispo, sinon SOBT
-    let targetMin = window._tobtAdjMins;
-    if(targetMin == null) targetMin = SOBT;
-
-    // si AOBT saisi : afficher +/-
-    if(aobtTxt){
-      const AOBT = parseHHMM(aobtTxt);
-      if(AOBT == null){
-        el.textContent = '--:--';
-        el.classList.remove('cd-over');
-        return;
-      }
-      let diffMin = AOBT - targetMin;
-      if(diffMin > 720) diffMin -= 1440;
-      if(diffMin < -720) diffMin += 1440;
-
-      const totalSeconds = diffMin * 60;
-      const sign = totalSeconds >= 0 ? '+' : '-';
-      const abs = Math.abs(totalSeconds);
-      const mm = Math.floor(abs / 60);
-      const ss = abs % 60;
-
-      el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-      el.classList.toggle('cd-over', totalSeconds > 0);
-      return;
-    }
-
-    const now = getNowMinutes();
-    let diffMin = targetMin - now.mins;
-    if(diffMin < -720) diffMin += 1440;
-    if(diffMin > 720) diffMin -= 1440;
-
-    const remainingSeconds = diffMin * 60 - now.secs;
-    const sign = remainingSeconds <= 0 ? '+' : '';
-    const abs = Math.abs(remainingSeconds);
-    const mm = Math.floor(abs / 60);
-    const ss = abs % 60;
-
-    el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-    el.classList.toggle('cd-over', remainingSeconds < 0);
-    return;
-  }
-
-  // Cas normal : besoin SIBT + AIBT + SOBT
   if(!aibtTxt || !sobtTxt || !sibtTxt){
     el.textContent = '--:--';
     el.classList.remove('cd-over');
@@ -1263,6 +1059,7 @@ function updateCountdownOnce(){
     return;
   }
 
+  // cible = SOBT si retard AIBT<=SIBT, sinon TOBT adj
   let targetMin = null;
   if (AIBT <= SIBT) targetMin = SOBT;
   else {
@@ -1275,6 +1072,7 @@ function updateCountdownOnce(){
     targetMin = tobt;
   }
 
+  // ===== CAS AOBT : on fige MAIS on recalcule selon AOBT =====
   if(aobtTxt){
     const AOBT = parseHHMM(aobtTxt);
     if(AOBT == null){
@@ -1283,6 +1081,7 @@ function updateCountdownOnce(){
       return;
     }
 
+    // diff = AOBT - cible (signé, gère minuit)
     let diffMin = AOBT - targetMin;
     if(diffMin > 720) diffMin -= 1440;
     if(diffMin < -720) diffMin += 1440;
@@ -1294,10 +1093,13 @@ function updateCountdownOnce(){
     const ss = abs % 60;
 
     el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+
+    // rouge si + (retard)
     el.classList.toggle('cd-over', totalSeconds > 0);
     return;
   }
 
+  // ===== CAS NORMAL : live avec NOW (décompte puis +) =====
   const now = getNowMinutes();
 
   let diffMin = targetMin - now.mins;
@@ -1306,36 +1108,37 @@ function updateCountdownOnce(){
 
   const remainingSeconds = diffMin * 60 - now.secs;
 
-  const sign = remainingSeconds <= 0 ? '+' : '';
+  const sign = remainingSeconds <= 0 ? '+' : ''; // quand on dépasse => +
   const abs = Math.abs(remainingSeconds);
   const mm = Math.floor(abs / 60);
   const ss = abs % 60;
 
   el.textContent = `${sign}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  el.classList.toggle('cd-over', remainingSeconds < 0);
+  el.classList.toggle('cd-over', remainingSeconds < 0); // rouge quand on est passé à +
 }
 
 function ensureCountdownRunning(){
-  const based = isBasedAtBVA();
-
   const sibtTxt = document.getElementById('SIBT')?.value || '';
   const aibtTxt = document.getElementById('AIBT')?.value || '';
   const sobtTxt = document.getElementById('SOBT')?.value || '';
   const aobtTxt = document.getElementById('AOBT')?.value || '';
 
-  const baseOK = based ? !!sobtTxt : !!(sibtTxt && aibtTxt && sobtTxt);
+  const baseOK = !!(sibtTxt && aibtTxt && sobtTxt);
 
+  // Si AOBT est rempli : pas d'interval, mais on recalcule l'affichage (donc ça suit si tu modifies AOBT)
   if(baseOK && aobtTxt){
     freezeCountdown();
     updateCountdownOnce();
     return;
   }
 
+  // Si base incomplète : on stop + reset
   if(!baseOK){
     stopCountdown(true);
     return;
   }
 
+  // Live
   if(!countdownTimer){
     updateCountdownOnce();
     countdownTimer = setInterval(updateCountdownOnce, 1000);
@@ -1344,9 +1147,7 @@ function ensureCountdownRunning(){
   }
 }
 
-/* =========================
-   TIMELINE ZOOM
-========================= */
+/* Timeline zoom */
 function timelineZoomIn(){ timelineSetZoom(timelineZoom + TL_ZOOM_STEP); }
 function timelineZoomOut(){ timelineSetZoom(timelineZoom - TL_ZOOM_STEP); }
 function timelineZoomReset(){ timelineSetZoom(1); }
@@ -1362,638 +1163,124 @@ function timelineSetZoom(z){
   scroller.scrollLeft = prevCenterRatio * scroller.scrollWidth - scroller.clientWidth/2;
 }
 
-/* =========================
-   LOAD POPOVERS (DRAG + STYLE)
-========================= */
-function injectUIOverrides(){
-  if(document.getElementById('uiOverridesInjected')) return;
-  const st = document.createElement('style');
-  st.id = 'uiOverridesInjected';
-  st.textContent = `
-    /* popups : fond différent + draggable feeling */
-    #loadArrPopover, #loadExpPopover, #loadFinalPopover, #snyDepPopover{
-      background: color-mix(in srgb, var(--card) 86%, #60a5fa 14%) !important;
-      border: 1px solid rgba(59,130,246,.20) !important;
-    }
-    body.dark #loadArrPopover, body.dark #loadExpPopover, body.dark #loadFinalPopover, body.dark #snyDepPopover{
-      background: color-mix(in srgb, var(--card) 86%, #2563eb 14%) !important;
-      border: 1px solid rgba(96,165,250,.22) !important;
-    }
-    #loadArrPopover .hdr, #loadExpPopover .hdr, #loadFinalPopover .hdr, #snyDepPopover .hdr{
-      cursor: move;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(0,0,0,.08);
-    }
-    body.dark #loadArrPopover .hdr, body.dark #loadExpPopover .hdr, body.dark #loadFinalPopover .hdr, body.dark #snyDepPopover .hdr{
-      border-bottom-color: rgba(255,255,255,.10);
-    }
-
-    /* boutons Now/-1/+1 : mêmes tailles + compacts */
-    .btn-actions{ gap: 4px !important; }
-    .btn-actions .button{
-      width: 100% !important;
-      min-height: 28px !important;
-      padding: 0.15rem 0.25rem !important;
-      font-size: .85rem !important;
-    }
-
-    /* inputs timing : plus compacts */
-    .field .control .input[type="time"]{
-      height: 2.1rem !important;
-      font-size: .95rem !important;
-    }
-
-    /* timing/horaires : tenter + de colonnes sur tablette */
-    @media (min-width: 600px){
-      #timing-grid .column.is-one-quarter-tablet,
-      #horairesMount .column.is-half-tablet{
-        flex: 0 0 33.333% !important;
-        width: 33.333% !important;
-      }
-    }
-    @media (min-width: 900px){
-      #timing-grid .column.is-one-quarter-desktop{
-        flex: 0 0 20% !important;
-        width: 20% !important;
-      }
-    }
-
-    /* grille H1..H4 sous BAGS */
-    .hold-grid{ display:grid; grid-template-columns: 1fr; gap:10px; }
-    .hold-grid .field{ margin-bottom:0; }
-  `;
-  document.head.appendChild(st);
-}
-
-function makeDraggable(popupId){
-  const popup = document.getElementById(popupId);
-  if(!popup || popup.dataset.draggable === '1') return;
-
-  const hdr = popup.querySelector('.hdr');
-  if(!hdr) return;
-
-  popup.style.position = 'fixed';
-  popup.style.left = '50%';
-  popup.style.top  = `calc(var(--fixed-header-h) + 16px)`;
-  popup.style.transform = 'translateX(-50%)';
-  popup.style.margin = '0';
-
-  let dragging = false;
-  let startX=0, startY=0;
-  let startLeft=0, startTop=0;
-
-  const onDown = (clientX, clientY)=>{
-    dragging = true;
-
-    // convertir en px (enlever translate)
-    const rect = popup.getBoundingClientRect();
-    popup.style.left = rect.left + 'px';
-    popup.style.top  = rect.top + 'px';
-    popup.style.transform = 'none';
-
-    startX = clientX;
-    startY = clientY;
-    startLeft = rect.left;
-    startTop  = rect.top;
-
-    document.addEventListener('mousemove', onMoveMouse, {passive:false});
-    document.addEventListener('mouseup', onUpMouse, {passive:true});
-    document.addEventListener('touchmove', onMoveTouch, {passive:false});
-    document.addEventListener('touchend', onUpTouch, {passive:true});
-  };
-
-  const onMove = (clientX, clientY)=>{
-    if(!dragging) return;
-    const dx = clientX - startX;
-    const dy = clientY - startY;
-
-    let left = startLeft + dx;
-    let top  = startTop  + dy;
-
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const r = popup.getBoundingClientRect();
-
-    left = Math.max(8, Math.min(left, vw - r.width - 8));
-    top  = Math.max(8, Math.min(top,  vh - r.height - 8));
-
-    popup.style.left = left + 'px';
-    popup.style.top  = top + 'px';
-  };
-
-  const onUp = ()=>{
-    dragging = false;
-    document.removeEventListener('mousemove', onMoveMouse);
-    document.removeEventListener('mouseup', onUpMouse);
-    document.removeEventListener('touchmove', onMoveTouch);
-    document.removeEventListener('touchend', onUpTouch);
-  };
-
-  const onMoveMouse = (e)=>{ e.preventDefault(); onMove(e.clientX, e.clientY); };
-  const onUpMouse = ()=>onUp();
-  const onMoveTouch = (e)=>{
-    if(!e.touches || !e.touches[0]) return;
-    e.preventDefault();
-    onMove(e.touches[0].clientX, e.touches[0].clientY);
-  };
-  const onUpTouch = ()=>onUp();
-
-  hdr.addEventListener('mousedown', (e)=>{ e.preventDefault(); onDown(e.clientX, e.clientY); });
-  hdr.addEventListener('touchstart', (e)=>{
-    if(!e.touches || !e.touches[0]) return;
-    onDown(e.touches[0].clientX, e.touches[0].clientY);
-  }, {passive:true});
-
-  popup.dataset.draggable = '1';
-}
-
+/* ===== LOAD POPovers ===== */
 function showBackdrop(){ const b = document.getElementById('loadArrBackdrop'); if(b) b.style.display = ''; }
 function hideBackdrop(){ const b = document.getElementById('loadArrBackdrop'); if(b) b.style.display = 'none'; }
-
 function hideAllLoadPopovers(){
-  ['loadArrPopover','loadExpPopover','loadFinalPopover','snyDepPopover'].forEach(id=>{
+  ['loadArrPopover','loadExpPopover','loadFinalPopover'].forEach(id=>{
     const p = document.getElementById(id);
     if(p) p.style.display = 'none';
   });
   hideBackdrop();
 }
-
 function showPopover(id){
-  injectUIOverrides();
   hideAllLoadPopovers();
   showBackdrop();
   const p = document.getElementById(id);
-  if(p){
-    p.style.display = 'block';
-    makeDraggable(id);
-  }
+  if(p) p.style.display = 'block';
 }
-
-function toggleLoadArr(){ showPopover('loadArrPopover'); renderPRMFixed('arr'); }
-function toggleLoadExp(){ showPopover('loadExpPopover'); renderPRMFixed('exp'); }
-function toggleLoadFinal(){ showPopover('loadFinalPopover'); updateFinalTOB(); syncHoldsToTotal('final'); }
-function toggleSnyDep(){ showPopover('snyDepPopover'); renderSNYRows(); }
-
+function toggleLoadArr(){ showPopover('loadArrPopover'); renderPRMRows('arr'); }
+function toggleLoadExp(){ showPopover('loadExpPopover'); renderPRMRows('exp'); }
+function toggleLoadFinal(){ showPopover('loadFinalPopover'); updateFinalTOB(); }
 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideAllLoadPopovers(); });
 
-/* =========================
-   DOM PATCH : LOAD POPUPS (PAX split + H1..H4 + PRM fixed + SNY popup)
-========================= */
-function ensurePatchedOnce(){
-  if(window.__loadPopupsPatched) return;
-  window.__loadPopupsPatched = true;
+/* ===== PRM multi-lignes (ARR/EXP) ===== */
+const PRM_TYPES = ['WCHR','WCHS','WCHC','BLND','DPNA','UMNR','OTHER'];
 
-  patchLoadArrExp();
-  patchFinalBagsHolds();
-  patchPRMBlocks();
-  createSnyDepPopover();
-  patchLoadButtonsRow();
-}
-
-function patchLoadArrExp(){
-  // ARR
-  patchPaxSplit('loadArrPopover', 'LoadPAX', 'LoadPAX_A', 'LoadPAX_B');
-  patchBagsHolds('loadArrPopover', 'LoadBAGS', ['LoadH1','LoadH2','LoadH3','LoadH4'], 'arr');
-
-  // EXP
-  patchPaxSplit('loadExpPopover', 'ExpPAX', 'ExpPAX_A', 'ExpPAX_B');
-  patchBagsHolds('loadExpPopover', 'ExpBAGS', ['ExpH1','ExpH2','ExpH3','ExpH4'], 'exp');
-}
-
-function patchFinalBagsHolds(){
-  patchBagsHolds('loadFinalPopover', 'FinalBAGS', ['FinalH1','FinalH2','FinalH3','FinalH4'], 'final');
-}
-
-function patchPaxSplit(popoverId, originalId, idA, idB){
-  const pop = document.getElementById(popoverId);
-  if(!pop) return;
-
-  const original = pop.querySelector('#'+originalId);
-  if(!original || original.dataset.split === '1') return;
-
-  const field = original.closest('.field');
-  if(!field) return;
-
-  // remplacer l'input par 2 inputs + "+"
-  const control = field.querySelector('.control');
-  if(!control) return;
-
-  const wrap = document.createElement('div');
-  wrap.style.display = 'grid';
-  wrap.style.gridTemplateColumns = '1fr auto 1fr';
-  wrap.style.gap = '8px';
-  wrap.style.alignItems = 'center';
-
-  const inpA = document.createElement('input');
-  inpA.className = original.className;
-  inpA.id = idA;
-  inpA.type = 'text';
-  inpA.inputMode = 'numeric';
-  inpA.placeholder = '0';
-  inpA.addEventListener('input', ()=>{ digitsOnly(inpA); syncPaxTotal(originalId, idA, idB); updateAllCalculations(); });
-
-  const plus = document.createElement('div');
-  plus.textContent = '+';
-  plus.style.fontWeight = '900';
-  plus.style.textAlign = 'center';
-  plus.style.minWidth = '14px';
-  plus.style.opacity = '.85';
-
-  const inpB = document.createElement('input');
-  inpB.className = original.className;
-  inpB.id = idB;
-  inpB.type = 'text';
-  inpB.inputMode = 'numeric';
-  inpB.placeholder = '0';
-  inpB.addEventListener('input', ()=>{ digitsOnly(inpB); syncPaxTotal(originalId, idA, idB); updateAllCalculations(); });
-
-  // l'ancien id devient un hidden pour garder la compat save/validate
-  const hidden = document.createElement('input');
-  hidden.type = 'hidden';
-  hidden.id = originalId;
-
-  // si ancien avait une valeur, tenter de la garder (ex: "123 + 4" ou "127")
-  const raw = (original.value || '').trim();
-  let a=''; let b='';
-  if(raw.includes('+')){
-    const parts = raw.split('+').map(x=>x.trim());
-    a = (parts[0]||'').replace(/[^0-9]/g,'');
-    b = (parts[1]||'').replace(/[^0-9]/g,'');
-  }else{
-    a = raw.replace(/[^0-9]/g,'');
-  }
-  inpA.value = a;
-  inpB.value = b;
-  syncPaxTotal(originalId, idA, idB);
-
-  wrap.appendChild(inpA);
-  wrap.appendChild(plus);
-  wrap.appendChild(inpB);
-
-  control.innerHTML = '';
-  control.appendChild(wrap);
-  control.appendChild(hidden);
-
-  original.dataset.split = '1';
-}
-
-function syncPaxTotal(originalId, idA, idB){
-  const a = parseInt((document.getElementById(idA)?.value || ''),10);
-  const b = parseInt((document.getElementById(idB)?.value || ''),10);
-  const A = isNaN(a) ? '' : String(a);
-  const B = isNaN(b) ? '' : String(b);
-
-  const hidden = document.getElementById(originalId);
-  if(!hidden) return;
-
-  if(A !== '' && B !== '') hidden.value = `${A} + ${B}`;
-  else if(A !== '') hidden.value = A;
-  else if(B !== '') hidden.value = B;
-  else hidden.value = '';
-}
-
-function patchBagsHolds(popoverId, totalBagsId, holdIds, mode){
-  const pop = document.getElementById(popoverId);
-  if(!pop) return;
-
-  const totalInp = pop.querySelector('#'+totalBagsId);
-  if(!totalInp || totalInp.dataset.holds === '1') return;
-
-  const bagsField = totalInp.closest('.field');
-  if(!bagsField) return;
-
-  const holder = document.createElement('div');
-  holder.className = 'hold-grid';
-  holder.style.marginTop = '10px';
-
-  const makeHoldField = (id, label)=>{
-    const f = document.createElement('div');
-    f.className = 'field';
-    f.innerHTML = `
-      <label class="label">${label}</label>
-      <div class="control"><input class="input" id="${id}" type="text" inputmode="numeric" placeholder="0"></div>
-    `;
-    const inp = f.querySelector('input');
-    inp.addEventListener('input', ()=>{
-      digitsOnly(inp);
-      syncHoldsToTotal(mode);
-      saveCurrentTabData();
-    });
-    return f;
-  };
-
-  holder.appendChild(makeHoldField(holdIds[0], 'H1'));
-  holder.appendChild(makeHoldField(holdIds[1], 'H2'));
-  holder.appendChild(makeHoldField(holdIds[2], 'H3'));
-  holder.appendChild(makeHoldField(holdIds[3], 'H4'));
-
-  // insertion juste sous BAGS
-  bagsField.insertAdjacentElement('afterend', holder);
-
-  // si BAGS avait déjà une valeur, la garder (mais editable tant que H vides)
-  totalInp.addEventListener('input', ()=>{
-    digitsOnly(totalInp);
-    // si user touche TOTAL, on vide H (sinon contradiction)
-    const anyHold = holdIds.some(id => (document.getElementById(id)?.value || '').trim() !== '');
-    if(anyHold){
-      holdIds.forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-      totalInp.readOnly = false;
-    }
-    saveCurrentTabData();
-  });
-
-  totalInp.dataset.holds = '1';
-}
-
-function sumHolds(ids){
-  return ids.reduce((acc,id)=>{
-    const v = parseInt((document.getElementById(id)?.value || ''),10);
-    return acc + (isNaN(v)?0:v);
-  },0);
-}
-
-function syncHoldsToTotal(mode){
-  if(mode === 'arr'){
-    const ids = ['LoadH1','LoadH2','LoadH3','LoadH4'];
-    const total = document.getElementById('LoadBAGS');
-    if(!total) return;
-    const any = ids.some(id => (document.getElementById(id)?.value || '').trim() !== '');
-    if(any){
-      total.value = String(sumHolds(ids));
-      total.readOnly = true;
-    }else{
-      total.readOnly = false;
-    }
-  } else if(mode === 'exp'){
-    const ids = ['ExpH1','ExpH2','ExpH3','ExpH4'];
-    const total = document.getElementById('ExpBAGS');
-    if(!total) return;
-    const any = ids.some(id => (document.getElementById(id)?.value || '').trim() !== '');
-    if(any){
-      total.value = String(sumHolds(ids));
-      total.readOnly = true;
-    }else{
-      total.readOnly = false;
-    }
-  } else if(mode === 'final'){
-    const ids = ['FinalH1','FinalH2','FinalH3','FinalH4'];
-    const total = document.getElementById('FinalBAGS');
-    if(!total) return;
-    const any = ids.some(id => (document.getElementById(id)?.value || '').trim() !== '');
-    if(any){
-      total.value = String(sumHolds(ids));
-      total.readOnly = true;
-    }else{
-      total.readOnly = false;
-    }
-  }
-}
-
-/* =========================
-   PRM FIXED (WCHR/WCHS/WCHC/AUTRE)
-   - plus de dropdown
-   - 1 seule case sièges par type
-========================= */
-const PRM_FIXED = [
-  {k:'WCHR', label:'WCHR'},
-  {k:'WCHS', label:'WCHS'},
-  {k:'WCHC', label:'WCHC'},
-  {k:'OTHER',label:'AUTRE'},
-];
-
-function prmIds(mode){
+function getPRMIds(mode){
   if(mode === 'exp') return { dataId:'ExpPRMData', rowsId:'ExpPRMRows' };
   return { dataId:'LoadPRMData', rowsId:'LoadPRMRows' };
 }
-
-function readPRMFixed(mode){
-  const {dataId} = prmIds(mode);
-  const raw = document.getElementById(dataId)?.value || '';
+function readPRMData(mode){
+  const {dataId} = getPRMIds(mode);
+  const raw = document.getElementById(dataId)?.value || '[]';
   try{
-    const obj = JSON.parse(raw || '{}');
-    // normaliser
-    const out = {};
-    PRM_FIXED.forEach(t=> out[t.k] = (obj && typeof obj === 'object' && obj[t.k]) ? String(obj[t.k]) : '');
-    return out;
-  }catch(e){
-    const out = {};
-    PRM_FIXED.forEach(t=> out[t.k]='');
-    return out;
-  }
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  }catch(e){ return []; }
 }
-
-function writePRMFixed(mode, obj){
-  const {dataId} = prmIds(mode);
+function writePRMData(mode, arr){
+  const {dataId} = getPRMIds(mode);
   const el = document.getElementById(dataId);
-  if(!el) return;
-  const out = {};
-  PRM_FIXED.forEach(t=> out[t.k] = (obj?.[t.k] || '').toString());
-  el.value = JSON.stringify(out);
+  if(el) el.value = JSON.stringify(arr || []);
 }
-
-function patchPRMBlocks(){
-  // mettre data par défaut compatible
-  ['arr','exp'].forEach(mode=>{
-    const {dataId} = prmIds(mode);
-    const el = document.getElementById(dataId);
-    if(!el) return;
-
-    const raw = (el.value || '').trim();
-
-    // si c'était l'ancien format "[]" (array), convertir
-    let needInit = false;
-    if(raw === '' || raw === '[]') needInit = true;
-
-    if(needInit){
-      const init = {};
-      PRM_FIXED.forEach(t=> init[t.k]='');
-      el.value = JSON.stringify(init);
-    }else{
-      // si array -> convertir
-      try{
-        const parsed = JSON.parse(raw);
-        if(Array.isArray(parsed)){
-          const init = {};
-          PRM_FIXED.forEach(t=> init[t.k]='');
-          parsed.forEach(x=>{
-            const type = (x?.type || '').toUpperCase();
-            const seat = (x?.seat || '').toUpperCase();
-            if(type === 'WCHR' || type === 'WCHS' || type === 'WCHC'){
-              init[type] = [init[type], seat].filter(Boolean).join(' ').trim();
-            }else{
-              init.OTHER = [init.OTHER, seat].filter(Boolean).join(' ').trim();
-            }
-          });
-          el.value = JSON.stringify(init);
-        }
-      }catch(e){}
-    }
-  });
+function addPRMRow(mode){
+  const arr = readPRMData(mode);
+  arr.push({ type:'WCHR', seat:'' });
+  writePRMData(mode, arr);
+  renderPRMRows(mode);
+  saveCurrentTabData();
 }
-
-function renderPRMFixed(mode){
-  const {rowsId} = prmIds(mode);
+function removePRMRow(mode, idx){
+  const arr = readPRMData(mode);
+  arr.splice(idx,1);
+  writePRMData(mode, arr);
+  renderPRMRows(mode);
+  saveCurrentTabData();
+}
+function renderPRMRows(mode){
+  const {rowsId} = getPRMIds(mode);
   const wrap = document.getElementById(rowsId);
   if(!wrap) return;
 
-  const data = readPRMFixed(mode);
+  const data = readPRMData(mode);
+  if(!data.length){
+    wrap.innerHTML = `<p class="has-text-grey" style="margin:6px 0 0;">Aucune assistance.</p>`;
+    return;
+  }
 
-  wrap.innerHTML = PRM_FIXED.map(t=>{
+  wrap.innerHTML = data.map((row, idx)=>{
+    const opts = PRM_TYPES.map(t=>`<option value="${t}" ${row.type===t?'selected':''}>${t}</option>`).join('');
     return `
-      <div class="prm-row" style="grid-template-columns: 1fr 2fr; margin-bottom:10px;">
+      <div class="prm-row">
         <div class="field">
           <label class="label">TYPE</label>
-          <div class="control">
-            <input class="input" type="text" value="${t.label}" readonly style="font-weight:900;">
+          <div class="control select is-fullwidth">
+            <select data-mode="${mode}" data-idx="${idx}" data-k="type" onchange="onPRMChange(this)">${opts}</select>
           </div>
         </div>
 
         <div class="field">
-          <label class="label">SIÈGES</label>
+          <label class="label">SIÈGE</label>
           <div class="control">
-            <input class="input uppercase" type="text" maxlength="80"
-              value="${(data[t.k]||'')}"
-              data-mode="${mode}" data-k="${t.k}"
-              oninput="onPRMFixedInput(this)">
+            <input class="input uppercase" type="text" maxlength="4"
+              value="${(row.seat||'')}"
+              data-mode="${mode}" data-idx="${idx}" data-k="seat"
+              oninput="onPRMInput(this)">
           </div>
+        </div>
+
+        <div class="field">
+          <label class="label">&nbsp;</label>
+          <button class="button is-light" type="button" onclick="removePRMRow('${mode}',${idx})">Suppr.</button>
         </div>
       </div>
     `;
   }).join('');
 }
-
-function onPRMFixedInput(inp){
+function onPRMChange(sel){
+  const mode = sel.getAttribute('data-mode');
+  const idx = parseInt(sel.getAttribute('data-idx'),10);
+  const k = sel.getAttribute('data-k');
+  const data = readPRMData(mode);
+  if(!data[idx]) return;
+  data[idx][k] = sel.value;
+  writePRMData(mode, data);
+  saveCurrentTabData();
+}
+function onPRMInput(inp){
   inp.value = (inp.value||'').toUpperCase();
   const mode = inp.getAttribute('data-mode');
+  const idx = parseInt(inp.getAttribute('data-idx'),10);
   const k = inp.getAttribute('data-k');
-  const data = readPRMFixed(mode);
-  data[k] = inp.value;
-  writePRMFixed(mode, data);
+  const data = readPRMData(mode);
+  if(!data[idx]) return;
+  data[idx][k] = inp.value;
+  writePRMData(mode, data);
   saveCurrentTabData();
 }
 
-/* =========================
-   SNY DEP. (DHC crewcodes)
-========================= */
-function createSnyDepPopover(){
-  if(document.getElementById('snyDepPopover')) return;
-
-  const ref = document.getElementById('loadFinalPopover');
-  if(!ref) return;
-
-  const pop = document.createElement('div');
-  pop.id = 'snyDepPopover';
-  pop.setAttribute('role','dialog');
-  pop.setAttribute('aria-modal','true');
-  pop.style.display = 'none';
-
-  pop.innerHTML = `
-    <div class="hdr">
-      <strong>SNY DEP.</strong>
-      <button class="button is-small is-light" type="button" onclick="hideAllLoadPopovers()">Fermer</button>
-    </div>
-
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin:10px 0 8px;">
-      <strong style="font-weight:900;">DHC (crewcodes)</strong>
-      <button class="button is-small is-link" type="button" onclick="addSNYRow()">+ Ajouter</button>
-    </div>
-
-    <input type="hidden" id="SNYData" value="[]">
-    <div id="SNYRows"></div>
-
-    <p class="has-text-grey" style="margin-top:10px; font-size:.9rem;">
-      Codes de 6 lettres (ex: ABCDEF).
-    </p>
-  `;
-
-  // insérer après loadFinalPopover
-  ref.insertAdjacentElement('afterend', pop);
-}
-
-function readSNY(){
-  const raw = document.getElementById('SNYData')?.value || '[]';
-  try{
-    const a = JSON.parse(raw);
-    return Array.isArray(a) ? a : [];
-  }catch(e){ return []; }
-}
-function writeSNY(arr){
-  const el = document.getElementById('SNYData');
-  if(el) el.value = JSON.stringify(arr || []);
-}
-function addSNYRow(){
-  const a = readSNY();
-  a.push('');
-  writeSNY(a);
-  renderSNYRows();
-  saveCurrentTabData();
-}
-function removeSNYRow(i){
-  const a = readSNY();
-  a.splice(i,1);
-  writeSNY(a);
-  renderSNYRows();
-  saveCurrentTabData();
-}
-function onSNYInput(inp){
-  let v = (inp.value || '').toUpperCase().replace(/[^A-Z]/g,'');
-  if(v.length > 6) v = v.slice(0,6);
-  inp.value = v;
-  const i = parseInt(inp.getAttribute('data-idx'),10);
-  const a = readSNY();
-  a[i] = v;
-  writeSNY(a);
-  saveCurrentTabData();
-}
-function renderSNYRows(){
-  const wrap = document.getElementById('SNYRows');
-  if(!wrap) return;
-
-  const a = readSNY();
-  if(!a.length){
-    wrap.innerHTML = `<p class="has-text-grey" style="margin:6px 0 0;">Aucun DHC saisi.</p>`;
-    return;
-  }
-
-  wrap.innerHTML = a.map((v,i)=>`
-    <div class="prm-row" style="grid-template-columns: 1fr auto; margin-bottom:10px;">
-      <div class="field">
-        <label class="label">CREWCODE</label>
-        <div class="control">
-          <input class="input uppercase" type="text" maxlength="6"
-            value="${(v||'')}"
-            data-idx="${i}"
-            oninput="onSNYInput(this)">
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">&nbsp;</label>
-        <button class="button is-light" type="button" onclick="removeSNYRow(${i})">Suppr.</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-/* bouton SNY DEP. à côté LOAD FINAL */
-function patchLoadButtonsRow(){
-  const row = document.querySelector('.load-row-below');
-  if(!row || row.dataset.sny === '1') return;
-
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = 'timer-chip chip-btn';
-  btn.onclick = toggleSnyDep;
-  btn.innerHTML = `
-    <div class="k">SNY</div>
-    <div class="v" style="background:#f97316;">DEP.</div>
-  `;
-  row.appendChild(btn);
-  row.dataset.sny = '1';
-}
-
-/* =========================
-   FINAL : ADULT + TOB + OA/OB/OC/OD
-========================= */
+/* ===== FINAL : calcul ADULT + TOB + contrôle OA/OB/OC/OD ===== */
 function asInt(id){
   const v = (document.getElementById(id)?.value || '').trim();
   if(v === '') return null;
@@ -2028,7 +1315,7 @@ function updateFinalTOB(){
   const c = asInt('FinalCHILD')  ?? 0;
   const i = asInt('FinalINFANT') ?? 0;
 
-  let main = null;
+  let main = null; // TOB sans infant
   if(m != null && f != null) main = (m + f) + c;
   else if(a != null) main = a + c;
 
@@ -2052,59 +1339,16 @@ function updateFinalTOB(){
   setTOBValidity(sum === main);
 }
 
-/* =========================
-   HORAIRES (✅ centralisé)
-========================= */
-function timeFieldHTML(id,label,onchange, colClass){
-  return `
-    <div class="column ${colClass}">
-      <div class="field">
-        <label class="label">${label}</label>
-        <div class="control">
-          <input class="input" type="time" id="${id}" onchange="${onchange}">
-        </div>
-        <div class="btn-actions">
-          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-          <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
-        </div>
-      </div>
-    </div>`;
-}
-function renderHoraires(){
-  const mount = document.getElementById('horairesMount');
-  if(!mount) return;
-  // plus compact sur tablette
-  const col = "is-full-mobile is-one-third-tablet is-half-desktop";
-  mount.innerHTML = `
-    <div class="columns is-multiline">
-      ${timeFieldHTML('SIBT','SIBT',"updateAllCalculations()", col)}
-      ${timeFieldHTML('AIBT','AIBT',"updateAllCalculations()", col)}
-      ${timeFieldHTML('SOBT','SOBT',"manualSOBT=true;updateAllCalculations()", col)}
-      ${timeFieldHTML('AOBT','AOBT',"updateAllCalculations()", col)}
-    </div>
-  `;
-}
-
-/* =========================
-   INIT
-========================= */
+/* INIT */
 function initForm(){
   renderTabs();
-
-  let lastTab = localStorage.getItem('lastTabId');
-  let tabs = JSON.parse(localStorage.getItem('flightTabs')||'[]');
+  let lastTab=localStorage.getItem('lastTabId');
+  let tabs=JSON.parse(localStorage.getItem('flightTabs')||'[]');
   if(tabs.length===0) createNewTab();
   else if(lastTab && tabs.includes(parseInt(lastTab))) switchTab(parseInt(lastTab));
   else switchTab(tabs[0]);
 
-  renderHoraires();
   generateTimingFields();
-
-  // ✅ patch UI (load popovers)
-  ensurePatchedOnce();
-  injectUIOverrides();
-
   attachAutoSave();
   window.addEventListener('beforeunload', saveCurrentTabData);
 
@@ -2115,7 +1359,6 @@ function initForm(){
   });
   document.getElementById('NVol')?.addEventListener('input', updateTabLabelInstant);
   document.getElementById('To')?.addEventListener('input', updateTabLabelInstant);
-  document.getElementById('From')?.addEventListener('input', ()=>{ updateTabLabelInstant(); updateAllCalculations(); });
 
   setupUppercaseInputs(['NVol','From','To','Immat','RZA']);
 
@@ -2126,25 +1369,13 @@ function initForm(){
 
   [
     'AIBT','SOBT','SIBT','AOBT','CTOT','ArrPNT','ArrPNC','TypeAvion',
-    'LoadBAGS','LoadCARGO','ExpBAGS','ExpCARGO',
+    'LoadPAX','LoadBAGS','LoadCARGO','ExpPAX','ExpBAGS','ExpCARGO',
     'FinalMALE','FinalFEMALE','FinalADULT','FinalCHILD','FinalINFANT','FinalOA','FinalOB','FinalOC','FinalOD',
-    'FinalBAGS','FinalPOIDS','FinalGB',
-    // holds
-    'LoadH1','LoadH2','LoadH3','LoadH4',
-    'ExpH1','ExpH2','ExpH3','ExpH4',
-    'FinalH1','FinalH2','FinalH3','FinalH4',
-    // PAX split parts
-    'LoadPAX_A','LoadPAX_B','ExpPAX_A','ExpPAX_B'
+    'FinalBAGS','FinalPOIDS','FinalGB'
   ].forEach(id=>{
     const el = document.getElementById(id);
     if(!el) return;
-    el.addEventListener('input', ()=>{
-      updateAllCalculations();
-      updateFinalTOB();
-      if(id.startsWith('LoadH')) syncHoldsToTotal('arr');
-      if(id.startsWith('ExpH'))  syncHoldsToTotal('exp');
-      if(id.startsWith('FinalH'))syncHoldsToTotal('final');
-    });
+    el.addEventListener('input', ()=>{ updateAllCalculations(); updateFinalTOB(); });
   });
 
   const scroller = document.getElementById('timelineScroll');
@@ -2176,12 +1407,9 @@ function initForm(){
   renderTimeline();
   ensureCountdownRunning();
 
-  renderPRMFixed('arr');
-  renderPRMFixed('exp');
+  renderPRMRows('arr');
+  renderPRMRows('exp');
   updateFinalTOB();
-  syncHoldsToTotal('arr');
-  syncHoldsToTotal('exp');
-  syncHoldsToTotal('final');
 }
 
 /* date défaut */
@@ -2215,9 +1443,7 @@ function attachAutoSave(){
   document.addEventListener('change', handler, true);
 }
 
-/* =========================
-   TABS
-========================= */
+/* Tabs */
 function renderTabs(){
   const tabBar=document.getElementById('tab-bar');
   if(!tabBar) return;
@@ -2323,6 +1549,7 @@ function saveCurrentTabData(){
   data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
   data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
 
+  data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
   localStorage.setItem('tab-'+currentTabId,JSON.stringify(data));
   localStorage.setItem('lastTabId',currentTabId);
   renderTabs();
@@ -2361,12 +1588,10 @@ function loadTabData(id){
   if(darkLabel) darkLabel.textContent = document.body.classList.contains('dark') ? 'Sombre' : 'Clair';
 
   setDefaultDateToTodayIfEmpty();
-
-  // ✅ IMPORTANT : si horaires/timing pas encore mountés (cas rare), on les remonte
-  if(!document.getElementById('SIBT')) renderHoraires();
-  if(!document.getElementById('ArrPNT')) generateTimingFields();
-
   updateAllCalculations();
+
+  const savedPanel = data.timingPanel || localStorage.getItem('timingPanel') || 'dep';
+  switchTimingPanel(savedPanel);
 
   renderPRMRows('arr');
   renderPRMRows('exp');
@@ -2377,55 +1602,87 @@ function loadTabData(id){
 
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
-/* =========================
-   TIMING FIELDS – SINGLE PAGE
-========================= */
+/* TIMING FIELDS – ARR / DEP */
 function generateTimingFields(){
   const container=document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label)=>`
-  <div class="column is-full-mobile is-one-quarter-tablet is-one-quarter-desktop">
-    <div class="field">
-      <label class="label">${label}</label>
-      <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
-      <div class="btn-actions">
-        <button class="button is-small is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-        <button class="button is-small is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
-        <button class="button is-small is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+  const fieldHTML = (id,label,full=false)=>`
+    <div class="column ${full ? 'is-12' : 'is-full-mobile is-one-third-tablet is-one-quarter-desktop'}">
+      <div class="field">
+        <label class="label">${label}</label>
+        <div class="control"><input class="input" type="time" id="${id}" onchange="updateAllCalculations()"></div>
+        <div class="btn-actions">
+          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
+          <button class="button is-link" type="button" onclick="setNow('${id}');updateAllCalculations()">Now</button>
+          <button class="button is-dark is-light" type="button" onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+        </div>
       </div>
-    </div>
-  </div>`;
+    </div>`;
 
-  container.innerHTML = `
-    <div class="columns is-multiline">
-      ${fieldHTML('ArrPNT','Arrivée PNT')}
-      ${fieldHTML('ArrPNC','Arrivée PNC')}
+  let arr = `
+    <div class="card mb-4">
+      <header class="card-header"><p class="card-header-title">Arrivée</p></header>
+      <div class="card-content"><div class="columns is-multiline">
+        ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
+        ${fieldHTML('PremierDebarque','Premier débarqué')}
+        ${fieldHTML('DernierDebarque','Dernier débarqué')}
+        ${fieldHTML('ArriveeLiftArr','Arrivée lift')}
+        ${fieldHTML('DepartLiftArr','Départ lift')}
+      </div></div>
+    </div>`;
 
-      ${fieldHTML('PremierDebarque','Premier débarqué')}
-      ${fieldHTML('DernierDebarque','Dernier débarqué')}
+  let dep = `
+    <div class="card">
+      <header class="card-header"><p class="card-header-title">Départ</p></header>
+      <div class="card-content"><div class="columns is-multiline">
+        ${fieldHTML('ArrPNT','Arrivée PNT')}
+        ${fieldHTML('ArrPNC','Arrivée PNC')}
+        ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
+        ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
+        ${fieldHTML('ArriveeLift','Arrivée lift')}
+        ${fieldHTML('DepartLift','Départ lift')}
+        ${fieldHTML('DepartFuel','Départ Avitair',true)}
+        ${fieldHTML('RemiseLID','Remise LID/LDS')}
+        ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
+      </div></div>
+    </div>`;
 
-      ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
-      ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
+  const toggle = `
+    <div class="tabs is-toggle is-toggle-rounded is-centered mb-4">
+      <ul>
+        <li id="seg-arr-li"><a onclick="switchTimingPanel('arr')"><span>Arrivée</span></a></li>
+        <li id="seg-dep-li"><a onclick="switchTimingPanel('dep')"><span>Départ</span></a></li>
+      </ul>
+    </div>`;
 
-      ${fieldHTML('ArriveeFuel','Arrivée Avitair')}
-      ${fieldHTML('DepartFuel','Départ Avitair')}
-
-      ${fieldHTML('ArriveeLiftArr','Arrivée lift (arr)')}
-      ${fieldHTML('DepartLiftArr','Départ lift (arr)')}
-
-      ${fieldHTML('ArriveeLift','Arrivée lift (dep)')}
-      ${fieldHTML('DepartLift','Départ lift (dep)')}
-
-      ${fieldHTML('RemiseLID','Remise LID/LDS')}
-      ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
-    </div>
+  container.innerHTML = toggle + `
+    <div id="panel-arr" style="display:none;">${arr}</div>
+    <div id="panel-dep" style="display:none;">${dep}</div>
   `;
+
+  const saved = localStorage.getItem('timingPanel') || 'dep';
+  switchTimingPanel(saved);
+}
+
+function switchTimingPanel(mode){
+  const arrPanel=document.getElementById('panel-arr');
+  const depPanel=document.getElementById('panel-dep');
+  const liArr=document.getElementById('seg-arr-li');
+  const liDep=document.getElementById('seg-dep-li');
+
+  if(arrPanel) arrPanel.style.display = (mode==='arr') ? '' : 'none';
+  if(depPanel) depPanel.style.display = (mode==='dep') ? '' : 'none';
+
+  if(liArr) liArr.classList.toggle('is-active', mode==='arr');
+  if(liDep) liDep.classList.toggle('is-active', mode!=='arr');
+
+  localStorage.setItem('timingPanel', mode);
 }
 
 /* LID visible FR/RK */
 function updateLIDVisibility(){
-  const cie = (document.getElementById('Cie')?.value || '').toUpperCase();
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const lid = document.getElementById('lidBlock');
   if(!lid) return;
   lid.style.display = (cie === 'FR' || cie === 'RK') ? '' : 'none';
@@ -2473,41 +1730,38 @@ function updateLID() {
   el.textContent = fmtHHMM(tobtRawMins - 8);
 }
 
-/* SOBT auto */
 function updateSOBTDefault() {
   const sobtEl = document.getElementById('SOBT');
   if(!sobtEl) return;
 
-  if (manualSOBT) return;
+  // Si SOBT a déjà une valeur, on ne touche plus (tu peux donc la modifier librement)
+  if ((sobtEl.value || '').trim() !== '') return;
 
-  const cie = (document.getElementById('Cie')?.value || '').toUpperCase();
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibt = document.getElementById('SIBT')?.value || '';
   const arrPNT = document.getElementById('ArrPNT')?.value || '';
   const arrPNC = document.getElementById('ArrPNC')?.value || '';
-  if (!sibt) { sobtEl.value = ''; return; }
+  if (!sibt) return;
   if (!(cie === "FR" || cie === "RK" || cie === "W4" || cie === "W6")) return;
 
-  const [sH, sM] = sibt.split(':').map(Number);
-  const base = new Date(); base.setHours(sH, sM, 0, 0);
-
+  let [sH, sM] = sibt.split(':').map(Number);
+  const base = new Date(); base.setHours(sH, sM);
   let add = 35;
   if (cie === "FR" || cie === "RK") add = (arrPNT || arrPNC) ? 35 : 25;
-
   const sobtCalc = new Date(base.getTime() + add * 60000);
   sobtEl.value = `${String(sobtCalc.getHours()).padStart(2, '0')}:${String(sobtCalc.getMinutes()).padStart(2, '0')}`;
 }
 
 /* TOBT + règle CTOT */
 function updateTOBT() {
-  const cie = (document.getElementById('Cie')?.value || '').toUpperCase();
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT')?.value || '';
   const aibttxt = document.getElementById('AIBT')?.value || '';
   const sobttxt = document.getElementById('SOBT')?.value || '';
   const ctottxt = document.getElementById('CTOT')?.value || '';
 
   if (!cie || !sibttxt || !sobttxt) {
-    const t = document.getElementById('timer-tobt');
-    if(t) t.textContent = '--:--';
+    document.getElementById('timer-tobt').textContent = '--:--';
     window._tobtRawMins = null;
     window._tobtAdjMins = null;
     return;
@@ -2563,15 +1817,13 @@ function updateTOBT() {
 
   window._tobtAdjMins = TOBT_adj.getHours() * 60 + TOBT_adj.getMinutes();
 
-  const t = document.getElementById('timer-tobt');
-  if(t){
-    t.textContent = `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
-  }
+  document.getElementById('timer-tobt').textContent =
+    `${String(TOBT_adj.getHours()).padStart(2, '0')}:${String(TOBT_adj.getMinutes()).padStart(2, '0')}`;
 }
 
 /* DL CODES */
 function updateDLCode() {
-  const cie = (document.getElementById('Cie')?.value || '').toUpperCase();
+  const cie = (document.getElementById('Cie').value||'').toUpperCase();
   const sibttxt = document.getElementById('SIBT')?.value || '';
   const aibttxt = document.getElementById('AIBT')?.value || '';
   if (!sibttxt || !aibttxt) return;
@@ -2622,7 +1874,8 @@ function redistributeDL(){
 
   if(lastDLChanged === 1){
     let remain = total - d1;
-    d2 = Math.max(0, Math.min(d2, remain));
+    d2 = Math.min(remain, Math.max(0, d2));
+    d2 = Math.min(remain, d2 + (remain - d2));
     remain = total - d1 - d2;
     d3 = Math.max(0, remain);
   } else if (lastDLChanged === 2){
@@ -2666,26 +1919,18 @@ function setNow(fieldId) {
   const now = new Date();
   const hh = isUTC ? now.getUTCHours() : now.getHours();
   const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-  const el = document.getElementById(fieldId);
-  if(!el) return;
-  el.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-  if (fieldId === 'SOBT') manualSOBT = true;
+  document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
   if (!input || !input.value) return;
-
   let [hh, mm] = input.value.split(':').map(Number);
   let total = hh * 60 + mm + delta;
-
   if (total < 0) total += 1440;
   if (total >= 1440) total -= 1440;
-
   hh = Math.floor(total / 60);
   mm = total % 60;
-
   input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-  if (fieldId === 'SOBT') manualSOBT = true;
 }
 
 /* Switches */
@@ -3010,9 +2255,7 @@ function renderTimeline(){
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
 
-/* =========================
-   validateForm / save / reset
-========================= */
+/* validateForm */
 function validateForm() {
   const val = id => (document.getElementById(id)?.value || "");
   const dateRaw = val("Date");
@@ -3087,8 +2330,8 @@ Dernier embarqué : ${val("AvionDernierEmbarque")}
 Arrivée fuel : ${val("ArriveeFuel")}
 Départ fuel : ${val("DepartFuel")}
 
-Lift arrivée (arr) : ${liftArrivee}
-Lift départ (dep)  : ${liftDepart}
+Lift arrivée : ${liftArrivee}
+Lift départ  : ${liftDepart}
 
 Remise LID/LDS : ${val("RemiseLID")}
 Fermeture porte avion : ${val("FermeturePorteAvion")}
@@ -3118,7 +2361,7 @@ BAGS : ${val("FinalBAGS")} / POIDS : ${val("FinalPOIDS")} / GB : ${val("FinalGB"
 ${[dlBlock, faitsBlock].filter(Boolean).join("\n")}`;
 
   window.location.href =
-    `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
+      `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
 }
 
 function manualSave() {
