@@ -975,10 +975,19 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
   font-weight: 400 !important;
 }
 
-#SIBT,
-#AIBT,
-#SOBT,
-#AOBT {
+/* MODE JOUR : forcer noir */
+[data-theme="light"] #SIBT,
+[data-theme="light"] #AIBT,
+[data-theme="light"] #SOBT,
+[data-theme="light"] #AOBT {
+  color: #000 !important;
+}
+
+/* MODE SOMBRE : garder la logique existante */
+[data-theme="dark"] #SIBT,
+[data-theme="dark"] #AIBT,
+[data-theme="dark"] #SOBT,
+[data-theme="dark"] #AOBT {
   color: var(--field-text) !important;
 }
 
