@@ -4442,20 +4442,18 @@ function closeAllPopups(){
 }
 
 /* ===== LOAD ===== */
-function toggleLDM(mode='arr'){
-  const modal = document.getElementById('ldmModal');   // ✅ bon id
+function toggleLDM(mode=null){
+  const modal = document.getElementById('ldmModal');
   const isOpen = modal && modal.style.display !== 'none' && modal.style.display !== '';
 
-  // ferme tout ce qui peut être ouvert
   closeAllPopups();
 
-  // si LOAD était déjà ouvert -> on le ferme
   if(isOpen){
-    closeLDM(); // ✅ ta fonction existante
+    closeLDM();
     return;
   }
 
-  // sinon on l'ouvre
+  // ✅ si tu appelles toggleLDM() sans argument → mode=null → auto
   openLDM(mode);
 }
 
