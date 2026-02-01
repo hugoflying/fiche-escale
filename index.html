@@ -4065,6 +4065,22 @@ async function refreshAKTab(tabId){
 function applyAKFlight(f, flow, opts = {}){
   const isRefresh = !!opts.refresh;
 
+  /* ===== helpers BVA (mêmes règles que ton message) ===== */
+  const HOME = HOME_IATA;
+
+  const bestArrISO = (x)=> x?.aibt || x?.eibt || x?.sibt || x?.aldt || x?.eldt || x?.afat || x?.efat || '';
+  const bestDepISO = (x)=> x?.aobt || x?.eobt || x?.pobt || x?.ctot || x?.atot || x?.etot || x?.sobt || '';
+
+  const isoToYMD = (iso)=>{
+    const t = Date.parse(iso || '');
+    if(!Number.isFinite(t)) return null;
+    const d = new Date(t);
+    const y  = isUTC ? d.getUTCFullYear() : d.getFullYear();
+    const mo = (isUTC ? d.getUTCMonth() : d.getMonth()) + 1;
+    const da = isUTC ? d.getUTCDate() : d.getDate();
+    return `${y}-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`;
+  };
+
   /* ===== champs communs ===== */
   setValAK('Immat', (f.reg || ''));
 
@@ -4093,7 +4109,7 @@ function applyAKFlight(f, flow, opts = {}){
 
   /* ================= DEP ================= */
   if(flow === 'DEP'){
-    setValAK('To', (f.adesIata || '') || HOME_IATA);
+    setValAK('To', (f.adesIata || '') || HOME);
 
     setTimeFromISOAK('SOBT', f.sobt || f.eobt);
     setTimeFromISOAK('AOBT', f.aobt);
@@ -4105,25 +4121,43 @@ function applyAKFlight(f, flow, opts = {}){
     setIfEmptyOrAK('FinalSI', siDep);
 
     const prevArr = findLinkedArrForDep(f);
+
     if(prevArr){
-      setValAK('From', (prevArr.adepIata || '') || HOME_IATA);
+      const depDay = isoToYMD(bestDepISO(f));
+      const arrDay = isoToYMD(bestArrISO(prevArr));
 
-      setTimeFromISOIfEmptyOrAK('SIBT', prevArr.sibt || prevArr.eibt);
-      setTimeFromISOIfEmptyOrAK('AIBT', prevArr.aibt);
+      // ✅ ARR antérieure au DEP => avion a dormi à BVA => FROM=BVA sans SIBT
+      const sleptAtBVA = (arrDay && depDay && arrDay < depDay);
 
-      if(prevArr?.paxNb != null){
-        setIfEmptyOrAK('ArrPAX_MAIN', String(prevArr.paxNb));
+      if(sleptAtBVA){
+        setValAK('From', HOME);
+        setValAK('SIBT','');
+        setValAK('AIBT','');
+        // optionnel :
+        // setValAK('ArrSI','');
+        // setValAK('ArrPAX_MAIN','');
+      }else{
+        setValAK('From', (prevArr.adepIata || '') || HOME);
+
+        setTimeFromISOIfEmptyOrAK('SIBT', prevArr.sibt || prevArr.eibt);
+        setTimeFromISOIfEmptyOrAK('AIBT', prevArr.aibt);
+
+        if(prevArr?.paxNb != null){
+          setIfEmptyOrAK('ArrPAX_MAIN', String(prevArr.paxNb));
+        }
+
+        const siArr = akBuildSI(prevArr, false, { includeDL:false });
+        setIfEmptyOrAK('ArrSI', siArr);
       }
 
-      const siArr = akBuildSI(prevArr, false, { includeDL:false });
-      setIfEmptyOrAK('ArrSI', siArr);
     }else{
-      setValAK('From', HOME_IATA);
+      // pas d'arrivée liée
+      setValAK('From', HOME);
     }
 
   /* ================= ARR ================= */
   }else{
-    setValAK('From', (f.adepIata || '') || HOME_IATA);
+    setValAK('From', (f.adepIata || '') || HOME);
 
     setTimeFromISOAK('SIBT', f.sibt || f.eibt);
     setTimeFromISOAK('AIBT', f.aibt);
@@ -4136,19 +4170,38 @@ function applyAKFlight(f, flow, opts = {}){
     setIfEmptyOrAK('ArrSI', siArr);
 
     const nextDep = findLinkedDepForArr(f);
+
     if(nextDep){
-      setValAK('To', (nextDep.adesIata || '') || HOME_IATA);
+      const arrDay = isoToYMD(bestArrISO(f));
+      const depDay = isoToYMD(bestDepISO(nextDep));
 
-      setTimeFromISOIfEmptyOrAK('SOBT', nextDep.sobt || nextDep.eobt);
-      setTimeFromISOIfEmptyOrAK('AOBT', nextDep.aobt);
-      setTimeFromISOIfEmptyOrAK('CTOT', nextDep.ctot);
+      // ✅ DEP postérieur à l'ARR => avion reste basé à BVA => TO=BVA sans SOBT
+      const staysAtBVA = (arrDay && depDay && depDay > arrDay);
 
-      // ❌ DL AK interdit dans LOAD PREVI / FINAL
-      const siDep = akBuildSI(nextDep, true, { includeDL:false });
-      setIfEmptyOrAK('PreviSI', siDep);
-      setIfEmptyOrAK('FinalSI', siDep);
+      if(staysAtBVA){
+        setValAK('To', HOME);
+        setValAK('SOBT','');
+        setValAK('AOBT','');
+        setValAK('CTOT','');
+        // optionnel :
+        // setValAK('PreviSI','');
+        // setValAK('FinalSI','');
+      }else{
+        setValAK('To', (nextDep.adesIata || '') || HOME);
+
+        setTimeFromISOIfEmptyOrAK('SOBT', nextDep.sobt || nextDep.eobt);
+        setTimeFromISOIfEmptyOrAK('AOBT', nextDep.aobt);
+        setTimeFromISOIfEmptyOrAK('CTOT', nextDep.ctot);
+
+        // ❌ DL AK interdit dans LOAD PREVI / FINAL
+        const siDep2 = akBuildSI(nextDep, true, { includeDL:false });
+        setIfEmptyOrAK('PreviSI', siDep2);
+        setIfEmptyOrAK('FinalSI', siDep2);
+      }
+
     }else{
-      setValAK('To', HOME_IATA);
+      // pas de départ lié
+      setValAK('To', HOME);
     }
   }
 
