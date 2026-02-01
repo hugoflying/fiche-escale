@@ -4065,7 +4065,7 @@ async function refreshAKTab(tabId){
 function applyAKFlight(f, flow, opts = {}){
   const isRefresh = !!opts.refresh;
 
-  // ===== helpers (jour) =====
+  // ===== helpers jour =====
   const bestArrISO = (x)=> x?.aibt || x?.eibt || x?.sibt || x?.aldt || x?.eldt || x?.afat || x?.efat || '';
   const bestDepISO = (x)=> x?.aobt || x?.eobt || x?.pobt || x?.ctot || x?.atot || x?.etot || x?.sobt || '';
 
@@ -4113,32 +4113,25 @@ function applyAKFlight(f, flow, opts = {}){
     setTimeFromISOAK('AOBT', f.aobt);
     setTimeFromISOIfEmptyOrAK('CTOT', f.ctot);
 
-    // ❌ DL AK interdit dans LOAD PREVI / FINAL
     const siDep = akBuildSI(f, true, { includeDL:false });
     setIfEmptyOrAK('PreviSI', siDep);
     setIfEmptyOrAK('FinalSI', siDep);
 
     const prevArr = findLinkedArrForDep(f);
-    if(prevArr){
 
-      // ✅ cas overnight : ARR la veille (ou date < DEP date) => FROM=BVA sans SIBT
+    if(prevArr){
       const depDay = isoToYMD(bestDepISO(f));
       const arrDay = isoToYMD(bestArrISO(prevArr));
       const sleptAtBVA = (arrDay && depDay && arrDay < depDay);
 
       if(sleptAtBVA){
         setValAK('From', HOME_IATA);
-
-        // sans SIBT/AIBT (et on évite d’importer des infos ARR du jour précédent)
-        setValAK('SIBT', '');
-        setValAK('AIBT', '');
-        // optionnel si tu veux éviter toute confusion :
-        // setValAK('ArrSI','');
-        // setValAK('ArrPAX_MAIN','');
-
+        setValAK('SIBT','');
+        setValAK('AIBT','');
+        setValAK('ArrSI','');
+        setValAK('ArrPAX_MAIN','');
       }else{
         setValAK('From', (prevArr.adepIata || '') || HOME_IATA);
-
         setTimeFromISOIfEmptyOrAK('SIBT', prevArr.sibt || prevArr.eibt);
         setTimeFromISOIfEmptyOrAK('AIBT', prevArr.aibt);
 
@@ -4149,10 +4142,13 @@ function applyAKFlight(f, flow, opts = {}){
         const siArr = akBuildSI(prevArr, false, { includeDL:false });
         setIfEmptyOrAK('ArrSI', siArr);
       }
-
     }else{
-      // pas d'arrivée liée
+      // DEP sans ARR
       setValAK('From', HOME_IATA);
+      setValAK('SIBT','');
+      setValAK('AIBT','');
+      setValAK('ArrSI','');
+      setValAK('ArrPAX_MAIN','');
     }
 
   /* ================= ARR ================= */
@@ -4170,40 +4166,37 @@ function applyAKFlight(f, flow, opts = {}){
     setIfEmptyOrAK('ArrSI', siArr);
 
     const nextDep = findLinkedDepForArr(f);
-    if(nextDep){
 
-      // ✅ cas overnight : DEP le lendemain (date > ARR date) => TO=BVA sans SOBT
+    if(nextDep){
       const arrDay = isoToYMD(bestArrISO(f));
       const depDay = isoToYMD(bestDepISO(nextDep));
       const staysAtBVA = (arrDay && depDay && depDay > arrDay);
 
       if(staysAtBVA){
         setValAK('To', HOME_IATA);
-
-        // sans SOBT/AOBT/CTOT (et on évite d’importer des infos DEP du lendemain)
-        setValAK('SOBT', '');
-        setValAK('AOBT', '');
-        setValAK('CTOT', '');
-        // optionnel :
-        // setValAK('PreviSI','');
-        // setValAK('FinalSI','');
-
+        setValAK('SOBT','');
+        setValAK('AOBT','');
+        setValAK('CTOT','');
+        setValAK('PreviSI','');
+        setValAK('FinalSI','');
       }else{
         setValAK('To', (nextDep.adesIata || '') || HOME_IATA);
-
         setTimeFromISOIfEmptyOrAK('SOBT', nextDep.sobt || nextDep.eobt);
         setTimeFromISOIfEmptyOrAK('AOBT', nextDep.aobt);
         setTimeFromISOIfEmptyOrAK('CTOT', nextDep.ctot);
 
-        // ❌ DL AK interdit dans LOAD PREVI / FINAL
         const siDep2 = akBuildSI(nextDep, true, { includeDL:false });
         setIfEmptyOrAK('PreviSI', siDep2);
         setIfEmptyOrAK('FinalSI', siDep2);
       }
-
     }else{
-      // pas de départ lié
+      // ARR sans DEP
       setValAK('To', HOME_IATA);
+      setValAK('SOBT','');
+      setValAK('AOBT','');
+      setValAK('CTOT','');
+      setValAK('PreviSI','');
+      setValAK('FinalSI','');
     }
   }
 
@@ -4215,14 +4208,12 @@ function applyAKFlight(f, flow, opts = {}){
   if(flow === 'ARR'){
     arrFF = (f.fullFlightNumber || f.callsign || '').toUpperCase().trim();
     bcForStrip = (f.borderControl || '').toUpperCase().trim();
-
     const nextDep = findLinkedDepForArr(f);
     if(nextDep){
       depFF = (nextDep.fullFlightNumber || nextDep.callsign || '').toUpperCase().trim();
     }
   }else{
     depFF = (f.fullFlightNumber || f.callsign || '').toUpperCase().trim();
-
     const prevArr = findLinkedArrForDep(f);
     if(prevArr){
       arrFF = (prevArr.fullFlightNumber || prevArr.callsign || '').toUpperCase().trim();
@@ -4247,6 +4238,7 @@ function applyAKFlight(f, flow, opts = {}){
   updateAllCalculations();
   updateTabLabelInstant();
 
+  // ✅ fermeture AK comme avant
   if(!isRefresh){
     closeAKPicker();
     const flowSel = document.getElementById('akFlow');
