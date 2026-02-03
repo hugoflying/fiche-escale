@@ -3840,16 +3840,30 @@ function renderAKList(flights, flow){
     if(flow === 'DEP'){
       if(statusRaw === 'IN_FLIGHT') status = 'DÉCOLLÉ';
     }else{
-      // ARR
+      // ===== ARR =====
       if(statusRaw === 'TERMINATED') status = 'ARRIVÉ';
       if(statusRaw === 'IN_FLIGHT')  status = 'EN VOL';
 
-      // 🔥 ARR affiché DÉCOLLÉ si le DEP lié a décollé
+      // ARR affiché DÉCOLLÉ si le DEP lié a décollé
       const nextDep = findLinkedDepForArr(f);
       if(nextDep){
         const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
         const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
         if(depIsOff) status = 'DÉCOLLÉ';
+      }
+
+      // A L'APPROCHE = ELDT - 15 min
+      if(
+        status !== 'ARRIVÉ' &&
+        status !== 'DÉCOLLÉ' &&
+        !f.afat && !f.aibt &&
+        f.eldt
+      ){
+        const nowMs  = Date.now();
+        const eldtMs = Date.parse(f.eldt);
+        if(isFinite(eldtMs) && nowMs >= (eldtMs - 15*60*1000) && nowMs < eldtMs){
+          status = "A L'APPROCHE";
+        }
       }
     }
 
@@ -3857,7 +3871,9 @@ function renderAKList(flights, flow){
     const showDelay = dly >= 5;
 
     let bg = 'var(--card)';
-    if(flow === 'ARR' && status === 'DÉCOLLÉ'){
+    if(flow === 'ARR' && status === "A L'APPROCHE"){
+      bg = 'rgba(22,163,74,0.18)';
+    }else if(flow === 'ARR' && status === 'DÉCOLLÉ'){
       bg = 'rgba(0,0,0,.04)';
     }else if(flow === 'ARR' && statusRaw === 'IN_FLIGHT'){
       bg = 'rgba(37,99,235,0.12)';
@@ -3873,8 +3889,14 @@ function renderAKList(flights, flow){
       ? (f.adepIata || f.adepIcao || '')
       : (f.adesIata || f.adesIcao || '');
 
+    const approachBadge = (flow === 'ARR' && status === "A L'APPROCHE")
+      ? `<span class="tag" style="font-weight:900;margin-left:6px;background:rgba(22,163,74,0.22);">
+           APPROCHE
+         </span>`
+      : '';
+
     const delayBadge = showDelay
-      ? `<span class="tag" style="font-weight:900; margin-left:6px;
+      ? `<span class="tag" style="font-weight:900;margin-left:6px;
            background:${dly<=15 ? 'rgba(245,158,11,0.20)' : 'rgba(239,68,68,0.18)'};">
            RETARD +${dly}
          </span>`
@@ -3890,6 +3912,7 @@ function renderAKList(flights, flow){
             <div style="min-width:220px;">
               <div style="font-weight:900;font-size:1.05rem;display:flex;gap:6px;flex-wrap:wrap;">
                 <span>${escapeHtml(mainIata || '---')}</span>
+                ${approachBadge}
                 ${delayBadge}
               </div>
 
@@ -4175,6 +4198,24 @@ function applyAKFlight(f, flow, opts = {}){
     }
   }
 
+  /* ===== STATUT AK ARR : A L'APPROCHE (ELDT - 15) ===== */
+  let akStatusLabel = '';
+  let akStatusClass = '';
+
+  if(flow === 'ARR' && f.eldt){
+    const now  = Date.now();
+    const eldt = new Date(f.eldt).getTime();
+
+    // stop si déjà posé
+    const isLanded = !!(f.afat || f.aibt);
+    if(!isLanded){
+      if(now >= (eldt - 15 * 60 * 1000) && now < eldt){
+        akStatusLabel = "A L'APPROCHE";
+        akStatusClass = "ak-approche";
+      }
+    }
+  }
+
   storeAKMetaForTab({
     flow,
     id: f.id,
@@ -4186,7 +4227,11 @@ function applyAKFlight(f, flow, opts = {}){
     pkg: f.pkg || '',
     arrFF,
     depFF,
-    bc: bcForStrip
+    bc: bcForStrip,
+
+    // 👇 ajout pour la flight list
+    akStatusLabel,
+    akStatusClass
   });
 
   updateAllCalculations();
