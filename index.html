@@ -3844,25 +3844,24 @@ function renderAKList(flights, flow){
       if(statusRaw === 'TERMINATED') status = 'ARRIVÉ';
       if(statusRaw === 'IN_FLIGHT')  status = 'EN VOL';
 
-      // ARR affiché DÉCOLLÉ si le DEP lié a décollé
-      const nextDep = findLinkedDepForArr(f);
-      if(nextDep){
-        const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
-        const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
-        if(depIsOff) status = 'DÉCOLLÉ';
-      }
-
-      // A L'APPROCHE = ELDT - 15 min
-      if(
-        status !== 'ARRIVÉ' &&
-        status !== 'DÉCOLLÉ' &&
-        !f.afat && !f.aibt &&
-        f.eldt
-      ){
+      // 1) APPROCHE prioritaire : ELDT - 15 min (si pas encore posé)
+      let isApproach = false;
+      if(!f.afat && !f.aibt && f.eldt){
         const nowMs  = Date.now();
         const eldtMs = Date.parse(f.eldt);
         if(isFinite(eldtMs) && nowMs >= (eldtMs - 15*60*1000) && nowMs < eldtMs){
+          isApproach = true;
           status = "A L'APPROCHE";
+        }
+      }
+
+      // 2) ARR affiché DÉCOLLÉ si le DEP lié a décollé (mais ne doit pas écraser APPROCHE)
+      if(!isApproach){
+        const nextDep = findLinkedDepForArr(f);
+        if(nextDep){
+          const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
+          const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
+          if(depIsOff) status = 'DÉCOLLÉ';
         }
       }
     }
