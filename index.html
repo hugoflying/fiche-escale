@@ -3840,29 +3840,25 @@ function renderAKList(flights, flow){
     if(flow === 'DEP'){
       if(statusRaw === 'IN_FLIGHT') status = 'DÉCOLLÉ';
     }else{
-      // ===== ARR =====
+      // ARR
       if(statusRaw === 'TERMINATED') status = 'ARRIVÉ';
       if(statusRaw === 'IN_FLIGHT')  status = 'EN VOL';
 
-      // 1) APPROCHE prioritaire : ELDT - 15 min (si pas encore posé)
-      let isApproach = false;
-      if(!f.afat && !f.aibt && f.eldt){
+      // ✅ MODIF : remplacer EN VOL par A L'APPROCHE à ELDT-15 (ARR uniquement)
+      if(statusRaw === 'IN_FLIGHT' && f.eldt && !f.afat && !f.aibt){
         const nowMs  = Date.now();
         const eldtMs = Date.parse(f.eldt);
         if(isFinite(eldtMs) && nowMs >= (eldtMs - 15*60*1000) && nowMs < eldtMs){
-          isApproach = true;
           status = "A L'APPROCHE";
         }
       }
 
-      // 2) ARR affiché DÉCOLLÉ si le DEP lié a décollé (mais ne doit pas écraser APPROCHE)
-      if(!isApproach){
-        const nextDep = findLinkedDepForArr(f);
-        if(nextDep){
-          const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
-          const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
-          if(depIsOff) status = 'DÉCOLLÉ';
-        }
+      // 🔥 ARR affiché DÉCOLLÉ si le DEP lié a décollé
+      const nextDep = findLinkedDepForArr(f);
+      if(nextDep){
+        const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
+        const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
+        if(depIsOff) status = 'DÉCOLLÉ';
       }
     }
 
@@ -3870,11 +3866,14 @@ function renderAKList(flights, flow){
     const showDelay = dly >= 5;
 
     let bg = 'var(--card)';
+
+    // ✅ MODIF : vert pour A L'APPROCHE (ARR uniquement) au lieu du bleu "EN VOL"
     if(flow === 'ARR' && status === "A L'APPROCHE"){
       bg = 'rgba(22,163,74,0.18)';
     }else if(flow === 'ARR' && status === 'DÉCOLLÉ'){
       bg = 'rgba(0,0,0,.04)';
     }else if(flow === 'ARR' && statusRaw === 'IN_FLIGHT'){
+      // bleu "EN VOL" (reste inchangé)
       bg = 'rgba(37,99,235,0.12)';
     }else if(flow === 'DEP' && statusRaw === 'IN_FLIGHT'){
       bg = 'rgba(0,0,0,.04)';
@@ -3888,14 +3887,8 @@ function renderAKList(flights, flow){
       ? (f.adepIata || f.adepIcao || '')
       : (f.adesIata || f.adesIcao || '');
 
-    const approachBadge = (flow === 'ARR' && status === "A L'APPROCHE")
-      ? `<span class="tag" style="font-weight:900;margin-left:6px;background:rgba(22,163,74,0.22);">
-           APPROCHE
-         </span>`
-      : '';
-
     const delayBadge = showDelay
-      ? `<span class="tag" style="font-weight:900;margin-left:6px;
+      ? `<span class="tag" style="font-weight:900; margin-left:6px;
            background:${dly<=15 ? 'rgba(245,158,11,0.20)' : 'rgba(239,68,68,0.18)'};">
            RETARD +${dly}
          </span>`
@@ -3911,7 +3904,6 @@ function renderAKList(flights, flow){
             <div style="min-width:220px;">
               <div style="font-weight:900;font-size:1.05rem;display:flex;gap:6px;flex-wrap:wrap;">
                 <span>${escapeHtml(mainIata || '---')}</span>
-                ${approachBadge}
                 ${delayBadge}
               </div>
 
@@ -4197,24 +4189,6 @@ function applyAKFlight(f, flow, opts = {}){
     }
   }
 
-  /* ===== STATUT AK ARR : A L'APPROCHE (ELDT - 15) ===== */
-  let akStatusLabel = '';
-  let akStatusClass = '';
-
-  if(flow === 'ARR' && f.eldt){
-    const now  = Date.now();
-    const eldt = new Date(f.eldt).getTime();
-
-    // stop si déjà posé
-    const isLanded = !!(f.afat || f.aibt);
-    if(!isLanded){
-      if(now >= (eldt - 15 * 60 * 1000) && now < eldt){
-        akStatusLabel = "A L'APPROCHE";
-        akStatusClass = "ak-approche";
-      }
-    }
-  }
-
   storeAKMetaForTab({
     flow,
     id: f.id,
@@ -4226,11 +4200,7 @@ function applyAKFlight(f, flow, opts = {}){
     pkg: f.pkg || '',
     arrFF,
     depFF,
-    bc: bcForStrip,
-
-    // 👇 ajout pour la flight list
-    akStatusLabel,
-    akStatusClass
+    bc: bcForStrip
   });
 
   updateAllCalculations();
