@@ -35,7 +35,6 @@
   :root{ --gap: 12px; --padCard: 14px; --inputH: 44px; }
 }
 
-
 body{ background: var(--bg); color: var(--text); margin: 0; }
 html, body{ min-height: 100%; background: var(--bg) !important; }
 
@@ -1047,9 +1046,12 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
       <span id="ldmHint" class="tag is-light">ARRIVÉE</span>
     </div>
 
+    <!-- ✅ 3 onglets : ARR / PREVI / FINAL -->
     <div class="lm-seg">
       <button id="ldmTabArr" class="button is-small is-active" type="button"
               onclick="ldmSwitch('arr')">ARR</button>
+      <button id="ldmTabPrevi" class="button is-small" type="button"
+              onclick="ldmSwitch('previ')">PREVI</button>
       <button id="ldmTabFinal" class="button is-small" type="button"
               onclick="ldmSwitch('final')">FINAL</button>
     </div>
@@ -1059,222 +1061,305 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
 
   <div class="ldm-body">
 
-   <!-- ===== LOAD (ARR + PREVI) ===== -->
-<section class="ldm-card ldm-arr" id="ldmArr">
-  <div class="ldm-card-hdr">
-    <div class="ldm-card-title">LOAD</div>
-    <div class="ldm-card-sub">ARR + PREVI</div>
-  </div>
-
-  <div class="ldm-grid">
-
-    <!-- ARR -->
-    <div class="ldm-span-2" style="font-weight:900; letter-spacing:.08em; text-transform:uppercase;">
-      ARR
-    </div>
-
-    <div class="ldm-span-2" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
-      <div class="field" style="margin:0;">
-        <label class="label">PAX</label>
-        <input class="input ldm-in" id="ArrPAX_MAIN"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this)">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">+ INF</label>
-        <input class="input ldm-in" id="ArrPAX_INF"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this)">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">BAGS</label>
-        <input class="input ldm-in" id="ArrBAGS"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('arr')">
-      </div>
-    </div>
-
-    <div class="field ldm-span-2">
-      <label class="label">SI</label>
-      <textarea class="textarea si-uppercase ldm-ta" id="ArrSI"></textarea>
-    </div>
-
-    <div class="ldm-span-2" style="height:1px; background:rgba(0,0,0,.08); margin:4px 0;"></div>
-
-    <!-- PREVI -->
-    <div class="ldm-span-2" style="font-weight:900; letter-spacing:.08em; text-transform:uppercase;">
-      PREVI
-    </div>
-
-    <div class="ldm-span-2" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
-      <div class="field" style="margin:0;">
-        <label class="label">PAX</label>
-        <input class="input ldm-in" id="PreviPAX_MAIN"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this)">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">+ INF</label>
-        <input class="input ldm-in" id="PreviPAX_INF"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this)">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">BAGS</label>
-        <input class="input ldm-in" id="PreviBAGS"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('previ')">
-      </div>
-    </div>
-
-    <div class="field ldm-span-2">
-      <label class="label">SI</label>
-      <textarea class="textarea si-uppercase ldm-ta" id="PreviSI"></textarea>
-    </div>
-
-  </div>
-</section>
-
-<!-- ===== LOAD FINAL ===== -->
-<section class="ldm-card ldm-final" id="ldmFinal" style="display:none;">
-  <div class="ldm-card-hdr">
-    <div class="ldm-card-title">LOAD FINAL</div>
-    <div class="ldm-card-sub">FINAL</div>
-  </div>
-
-  <div class="ldm-grid">
-
-    <div class="field">
-      <label class="label">MALE</label>
-      <input class="input ldm-in" id="FinalMALE"
-             type="text" inputmode="numeric" pattern="[0-9]*"
-             maxlength="3" oninput="digitsOnly(this); syncAdultGenderLocks(); updateFinalTOB()">
-    </div>
-
-    <div class="field">
-      <label class="label">FEMALE</label>
-      <input class="input ldm-in" id="FinalFEMALE"
-             type="text" inputmode="numeric" pattern="[0-9]*"
-             maxlength="3" oninput="digitsOnly(this); syncAdultGenderLocks(); updateFinalTOB()">
-    </div>
-
-    <div class="ldm-span-2"
-         style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;">
-      <div class="field" style="margin:0;">
-        <label class="label">ADULT</label>
-        <input class="input ldm-in" id="FinalADULT"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); syncAdultGenderLocks(); updateFinalTOB()">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">CHILD</label>
-        <input class="input ldm-in" id="FinalCHILD"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">INFANT</label>
-        <input class="input ldm-in" id="FinalINFANT"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
-      </div>
-      <div class="field" style="margin:0;">
-        <label class="label">TOB</label>
-        <input class="input ldm-in has-text-weight-bold" id="FinalTOB" readonly>
-      </div>
-    </div>
-
-    <div class="ldm-row-4">
-      <div class="field">
-        <label class="label">OA</label>
-        <input class="input ldm-in" id="FinalOA"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
-      </div>
-      <div class="field">
-        <label class="label">OB</label>
-        <input class="input ldm-in" id="FinalOB"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
-      </div>
-      <div class="field">
-        <label class="label">OC</label>
-        <input class="input ldm-in" id="FinalOC"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
-      </div>
-      <div class="field">
-        <label class="label">OD</label>
-        <input class="input ldm-in" id="FinalOD"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
-      </div>
-    </div>
-
-    <div class="ldm-row-4">
-      <div class="field">
-        <label class="label">BAGS</label>
-        <input class="input ldm-in" id="FinalBAGS"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4"
-               oninput="digitsOnly(this); updateHBagsValidity('final'); updateFinalWeightIfNeeded()">
+    <!-- ===== LOAD ARR ===== -->
+    <section class="ldm-card ldm-arr" id="ldmArr">
+      <div class="ldm-card-hdr">
+        <div class="ldm-card-title">LOAD</div>
+        <div class="ldm-card-sub">ARR</div>
       </div>
 
-      <div class="field">
-        <label class="label">POIDS</label>
-        <input class="input ldm-in" id="FinalPOIDS"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               readonly>
+      <div class="ldm-grid">
+
+        <!-- ✅ 4 colonnes : PAX / +INF / BAGS / POIDS -->
+        <div class="ldm-span-2" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+          <div class="field" style="margin:0;">
+            <label class="label">PAX</label>
+            <input class="input ldm-in" id="ArrPAX_MAIN"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" oninput="digitsOnly(this)">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="label">+ INF</label>
+            <input class="input ldm-in" id="ArrPAX_INF"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this)">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="label">BAGS</label>
+            <input class="input ldm-in" id="ArrBAGS"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('arr')">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="label">POIDS</label>
+            <input class="input ldm-in" id="ArrPOIDS"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="5" oninput="digitsOnly(this)">
+          </div>
+        </div>
+
+        <div class="field ldm-span-2">
+          <label class="label">SI</label>
+          <textarea class="textarea si-uppercase ldm-ta" id="ArrSI"></textarea>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== LOAD PREVI ===== -->
+    <section class="ldm-card ldm-previ" id="ldmPrevi" style="display:none;">
+      <div class="ldm-card-hdr">
+        <div class="ldm-card-title">LOAD</div>
+        <div class="ldm-card-sub">PREVI</div>
       </div>
 
-      <div class="field">
-        <label class="label">GB</label>
-        <input class="input ldm-in" id="FinalGB"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4"
-               oninput="digitsOnly(this); updateFinalWeightIfNeeded()">
-      </div>
-    </div>
+      <div class="ldm-grid">
 
-    <div class="ldm-row-4">
-      <div class="field">
-        <label class="label">H1</label>
-        <input class="input ldm-in" id="FinalH1"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
-      </div>
-      <div class="field">
-        <label class="label">H2</label>
-        <input class="input ldm-in" id="FinalH2"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
-      </div>
-      <div class="field">
-        <label class="label">H3</label>
-        <input class="input ldm-in" id="FinalH3"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
-      </div>
-      <div class="field">
-        <label class="label">H4</label>
-        <input class="input ldm-in" id="FinalH4"
-               type="text" inputmode="numeric" pattern="[0-9]*"
-               maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
-      </div>
-    </div>
+        <!-- ✅ PREVI – FR / RK : 4 colonnes + ligne LOAD -->
+        <div class="ldm-span-2" id="previFRRK">
 
-    <div class="field ldm-span-2">
-      <label class="label">SI</label>
-      <textarea class="textarea si-uppercase ldm-ta" id="FinalSI"></textarea>
-    </div>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            <div class="field" style="margin:0;">
+              <label class="label">PAX</label>
+              <input class="input ldm-in" id="PreviPAX_MAIN"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="4" oninput="digitsOnly(this); updatePreviTOB_FRRK()">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">+ INF</label>
+              <input class="input ldm-in" id="PreviPAX_INF"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="3" oninput="digitsOnly(this); updatePreviTOB_FRRK()">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">BAGS</label>
+              <input class="input ldm-in" id="PreviBAGS"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('previ')">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">POIDS</label>
+              <input class="input ldm-in" id="PreviPOIDS"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="5" oninput="digitsOnly(this)">
+            </div>
+          </div>
 
-  </div>
-</section>
+          <!-- ✅ ligne LOAD (FR/RK) -->
+          <div style="margin-top:10px;">
+            <div class="field" style="margin:0;">
+              <label class="label">LOAD</label>
+              <input class="input ldm-in" id="PreviTOB_FRRK" type="text" readonly>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PREVI – AUTRES CIE -->
+        <div class="ldm-span-2" id="previOTHER" style="display:none;">
+
+          <!-- MALE / FEMALE / CHILD / INFANT -->
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            <div class="field" style="margin:0;">
+              <label class="label">MALE</label>
+              <input class="input ldm-in" id="PreviMALE"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="3" oninput="digitsOnly(this); updatePreviTOB()">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">FEMALE</label>
+              <input class="input ldm-in" id="PreviFEMALE"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="3" oninput="digitsOnly(this); updatePreviTOB()">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">CHILD</label>
+              <input class="input ldm-in" id="PreviCHILD"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="3" oninput="digitsOnly(this); updatePreviTOB()">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">INFANT</label>
+              <input class="input ldm-in" id="PreviINFANT"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="3" oninput="digitsOnly(this); updatePreviTOB()">
+            </div>
+          </div>
+
+          <!-- TOB -->
+          <div style="margin-top:10px;">
+            <div class="field" style="margin:0;">
+              <label class="label">TOB</label>
+              <input class="input ldm-in" id="PreviTOB" type="text" readonly>
+            </div>
+          </div>
+
+          <!-- BAGS / POIDS -->
+          <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:10px;">
+            <div class="field" style="margin:0;">
+              <label class="label">BAGS</label>
+              <input class="input ldm-in" id="PreviBAGS_OTHER"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="4" oninput="digitsOnly(this)">
+            </div>
+            <div class="field" style="margin:0;">
+              <label class="label">POIDS</label>
+              <input class="input ldm-in" id="PreviPOIDS_OTHER"
+                     type="text" inputmode="numeric" pattern="[0-9]*"
+                     maxlength="5" oninput="digitsOnly(this)">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SI PREVI -->
+        <div class="field ldm-span-2">
+          <label class="label">SI</label>
+          <textarea class="textarea si-uppercase ldm-ta" id="PreviSI"></textarea>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== LOAD FINAL ===== -->
+    <section class="ldm-card ldm-final" id="ldmFinal" style="display:none;">
+      <div class="ldm-card-hdr">
+        <div class="ldm-card-title">LOAD FINAL</div>
+        <div class="ldm-card-sub">FINAL</div>
+      </div>
+
+      <div class="ldm-grid">
+
+        <div class="field">
+          <label class="label">MALE</label>
+          <input class="input ldm-in" id="FinalMALE"
+                 type="text" inputmode="numeric" pattern="[0-9]*"
+                 maxlength="3" oninput="digitsOnly(this); syncAdultGenderLocks(); updateFinalTOB()">
+        </div>
+
+        <div class="field">
+          <label class="label">FEMALE</label>
+          <input class="input ldm-in" id="FinalFEMALE"
+                 type="text" inputmode="numeric" pattern="[0-9]*"
+                 maxlength="3" oninput="digitsOnly(this); syncAdultGenderLocks(); updateFinalTOB()">
+        </div>
+
+        <div class="ldm-span-2"
+             style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px;">
+          <div class="field" style="margin:0;">
+            <label class="label">ADULT</label>
+            <input class="input ldm-in" id="FinalADULT"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); syncAdultGenderLocks(); updateFinalTOB()">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="label">CHILD</label>
+            <input class="input ldm-in" id="FinalCHILD"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="label">INFANT</label>
+            <input class="input ldm-in" id="FinalINFANT"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
+          </div>
+          <div class="field" style="margin:0;">
+            <label class="label">TOB</label>
+            <input class="input ldm-in has-text-weight-bold" id="FinalTOB" readonly>
+          </div>
+        </div>
+
+        <div class="ldm-row-4">
+          <div class="field">
+            <label class="label">OA</label>
+            <input class="input ldm-in" id="FinalOA"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
+          </div>
+          <div class="field">
+            <label class="label">OB</label>
+            <input class="input ldm-in" id="FinalOB"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
+          </div>
+          <div class="field">
+            <label class="label">OC</label>
+            <input class="input ldm-in" id="FinalOC"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
+          </div>
+          <div class="field">
+            <label class="label">OD</label>
+            <input class="input ldm-in" id="FinalOD"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="3" oninput="digitsOnly(this); updateFinalTOB()">
+          </div>
+        </div>
+
+        <div class="ldm-row-4">
+          <div class="field">
+            <label class="label">BAGS</label>
+            <input class="input ldm-in" id="FinalBAGS"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4"
+                   oninput="digitsOnly(this); updateHBagsValidity('final'); updateFinalWeightIfNeeded()">
+          </div>
+
+          <div class="field">
+            <label class="label">POIDS</label>
+            <input class="input ldm-in" id="FinalPOIDS"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   readonly>
+          </div>
+
+          <div class="field">
+            <label class="label">GB</label>
+            <input class="input ldm-in" id="FinalGB"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4"
+                   oninput="digitsOnly(this); updateFinalWeightIfNeeded()">
+          </div>
+        </div>
+
+        <div class="ldm-row-4">
+          <div class="field">
+            <label class="label">H1</label>
+            <input class="input ldm-in" id="FinalH1"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
+          </div>
+          <div class="field">
+            <label class="label">H2</label>
+            <input class="input ldm-in" id="FinalH2"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
+          </div>
+          <div class="field">
+            <label class="label">H3</label>
+            <input class="input ldm-in" id="FinalH3"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
+          </div>
+          <div class="field">
+            <label class="label">H4</label>
+            <input class="input ldm-in" id="FinalH4"
+                   type="text" inputmode="numeric" pattern="[0-9]*"
+                   maxlength="4" oninput="digitsOnly(this); updateHBagsValidity('final')">
+          </div>
+        </div>
+
+        <div class="field ldm-span-2">
+          <label class="label">SI</label>
+          <textarea class="textarea si-uppercase ldm-ta" id="FinalSI"></textarea>
+        </div>
+
+      </div>
+    </section>
 
   </div><!-- /.ldm-body -->
 </div><!-- /#ldmModal -->
-
-
+  
 <!-- ===== FIXED HEADER ===== -->
 <div class="fixed-header" id="fixedHeader">
   <div class="fixed-header-inner">
@@ -1720,6 +1805,122 @@ function setTimeFromISOIfEmptyOrAK(id, iso){
   }
 }
 
+function siLines(txt){
+  return (txt || '')
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function normLine(s){
+  return (s || '').trim().toUpperCase();
+}
+
+// clé simple : avant 1er espace ou "+"
+function siKey(line){
+  const up = normLine(line);
+  return up.split(/\s|\+/)[0] || up;
+}
+
+function getTabData(){
+  if(!currentTabId) return {};
+  try{ return JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}'); }
+  catch(e){ return {}; }
+}
+
+function setTabData(data){
+  if(!currentTabId) return;
+  localStorage.setItem('tab-'+currentTabId, JSON.stringify(data));
+}
+
+/**
+ * Merge SI depuis AK sans écraser les ajouts manuels.
+ * Cas spécial: si tu as prolongé la ligne AK ("1R/19C + 1234"),
+ * et que AK devient "1R/19C + 1TEST/85C", alors on veut:
+ * "1R/19C + 1TEST/85C + 1234" (une seule ligne)
+ */
+function mergeSIFromAK(fieldId, newAkText){
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+
+  const data = getTabData();
+  data.akSI = data.akSI || {};
+
+  const oldAkText = data.akSI[fieldId] || '';
+  const existing  = el.value || '';
+
+  const newAkLines = siLines(newAkText);
+  const oldAkLines = siLines(oldAkText);
+  const existLines = siLines(existing);
+
+  const oldNormSet = new Set(oldAkLines.map(normLine));
+  const newNormSet = new Set(newAkLines.map(normLine));
+
+  // map old base par key
+  const oldByKey = new Map();
+  oldAkLines.forEach(l => oldByKey.set(siKey(l), l));
+
+  // index des lignes AK nouvelles par key (pour pouvoir remplacer)
+  const newIndexByKey = new Map();
+  newAkLines.forEach((l, idx) => {
+    const k = siKey(l);
+    if(!newIndexByKey.has(k)) newIndexByKey.set(k, idx);
+  });
+
+  // résultat = copie des lignes AK
+  const finalLines = [...newAkLines];
+
+  // lignes manuelles séparées (qui ne sont pas du prolongement)
+  const manualOut = [];
+
+  for(const line of existLines){
+    const n = normLine(line);
+
+    // ancienne ligne AK pure -> on la drop (remplacée par newAk)
+    if(oldNormSet.has(n)) continue;
+
+    // tentative de "prolongement" d'une ancienne ligne AK
+    const k = siKey(line);
+    const oldBase = oldByKey.get(k);
+
+    if(oldBase && newIndexByKey.has(k)){
+      const oldBaseNorm = normLine(oldBase);
+      const lineNorm = normLine(line);
+
+      if(lineNorm.startsWith(oldBaseNorm)){
+        const idx = newIndexByKey.get(k);
+        const newBase = finalLines[idx];
+
+        const suffix = line.slice(oldBase.length).trim(); // ce que tu as ajouté
+        const mergedLine = suffix ? `${newBase} ${suffix}` : `${newBase}`;
+
+        // remplace la ligne AK par la version enrichie
+        finalLines[idx] = mergedLine;
+
+        // met à jour le set de doublons (au cas où)
+        newNormSet.add(normLine(mergedLine));
+
+        continue; // IMPORTANT: on n'ajoute pas en manuelOut
+      }
+    }
+
+    // vraie ligne manuelle séparée -> on garde si pas doublon avec AK
+    if(!newNormSet.has(n)) manualOut.push(line);
+  }
+
+  const merged = [...finalLines, ...manualOut].join('\n').trim();
+
+  settingFromAK = true;
+  el.value = merged;
+  el.dispatchEvent(new Event('input',  { bubbles:true }));
+  el.dispatchEvent(new Event('change', { bubbles:true }));
+  settingFromAK = false;
+
+  // mémorise la dernière version AK pour le prochain refresh
+  data.akSI[fieldId] = (newAkText || '').trim();
+  setTabData(data);
+}
+
 function setIfEmptyOrAK(id, v){
   const el = document.getElementById(id);
   if(!el) return;
@@ -1842,6 +2043,273 @@ function updateArrExpWeightIfNeeded(){
   if(bagsExp != null && poidsExpEl && poidsExpEl.value === ''){
     poidsExpEl.value = String(bagsExp * 13);
   }
+}
+
+function updateFinalLoadLayout(){
+  const cie = (document.getElementById('Cie')?.value || '').toUpperCase().trim();
+  const isFRRK = (cie === 'FR' || cie === 'RK');
+
+  const fieldOf = (id)=>{
+    const el = document.getElementById(id);
+    return el ? el.closest('.field') : null;
+  };
+  const showField = (id, show)=>{
+    const f = fieldOf(id);
+    if(f) f.style.display = show ? '' : 'none';
+  };
+  const setLabel = (id, txt)=>{
+    const f = fieldOf(id);
+    const lab = f ? f.querySelector('label.label') : null;
+    if(lab) lab.textContent = txt;
+  };
+
+  // --- champs (FINAL) ---
+  const maleF   = fieldOf('FinalMALE');
+  const femaleF = fieldOf('FinalFEMALE');
+  const adultF  = fieldOf('FinalADULT');
+  const childF  = fieldOf('FinalCHILD');
+  const infantF = fieldOf('FinalINFANT');
+  const tobF    = fieldOf('FinalTOB');
+
+  const oaF = fieldOf('FinalOA');
+  const obF = fieldOf('FinalOB');
+  const ocF = fieldOf('FinalOC');
+  const odF = fieldOf('FinalOD');
+
+  const bagsF  = fieldOf('FinalBAGS');
+  const poidsF = fieldOf('FinalPOIDS');
+  const gbF    = fieldOf('FinalGB');
+
+  if(!maleF || !femaleF) return;
+  const finalGrid = maleF.closest('.ldm-grid');
+  if(!finalGrid) return;
+
+  // conteneur d'origine ADULT/CHILD/INFANT/TOB (à capturer UNE fois)
+  const paxGridNow = tobF ? tobF.closest('.ldm-span-2') : null;
+
+  // --- cache layout initial (1 seule fois) ---
+  window._finalLayoutCache = window._finalLayoutCache || null;
+
+  const snap = (node)=>({
+    node,
+    parent: node ? node.parentNode : null,
+    next: node ? node.nextSibling : null
+  });
+
+  if(!window._finalLayoutCache){
+    window._finalLayoutCache = {
+      male:   snap(maleF),
+      female: snap(femaleF),
+      adult:  adultF ? snap(adultF) : null,
+      child:  childF ? snap(childF) : null,
+      infant: infantF ? snap(infantF) : null,
+      tob:    tobF ? snap(tobF) : null,
+      oa:     oaF ? snap(oaF) : null,
+      ob:     obF ? snap(obF) : null,
+      oc:     ocF ? snap(ocF) : null,
+      od:     odF ? snap(odF) : null,
+      bags:   bagsF ? snap(bagsF) : null,
+      poids:  poidsF ? snap(poidsF) : null,
+      gb:     gbF ? snap(gbF) : null,
+      paxGrid: paxGridNow ? snap(paxGridNow) : null
+    };
+  }
+
+  const cache = window._finalLayoutCache;
+  const paxGridOrig = cache?.paxGrid?.node || paxGridNow;
+
+  const putBack = (s)=>{
+    if(!s?.node || !s?.parent) return;
+    if(s.next && s.next.parentNode === s.parent) s.parent.insertBefore(s.node, s.next);
+    else s.parent.appendChild(s.node);
+  };
+
+  const removeCustom = ()=>{
+    finalGrid.querySelectorAll(
+      '.ldm-final-frrk-pax, .ldm-final-frrk-tob, .ldm-final-frrk-zones, .ldm-final-frrk-bags,' +
+      '.ldm-final-other-paxline, .ldm-final-other-tobline, .ldm-final-other-zonesline, .ldm-final-other-bagsline'
+    ).forEach(n => n.remove());
+  };
+
+  const restore = ()=>{
+    removeCustom();
+
+    putBack(cache.male);
+    putBack(cache.female);
+    if(cache.adult)  putBack(cache.adult);
+    if(cache.child)  putBack(cache.child);
+    if(cache.infant) putBack(cache.infant);
+    if(cache.tob)    putBack(cache.tob);
+    if(cache.oa)     putBack(cache.oa);
+    if(cache.ob)     putBack(cache.ob);
+    if(cache.oc)     putBack(cache.oc);
+    if(cache.od)     putBack(cache.od);
+    if(cache.bags)   putBack(cache.bags);
+    if(cache.poids)  putBack(cache.poids);
+    if(cache.gb)     putBack(cache.gb);
+    if(cache.paxGrid) putBack(cache.paxGrid);
+
+    if(paxGridOrig) paxGridOrig.style.display = '';
+  };
+
+  const makeRow4 = (className)=>{
+    const d = document.createElement('div');
+    d.className = className;
+    d.style.gridColumn = 'span 2';
+    d.style.display = 'grid';
+    d.style.gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+    d.style.gap = '12px';
+    return d;
+  };
+
+  const makeRow3 = (className)=>{
+    const d = document.createElement('div');
+    d.className = className;
+    d.style.gridColumn = 'span 2';
+    d.style.display = 'grid';
+    d.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+    d.style.gap = '12px';
+    return d;
+  };
+
+  const makeRowFull = (className)=>{
+    const d = document.createElement('div');
+    d.className = className;
+    d.style.gridColumn = 'span 2';
+    return d;
+  };
+
+  // ===== règles =====
+  showField('FinalMALE',   !isFRRK);
+  showField('FinalFEMALE', !isFRRK);
+  showField('FinalOD',     !isFRRK);
+
+  setLabel('FinalOA', isFRRK ? 'FWD' : 'OA');
+  setLabel('FinalOB', isFRRK ? 'MID' : 'OB');
+  setLabel('FinalOC', isFRRK ? 'AFT' : 'OC');
+
+  showField('FinalADULT', isFRRK);
+  setLabel('FinalH1', isFRRK ? 'H1' : 'CP1');
+  setLabel('FinalH2', isFRRK ? 'H2' : 'CP2');
+  setLabel('FinalH3', isFRRK ? 'H3' : 'CP3');
+  setLabel('FinalH4', isFRRK ? 'H4' : 'CP4');
+
+  // ===== layout =====
+  restore();
+
+  if(isFRRK){
+    // --- FR/RK ---
+    if(adultF && childF && infantF){
+      const paxRow = makeRow3('ldm-final-frrk-pax');
+      paxRow.appendChild(adultF);
+      paxRow.appendChild(childF);
+      paxRow.appendChild(infantF);
+
+      const tobRow = makeRowFull('ldm-final-frrk-tob');
+      if(tobF) tobRow.appendChild(tobF);
+
+      const zonesRow = makeRow3('ldm-final-frrk-zones');
+      if(oaF) zonesRow.appendChild(oaF);
+      if(obF) zonesRow.appendChild(obF);
+      if(ocF) zonesRow.appendChild(ocF);
+
+      const bagsRow = makeRow3('ldm-final-frrk-bags');
+      if(bagsF)  bagsRow.appendChild(bagsF);
+      if(poidsF) bagsRow.appendChild(poidsF);
+      if(gbF)    bagsRow.appendChild(gbF);
+
+      // ✅ FR/RK : réduire l’espace sous BAGS/POIDS/GB
+      bagsRow.style.marginBottom = '0';
+
+      finalGrid.insertBefore(bagsRow, finalGrid.firstChild);
+      finalGrid.insertBefore(zonesRow, bagsRow);
+      finalGrid.insertBefore(tobRow, zonesRow);
+      finalGrid.insertBefore(paxRow, tobRow);
+    }
+
+  }else{
+    // --- AUTRES CIE : ordre FORCÉ ---
+    if(maleF && femaleF && childF && infantF){
+      const paxLine = makeRow4('ldm-final-other-paxline');
+      paxLine.appendChild(maleF);
+      paxLine.appendChild(femaleF);
+      paxLine.appendChild(childF);
+      paxLine.appendChild(infantF);
+
+      const tobLine = makeRowFull('ldm-final-other-tobline');
+      if(tobF) tobLine.appendChild(tobF);
+
+      const zonesLine = makeRow4('ldm-final-other-zonesline');
+      if(oaF) zonesLine.appendChild(oaF);
+      if(obF) zonesLine.appendChild(obF);
+      if(ocF) zonesLine.appendChild(ocF);
+      if(odF) zonesLine.appendChild(odF);
+
+      const bagsLine = makeRow3('ldm-final-other-bagsline');
+      if(bagsF)  bagsLine.appendChild(bagsF);
+      if(poidsF) bagsLine.appendChild(poidsF);
+      if(gbF)    bagsLine.appendChild(gbF);
+
+      // ✅ ordre voulu : PAX -> TOB -> ZONES -> BAGS
+      // insertion béton en haut (on insère à l’envers sur firstChild)
+      const first = finalGrid.firstChild;
+      finalGrid.insertBefore(bagsLine, first);
+      finalGrid.insertBefore(zonesLine, bagsLine);
+      finalGrid.insertBefore(tobLine, zonesLine);
+      finalGrid.insertBefore(paxLine, tobLine);
+
+      if(paxGridOrig) paxGridOrig.style.display = 'none';
+    }
+  }
+}
+
+// ===== LOAD PREVI (layout switch) =====
+function updatePreviLoadLayout(){
+  const cie = (document.getElementById('Cie')?.value || '').toUpperCase().trim();
+  const isFRRK = (cie === 'FR' || cie === 'RK');
+
+  const fr = document.getElementById('previFRRK');
+  const ot = document.getElementById('previOTHER');
+  if(!fr || !ot) return;
+
+  fr.style.display = isFRRK ? '' : 'none';
+  ot.style.display = isFRRK ? 'none' : '';
+
+  if(isFRRK) updatePreviTOB_FRRK();
+  else updatePreviTOB();
+}
+
+// ===== listener compagnie (1 seule fois) =====
+if(!window._cieLayoutHooked){
+  window._cieLayoutHooked = true;
+
+  document.getElementById('Cie')?.addEventListener('change', ()=>{
+    updateFinalLoadLayout();
+    updatePreviLoadLayout();
+  });
+}
+
+function updatePreviTOB_FRRK(){
+  const main = parseInt(document.getElementById('PreviPAX_MAIN')?.value || '0', 10) || 0;
+  const inf  = parseInt(document.getElementById('PreviPAX_INF')?.value  || '0', 10) || 0;
+  const el = document.getElementById('PreviTOB_FRRK');
+  if(el) el.value = `${main} + ${inf}`;
+}
+
+function updatePreviTOB(){
+  const n = (id)=>{
+    const v = (document.getElementById(id)?.value || '').trim();
+    const x = parseInt(v || '0', 10);
+    return Number.isFinite(x) ? x : 0;
+  };
+  const male   = n('PreviMALE');
+  const female = n('PreviFEMALE');
+  const child  = n('PreviCHILD');
+  const infant = n('PreviINFANT');
+
+  const main = male + female + child;
+  const el = document.getElementById('PreviTOB');
+  if(el) el.value = `${main} + ${infant}`;
 }
 
 /* ===== COUNTDOWN (CD) ===== */
@@ -2056,6 +2524,13 @@ function switchLoadPanel(mode){
 
 let _ldmMode = 'arr';
 
+function refreshLDMLayouts(){
+  // IMPORTANT : si PREVI/FINAL dépendent de la Cie, il faut refresh ici
+  try{ updateFinalLoadLayout?.(); }catch(e){}
+  try{ updatePreviLoadLayout?.(); }catch(e){}
+  try{ updateFinalTOB?.(); }catch(e){}
+}
+
 function openLDM(mode=null){
   const b = document.getElementById('ldmBackdrop');
   const m = document.getElementById('ldmModal');
@@ -2065,7 +2540,6 @@ function openLDM(mode=null){
   if(b) b.style.display = '';
   if(m) m.style.display = 'flex';
 
-  // si aucun mode forcé → décision auto
   if(mode === null){
     if(shouldOpenFinalLoad()){
       ldmSwitch('final');
@@ -2073,10 +2547,10 @@ function openLDM(mode=null){
       ldmSwitch('arr');
     }
   }else{
-    // mode forcé (ex: bouton ARR / FINAL)
     ldmSwitch(mode);
   }
 
+  refreshLDMLayouts();
   updateHeaderOffset();
 }
 
@@ -2094,26 +2568,33 @@ function ldmSwitch(mode){
   _ldmMode = mode;
 
   const sArr   = document.getElementById('ldmArr');
+  const sPrevi = document.getElementById('ldmPrevi');
   const sFinal = document.getElementById('ldmFinal');
 
   const tArr   = document.getElementById('ldmTabArr');
+  const tPrevi = document.getElementById('ldmTabPrevi');
   const tFinal = document.getElementById('ldmTabFinal');
 
-  if(sArr)   sArr.style.display   = (mode==='arr')   ? '' : 'none';
-  if(sFinal) sFinal.style.display = (mode==='final') ? '' : 'none';
+  if(sArr)   sArr.style.display   = (mode === 'arr')   ? '' : 'none';
+  if(sPrevi) sPrevi.style.display = (mode === 'previ') ? '' : 'none';
+  if(sFinal) sFinal.style.display = (mode === 'final') ? '' : 'none';
 
-  if(tArr)   tArr.classList.toggle('is-active', mode==='arr');
-  if(tFinal) tFinal.classList.toggle('is-active', mode==='final');
+  if(tArr)   tArr.classList.toggle('is-active', mode === 'arr');
+  if(tPrevi) tPrevi.classList.toggle('is-active', mode === 'previ');
+  if(tFinal) tFinal.classList.toggle('is-active', mode === 'final');
 
   const hint = document.getElementById('ldmHint');
   if(hint){
-    hint.textContent = (mode==='arr') ? 'LOAD' : 'FINAL';
+    hint.textContent =
+      (mode === 'arr')   ? 'ARRIVÉE' :
+      (mode === 'previ') ? 'PREVI' :
+      'FINAL';
   }
 
-  if(mode==='final') updateFinalTOB();
+  // refresh layout au switch (sinon PREVI peut rester vide)
+  refreshLDMLayouts();
   updateHeaderOffset();
 }
-
 
 /* compat anciens boutons (optionnel) */
 function toggleLoadArr(){ openLDM('arr'); }
@@ -2504,7 +2985,7 @@ function createNewTab(){
   // snapshot initial
   const data = {};
   document.querySelectorAll('input, select, textarea').forEach(el=>{
-    if(!el.id) return;
+    if(el.id === 'utcToggle' || el.id === 'darkToggle') return;
     data[el.id] = (el.type === 'checkbox') ? (el.checked ? '1' : '0') : (el.value || '');
   });
   data.infovolOpen = '0';
@@ -2535,6 +3016,14 @@ function switchTab(id){
   renderTabs();
   refreshUIForTabs();
   renderTimeline();
+
+  // ✅ si LOAD est ouvert : remettre les layouts selon la Cie du nouvel onglet
+  const ldmModal = document.getElementById('ldmModal');
+  const isLdmOpen = ldmModal && ldmModal.style.display !== 'none' && ldmModal.style.display !== '';
+  if(isLdmOpen){
+    updateFinalLoadLayout?.();
+    updatePreviLoadLayout?.();
+  }
 }
 
 function deleteTab(id){
@@ -2576,6 +3065,8 @@ function clearFormFields(){
     if(!el.id) return;
 
     if(el.type === 'checkbox'){
+      // ✅ ne touche pas aux toggles globaux
+      if(el.id === 'utcToggle' || el.id === 'darkToggle') return;
       el.checked = false;
     }else{
       el.value = '';
@@ -2588,6 +3079,12 @@ function clearFormFields(){
     const today = new Date().toISOString().slice(0,10);
     d.value = today;
   }
+
+  // ✅ re-sync modes globaux (UI + variables) après nettoyage
+  const storedDark = (localStorage.getItem('modeDark') || '0') === '1';
+  const storedUTC  = (localStorage.getItem('modeUTC')  || '0') === '1';
+  setDarkMode(storedDark, true);
+  setTimeModeUTC(storedUTC, true);
 
   // ✅ IMPORTANT : remettre l'état des verrous cohérent
   syncAdultGenderLocks();
@@ -2608,9 +3105,6 @@ function saveCurrentTabData(){
     if(el.type==='checkbox') data[el.id]=el.checked ? '1':'0';
     else data[el.id]=el.value;
   });
-
-  data.modeDark=document.body.classList.contains('dark')?'1':'0';
-  data.modeUTC=isUTC?'1':'0';
 
   data.timer_h40=document.getElementById('timer-h40')?.textContent || '--:--';
   data.timer_h15=document.getElementById('timer-h15')?.textContent || '--:--';
@@ -2634,6 +3128,9 @@ function loadTabData(id){
   const data = JSON.parse(raw);
 
   for(const k in data){
+    // ✅ toggles globaux : jamais restaurés depuis l’onglet
+    if(k === 'utcToggle' || k === 'darkToggle') continue;
+
     const el = document.getElementById(k);
     if(!el) continue;
 
@@ -2643,6 +3140,12 @@ function loadTabData(id){
       el.value = data[k];
     }
   }
+
+  // ✅ re-sync modes globaux (UI + variables) après chargement d'onglet
+  const storedDark = (localStorage.getItem('modeDark') || '0') === '1';
+  const storedUTC  = (localStorage.getItem('modeUTC')  || '0') === '1';
+  setDarkMode(storedDark, true);
+  setTimeModeUTC(storedUTC, true);
 
   // ✅ remettre les verrous cohérents après restauration
   syncAdultGenderLocks();
@@ -3838,69 +4341,37 @@ function renderAKList(flights, flow){
 
     if(statusRaw === 'SCHEDULED') status = 'PRÉVU';
 
-    // ARRIVÉ = posé (sert pour couleur + suppression RETARD)
-    const isArrived =
-      flow === 'ARR' &&
-      (statusRaw === 'TERMINATED' || !!f.aibt || !!f.afat);
-
     if(flow === 'DEP'){
       if(statusRaw === 'IN_FLIGHT') status = 'DÉCOLLÉ';
     }else{
-      // ===== ARR =====
-      if(isArrived){
-        status = 'ARRIVÉ';
-      }else{
-        if(statusRaw === 'IN_FLIGHT') status = 'EN VOL';
+      // ARR
+      if(statusRaw === 'TERMINATED') status = 'ARRIVÉ';
+      if(statusRaw === 'IN_FLIGHT')  status = 'EN VOL';
 
-        // EN VOL -> A L'APPROCHE à ELDT - 15
-        if(statusRaw === 'IN_FLIGHT' && f.eldt){
-          const nowMs  = Date.now();
-          const eldtMs = Date.parse(f.eldt);
-          if(isFinite(eldtMs) && nowMs >= (eldtMs - 15*60*1000) && nowMs < eldtMs){
-            status = "A L'APPROCHE";
-          }
-        }
-
-        // ARR affiché DÉCOLLÉ si le DEP lié a décollé
-        const nextDep = findLinkedDepForArr(f);
-        if(nextDep){
-          const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
-          const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
-          if(depIsOff) status = 'DÉCOLLÉ';
-        }
+      // 🔥 ARR affiché DÉCOLLÉ si le DEP lié a décollé
+      const nextDep = findLinkedDepForArr(f);
+      if(nextDep){
+        const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
+        const depIsOff = depStatusRaw === 'IN_FLIGHT' || !!nextDep.atot;
+        if(depIsOff) status = 'DÉCOLLÉ';
       }
     }
 
     const dly = delayMinutes(f, flow);
-
-    // ARR : une fois arrivé → plus de retard
-    const showDelay = !isArrived && dly >= 5;
+    const showDelay = dly >= 5;
 
     let bg = 'var(--card)';
-
-    // A L'APPROCHE = vert
-    if(flow === 'ARR' && status === "A L'APPROCHE"){
-      bg = 'rgba(22,163,74,0.18)';
-    }
-    // ARR affiché DÉCOLLÉ = gris
-    else if(flow === 'ARR' && status === 'DÉCOLLÉ'){
+    if(flow === 'ARR' && status === 'DÉCOLLÉ'){
       bg = 'rgba(0,0,0,.04)';
-    }
-    // ARR EN VOL = bleu
-    else if(flow === 'ARR' && statusRaw === 'IN_FLIGHT'){
+    }else if(flow === 'ARR' && statusRaw === 'IN_FLIGHT'){
       bg = 'rgba(37,99,235,0.12)';
-    }
-    // DEP décollé = gris
-    else if(flow === 'DEP' && statusRaw === 'IN_FLIGHT'){
+    }else if(flow === 'DEP' && statusRaw === 'IN_FLIGHT'){
       bg = 'rgba(0,0,0,.04)';
-    }
-    // RETARD (uniquement avant arrivée)
-    else if(showDelay){
+    }else if(showDelay){
       bg = (dly <= 15)
         ? 'rgba(245,158,11,0.18)'
         : 'rgba(239,68,68,0.16)';
     }
-    // ARRIVÉ → fond blanc (var(--card)) = rien à faire
 
     const mainIata = (flow === 'ARR')
       ? (f.adepIata || f.adepIcao || '')
@@ -4132,10 +4603,11 @@ function applyAKFlight(f, flow, opts = {}){
     setTimeFromISOAK('AOBT', f.aobt);
     setTimeFromISOIfEmptyOrAK('CTOT', f.ctot);
 
+    // ✅ merge SI (AK met à jour sans écraser les ajouts manuels)
     // ❌ DL AK interdit dans LOAD PREVI / FINAL
     const siDep = akBuildSI(f, true, { includeDL:false });
-    setIfEmptyOrAK('PreviSI', siDep);
-    setIfEmptyOrAK('FinalSI', siDep);
+    mergeSIFromAK('PreviSI', siDep);
+    mergeSIFromAK('FinalSI', siDep);
 
     const prevArr = findLinkedArrForDep(f);
     if(prevArr){
@@ -4148,8 +4620,14 @@ function applyAKFlight(f, flow, opts = {}){
         setIfEmptyOrAK('ArrPAX_MAIN', String(prevArr.paxNb));
       }
 
+      // ✅ CIE ≠ FR/RK => AK.bags -> POIDS (LOAD ARR)
+      const cieNow = (document.getElementById('Cie')?.value || '').toUpperCase();
+      if(cieNow !== 'FR' && cieNow !== 'RK' && prevArr?.bags != null){
+        setIfEmptyOrAK('ArrPOIDS', String(prevArr.bags));
+      }
+
       const siArr = akBuildSI(prevArr, false, { includeDL:false });
-      setIfEmptyOrAK('ArrSI', siArr);
+      mergeSIFromAK('ArrSI', siArr);
     }else{
       setValAK('From', HOME_IATA);
     }
@@ -4165,8 +4643,14 @@ function applyAKFlight(f, flow, opts = {}){
       setIfEmptyOrAK('ArrPAX_MAIN', String(f.paxNb));
     }
 
+    // ✅ CIE ≠ FR/RK => AK.bags -> POIDS (LOAD ARR)
+    const cieNow = (document.getElementById('Cie')?.value || '').toUpperCase();
+    if(cieNow !== 'FR' && cieNow !== 'RK' && f?.bags != null){
+      setIfEmptyOrAK('ArrPOIDS', String(f.bags));
+    }
+
     const siArr = akBuildSI(f, false, { includeDL:false });
-    setIfEmptyOrAK('ArrSI', siArr);
+    mergeSIFromAK('ArrSI', siArr);
 
     const nextDep = findLinkedDepForArr(f);
     if(nextDep){
@@ -4176,10 +4660,11 @@ function applyAKFlight(f, flow, opts = {}){
       setTimeFromISOIfEmptyOrAK('AOBT', nextDep.aobt);
       setTimeFromISOIfEmptyOrAK('CTOT', nextDep.ctot);
 
+      // ✅ merge SI
       // ❌ DL AK interdit dans LOAD PREVI / FINAL
       const siDep = akBuildSI(nextDep, true, { includeDL:false });
-      setIfEmptyOrAK('PreviSI', siDep);
-      setIfEmptyOrAK('FinalSI', siDep);
+      mergeSIFromAK('PreviSI', siDep);
+      mergeSIFromAK('FinalSI', siDep);
     }else{
       setValAK('To', HOME_IATA);
     }
