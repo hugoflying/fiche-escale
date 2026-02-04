@@ -29,6 +29,8 @@
   --padCard: 12px;
   --labelSize: .78rem;
   --inputH: 42px;
+
+  --fixed-footer-h: 72px;
 }
 
 @media (min-width: 769px){
@@ -76,6 +78,7 @@ html.dark .fixed-header{ border-bottom-color: rgba(255,255,255,.08); }
   max-width: 1120px;
   margin: 0 auto;
   padding: calc(var(--fixed-header-h) + 14px) 14px 14px;
+  padding-bottom: calc(var(--fixed-footer-h) + 18px);
 }
 
 /* rien afficher tant qu'il n'y a pas d'onglet */
@@ -209,7 +212,6 @@ body.dark .card-header{
 .card-header-title{ font-weight: 900; color: var(--text) !important; }
 .section-collapse{ cursor: pointer; user-select: none; }
 .collapsed-body{ display: none; }
-
 .card-content{ padding: var(--padCard) !important; }
 
 /* Inputs */
@@ -264,67 +266,15 @@ textarea.si-uppercase{ text-transform: uppercase; }
   .span-4{ grid-column: span 4; }
   .span-3{ grid-column: span 3; }
 }
-/* ===== BANDEAUX ESSENTIELS : 2 PAR LIGNE (base) ===== */
+
+/* ===== BANDEAUX ESSENTIELS ===== */
 .kv-strip{
-  display: grid;
+  display:grid;
   grid-template-columns: 1fr; /* mobile */
   gap: var(--gap);
 }
 @media (min-width: 600px){
-  .kv-strip{
-    grid-template-columns: 1fr 1fr; /* tablette + */
-  }
-}
-
-/* ===== TABLET (600–900) ===== */
-@media (min-width: 600px) and (max-width: 900px){
-
-  :root{
-    --gap: 8px;
-    --padCard: 9px;
-    --labelSize: .68rem;
-    --inputH: 34px;
-  }
-
-  /* grid spans tablette */
-  .span-2{ grid-column: span 2; }
-  .span-3{ grid-column: span 3; }
-  .span-4{ grid-column: span 4; }
-  .span-6{ grid-column: span 6; }
-
-  /* Réduction globale */
-  .card-content{ padding: var(--padCard) !important; }
-
-  /* Bandeaux essentiels */
-  .kv-card{ padding: 8px 10px; }
-  .kv-title{ font-size: .70rem; letter-spacing: .04em; }
-  .kv-value{ font-size: 1rem; font-weight: 800; }
-
-  /* Timers chips */
-  .timer-chip{ min-width: 124px; padding: 8px 12px; }
-  .timer-chip .k{ font-size: .75rem; }
-  .timer-chip .v{ padding: 5px 8px; min-width: 64px; }
-}
-
-/* ===== Alignement visuel SELECT comme INPUT (global) ===== */
-.select.is-fullwidth select{
-  height: var(--inputH);
-  line-height: calc(var(--inputH) - 2px);
-  padding-top: 0;
-  padding-bottom: 0;
-  display: flex;
-  align-items: center;
-  font-weight: 800;
-}
-
-/* "Rows" ultra compactes pour infos clés */
-.kv-strip{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap: var(--gap);
-}
-@media (min-width: 769px){
-  .kv-strip{ grid-template-columns: 1fr 1fr; }
+  .kv-strip{ grid-template-columns: 1fr 1fr; } /* tablette + */
 }
 .kv-card{
   border-radius: 14px;
@@ -336,12 +286,21 @@ textarea.si-uppercase{ text-transform: uppercase; }
   justify-content: space-between;
   gap: 10px;
 }
-body.dark .kv-card{
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
-}
+body.dark .kv-card{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 .kv-left{ display:flex; flex-direction:column; gap:2px; }
 .kv-title{ font-size:.78rem; font-weight:900; color: var(--muted); text-transform:uppercase; }
 .kv-value{ font-size:1.1rem; font-weight:900; color: var(--text); }
+
+/* ===== Alignement visuel SELECT comme INPUT (global) ===== */
+.select.is-fullwidth select{
+  height: var(--inputH);
+  line-height: calc(var(--inputH) - 2px);
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  font-weight: 800;
+}
 
 /* Popup toast */
 #popup{
@@ -383,9 +342,7 @@ body.dark .kv-card{
   transition: transform .18s ease, background .18s ease;
   box-shadow: 0 6px 16px rgba(0,0,0,.18);
 }
-.toggle input:checked + .track{
-  background: color-mix(in srgb, #3b82f6 70%, #22c55e 30%);
-}
+.toggle input:checked + .track{ background: color-mix(in srgb, #3b82f6 70%, #22c55e 30%); }
 .toggle input:checked + .track .thumb{ transform: translateX(18px); }
 
 /* ===== AK picker (FULLSCREEN POPUP) ===== */
@@ -402,7 +359,6 @@ body.dark .kv-card{
   border: 1px solid rgba(0,0,0,.08);
   display: none;
   overflow: auto;
-
   flex-direction: column;
 }
 body.dark #akPopover{ border-color: rgba(255,255,255,.10); }
@@ -501,15 +457,15 @@ body.dark .timeline-scroll{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,.35);
-  z-index: 4800;
+  z-index: 9000;
   display: none;
 }
 
 #settingsFab{
   position: fixed;
   right: 14px;
-  bottom: 14px;
-  z-index: 4900;
+  bottom: calc(var(--fixed-footer-h) + 14px);
+  z-index: 9100;                 /* ✅ au-dessus du footer + header */
   width: 52px;
   height: 52px;
   border-radius: 999px;
@@ -523,8 +479,8 @@ body.dark .timeline-scroll{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 #settingsMenu{
   position: fixed;
   right: 14px;
-  bottom: 74px;
-  z-index: 4901;
+  bottom: calc(var(--fixed-footer-h) + 74px); /* ✅ suit la molette */
+  z-index: 9200;                 /* ✅ au-dessus de tout */
   width: min(320px, calc(100vw - 28px));
   border-radius: 16px;
   background: var(--card);
@@ -536,11 +492,7 @@ body.dark .timeline-scroll{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 body.dark #settingsMenu{ border-color: rgba(255,255,255,.10); }
 
 #settingsMenu .settings-title{ font-weight: 900; margin-bottom: 10px; }
-#settingsMenu .settings-row{
-  display:flex;
-  flex-direction: column;
-  gap: 10px;
-}
+#settingsMenu .settings-row{ display:flex; flex-direction: column; gap: 10px; }
 
 /* ===== RESPONSIVE tweaks ===== */
 @media (max-width: 768px){
@@ -560,7 +512,7 @@ body.dark #settingsMenu{ border-color: rgba(255,255,255,.10); }
   .ctot-pill{ min-width: 54px; padding: 4px 6px !important; font-size: .8rem; }
 }
 
-/* ===== LDM modal (neutre, sans pastilles couleur) ===== */
+/* ===== LDM modal (neutre) ===== */
 #ldmBackdrop{
   position: fixed;
   inset: 0;
@@ -604,10 +556,7 @@ body.dark .ldm-header{ border-bottom-color: rgba(255,255,255,.10); }
 }
 .ldm-title strong{ font-weight: 900; font-size: 1.05rem; }
 
-#ldmHint{
-  font-weight: 900;
-  border-radius: 999px;
-}
+#ldmHint{ font-weight: 900; border-radius: 999px; }
 
 /* segment buttons */
 .lm-seg{
@@ -635,7 +584,6 @@ body.dark .lm-seg{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
   overflow: auto;
 }
 
-/* cartes neutres (ARR/EXP/FINAL = même style) */
 .ldm-card{
   border-radius: 16px;
   background: color-mix(in srgb, var(--card) 92%, #000 8%);
@@ -645,7 +593,6 @@ body.dark .lm-seg{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 }
 body.dark .ldm-card{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 
-/* header carte neutre */
 .ldm-card-hdr{
   display:flex;
   align-items:center;
@@ -656,13 +603,9 @@ body.dark .ldm-card{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
 }
 body.dark .ldm-card-hdr{ border-bottom-color: rgba(255,255,255,.08); }
 
-/* on SUPPRIME l’indicateur couleur */
-.ldm-dot{ display:none !important; }
-
 .ldm-card-title{ font-weight: 900; letter-spacing:.08em; }
 .ldm-card-sub{ color: var(--muted); font-weight: 800; font-size: .85rem; margin-left:auto; }
 
-/* grille 2 colonnes simple */
 .ldm-grid{
   padding: 10px 12px 12px;
   display:grid;
@@ -684,24 +627,17 @@ body.dark .ldm-card-hdr{ border-bottom-color: rgba(255,255,255,.08); }
   font-weight: 800;
 }
 
-/* ===== ligne H1..H4 / OA..OD : plus de pastilles ===== */
 .ldm-row-4{
   grid-column: span 2;
   display:grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
-
-/* champ compact sans "badge" */
-.ldm-row-4 .field{
-  margin: 0 !important;
-}
+.ldm-row-4 .field{ margin: 0 !important; }
 .ldm-row-4 .field .label{
   margin: 0 0 6px !important;
   padding: 0 !important;
   display:block;
-  min-width: auto;
-  height: auto;
   border-radius: 0;
   font-size: var(--labelSize) !important;
   font-weight: 900 !important;
@@ -729,97 +665,7 @@ body.modal-open{
   touch-action: none;
 }
 
-/* ===== petit layout PAX "X + Y" ===== */
-.pax-split{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-}
-.pax-split .pax-plus{
-  font-weight: 900;
-  opacity: .8;
-  user-select:none;
-}
-.pax-split .input{ width:100%; }
-
-/* ===== FINAL layout (comme sheet) ===== */
-.final-sheet{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-@media (min-width: 760px){
-  .final-sheet{ grid-template-columns: 1.05fr .95fr; }
-}
-
-.final-box{
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--card) 92%, #000 8%);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
-  padding: 10px 12px;
-}
-body.dark .final-box{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-
-.final-box-title{
-  font-weight: 900;
-  letter-spacing:.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.final-mini{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap: 8px;
-}
-@media (min-width: 760px){
-  .final-mini{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-}
-.final-mini-2{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0,1fr));
-  gap: 8px;
-}
-
-.final-wide{ grid-column: 1 / -1; }
-
-.final-row{
-  display:grid;
-  grid-template-columns: repeat(4, minmax(0,1fr));
-  gap: 8px;
-}
-@media (max-width: 520px){
-  .final-row{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-
-/* look “sheet” : labels plus petits, inputs centrés */
-.final-box .label{ margin-bottom: 6px !important; }
-.final-box .ldm-in{ text-align:center; }
-
-/* RETARDS : 2 lignes x 3 colonnes dès 600px */
-.dl-grid{
-  display: grid;
-  grid-template-columns: 1fr;  /* mobile <600 */
-  gap: var(--gap);
-}
-
-@media (min-width: 600px){
-  .dl-grid{
-    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 600+ => 3 colonnes */
-  }
-}
-
-:root{
-  --fixed-footer-h: 72px;
-}
-
-/* footer fixed bottom */
+/* ===== footer fixed bottom ===== */
 .fixed-footer{
   position: fixed;
   inset: auto 0 0 0;
@@ -843,24 +689,17 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
   flex-wrap: wrap;
 }
 
-/* padding pour pas cacher le contenu derrière le footer */
-.app-wrap{
-  padding-bottom: calc(var(--fixed-footer-h) + 18px);
-}
-
 /* version compacte tablette */
 @media (min-width: 600px) and (max-width: 900px){
-  :root{ --fixed-footer-h: 64px; }
   .fixed-footer-inner{ padding: 8px 12px; }
 }
 
-/* ===== FAB STACK (au-dessus de la molette) ===== */
-
-#loadFab,
-#fuelFab{
+/* ===== LOAD FAB (au-dessus du footer fixe, au-dessus de SETTINGS) ===== */
+#loadFab{
   position: fixed;
   right: 14px;
-  z-index: 4900;
+  bottom: calc(var(--fixed-footer-h) + 86px); /* ✅ au-dessus de la molette */
+  z-index: 9150;                              /* ✅ visible même si menu/settings */
   width: 52px;
   height: 52px;
   border-radius: 999px;
@@ -871,196 +710,110 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
   box-shadow: var(--shadow2);
 }
 
-/* positions */
-#loadFab{ bottom: 158px; } /* au-dessus du fuel */
-#fuelFab{ bottom: 86px; }  /* juste au-dessus de la molette */
-
-
-/* ===== FUEL MENU ===== */
-
-#fuelBackdrop{
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.35);
-  z-index: 4800;
-  display: none;
-}
-
-#fuelMenu{
-  position: fixed;
-  right: 14px;
-  bottom: 214px;
-  z-index: 4901;
-  width: min(320px, calc(100vw - 28px));
-  padding: 12px;
-  border-radius: 16px;
-  background: var(--card);
-  box-shadow: var(--shadow);
-  border: 1px solid rgba(0,0,0,.08);
-  display: none;
-}
-body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
-
-/* ===== FUEL = LOOK "TOGGLE" (Clair/Locale) ===== */
-
-#fuelMenu .settings-row{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* chaque ligne comme un toggle */
-#fuelMenu .fuel-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: var(--card);
-  box-shadow: var(--shadow2);
-}
-
-/* texte à gauche = même style que Clair/Locale */
-#fuelMenu .fuel-row .fuel-label{
-  font-weight: 900;
-  font-size: 1rem;
-  line-height: 1.2;
-  color: var(--text);
-  margin:0;
-  padding:0;
-  text-transform:none;
-  letter-spacing:0;
-}
-
-/* input à droite, compact */
-#fuelMenu .fuel-row .fuel-input{
-  width: 110px;
-  height: 34px;
-  padding: 6px 10px;
-
-  border-radius: 999px;
-  border: 1px solid var(--field-border);
-  background: var(--field-bg);
-  color: var(--field-text);
-
-  font-weight: 900;
-  font-size: 1rem;
-  text-align: right;
-  box-shadow: none;
-}
-
-/* enlève les flèches number (optionnel, propre) */
-#fuelMenu input[type=number]::-webkit-outer-spin-button,
-#fuelMenu input[type=number]::-webkit-inner-spin-button{
-  -webkit-appearance: none;
-  margin: 0;
-}
-#fuelMenu input[type=number]{ -moz-appearance: textfield; }
-
-/* ===== INPUTS NON GRAS (override global) ===== */
-.input,
-.textarea,
-.select select,
-.ldm-in,
-.ctot-pill,
-.fuel-input {
-  font-weight: 400 !important;
-}
-
-/* Placeholders restent lisibles */
-.input::placeholder,
-.textarea::placeholder {
-  font-weight: 400 !important;
-}
-
 /* ===== DL WRAPPER ===== */
-.dl-wrap{
-  display: block;
-}
+.dl-wrap{ display: block; }
 
 /* ===== MOBILE : 2 colonnes x 3 lignes (Code / Durée) ===== */
 @media (max-width: 599px){
-
   .dl-wrap{
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--gap);
   }
-
-  /* on "fusionne" visuellement les deux grilles */
-  .dl-wrap .dl-grid{
-    display: contents;
-  }
-
-  /* colonne gauche : DL CODE */
+  .dl-wrap .dl-grid{ display: contents; }
   .dl-wrap .field:has(#DLcode1){  grid-column: 1; grid-row: 1; }
   .dl-wrap .field:has(#DLcode2){  grid-column: 1; grid-row: 2; }
   .dl-wrap .field:has(#DLcode3){  grid-column: 1; grid-row: 3; }
-
-  /* colonne droite : DL DURÉE */
   .dl-wrap .field:has(#DLduree1){ grid-column: 2; grid-row: 1; }
   .dl-wrap .field:has(#DLduree2){ grid-column: 2; grid-row: 2; }
   .dl-wrap .field:has(#DLduree3){ grid-column: 2; grid-row: 3; }
+  .dl-wrap .input{ height: var(--inputH); padding: 6px 10px; }
+}
 
-  /* même taille que les autres champs */
-  .dl-wrap .input{
-    height: var(--inputH);
-    padding: 6px 10px;
+/* Onglet FUEL en jaune (comme LID) */
+#ldmTabFuel{
+  background:#facc15 !important;
+  color:#fff !important;
+  border-color: transparent !important;
+}
+#ldmTabFuel:hover{ filter: brightness(.97); }
+
+/* si actif, on garde jaune */
+.lm-seg .button#ldmTabFuel.is-active{
+  background:#facc15 !important;
+  color:#fff !important;
+}
+
+/* RETARDS : 2 lignes x 3 colonnes dès 600px */
+.dl-grid{
+  display: grid;
+  grid-template-columns: 1fr;  /* mobile <600 */
+  gap: var(--gap);
+}
+
+@media (min-width: 600px){
+  .dl-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 600+ => 3 colonnes */
   }
 }
 
-/* ===== POPUP FUEL / SETTINGS : MISE EN AVANT ===== */
-  #fuelMenu,
-  #settingsMenu{
-    box-shadow:
-      0 20px 40px rgba(0,0,0,.35),
-      0 8px 20px rgba(0,0,0,.25);
-    background: color-mix(in srgb, var(--card) 92%, #000 8%);
-  }
-
-  body.dark #fuelMenu,
-  body.dark #settingsMenu{
-    background: color-mix(in srgb, var(--card) 88%, #000 12%);
-  }
-
-  #fuelBackdrop,
-  #settingsBackdrop{
-    background: rgba(0,0,0,.45);
-    backdrop-filter: blur(2px);
-  }
-
-/* ===== TABLET 600–900 : bandeaux essentiels sur 1 seule ligne ===== */
+/* ===== TABLET 600–900 ===== */
 @media (min-width:600px) and (max-width:900px){
+  :root{ --gap: 8px; --padCard: 9px; --labelSize: .68rem; --inputH: 34px; --fixed-footer-h: 64px; }
 
-  /* 2 cartes sur une seule ligne */
-  .kv-strip{
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px;
+  .kv-strip{ grid-template-columns: 1fr 1fr !important; gap: 8px; }
+  .kv-card{ padding: 6px 10px; border-radius: 12px; }
+  .kv-title{ font-size: .62rem; letter-spacing: .05em; }
+  .kv-value{ font-size: .92rem; line-height: 1.1; }
+  .kv-left{ gap: 0px; }
+
+  .timer-chip{ min-width: 124px; padding: 8px 12px; }
+  .timer-chip .k{ font-size: .75rem; }
+  .timer-chip .v{ padding: 5px 8px; min-width: 64px; }
+
+  /* RESTAURE LA GRILLE TABLETTE */
+  .span-2{ grid-column: span 2; }
+  .span-3{ grid-column: span 3; }
+  .span-4{ grid-column: span 4; }
+  .span-6{ grid-column: span 6; }
+
+  /* DL : force 3 colonnes */
+  .dl-wrap .dl-grid{
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: var(--gap) !important;
   }
+}
 
-  /* cartes plus compactes */
-  .kv-card{
-    padding: 6px 10px;
-    border-radius: 12px;
+/* INFO VOL : selects alignés comme inputs (corrige le décalage) */
+#infoVolDetails .select{
+  height: 34px;
+}
+
+#infoVolDetails .select select{
+  height: 34px !important;
+  line-height: 34px !important;   /* clé : aligne le texte */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  display: block !important;       /* PAS flex */
+  font-size: .95rem;
+}
+
+/* centre la flèche Bulma sur la nouvelle hauteur */
+#infoVolDetails .select:not(.is-multiple):not(.is-loading)::after{
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin-top: 0 !important;
+}
+
+/* tablette : si tu passes à 32px */
+@media (min-width:600px) and (max-width:900px){
+  #infoVolDetails .select,
+  #infoVolDetails .select select{
+    height: 32px !important;
   }
-
-  /* titres plus petits */
-  .kv-title{
-    font-size: .62rem;
-    letter-spacing: .05em;
-  }
-
-  /* valeurs compactes */
-  .kv-value{
-    font-size: .92rem;
-    line-height: 1.1;
-  }
-
-  /* réduit l’espace vertical interne */
-  .kv-left{
-    gap: 0px;
+  #infoVolDetails .select select{
+    line-height: 32px !important;
   }
 }
 
@@ -1070,6 +823,7 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
 <body onload="initForm()">
 
 <!-- ===== LDM (FULLSCREEN) ===== -->
+
 <div id="ldmBackdrop" onclick="closeLDM()" style="display:none;"></div>
 
 <div id="ldmModal" role="dialog" aria-modal="true" style="display:none;">
@@ -1079,7 +833,7 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
       <span id="ldmHint" class="tag is-light">ARRIVÉE</span>
     </div>
 
-    <!-- ✅ 3 onglets : ARR / PREVI / FINAL -->
+    <!-- ✅ 4 onglets : ARR / PREVI / FINAL / FUEL -->
     <div class="lm-seg">
       <button id="ldmTabArr" class="button is-small is-active" type="button"
               onclick="ldmSwitch('arr')">ARR</button>
@@ -1087,6 +841,8 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
               onclick="ldmSwitch('previ')">PREVI</button>
       <button id="ldmTabFinal" class="button is-small" type="button"
               onclick="ldmSwitch('final')">FINAL</button>
+      <button id="ldmTabFuel" class="button is-small" type="button"
+              onclick="ldmSwitch('fuel')">FUEL</button>
     </div>
 
     <button class="button is-small is-light" type="button" onclick="closeLDM()">Fermer</button>
@@ -1387,6 +1143,46 @@ body.dark #fuelMenu{ border-color: rgba(255,255,255,.10); }
           <textarea class="textarea si-uppercase ldm-ta" id="FinalSI"></textarea>
         </div>
 
+      </div>
+    </section>
+
+    <!-- ===== FUEL ===== -->
+    <section class="ldm-card ldm-fuel" id="ldmFuel" style="display:none;">
+      <div class="ldm-card-hdr">
+        <div class="ldm-card-title">FUEL</div>
+        <div class="ldm-card-sub">INPUT</div>
+      </div>
+
+      <div class="ldm-grid">
+        <div class="ldm-span-2" style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+          <div class="field" style="margin:0;">
+            <label class="label">BLOCK</label>
+            <input id="BlockFuel" class="input ldm-in" type="text"
+                   inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                   oninput="digitsOnly(this)">
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label class="label">TAXI</label>
+            <input id="TaxiFuel" class="input ldm-in" type="text"
+                   inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                   oninput="digitsOnly(this)">
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label class="label">TRIP</label>
+            <input id="TripFuel" class="input ldm-in" type="text"
+                   inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                   oninput="digitsOnly(this)">
+          </div>
+
+          <div class="field" style="margin:0;">
+            <label class="label">UPLIFT</label>
+            <input id="FuelUplift" class="input ldm-in" type="text"
+                   inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                   oninput="digitsOnly(this)">
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2603,28 +2399,34 @@ function ldmSwitch(mode){
   const sArr   = document.getElementById('ldmArr');
   const sPrevi = document.getElementById('ldmPrevi');
   const sFinal = document.getElementById('ldmFinal');
+  const sFuel  = document.getElementById('ldmFuel');
 
   const tArr   = document.getElementById('ldmTabArr');
   const tPrevi = document.getElementById('ldmTabPrevi');
   const tFinal = document.getElementById('ldmTabFinal');
+  const tFuel  = document.getElementById('ldmTabFuel');
 
   if(sArr)   sArr.style.display   = (mode === 'arr')   ? '' : 'none';
   if(sPrevi) sPrevi.style.display = (mode === 'previ') ? '' : 'none';
   if(sFinal) sFinal.style.display = (mode === 'final') ? '' : 'none';
+  if(sFuel)  sFuel.style.display  = (mode === 'fuel')  ? '' : 'none';
 
   if(tArr)   tArr.classList.toggle('is-active', mode === 'arr');
   if(tPrevi) tPrevi.classList.toggle('is-active', mode === 'previ');
   if(tFinal) tFinal.classList.toggle('is-active', mode === 'final');
+  if(tFuel)  tFuel.classList.toggle('is-active', mode === 'fuel');
 
   const hint = document.getElementById('ldmHint');
   if(hint){
     hint.textContent =
       (mode === 'arr')   ? 'ARRIVÉE' :
       (mode === 'previ') ? 'PREVI' :
-      'FINAL';
+      (mode === 'final') ? 'FINAL' :
+      'FUEL';
   }
 
-  // refresh layout au switch (sinon PREVI peut rester vide)
+  if(mode === 'final') updateFinalTOB();
+
   refreshLDMLayouts();
   updateHeaderOffset();
 }
@@ -2933,7 +2735,7 @@ function renderTabs(){
 
   tabBar.innerHTML = `
     <button class="button is-success is-light" type="button" onclick="createNewTab()">
-      + Ajouter vol
+      +
     </button>
     <button class="button is-link is-light" type="button"
             onclick="createNewTab(); openAKPicker();">
@@ -5132,44 +4934,10 @@ function shouldOpenFinalLoad(){
   </div>
 </div>
 
-<!-- ===== FUEL MENU ===== -->
-<div id="fuelBackdrop" onclick="closeFuelMenu()"></div>
-
-<div id="fuelMenu" role="dialog" aria-modal="true">
-  <div class="settings-row">
-
-    <div class="fuel-row">
-      <div class="fuel-label">Block fuel</div>
-      <input id="BlockFuel" class="fuel-input" type="number" min="0" step="1">
-    </div>
-
-    <div class="fuel-row">
-      <div class="fuel-label">Taxi fuel</div>
-      <input id="TaxiFuel" class="fuel-input" type="number" min="0" step="1">
-    </div>
-
-    <div class="fuel-row">
-      <div class="fuel-label">Trip fuel</div>
-      <input id="TripFuel" class="fuel-input" type="number" min="0" step="1">
-    </div>
-
-    <div class="fuel-row">
-      <div class="fuel-label">Fuel uplift</div>
-      <input id="FuelUplift" class="fuel-input" type="number" min="0" step="1">
-    </div>
-
-  </div>
-</div>
-
 <!-- ===== FAB LOAD + FUEL ===== -->
 <button id="loadFab" class="button is-info" type="button"
         onclick="toggleLDM()" aria-label="Load">
   🧳
-</button>
-
-<button id="fuelFab" class="button is-warning" type="button"
-        onclick="toggleFuelMenu()" aria-label="Fuel">
-  ⛽
 </button>
 
 </body>
