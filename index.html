@@ -762,9 +762,9 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
   :root{ --gap: 8px; --padCard: 9px; --labelSize: .68rem; --inputH: 34px; --fixed-footer-h: 64px; }
 
   .kv-strip{ grid-template-columns: 1fr 1fr !important; gap: 8px; }
-  .kv-card{ padding: 6px 10px; border-radius: 12px; }
+  .kv-card{ padding: 10px 12px; border-radius: 12px; }
   .kv-title{ font-size: .62rem; letter-spacing: .05em; }
-  .kv-value{ font-size: .92rem; line-height: 1.1; }
+  .kv-value{ font-size: .92rem; line-height: 1.2; }
   .kv-left{ gap: 0px; }
 
   .timer-chip{ min-width: 124px; padding: 8px 12px; }
@@ -785,34 +785,30 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
   }
 }
 
-/* SELECT = même taille que input partout */
-.select,
-.select select{
-  height: var(--inputH) !important;
+/* SELECT même hauteur que input */
+.select{
+  height: auto !important;          /* ← très important */
 }
 
 .select select{
+  height: var(--inputH) !important;
   line-height: var(--inputH) !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  display: block !important;
   font-size: .95rem;
 }
 
-/* centre la flèche Bulma */
+/* centre la flèche Bulma (sans casser la rotation) */
 .select:not(.is-multiple):not(.is-loading)::after{
   top: 50% !important;
-  transform: translateY(-50%) !important;
   margin-top: 0 !important;
+  transform: translateY(-50%) rotate(-45deg) !important;
 }
 
 /* tablette */
 @media (min-width:600px) and (max-width:900px){
-  .select,
   .select select{
     height: 32px !important;
-  }
-  .select select{
     line-height: 32px !important;
   }
 }
@@ -826,6 +822,41 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
 .fuel-input {
   font-weight: 400 !important;
 }
+
+/* TABLET 600–900 : compaction champs */
+@media (min-width:600px) and (max-width:900px){
+
+  /* INFO VOL */
+  #infoVolDetails .field{
+    margin-bottom:0 !important;
+  }
+  #infoVolDetails{
+    row-gap:6px !important;
+  }
+
+  /* LOAD FINAL */
+  #ldmFinal .field{
+    margin-bottom:0 !important;
+  }
+  #ldmFinal .ldm-grid{
+    row-gap:6px !important;
+  }
+  #ldmFinal .ldm-row-4{
+    row-gap:6px !important;
+  }
+
+}
+
+/* HORAIRES – mêmes labels que partout */
+.card:has(#SIBT) label.label{
+  font-weight:900 !important;
+  font-size: var(--labelSize) !important;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  color: var(--text) !important;
+  opacity:.9;
+}
+
 
 </style>
 </head>
