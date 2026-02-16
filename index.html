@@ -3349,37 +3349,6 @@ function updateLID() {
   el.textContent = fmtHHMM(tobtRawMins - 8);
 }
 
-function updateSOBTDefault() {
-  const sobtEl = document.getElementById('SOBT');
-  if(!sobtEl) return;
-
-  // Si SOBT déjà remplie (ex : import Keeper), on ne touche pas
-  if ((sobtEl.value || '').trim() !== '') return;
-
-  const cie = (document.getElementById('Cie').value||'').toUpperCase();
-
-  // FR / RK : SOBT vient de Keeper
-  if(cie === "FR" || cie === "RK"){
-    return;
-  }
-
-  const sibt = document.getElementById('SIBT')?.value || '';
-  const arrPNT = document.getElementById('ArrPNT')?.value || '';
-  const arrPNC = document.getElementById('ArrPNC')?.value || '';
-  if (!sibt) return;
-  if (!(cie === "W4" || cie === "W6")) return;
-
-  let [sH, sM] = sibt.split(':').map(Number);
-  const base = new Date(); base.setHours(sH, sM);
-
-  const add = (document.getElementById('TypeAvion')?.value === 'A321') ? 35 : 30;
-  const sobtCalc = new Date(base.getTime() + add * 60000);
-
-  sobtEl.value =
-    `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
-}
-
-/* TOBT + règle CTOT */
 function updateTOBT() {
   const cie = (document.getElementById('Cie')?.value || '').toUpperCase();
   const from = (document.getElementById('From')?.value || '').toUpperCase().trim();
@@ -3451,11 +3420,13 @@ function updateTOBT() {
       TOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
     }
 
-    // ===== W4 / W6 : TOBT = AIBT + 30/35 selon type
+    // ===== W4 / W6 : TOBT = max(SOBT, AIBT + 30/35 selon type) ✅ FIX
     else if (cie === 'W4' || cie === 'W6') {
       const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
       const turn = (type === 'A321' || type === 'A21N' || type === 'A21NY') ? 35 : 30;
-      TOBT_raw_ext = AIBT_ext + turn;
+
+      const candidate = AIBT_ext + turn;
+      TOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
     }
 
     // ===== H4 / U5 / H6 / AUTRE : TOBT = AIBT + (SOBT - SIBT)
