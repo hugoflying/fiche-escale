@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>SUIVI PERFORMANCE</title>
 
 <!-- Bulma -->
@@ -671,13 +671,17 @@ body.modal-open{
   touch-action: none;
 }
 
-/* ===== footer fixed bottom ===== */
+/* ===== footer fixed bottom (FIX iOS / iPad safe area) ===== */
 .fixed-footer{
   position: fixed;
   inset: auto 0 0 0;
   z-index: 3500;
   background: var(--bg) !important;
   border-top: 1px solid rgba(0,0,0,.08);
+
+  /* ✅ FIX iOS / iPad */
+  padding-bottom: env(safe-area-inset-bottom);
+  transform: translateZ(0);
 }
 html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
 
