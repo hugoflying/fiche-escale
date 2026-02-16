@@ -2341,7 +2341,7 @@ function updateCountdownOnce(){
   let targetMin = null;
   if (AIBT <= SIBT) targetMin = SOBT;
   else {
-    const tobt = window._tobtAdjMins;
+    const tobt = window._tobtRawMins;
     if(tobt == null){
       el.textContent = '--:--';
       el.classList.remove('cd-over');
