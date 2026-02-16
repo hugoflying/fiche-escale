@@ -3390,7 +3390,7 @@ function updateTOBT() {
   const sobttxt = document.getElementById('SOBT')?.value || '';
   const ctottxt = document.getElementById('CTOT')?.value || '';
 
-  const outEl = document.getElementById('timer-tobt');
+  const outEl = document.getElementById('timer-eobt');
 
   // ✅ BVA: on n'exige pas SIBT/AIBT (avion déjà là) → on utilise SOBT comme "source"
   if (!cie || !sobttxt || !outEl || (!sibttxt && !isBVA)) {
@@ -3854,7 +3854,7 @@ function collectTimelineData(){
 
   addPoint('SIBT', SIBT, 'tl--std'); addPoint('AIBT', AIBT, 'tl--std');
   addPoint('SOBT', SOBT, 'tl--std'); addPoint('AOBT', AOBT, 'tl--std');
-  addPoint('TOBT', TOBT, 'tl--tobt'); addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('TOBT', TOBT, 'tl--eobt'); addPoint('CTOT', CTOT, 'tl--ctot');
   addPoint('HLE',  H40,  'tl--turn');
   addPoint('H-15', H15,  'tl--turn');
 
@@ -5158,8 +5158,8 @@ function toggleFinalImage(){
     <div class="footer-row">
 
       <div class="timer-chip">
-        <div class="k">TOBT</div>
-        <div id="timer-tobt" class="v">--:--</div>
+        <div class="k">EOBT</div>
+        <div id="timer-eobt" class="v">--:--</div>
       </div>
 
       <div class="timer-chip">
