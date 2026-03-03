@@ -7,6 +7,7 @@
 
 <!-- Bulma -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+
 <style>
 :root{
   --bg: #f6f7fb;
@@ -395,8 +396,23 @@ body.dark #akPopover .ak-header{ border-bottom-color: rgba(255,255,255,.10); }
 }
 body.dark .timeline-track{ background:#2e2e2e; }
 
-.timeline-tick { position: absolute; width: 1px; background:rgba(0,0,0,0.08); }
-body.dark .timeline-tick { background:#3e444b; }
+.timeline-tick{
+  position: absolute;
+  width: 1px; /* ✅ pas plus gras */
+  background: rgba(0,0,0,0.08);
+}
+body.dark .timeline-tick{
+  background: #3e444b;
+}
+
+/* ✅ pas plus épais : juste un style léger optionnel */
+.timeline-tick-major{
+  width: 1px; /* ✅ identique */
+  background: rgba(0,0,0,0.12);
+}
+body.dark .timeline-tick-major{
+  background: rgba(255,255,255,0.18);
+}
 
 .timeline-tick-label {
   position: absolute; transform: translateX(-50%);
@@ -452,6 +468,7 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 body.dark .timeline-scroll{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+
 .timeline-canvas{ position:relative; min-width:600px; width:100%; }
 
 /* DL error */
@@ -3014,6 +3031,9 @@ function renderTabs(){
 }
 
 function createNewTab(){
+  // ✅ 1) Sauver l'onglet courant AVANT de reset
+  if(currentTabId) saveCurrentTabData();
+
   const id = String(Date.now());
 
   // ajoute l'onglet dans la liste
@@ -3186,7 +3206,18 @@ function loadTabData(id){
     }
   }
 
-  // ✅ re-sync modes globaux (UI + variables) après chargement d'onglet
+  // ✅ Restore visuel des timers (divs non-input)
+  const setTxt = (id, v)=>{
+    const el = document.getElementById(id);
+    if(el && v != null) el.textContent = v;
+  };
+  setTxt('timer-h40',  data.timer_h40);
+  setTxt('timer-h15',  data.timer_h15);
+  setTxt('timer-h8',   data.timer_h8);
+  setTxt('timer-tobt', data.timer_tobt);
+  setTxt('timer-cd',   data.timer_cd);
+
+  // ✅ re-sync modes globaux (UI + variables)
   const storedDark = (localStorage.getItem('modeDark') || '0') === '1';
   const storedUTC  = (localStorage.getItem('modeUTC')  || '0') === '1';
   setDarkMode(storedDark, true);
@@ -3527,8 +3558,9 @@ function updateDLCode() {
   const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
   const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
 
-  const tobt = (window._tobtAdjMins != null)
-    ? window._tobtAdjMins
+  // ✅ IMPORTANT: 93/93A doit utiliser la TOBT BRUTE (hors CTOT)
+  const tobt = (window._tobtRawMins != null)
+    ? window._tobtRawMins
     : parseHHMM((document.getElementById('timer-tobt')?.textContent || '').trim());
 
   // si incomplet : on ne force rien
@@ -3703,24 +3735,40 @@ function clearDLBorders(){
 
 
 /* Utils time */
+function fireTimeEvents(input){
+  if(!input) return;
+  input.dispatchEvent(new Event('input',  { bubbles:true }));
+  input.dispatchEvent(new Event('change', { bubbles:true }));
+}
+
 function setNow(fieldId) {
+  const input = document.getElementById(fieldId);
+  if(!input) return;
+
   const now = new Date();
   const hh = isUTC ? now.getUTCHours() : now.getHours();
   const mm = isUTC ? now.getUTCMinutes() : now.getMinutes();
-  document.getElementById(fieldId).value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+
+  input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  fireTimeEvents(input); // ✅
 }
+
 function adjustTime(fieldId, delta) {
   const input = document.getElementById(fieldId);
   if (!input || !input.value) return;
+
   let [hh, mm] = input.value.split(':').map(Number);
   let total = hh * 60 + mm + delta;
   if (total < 0) total += 1440;
   if (total >= 1440) total -= 1440;
+
   hh = Math.floor(total / 60);
   mm = total % 60;
-  input.value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-}
 
+  input.value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  fireTimeEvents(input); // ✅
+}
+  
 /* Switches */
 function setDarkMode(enable, fromInit=false){
   const currentlyDark = document.body.classList.contains('dark');
@@ -3845,21 +3893,36 @@ function computeTimelineWindow(allTimes){
 
   return {min:0, max:60};
 }
-function getPairWindow(idA,idB){
-  const a = parseHHMM(document.getElementById(idA)?.value || '');
-  const b = parseHHMM(document.getElementById(idB)?.value || '');
+
+function getPairWindow(idA, idB){
+  const elA = document.getElementById(idA);
+  const elB = document.getElementById(idB);
+
+  // ✅ si un des champs n'existe pas (panel caché / non généré), pas de barre
+  if(!elA || !elB) return null;
+
+  const a = parseHHMM(elA.value || '');
+  const b = parseHHMM(elB.value || '');
   if(a==null || b==null) return null;
+
   return [Math.min(a,b), Math.max(a,b)];
 }
+
 function collectTimelineData(){
   const fixedPoints = [];
-  const addPoint = (label, t, cls='tl--std')=>{ if(t==null) return; fixedPoints.push({label, t, cls}); };
+  const addPoint = (label, t, cls='tl--std')=>{
+    if(t==null) return;
+    fixedPoints.push({label, t, cls});
+  };
 
   const SIBT = parseHHMM(document.getElementById('SIBT')?.value || '');
   const AIBT = parseHHMM(document.getElementById('AIBT')?.value || '');
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
   const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
+
+  // TOBT affichée = peut être ajustée CTOT (timer). On garde comme avant pour le point fixe.
   const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+
   const CTOT = parseHHMM(document.getElementById('CTOT')?.value || '');
   const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
   const H40  = parseHHMM((document.getElementById('timer-h40')?.textContent || '').replace('--:--',''));
@@ -3880,8 +3943,32 @@ function collectTimelineData(){
     if(t!=null) fixedPoints.push({label, t, cls:'tl--std'});
   });
 
+  // ===== Cabin release (Dernier débarqué -> Premier embarqué)
+  // Affiché SAUF si (SOBT - SIBT) > 35 ou si Arr PNT/PNC rempli
+  const hasArrCrew = !!(
+    (document.getElementById('ArrPNC')?.value || '').trim() ||
+    (document.getElementById('ArrPNT')?.value || '').trim()
+  );
+
+  let turnMin = null;
+  if(SIBT != null && SOBT != null){
+    turnMin = SOBT - SIBT;
+    if(turnMin < 0) turnMin += 1440; // gère minuit
+  }
+
+  const cabinPair = getPairWindow('DernierDebarque','AvionPremierEmbarque');
+  const showCabinRelease =
+    !!cabinPair &&
+    !hasArrCrew &&
+    (turnMin != null && turnMin <= 35);
+
   const rows = [
     {label:'Débarquement', pair:getPairWindow('PremierDebarque','DernierDebarque'), cls:'tl--turn', color:null},
+
+    ...(showCabinRelease
+      ? [{label:'Cabin release', pair:cabinPair, cls:'tl--std', color:null}]
+      : []),
+
     {label:'Embarquement', pair:getPairWindow('AvionPremierEmbarque','AvionDernierEmbarque'), cls:'tl--ops',  color:null},
     {label:'Avitair',      pair:getPairWindow('ArriveeFuel','DepartFuel'), cls:'tl--std', color:'#f59e0b'},
     {label:'Lift (Arr)',   pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'), cls:'tl--std', color:'#a855f7'},
@@ -3897,6 +3984,7 @@ function collectTimelineData(){
 
   return {fixedPoints, durations, windowInfo};
 }
+  
 function renderTimeline(){
   const scroller = document.getElementById('timelineScroll');
   const canvas   = document.getElementById('timelineCanvas');
@@ -3977,7 +4065,20 @@ function renderTimeline(){
     });
   }
 
-  const durWithLane = packLanes(durItems);
+  // ✅ 2 lanes réservées : 0 = Débarquement, 1 = Embarquement
+  const fixed = [];
+  const others = [];
+
+  durItems.forEach(d=>{
+    if(d.label === 'Débarquement') fixed.push({ ...d, lane: 0 });
+    else if(d.label === 'Embarquement') fixed.push({ ...d, lane: 1 });
+    else others.push(d);
+  });
+
+  // Les autres durées sont packées à partir de la lane 2
+  const packedOthers = packLanes(others).map(d => ({ ...d, lane: d.lane + 2 }));
+
+  const durWithLane = [...fixed, ...packedOthers];
   const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
 
   const finalHeight = Math.max(
@@ -3991,10 +4092,18 @@ function renderTimeline(){
     const leftPct = 6 + x*88;
 
     const vline = document.createElement('div');
-    vline.className = 'timeline-tick';
+
+    // ✅ ticks majeurs : même épaisseur, mais un poil plus longs (débordent en bas)
+    if(t % 5 === 0){
+      vline.className = 'timeline-tick timeline-tick-major';
+      vline.style.height = `${finalHeight - 28}px`; // +8px vs normal
+    }else{
+      vline.className = 'timeline-tick';
+      vline.style.height = `${finalHeight - 36}px`;
+    }
+
     vline.style.left = `${leftPct}%`;
     vline.style.top = `${8}px`;
-    vline.style.height = `${finalHeight - 36}px`;
     canvas.appendChild(vline);
 
     if(t % 5 === 0){
@@ -4025,10 +4134,15 @@ function renderTimeline(){
     const bar = document.createElement('div');
     bar.className = `tl-range ${d.cls}`;
     if(d.color){ bar.style.setProperty('--c', d.color); }
-    bar.style.left = `${leftStartPct}%`;
+
+    // ✅ position au CENTRE de la barre (évite le décalage / sortie de timeline)
+    bar.style.left  = `${leftStartPct + widthPct/2}%`;
     bar.style.width = `${widthPct}%`;
-    bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
-    bar.style.transform = 'translateX(-50%)';
+    bar.style.top   = `${downStart + d.lane*DUR_LANE_H}px`;
+
+    // ✅ centrage X + Y
+    bar.style.transform = 'translate(-50%, -50%)';
+
     canvas.appendChild(bar);
 
     const lab = document.createElement('div');
@@ -4048,6 +4162,7 @@ function renderTimeline(){
   const lbl = document.getElementById('timelineZoomLabel');
   if(lbl) lbl.textContent = `${Math.round(timelineZoom*100)}%`;
 }
+  
 function setVal(id, v){
   const el = document.getElementById(id);
   if(!el) return;
@@ -4141,7 +4256,7 @@ document.addEventListener('keydown', (e)=>{
 });
 
 // ===== Airport Keeper (AK) =====
-const AK_PROXY = "/ak";
+const AK_PROXY = "https://airportkeeper-proxy.deruellehugo-49c.workers.dev/ak";
 
 // Ouvrir/Fermer
 function openAKPicker(){
