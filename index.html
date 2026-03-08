@@ -2641,6 +2641,10 @@ function setTOBValidity(isValid){
   tobEl.classList.toggle('is-invalid', !isValid);
   tobEl.classList.toggle('is-valid', isValid);
 }
+
+// global (à mettre une fois, hors fonction)
+let _finalTOBLastValue = '';
+
 function updateFinalTOB(){
   const n = (id)=>{
     const v = (document.getElementById(id)?.value || '').trim();
@@ -2655,7 +2659,6 @@ function updateFinalTOB(){
   const child  = n('FinalCHILD')  ?? 0;
   const infant = n('FinalINFANT') ?? 0;
 
-  // MAIN = (MALE+FEMALE si au moins 1 rempli) sinon ADULT
   let adultsMain = null;
   if(male != null || female != null){
     adultsMain = (male ?? 0) + (female ?? 0);
@@ -2663,24 +2666,44 @@ function updateFinalTOB(){
     adultsMain = adult;
   }
 
-  // MAIN_TO B = adultsMain + child (SANS infant)
   let main = null;
   if(adultsMain != null) main = adultsMain + child;
 
   const tobEl = document.getElementById('FinalTOB');
   if(!tobEl) return;
 
-  // Si pas assez d’info -> vide + pas d’erreur
+  const siEl = document.getElementById('FinalSI');
+
   if(main == null){
     tobEl.value = '';
     tobEl.classList.remove('is-invalid','is-valid');
+    _finalTOBLastValue = '';
     return;
   }
 
-  // Affichage "MAIN + INFANT"
-  tobEl.value = `${main} + ${infant}`;
+  const newTOB = `${main} + ${infant}`;
+  tobEl.value = newTOB;
 
-  // Validation OA..OD (doit matcher MAIN, pas infant)
+  // ✅ Ajout ligne dans SI FINAL
+  if(newTOB !== _finalTOBLastValue){
+    _finalTOBLastValue = newTOB;
+
+    const d = new Date();
+    const hh = String(isUTC ? d.getUTCHours() : d.getHours()).padStart(2,'0');
+    const mm = String(isUTC ? d.getUTCMinutes() : d.getMinutes()).padStart(2,'0');
+
+    if(siEl){
+      const prefix = 'Communication chiffres porte : ';
+      const line = `${prefix}${hh}:${mm}`;
+
+      const lines = (siEl.value || '').split('\n').map(s=>s.trim()).filter(Boolean);
+      const kept  = lines.filter(l => !l.startsWith(prefix));
+      kept.push(line);
+
+      siEl.value = kept.join('\n');
+    }
+  }
+
   const oa = n('FinalOA') ?? 0;
   const ob = n('FinalOB') ?? 0;
   const oc = n('FinalOC') ?? 0;
