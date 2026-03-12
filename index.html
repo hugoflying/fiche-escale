@@ -27,7 +27,7 @@
 
   --gap: 10px;
   --padCard: 12px;
-  --labelSize: .78rem;
+  --labelSize: .85rem;
   --inputH: 42px;
 
   --fixed-footer-h: 72px;
@@ -226,6 +226,20 @@ body.dark .card-header{
 .textarea{ min-height: 110px; height: auto; }
 .input.uppercase{ text-transform: uppercase; }
 textarea.si-uppercase{ text-transform: uppercase; }
+
+.button.is-bordeaux{
+  background: #7f1d1d !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+.button.is-bordeaux:hover{
+  background: #991b1b !important;
+}
+
+/* Champs optionnels (ex: PNT, PNC, INAD) */
+.field-optional .label{
+  opacity: .55;
+}
 
 .input::placeholder, .textarea::placeholder{ color: var(--field-placeholder) !important; }
 
@@ -798,7 +812,7 @@ html.dark .fixed-footer{
 
 /* ===== TABLET 600–900 ===== */
 @media (min-width:600px) and (max-width:900px){
-  :root{ --gap: 8px; --padCard: 9px; --labelSize: .68rem; --inputH: 34px; --fixed-footer-h: 64px; }
+  :root{ --gap: 8px; --padCard: 9px; --labelSize: .75rem; --inputH: 34px; --fixed-footer-h: 64px; }
 
   .kv-strip{ grid-template-columns: 1fr 1fr !important; gap: 8px; }
   .kv-card{ padding: 10px 12px; border-radius: 12px; }
@@ -824,6 +838,58 @@ html.dark .fixed-footer{
   }
 }
 
+
+/* ===== MOBILE < 480px : tout réduit ===== */
+@media (max-width: 480px){
+  :root{
+    --gap: 6px;
+    --padCard: 8px;
+    --labelSize: .70rem;
+    --inputH: 34px;
+    --fixed-footer-h: 58px;
+    --radius: 10px;
+  }
+
+  /* Layout général */
+  .app-wrap{ padding-left: 8px; padding-right: 8px; }
+  .card{ border-radius: var(--radius); }
+  .card-header-title{ font-size: .85rem; }
+  .card-content{ padding: var(--padCard) !important; }
+
+  /* Inputs & selects */
+  .input, .select select{
+    font-size: .85rem !important;
+    height: var(--inputH) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  .select select{ line-height: var(--inputH) !important; }
+
+  /* Boutons -1/Now/+1 */
+  .btn-actions .button{
+    height: 32px !important;
+    font-size: .75rem !important;
+    padding: 0 8px !important;
+  }
+
+  /* Tabs header */
+  .tabs-chip{ padding: 6px 10px; gap: 6px; }
+  .tabs-chip .button{ font-size: .78rem; padding: 0 10px; height: 32px; }
+
+  /* Timer chips footer */
+  .timer-chip{ min-width: 80px; padding: 5px 8px; gap: 6px; }
+  .timer-chip .k{ font-size: .62rem; }
+  .timer-chip .v{ min-width: 48px; padding: 3px 6px; font-size: .78rem; }
+  .ctot-pill{ min-width: 54px; padding: 3px 6px !important; font-size: .82rem; }
+
+  /* KV cards */
+  .kv-card{ padding: 8px 10px; border-radius: 10px; }
+  .kv-title{ font-size: .58rem; }
+  .kv-value{ font-size: .88rem; }
+
+  /* FAB buttons */
+  #loadFab, #settingsFab{ width: 42px; height: 42px; font-size: .85rem; }
+}
 /* SELECT même hauteur que input */
 .select{
   height: auto !important;          /* ← très important */
@@ -896,6 +962,119 @@ html.dark .fixed-footer{
   opacity:.9;
 }
 
+
+/* ===== HORAIRES grid 2×2 ===== */
+.horaires-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 480px){
+  .horaires-grid{ grid-template-columns: 1fr; }
+}
+.hor-block{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hor-col-head{
+  display: flex;
+  justify-content: center;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--field-border);
+}
+.hor-badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 900;
+  padding: 4px 10px;
+  min-width: 44px;
+}
+.hor-badge-arr{ background: #dbeafe; color: #1d4ed8; }
+html.dark .hor-badge-arr{ background: #1e3a5f; color: #93c5fd; }
+.hor-badge-dep{ background: #dcfce7; color: #15803d; }
+html.dark .hor-badge-dep{ background: #14532d; color: #86efac; }
+
+.hor-cell{ display: flex; flex-direction: column; gap: 4px; }
+
+.hor-input-sched{
+  opacity: .6;
+  border-style: dashed !important;
+}
+.hor-input-sched:focus{
+  opacity: 1;
+  border-style: solid !important;
+}
+
+
+/* ===== INFO VOL edit toggle ===== */
+.iv-edit-btn{
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 12px;
+  opacity: .55;
+  transition: opacity .15s;
+}
+.iv-edit-btn:hover{ opacity: 1; }
+body.iv-editing .iv-edit-btn{ opacity: 1; }
+
+#ivEdit{
+  border-top: 1px solid var(--field-border);
+  padding-top: 12px;
+  animation: ivFadeIn .18s ease;
+}
+@keyframes ivFadeIn{
+  from{ opacity:0; transform: translateY(-4px); }
+  to{   opacity:1; transform: translateY(0); }
+}
+
+/* ===== Footer refresh button ===== */
+.footer-row{
+  display: grid !important;
+  grid-template-columns: 52px 1fr 52px;
+  align-items: center;
+}
+.footer-timers{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.footer-refresh-btn{
+  width: 52px;
+  height: 52px;
+  border-radius: 999px !important;
+  font-size: 1.4rem !important;
+  font-weight: 900;
+  flex: 0 0 auto;
+  background: var(--card) !important;
+  border: 2px solid var(--field-border) !important;
+  color: var(--text) !important;
+  box-shadow: var(--shadow2);
+  transition: background .15s, transform .1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.footer-refresh-btn:active{ transform: rotate(45deg) scale(.93); }
+.footer-refresh-btn.is-loading{ pointer-events:none; opacity:.6; }
+@media (max-width: 420px){
+  .footer-refresh-btn{
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 1rem !important;
+  }
+  .footer-row{
+    grid-template-columns: 36px 1fr 36px;
+  }
+}
 </style>
 </head>
 
@@ -1323,45 +1502,39 @@ html.dark .fixed-footer{
 <div class="card mb-5">
   <header class="card-header">
     <p class="card-header-title">INFO VOL</p>
+    <button class="card-header-icon iv-edit-btn" onclick="toggleInfoVolEdit()" title="Modifier">
+      <span id="ivEditIcon">✏️</span>
+    </button>
   </header>
 
   <div class="card-content">
 
-    <!-- Bandeau ESSENTIEL -->
-    <div class="kv-strip mb-4">
+    <!-- Résumé (mode lecture) -->
+    <div id="ivSummary" class="kv-strip">
       <div class="kv-card">
         <div class="kv-left">
           <div class="kv-title">Vol</div>
-          <div class="kv-value">
-            <span id="kvArrVol">----</span> → <span id="kvDepVol">----</span>
-          </div>
+          <div class="kv-value"><span id="kvArrVol">----</span> → <span id="kvDepVol">----</span></div>
         </div>
         <div class="kv-left" style="text-align:right;">
           <div class="kv-title">Route</div>
-          <div class="kv-value">
-            <span id="kvFrom">---</span> → <span id="kvTo">---</span>
-          </div>
+          <div class="kv-value"><span id="kvFrom">---</span> → <span id="kvTo">---</span></div>
         </div>
       </div>
-
       <div class="kv-card">
         <div class="kv-left">
           <div class="kv-title">Immat / Type</div>
-          <div class="kv-value">
-            <span id="kvImmat">------</span> · <span id="kvType">--</span>
-          </div>
+          <div class="kv-value"><span id="kvImmat">------</span> · <span id="kvType">--</span></div>
         </div>
         <div class="kv-left" style="text-align:right;">
           <div class="kv-title">Salle arr. / Parking</div>
-          <div class="kv-value">
-            <span id="kvBC">----</span> · <span id="kvPark">--</span>
-          </div>
+          <div class="kv-value"><span id="kvBC">----</span> · <span id="kvPark">--</span></div>
         </div>
       </div>
     </div>
 
-    <!-- DÉTAILS (éditables) -->
-    <div id="infoVolDetails" class="grid-auto">
+    <!-- Mode édition (masqué par défaut) -->
+    <div id="ivEdit" class="grid-auto" style="display:none; margin-top:12px;">
 
       <div class="field span-3">
         <label class="label">Date</label>
@@ -1416,11 +1589,10 @@ html.dark .fixed-footer{
         <input class="input uppercase" type="text" id="NVol">
       </div>
 
-      <!-- ✅ FROM déclenche recalculs -->
       <div class="field span-3">
         <label class="label">From</label>
         <input class="input uppercase" type="text" id="From" maxlength="3"
-               oninput="updateTOBT(); updateCountdownOnce(); ensureCountdownRunning(); updateAllCalculations();">
+               oninput="updateEOBT(); updateCountdownOnce(); ensureCountdownRunning(); updateAllCalculations();">
       </div>
 
       <div class="field span-3">
@@ -1441,60 +1613,40 @@ html.dark .fixed-footer{
   </header>
 
   <div class="card-content">
-    <div class="grid-auto">
+    <div class="horaires-grid">
 
-      <!-- Arrivée -->
-      <div class="span-12">
-        <div class="kv-card" style="padding:12px;">
-          <div style="font-weight:900; color:var(--muted); text-transform:uppercase;">Arrivée</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-            <div style="min-width:160px;">
-              <label class="label">SIBT</label>
-              <input class="input" type="time" id="SIBT" onchange="updateAllCalculations()">
-              <div class="btn-actions">
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('SIBT',-1);updateAllCalculations()">-1</button>
-                <button class="button is-link" type="button" onclick="setNow('SIBT');updateAllCalculations()">Now</button>
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('SIBT',1);updateAllCalculations()">+1</button>
-              </div>
-            </div>
-
-            <div style="min-width:160px;">
-              <label class="label">AIBT</label>
-              <input class="input" type="time" id="AIBT" onchange="updateAllCalculations()">
-              <div class="btn-actions">
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
-                <button class="button is-link" type="button" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
-              </div>
-            </div>
+      <!-- Bloc ARR -->
+      <div class="hor-block">
+        <div class="hor-col-head"><span class="hor-badge hor-badge-arr">ARR</span></div>
+        <div class="hor-cell">
+          <label class="label">SIBT</label>
+          <input class="input hor-input-sched" type="time" id="SIBT" onchange="updateAllCalculations()">
+        </div>
+        <div class="hor-cell">
+          <label class="label">AIBT</label>
+          <input class="input" type="time" id="AIBT" onchange="updateAllCalculations()">
+          <div class="btn-actions">
+            <button class="button is-dark is-light" type="button" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
+            <button class="button is-link" type="button" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
+            <button class="button is-dark is-light" type="button" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
           </div>
         </div>
       </div>
 
-      <!-- Départ -->
-      <div class="span-12">
-        <div class="kv-card" style="padding:12px;">
-          <div style="font-weight:900; color:var(--muted); text-transform:uppercase;">Départ</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-            <div style="min-width:160px;">
-              <label class="label">SOBT</label>
-              <input class="input" type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()">
-              <div class="btn-actions">
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('SOBT',-1);updateAllCalculations()">-1</button>
-                <button class="button is-link" type="button" onclick="setNow('SOBT');updateAllCalculations()">Now</button>
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('SOBT',1);updateAllCalculations()">+1</button>
-              </div>
-            </div>
-
-            <div style="min-width:160px;">
-              <label class="label">AOBT</label>
-              <input class="input" type="time" id="AOBT" onchange="updateAllCalculations()">
-              <div class="btn-actions">
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
-                <button class="button is-link" type="button" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
-                <button class="button is-dark is-light" type="button" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
-              </div>
-            </div>
+      <!-- Bloc DEP -->
+      <div class="hor-block">
+        <div class="hor-col-head"><span class="hor-badge hor-badge-dep">DEP</span></div>
+        <div class="hor-cell">
+          <label class="label">SOBT</label>
+          <input class="input hor-input-sched" type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()">
+        </div>
+        <div class="hor-cell">
+          <label class="label">AOBT</label>
+          <input class="input" type="time" id="AOBT" onchange="updateAllCalculations()">
+          <div class="btn-actions">
+            <button class="button is-dark is-light" type="button" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
+            <button class="button is-link" type="button" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
+            <button class="button is-dark is-light" type="button" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
           </div>
         </div>
       </div>
@@ -1560,17 +1712,17 @@ html.dark .fixed-footer{
       <div class="dl-grid dl-codes">
         <div class="field">
           <label class="label">DL Code 1</label>
-          <div class="control"><input class="input" type="text" id="DLcode1"></div>
+          <div class="control"><input class="input uppercase" type="text" id="DLcode1"></div>
         </div>
 
         <div class="field">
           <label class="label">DL Code 2</label>
-          <div class="control"><input class="input" type="text" id="DLcode2"></div>
+          <div class="control"><input class="input uppercase" type="text" id="DLcode2"></div>
         </div>
 
         <div class="field">
           <label class="label">DL Code 3</label>
-          <div class="control"><input class="input" type="text" id="DLcode3"></div>
+          <div class="control"><input class="input uppercase" type="text" id="DLcode3"></div>
         </div>
       </div>
 
@@ -1882,9 +2034,9 @@ const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
 
-/* TOBT brut + TOBT affiché */
-window._tobtRawMins = null;
-window._tobtAdjMins = null;
+/* EOBT brut + EOBT affiché */
+window._eobtRawMins = null;
+window._eobtAdjMins = null;
 
 /* DL */
 let lastDLChanged = 1;
@@ -2385,11 +2537,11 @@ function updateCountdownOnce(){
     return;
   }
 
-  // cible = SOBT si retard AIBT<=SIBT, sinon TOBT adj
+  // cible = SOBT si retard AIBT<=SIBT, sinon EOBT adj
   let targetMin = null;
   if (AIBT <= SIBT) targetMin = SOBT;
   else {
-    const tobt = window._tobtRawMins;
+    const tobt = window._eobtRawMins;
     if(tobt == null){
       el.textContent = '--:--';
       el.classList.remove('cd-over');
@@ -2918,6 +3070,17 @@ function initForm(){
   updateFinalPlaceholdersFRRK();
   updateLidGuideVisibility();
 
+  // ✅ forcer MAJ sur DL codes
+  ['DLcode1','DLcode2','DLcode3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const pos = el.selectionStart;
+      el.value = el.value.toUpperCase();
+      el.setSelectionRange(pos, pos);
+    });
+  });
+
   // ✅ synchro temps réel APRÈS restauration complète du vol
   setupRealtimeSync();
   connectFlightSocket();
@@ -3047,34 +3210,7 @@ function renderTabs(){
     btn.onclick = ()=> switchTab(id);
     btn.ondblclick = ()=> deleteTab(id);
 
-    // bouton refresh ↻ (sans switch)
-    const r = document.createElement('button');
-    r.className = 'button is-light tab-refresh';
-    r.type = 'button';
-    r.title = 'Rafraîchir depuis AK';
-    r.innerHTML = '↻';
-    r.onclick = async (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-
-      r.classList.add('is-loading');
-      try{
-        await refreshAKTab(id);
-      }finally{
-        r.classList.remove('is-loading');
-      }
-    };
-
-    // optionnel : griser si pas de akMeta
-    if(!data.akMeta){
-      r.disabled = true;
-      r.title = "Pas de vol AK associé";
-      r.style.opacity = '0.45';
-      r.style.cursor = 'not-allowed';
-    }
-
     wrap.appendChild(btn);
-    wrap.appendChild(r);
     tabBar.appendChild(wrap);
   });
 
@@ -3225,7 +3361,7 @@ function saveCurrentTabData(){
   data.timer_h40=document.getElementById('timer-h40')?.textContent || '--:--';
   data.timer_h15=document.getElementById('timer-h15')?.textContent || '--:--';
   data.timer_h8=document.getElementById('timer-h8')?.textContent || '--:--';
-  data.timer_tobt=document.getElementById('timer-tobt')?.textContent || '--:--';
+  data.timer_tobt=document.getElementById('timer-eobt')?.textContent || '--:--';
   data.timer_cd=document.getElementById('timer-cd')?.textContent || '--:--';
 
   data.timingPanel = localStorage.getItem('timingPanel') || 'dep';
@@ -3265,7 +3401,7 @@ function loadTabData(id){
   setTxt('timer-h40',  data.timer_h40);
   setTxt('timer-h15',  data.timer_h15);
   setTxt('timer-h8',   data.timer_h8);
-  setTxt('timer-tobt', data.timer_tobt);
+  setTxt('timer-eobt', data.timer_tobt);
   setTxt('timer-cd',   data.timer_cd);
 
   // ✅ re-sync modes globaux (UI + variables)
@@ -3296,9 +3432,9 @@ function generateTimingFields(){
   const container = document.getElementById('timing-grid');
   if(!container) return;
 
-  const fieldHTML = (id,label,full=false)=>`
+  const fieldHTML = (id,label,full=false,optional=false,nowColor='is-link')=>`
     <div class="${full ? 'span-12' : 'span-6'}">
-      <div class="field">
+      <div class="field${optional ? ' field-optional' : ''}">
         <label class="label">${label}</label>
         <div class="control">
           <input class="input" type="time" id="${id}" onchange="updateAllCalculations()">
@@ -3306,7 +3442,7 @@ function generateTimingFields(){
         <div class="btn-actions">
           <button class="button is-dark is-light" type="button"
             onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-          <button class="button is-link" type="button"
+          <button class="button ${nowColor}" type="button"
             onclick="setNow('${id}');updateAllCalculations()">Now</button>
           <button class="button is-dark is-light" type="button"
             onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
@@ -3319,11 +3455,11 @@ function generateTimingFields(){
     <div class="card mb-4">
       <div class="card-content">
         <div class="grid-auto">
-          ${fieldHTML('ArriveeFuel','Arrivée Avitair',true)}
+          ${fieldHTML('ArriveeFuel','Arrivée Avitair',true,false,'is-warning')}
           ${fieldHTML('PremierDebarque','Premier débarqué')}
           ${fieldHTML('DernierDebarque','Dernier débarqué')}
-          ${fieldHTML('ArriveeLiftArr','Arrivée lift')}
-          ${fieldHTML('DepartLiftArr','Départ lift')}
+          ${fieldHTML('ArriveeLiftArr','Arrivée lift',false,false,'is-success')}
+          ${fieldHTML('DepartLiftArr','Départ lift',false,false,'is-success')}
         </div>
       </div>
     </div>`;
@@ -3333,27 +3469,27 @@ function generateTimingFields(){
     <div class="card">
       <div class="card-content">
         <div class="grid-auto">
-          ${fieldHTML('ArrPNT','Arrivée PNT')}
-          ${fieldHTML('ArrPNC','Arrivée PNC')}
+          ${fieldHTML('ArrPNT','Arrivée PNT',false,true,'is-dark')}
+          ${fieldHTML('ArrPNC','Arrivée PNC',false,true,'is-dark')}
           ${fieldHTML('AvionPremierEmbarque','Premier embarqué')}
           ${fieldHTML('AvionDernierEmbarque','Dernier embarqué')}
-          ${fieldHTML('ArriveeLift','Arrivée lift')}
-          ${fieldHTML('DepartLift','Départ lift')}
+          ${fieldHTML('ArriveeLift','Arrivée lift',false,false,'is-success')}
+          ${fieldHTML('DepartLift','Départ lift',false,false,'is-success')}
 
           <!-- Départ Avitair + Arrivée INAD sur la même ligne -->
           <div class="span-12">
             <div class="grid-auto">
               <div class="span-6">
-                ${fieldHTML('DepartFuel','Départ Avitair')}
+                ${fieldHTML('DepartFuel','Départ Avitair',false,false,'is-warning')}
               </div>
               <div class="span-6">
-                ${fieldHTML('ArriveeINAD','Arrivée INAD')}
+                ${fieldHTML('ArriveeINAD','Arrivée INAD',false,true,'is-dark')}
               </div>
             </div>
           </div>
 
           ${fieldHTML('RemiseLID','Remise LID/LDS')}
-          ${fieldHTML('FermeturePorteAvion','Fermeture porte avion')}
+          ${fieldHTML('FermeturePorteAvion','Fermeture porte avion',false,false,'is-bordeaux')}
         </div>
       </div>
     </div>`;
@@ -3403,7 +3539,7 @@ function updateLIDVisibility(){
 function updateAllCalculations() {
   updateTimers();
   updateSOBTDefault();
-  updateTOBT();
+  updateEOBT();
   updateDLCode();
   redistributeDL();
   updateLID();
@@ -3441,9 +3577,9 @@ function updateTimers() {
   document.getElementById('timer-h15').textContent = `${String(h15.getHours()).padStart(2, '0')}:${String(h15.getMinutes()).padStart(2, '0')}`;
 }
 
-/* LID = TOBT - 8 */
+/* LID = EOBT - 8 */
 function updateLID() {
-  const tobtRawMins = window._tobtRawMins;
+  const tobtRawMins = window._eobtRawMins;
   const el = document.getElementById('timer-h8');
   if (!el) return;
   if (tobtRawMins == null) { el.textContent = "--:--"; return; }
@@ -3480,8 +3616,8 @@ function updateSOBTDefault() {
     `${String(sobtCalc.getHours()).padStart(2,'0')}:${String(sobtCalc.getMinutes()).padStart(2,'0')}`;
 }
 
-/* TOBT + règle CTOT */
-function updateTOBT() {
+/* EOBT + règle CTOT */
+function updateEOBT() {
   const cie = (document.getElementById('Cie')?.value || '').toUpperCase();
   const from = (document.getElementById('From')?.value || '').toUpperCase().trim();
   const isBVA = (from === 'BVA');
@@ -3496,8 +3632,8 @@ function updateTOBT() {
   // ✅ BVA: on n'exige pas SIBT/AIBT (avion déjà là) → on utilise SOBT comme "source"
   if (!cie || !sobttxt || !outEl || (!sibttxt && !isBVA)) {
     if(outEl) outEl.textContent = '--:--';
-    window._tobtRawMins = null;
-    window._tobtAdjMins = null;
+    window._eobtRawMins = null;
+    window._eobtAdjMins = null;
     return;
   }
 
@@ -3505,8 +3641,8 @@ function updateTOBT() {
   const SOBT = parseHHMM(sobttxt);
   if (SIBT == null || SOBT == null) {
     outEl.textContent = '--:--';
-    window._tobtRawMins = null;
-    window._tobtAdjMins = null;
+    window._eobtRawMins = null;
+    window._eobtAdjMins = null;
     return;
   }
 
@@ -3514,8 +3650,8 @@ function updateTOBT() {
   const AIBT = isBVA ? SOBT : (aibttxt ? parseHHMM(aibttxt) : SIBT);
   if (AIBT == null) {
     outEl.textContent = '--:--';
-    window._tobtRawMins = null;
-    window._tobtAdjMins = null;
+    window._eobtRawMins = null;
+    window._eobtAdjMins = null;
     return;
   }
 
@@ -3539,58 +3675,58 @@ function updateTOBT() {
 
   const isDelayed = (AIBT_ext > SIBT_ext);
 
-  let TOBT_raw_ext = null;
+  let EOBT_raw_ext = null;
 
-  // ===== RÈGLE COMMUNE : si AIBT <= SIBT => TOBT = SOBT
+  // ===== RÈGLE COMMUNE : si AIBT <= SIBT => EOBT = SOBT
   if (!isDelayed) {
-    TOBT_raw_ext = SOBT_ext;
+    EOBT_raw_ext = SOBT_ext;
   } else {
-    // ===== FR / RK : TOBT = max(SOBT, AIBT + turn)
+    // ===== FR / RK : EOBT = max(SOBT, AIBT + turn)
     if (cie === 'FR' || cie === 'RK') {
       const turn = crewChange ? 35 : 25;
       const candidate = AIBT_ext + turn;
-      TOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
+      EOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
     }
 
-    // ===== W4 / W6 : TOBT = max(SOBT, AIBT + 30/35 selon type) ✅ FIX
+    // ===== W4 / W6 : EOBT = max(SOBT, AIBT + 30/35 selon type) ✅ FIX
     else if (cie === 'W4' || cie === 'W6') {
       const type = (document.getElementById('TypeAvion')?.value || '').toUpperCase();
       const turn = (type === 'A321' || type === 'A21N' || type === 'A21NY') ? 35 : 30;
 
       const candidate = AIBT_ext + turn;
-      TOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
+      EOBT_raw_ext = (candidate <= SOBT_ext) ? SOBT_ext : candidate;
     }
 
-    // ===== H4 / U5 / H6 / AUTRE : TOBT = AIBT + (SOBT - SIBT)
+    // ===== H4 / U5 / H6 / AUTRE : EOBT = AIBT + (SOBT - SIBT)
     else {
       const rot = SOBT_ext - SIBT_ext;
-      TOBT_raw_ext = AIBT_ext + rot;
+      EOBT_raw_ext = AIBT_ext + rot;
     }
   }
 
   // Raw minutes 0..1439
-  let TOBT_raw = ((TOBT_raw_ext % 1440) + 1440) % 1440;
-  window._tobtRawMins = TOBT_raw;
+  let EOBT_raw = ((EOBT_raw_ext % 1440) + 1440) % 1440;
+  window._eobtRawMins = EOBT_raw;
 
-  // ===== RÈGLE CTOT : si CTOT > TOBT + 15 => TOBT = CTOT - 15
-  let TOBT_adj_ext = TOBT_raw_ext;
+  // ===== RÈGLE CTOT : si CTOT > EOBT + 15 => EOBT = CTOT - 15
+  let EOBT_adj_ext = EOBT_raw_ext;
 
   if (ctottxt) {
     const CTOT = parseHHMM(ctottxt);
     if (CTOT != null) {
-      const TOBT_ref = ((TOBT_raw_ext % 1440) + 1440) % 1440;
-      const CTOT_ext = TOBT_raw_ext + diffSigned(CTOT, TOBT_ref);
+      const EOBT_ref = ((EOBT_raw_ext % 1440) + 1440) % 1440;
+      const CTOT_ext = EOBT_raw_ext + diffSigned(CTOT, EOBT_ref);
 
-      if (CTOT_ext > (TOBT_raw_ext + 15)) {
-        TOBT_adj_ext = CTOT_ext - 15;
+      if (CTOT_ext > (EOBT_raw_ext + 15)) {
+        EOBT_adj_ext = CTOT_ext - 15;
       }
     }
   }
 
-  let TOBT_adj = ((TOBT_adj_ext % 1440) + 1440) % 1440;
-  window._tobtAdjMins = TOBT_adj;
+  let EOBT_adj = ((EOBT_adj_ext % 1440) + 1440) % 1440;
+  window._eobtAdjMins = EOBT_adj;
 
-  outEl.textContent = fmtHHMM(TOBT_adj);
+  outEl.textContent = fmtHHMM(EOBT_adj);
 }
 
 /* ===== DL (LOGIQUE PROPRE) ===== */
@@ -3616,10 +3752,10 @@ function updateDLCode() {
   const sobt = parseHHMM(document.getElementById('SOBT')?.value || '');
   const aobt = parseHHMM(document.getElementById('AOBT')?.value || '');
 
-  // ✅ IMPORTANT: 93/93A doit utiliser la TOBT BRUTE (hors CTOT)
-  const tobt = (window._tobtRawMins != null)
-    ? window._tobtRawMins
-    : parseHHMM((document.getElementById('timer-tobt')?.textContent || '').trim());
+  // ✅ IMPORTANT: 93/93A doit utiliser la EOBT BRUTE (hors CTOT)
+  const tobt = (window._eobtRawMins != null)
+    ? window._eobtRawMins
+    : parseHHMM((document.getElementById('timer-eobt')?.textContent || '').trim());
 
   // si incomplet : on ne force rien
   if(sobt == null || aobt == null || tobt == null) return;
@@ -3628,7 +3764,7 @@ function updateDLCode() {
   let total = aobt - sobt;
   if(total < 0) total += 1440;
 
-  // 93/93A = TOBT - SOBT (borné)
+  // 93/93A = EOBT - SOBT (borné)
   let fixed = tobt - sobt;
   if(fixed < 0) fixed += 1440;
   fixed = Math.max(0, Math.min(fixed, total));
@@ -3921,11 +4057,11 @@ function computeTimelineWindow(allTimes){
 
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
   const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
-  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+  const EOBT = parseHHMM((document.getElementById('timer-eobt')?.textContent || '').replace('--:--',''));
   const CTOT = parseHHMM(document.getElementById('CTOT')?.value || '');
 
   const starts = [H40, SIBT, AIBT].filter(v => v != null);
-  const ends   = [SOBT, AOBT, TOBT, CTOT].filter(v => v != null);
+  const ends   = [SOBT, AOBT, EOBT, CTOT].filter(v => v != null);
 
   if(starts.length && ends.length){
     let startRef = Math.min(...starts);
@@ -3978,8 +4114,8 @@ function collectTimelineData(){
   const SOBT = parseHHMM(document.getElementById('SOBT')?.value || '');
   const AOBT = parseHHMM(document.getElementById('AOBT')?.value || '');
 
-  // TOBT affichée = peut être ajustée CTOT (timer). On garde comme avant pour le point fixe.
-  const TOBT = parseHHMM((document.getElementById('timer-tobt')?.textContent || '').replace('--:--',''));
+  // EOBT affichée = peut être ajustée CTOT (timer). On garde comme avant pour le point fixe.
+  const EOBT = parseHHMM((document.getElementById('timer-eobt')?.textContent || '').replace('--:--',''));
 
   const CTOT = parseHHMM(document.getElementById('CTOT')?.value || '');
   const H15  = parseHHMM((document.getElementById('timer-h15')?.textContent || '').replace('--:--',''));
@@ -3987,7 +4123,7 @@ function collectTimelineData(){
 
   addPoint('SIBT', SIBT, 'tl--std'); addPoint('AIBT', AIBT, 'tl--std');
   addPoint('SOBT', SOBT, 'tl--std'); addPoint('AOBT', AOBT, 'tl--std');
-  addPoint('TOBT', TOBT, 'tl--eobt'); addPoint('CTOT', CTOT, 'tl--ctot');
+  addPoint('EOBT', EOBT, 'tl--eobt'); addPoint('CTOT', CTOT, 'tl--ctot');
   addPoint('HLE',  H40,  'tl--turn');
   addPoint('H-15', H15,  'tl--turn');
 
@@ -5318,13 +5454,13 @@ function clearAutoSave() {
 }
 
 function shouldOpenFinalLoad(){
-  // TOBT brut (hors CTOT)
-  const tobtRaw = window._tobtRawMins;
+  // EOBT brut (hors CTOT)
+  const tobtRaw = window._eobtRawMins;
   if(tobtRaw == null) return false;
 
   const now = getNowMinutes().mins;
 
-  // seuil = TOBT brut - 15
+  // seuil = EOBT brut - 15
   let diff = now - (tobtRaw - 15);
 
   // gestion minuit (diff dans [-720..+720])
@@ -5400,25 +5536,31 @@ function toggleDelayCodes() {
   </div>
 </div>
 
-<!-- ===== FIXED FOOTER (CD / TOBT / CTOT) ===== -->
+<!-- ===== FIXED FOOTER (CD / EOBT / CTOT) ===== -->
 <div class="fixed-footer" id="fixedFooter">
   <div class="fixed-footer-inner">
     <div class="footer-row">
 
-      <div class="timer-chip">
-        <div class="k">EOBT</div>
-        <div id="timer-eobt" class="v">--:--</div>
+      <div></div>
+      <div class="footer-timers">
+        <div class="timer-chip">
+          <div class="k">EOBT</div>
+          <div id="timer-eobt" class="v">--:--</div>
+        </div>
+
+        <div class="timer-chip">
+          <div class="k">CTOT</div>
+          <input id="CTOT" class="ctot-pill" type="time" onchange="updateAllCalculations()">
+        </div>
+
+        <div class="timer-chip">
+          <div class="k">CD</div>
+          <div id="timer-cd" class="v">--:--</div>
+        </div>
       </div>
 
-      <div class="timer-chip">
-        <div class="k">CTOT</div>
-        <input id="CTOT" class="ctot-pill" type="time" onchange="updateAllCalculations()">
-      </div>
-
-      <div class="timer-chip">
-        <div class="k">CD</div>
-        <div id="timer-cd" class="v">--:--</div>
-      </div>
+      <button id="footerRefreshBtn" class="button footer-refresh-btn" type="button"
+              title="Rafraîchir depuis AK" onclick="footerRefreshAK()">↻</button>
 
     </div>
   </div>
@@ -5504,7 +5646,7 @@ function collectFlightState() {
     "To",
     "SIBT",
     "SOBT",
-    "TOBT",
+    "EOBT",
     "AIBT",
     "AOBT",
 
@@ -5729,7 +5871,7 @@ function setupRealtimeSync() {
     "To",
     "SIBT",
     "SOBT",
-    "TOBT",
+    "EOBT",
     "AIBT",
     "AOBT",
     "Cie",
@@ -5753,7 +5895,7 @@ function setupRealtimeSync() {
     "NVol",
     "To",
     "SOBT",
-    "TOBT",
+    "EOBT",
     "AOBT",
     "AIBT",
 
@@ -5853,6 +5995,32 @@ function setupRealtimeSync() {
   ensureSocketConnection();
 }
   
+
+function toggleInfoVolEdit(){
+  const edit = document.getElementById('ivEdit');
+  const icon = document.getElementById('ivEditIcon');
+  const open = edit.style.display === 'none' || edit.style.display === '';
+  edit.style.display = open ? 'grid' : 'none';
+  icon.textContent = open ? '✅' : '✏️';
+}
+
+async function footerRefreshAK(){
+  const btn = document.getElementById('footerRefreshBtn');
+  if(!currentTabId) return;
+  const data = JSON.parse(localStorage.getItem('tab-'+currentTabId) || '{}');
+  if(!data.akMeta){
+    btn.style.animation = 'none';
+    btn.textContent = '✕';
+    setTimeout(()=>{ btn.textContent = '↻'; }, 800);
+    return;
+  }
+  btn.classList.add('is-loading');
+  try{
+    await refreshAKTab(currentTabId);
+  }finally{
+    btn.classList.remove('is-loading');
+  }
+}
 </script>
   
 </body>
