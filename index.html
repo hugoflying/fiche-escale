@@ -1143,34 +1143,34 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
 }
 .time-wrap .input{
   width: 100%;
-  padding-left: 36px !important;
-  padding-right: 36px !important;
   text-align: center;
-  cursor: pointer;
+  pointer-events: none; /* désactive le picker */
+  user-select: none;
 }
-/* hints gauche / centre / droite */
-.tw-hint{
+/* zones overlay : left / center / right */
+.tw-zone{
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: .65rem;
+  top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
   font-weight: 900;
   color: var(--muted);
   opacity: 0.45;
-  pointer-events: none;
+  cursor: pointer;
   user-select: none;
-  z-index: 2;
-  transition: opacity .15s;
+  z-index: 3;
+  border-radius: 8px;
+  transition: opacity .12s, background .12s;
 }
-.tw-left  { left: 8px; }
-.tw-center{ left: 50%; transform: translate(-50%, -50%); }
-.tw-right { right: 8px; }
-.time-wrap:hover .tw-hint{ opacity: 0.75; }
-
-/* flash feedback */
-.time-wrap.tw-flash-left   .tw-left  { opacity: 1; color: var(--text); }
-.time-wrap.tw-flash-right  .tw-right { opacity: 1; color: var(--text); }
-.time-wrap.tw-flash-center .tw-center{ opacity: 1; color: #2563eb; }
+.tw-zone-left  { left: 0;    width: 30%; }
+.tw-zone-center{ left: 30%;  width: 40%; }
+.tw-zone-right { right: 0;   width: 30%; }
+.tw-zone:hover { opacity: 1; background: rgba(0,0,0,.05); }
+.tw-zone-center:hover{ background: rgba(37,99,235,.08); color: #2563eb; }
+html.dark .tw-zone:hover{ background: rgba(255,255,255,.07); }
+.tw-zone:active{ background: rgba(0,0,0,.12); opacity: 1; }
 </style>
 </head>
 
@@ -1642,10 +1642,10 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
         <div class="hor-cell">
           <label class="label">AIBT</label>
           <div class="time-wrap" data-id="AIBT">
-            <span class="tw-hint tw-left">−1</span>
-            <span class="tw-hint tw-center">Now</span>
-            <span class="tw-hint tw-right">+1</span>
-            <input class="input" type="time" id="AIBT" onchange="updateAllCalculations()">
+            <input class="input tw-input" type="time" id="AIBT" onchange="updateAllCalculations()">
+            <div class="tw-zone tw-zone-left"  data-action="minus">−1</div>
+            <div class="tw-zone tw-zone-center" data-action="now"></div>
+            <div class="tw-zone tw-zone-right" data-action="plus">+1</div>
           </div>
         </div>
       </div>
@@ -1660,10 +1660,10 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
         <div class="hor-cell">
           <label class="label">AOBT</label>
           <div class="time-wrap" data-id="AOBT">
-            <span class="tw-hint tw-left">−1</span>
-            <span class="tw-hint tw-center">Now</span>
-            <span class="tw-hint tw-right">+1</span>
-            <input class="input" type="time" id="AOBT" onchange="updateAllCalculations()">
+            <input class="input tw-input" type="time" id="AOBT" onchange="updateAllCalculations()">
+            <div class="tw-zone tw-zone-left"  data-action="minus">−1</div>
+            <div class="tw-zone tw-zone-center" data-action="now"></div>
+            <div class="tw-zone tw-zone-right" data-action="plus">+1</div>
           </div>
         </div>
       </div>
@@ -3524,10 +3524,10 @@ function generateTimingFields(){
         <label class="label">${label}</label>
         <div class="control">
           <div class="time-wrap" data-id="${id}">
-            <span class="tw-hint tw-left">−1</span>
-            <span class="tw-hint tw-center">Now</span>
-            <span class="tw-hint tw-right">+1</span>
-            <input class="input" type="time" id="${id}" onchange="updateAllCalculations()">
+            <input class="input tw-input" type="time" id="${id}" onchange="updateAllCalculations()">
+            <div class="tw-zone tw-zone-left"  data-action="minus">−1</div>
+            <div class="tw-zone tw-zone-center" data-action="now"></div>
+            <div class="tw-zone tw-zone-right" data-action="plus">+1</div>
           </div>
         </div>
       </div>
@@ -6108,55 +6108,19 @@ async function footerRefreshAK(){
 
 /* ===== TIME WRAP gestures ===== */
 (function(){
-  const dblDelay = 380; // ms max entre 2 clics pour double-clic
-  const pending = {}; // { id: {timer, zone} }
-
   document.addEventListener('click', function(e){
-    const wrap = e.target.closest('.time-wrap');
+    const zone = e.target.closest('.tw-zone');
+    if(!zone) return;
+    const wrap = zone.closest('.time-wrap');
     if(!wrap) return;
-    // ne pas intercepter si clic sur l'input lui-même (laisse ouvrir le picker)
-    if(e.target.tagName === 'INPUT') return;
-
     const id = wrap.dataset.id;
     if(!id) return;
-
-    const rect = wrap.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    const zone = pct < 0.30 ? 'left' : pct > 0.70 ? 'right' : 'center';
-
-    if(zone === 'center'){
-      // Single click center → Now
-      setNow(id);
-      updateAllCalculations();
-      flashWrap(wrap, 'center');
-      return;
-    }
-
-    // Double-clic left/right
-    if(pending[id] && pending[id].zone === zone){
-      clearTimeout(pending[id].timer);
-      delete pending[id];
-      if(zone === 'left'){
-        adjustTime(id, -1);
-        flashWrap(wrap, 'left');
-      } else {
-        adjustTime(id, 1);
-        flashWrap(wrap, 'right');
-      }
-      updateAllCalculations();
-    } else {
-      if(pending[id]) clearTimeout(pending[id].timer);
-      pending[id] = {
-        zone,
-        timer: setTimeout(() => { delete pending[id]; }, dblDelay)
-      };
-    }
+    const action = zone.dataset.action;
+    if(action === 'minus')  adjustTime(id, -1);
+    else if(action === 'plus') adjustTime(id, 1);
+    else if(action === 'now')  setNow(id);
+    updateAllCalculations();
   });
-
-  function flashWrap(wrap, zone){
-    wrap.classList.add('tw-flash-' + zone);
-    setTimeout(() => wrap.classList.remove('tw-flash-' + zone), 300);
-  }
 })();
 </script>
   
