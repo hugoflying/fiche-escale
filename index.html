@@ -1144,9 +1144,12 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
 .time-wrap .input{
   width: 100%;
   text-align: center;
+  text-align-last: center;
   pointer-events: none; /* désactive le picker */
   user-select: none;
 }
+.time-wrap .input::-webkit-datetime-edit{ text-align: center; width: 100%; }
+.time-wrap .input::-webkit-datetime-edit-fields-wrapper{ text-align: center; width: 100%; justify-content: center; }
 /* zones overlay : left / center / right */
 .tw-zone{
   position: absolute;
