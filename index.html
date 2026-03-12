@@ -1181,6 +1181,18 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
 .tw-zone-center:hover{ background: rgba(37,99,235,.08); color: #2563eb; }
 html.dark .tw-zone:hover{ background: rgba(255,255,255,.07); }
 .tw-zone:active{ background: rgba(0,0,0,.12); opacity: 1; }
+
+/* ===== TIME WRAP : couleurs par catégorie ===== */
+.tw-color-is-link     { border-color: #3273dc !important; color: #3273dc; }
+.tw-color-is-success  { border-color: #23d160 !important; color: #23a145; }
+.tw-color-is-warning  { border-color: #d4a000 !important; color: #7a5800; }
+.tw-color-is-dark     { border-color: #363636 !important; color: #363636; }
+.tw-color-is-bordeaux { border-color: #7f1d1d !important; color: #7f1d1d; }
+html.dark .tw-color-is-link     { border-color: #5a9eff !important; color: #5a9eff; }
+html.dark .tw-color-is-success  { border-color: #48e88a !important; color: #48e88a; }
+html.dark .tw-color-is-warning  { border-color: #f5c400 !important; color: #f5c400; }
+html.dark .tw-color-is-dark     { border-color: #aaa !important; color: #ccc; }
+html.dark .tw-color-is-bordeaux { border-color: #ef4444 !important; color: #ef4444; }
 </style>
 </head>
 
@@ -3544,7 +3556,7 @@ function generateTimingFields(){
         <div class="control">
           <div class="time-wrap" data-id="${id}">
             <input type="time" id="${id}" class="tw-hidden-input" onchange="updateAllCalculations(); twSync('${id}')">
-            <div class="input tw-display" id="tw-disp-${id}">--:--</div>
+            <div class="input tw-display tw-color-${nowColor}" id="tw-disp-${id}">--:--</div>
             <div class="tw-zone tw-zone-left"  data-action="minus">−1</div>
             <div class="tw-zone tw-zone-center" data-action="now"></div>
             <div class="tw-zone tw-zone-right" data-action="plus">+1</div>
