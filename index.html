@@ -6120,6 +6120,8 @@ async function footerRefreshAK(){
     else if(action === 'plus') adjustTime(id, 1);
     else if(action === 'now')  setNow(id);
     updateAllCalculations();
+    // enlever la sélection
+    if(window.getSelection) window.getSelection().removeAllRanges();
   });
 })();
 </script>
