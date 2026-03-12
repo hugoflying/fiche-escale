@@ -697,11 +697,13 @@ body.modal-open{
   overflow: visible; /* important pour le ::after */
 }
 
-html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
+html.dark .fixed-footer{
+  border-top-color: rgba(255,255,255,.08);
+}
 
 /* ✅ remplit la safe-area (home indicator) SANS augmenter la hauteur du footer */
 .fixed-footer::after{
-  content:"";
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -717,16 +719,18 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
 }
 
 .footer-row{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
 }
 
 /* version compacte tablette */
 @media (min-width: 600px) and (max-width: 900px){
-  .fixed-footer-inner{ padding: 8px 12px; }
+  .fixed-footer-inner{
+    padding: 8px 12px;
+  }
 }
 
 /* ===== LOAD FAB (au-dessus du footer fixe, au-dessus de SETTINGS) ===== */
@@ -891,7 +895,6 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
   color: var(--text) !important;
   opacity:.9;
 }
-
 
 </style>
 </head>
@@ -1220,17 +1223,23 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
         </div>
 
         <!-- BOUTON IMAGE -->
-      <div class="ldm-span-2 has-text-centered" style="margin-top:10px;">
-        <button class="button is-link is-light" type="button" onclick="toggleFinalImage()">
-          LID COMPLETION GUIDE (RYR)
-        </button>
+        <div class="ldm-span-2 has-text-centered" style="margin-top:10px;">
 
-        <div id="finalImageBox" style="display:none; margin-top:12px;">
-          <img id="finalImage"
-               src="https://raw.githubusercontent.com/hugoflying/fiche-escale/main/lid-completion-guide.jpg"
-               style="max-width:100%; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.25);">
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+
+            <button class="button is-link is-light" type="button" onclick="toggleFinalImage()">
+              LID COMPLETION GUIDE (RYR)
+            </button>
+
+          </div>
+
+          <div id="finalImageBox" style="display:none; margin-top:12px;">
+            <img id="finalImage"
+                 src="https://pub-c7a84a2cfc4d46d3b0562e0e646eff71.r2.dev/lid-completion-guide.jpg"
+                 style="max-width:100%; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.25);">
+          </div>
+
         </div>
-      </div>
 
       </div>
     </section>
@@ -1534,9 +1543,20 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
 
   <div class="card-content">
 
+    <div style="margin-bottom:10px;">
+      <button id="delayCodesBtn" class="button is-warning is-light" type="button" onclick="toggleDelayCodes()">
+        DELAY CODES (RYR)
+      </button>
+    </div>
+
+    <div id="delayCodesBox" style="display:none; margin-top:12px;">
+      <img id="delayCodesImage"
+           src="https://pub-c7a84a2cfc4d46d3b0562e0e646eff71.r2.dev/gops-iata-delay-codes-apr24-rev17.jpg"
+           style="max-width:100%; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.25);">
+    </div>
+
     <div class="dl-wrap">
 
-      <!-- LIGNE 1 : DL CODES -->
       <div class="dl-grid dl-codes">
         <div class="field">
           <label class="label">DL Code 1</label>
@@ -1554,7 +1574,6 @@ html.dark .fixed-footer{ border-top-color: rgba(255,255,255,.08); }
         </div>
       </div>
 
-      <!-- LIGNE 2 : DL DURÉES -->
       <div class="dl-grid dl-durees">
         <div class="field">
           <label class="label">DL Durée 1 (min)</label>
@@ -2770,14 +2789,13 @@ function initForm(){
     updateAllCalculations();
     updateInfoStrip();
 
-    updateFinalLoadLayout();          // ✅ labels H/CP + layout
-    updateFinalPlaceholdersFRRK();    // ✅ placeholders selon type (FR/RK)
-    updateLidGuideVisibility();       // ✅ bouton LID guide seulement FR/RK
+    updateFinalLoadLayout();
+    updateFinalPlaceholdersFRRK();
+    updateLidGuideVisibility();
   });
 
   document.getElementById('TypeAvion')?.addEventListener('change', ()=>{
     updateInfoStrip();
-
     updateFinalLoadLayout();
     updateFinalPlaceholdersFRRK();
     updateLidGuideVisibility();
@@ -2822,7 +2840,6 @@ function initForm(){
   });
 
   [
-    // H-bags seulement pour FINAL
     'FinalBAGS','FinalH1','FinalH2','FinalH3','FinalH4',
     'FinalGB'
   ].forEach(id=>{
@@ -2900,6 +2917,10 @@ function initForm(){
   updateFinalLoadLayout();
   updateFinalPlaceholdersFRRK();
   updateLidGuideVisibility();
+
+  // ✅ synchro temps réel APRÈS restauration complète du vol
+  setupRealtimeSync();
+  connectFlightSocket();
 }
 
 function updateInfoStrip(){
@@ -3260,8 +3281,14 @@ function loadTabData(id){
   updateAllCalculations();
   updateHeaderOffset();
   updateInfoStrip();
-}
 
+  connectFlightSocket();
+
+  setTimeout(() => {
+    sendFullFlightState();
+  }, 150);
+}
+  
 function updateTabLabelInstant(){ saveCurrentTabData(); renderTabs(); }
 
 /* TIMING FIELDS – ARR / DEP (responsive pro) */
@@ -3381,6 +3408,7 @@ function updateAllCalculations() {
   redistributeDL();
   updateLID();
   updateLIDVisibility();
+  updateDelayCodesVisibility();
 
   updateHBagsValidity('arr');
   updateHBagsValidity('final');
@@ -4286,7 +4314,7 @@ document.addEventListener('keydown', (e)=>{
 });
 
 // ===== Airport Keeper (AK) =====
-const AK_PROXY = "https://airportkeeper-proxy.deruellehugo-49c.workers.dev/ak";
+const AK_PROXY = "/ak";
 
 // Ouvrir/Fermer
 function openAKPicker(){
@@ -4540,28 +4568,71 @@ async function loadAKFlights(){
   }
 }
 
+/* =========================
+   BADGES RETARD (référence app.js)
+   ========================= */
+
+const EIBT_CORRECTION_MIN = -4;
+
+function addMinutesToIso(iso, minutes){
+  const t = Date.parse(iso || "");
+  if(!Number.isFinite(t)) return "";
+  return new Date(t + minutes * 60000).toISOString();
+}
+
+function delayMinFrom(plannedIso, actualIso){
+  const p = Date.parse(plannedIso || "");
+  const a = Date.parse(actualIso || "");
+  if(!Number.isFinite(p) || !Number.isFinite(a)) return null;
+  return Math.round((a - p) / 60000);
+}
+
+function actualDepIso(f){
+  return f?.aobt || f?.eobt || "";
+}
+
+function actualArrIso(f){
+  if(f?.aibt) return f.aibt;
+
+  if(f?.eibt){
+    return addMinutesToIso(f.eibt, EIBT_CORRECTION_MIN);
+  }
+
+  return "";
+}
+
+function getDelayBadgeHtml(mins){
+  if(mins == null) return "";
+
+  let label = "";
+  let className = "";
+  let extraStyle = "font-weight:900; margin-left:0;";
+
+  if(mins >= 15){
+    label = `RETARDÉ +${mins}`;
+    className = "tag is-danger";
+  }
+  else if(mins >= 5){
+    label = `RETARDÉ +${mins}`;
+    className = "tag is-warning";
+  }
+  else if(mins <= -10){
+    label = `EN AVANCE ${mins}`;
+    className = "tag is-info";
+  }
+  else{
+    label = "À L’HEURE";
+    className = "tag is-success";
+  }
+
+  return `<span class="${className}" style="${extraStyle}">${label}</span>`;
+}
+
+
 // ===== Rendu liste : ARR = provenance, DEP = destination =====
 function renderAKList(flights, flow){
   const list = document.getElementById('akList');
   if(!list) return;
-
-  function delayMinutes(f, flow){
-    const parse = v => v ? Date.parse(v) : NaN;
-
-    if(flow === 'ARR'){
-      const s = parse(f?.sibt);
-      const r = parse(f?.aibt || f?.eibt);
-      if(!isFinite(s) || !isFinite(r)) return 0;
-      const d = Math.round((r - s) / 60000);
-      return d > 0 ? d : 0;
-    }else{
-      const s = parse(f?.sobt);
-      const r = parse(f?.aobt || f?.eobt);
-      if(!isFinite(s) || !isFinite(r)) return 0;
-      const d = Math.round((r - s) / 60000);
-      return d > 0 ? d : 0;
-    }
-  }
 
   const safeJsonForOnclick = obj =>
     JSON.stringify(obj)
@@ -4586,11 +4657,9 @@ function renderAKList(flights, flow){
     if(flow === 'DEP'){
       if(statusRaw === 'IN_FLIGHT') status = 'DÉCOLLÉ';
     }else{
-      // ARR
       if(statusRaw === 'TERMINATED') status = 'ARRIVÉ';
       if(statusRaw === 'IN_FLIGHT')  status = 'EN VOL';
 
-      // 🔥 ARR affiché DÉCOLLÉ si le DEP lié a décollé
       const nextDep = findLinkedDepForArr(f);
       if(nextDep){
         const depStatusRaw = (nextDep.status || nextDep.milestone || '').toString().toUpperCase();
@@ -4599,33 +4668,32 @@ function renderAKList(flights, flow){
       }
     }
 
-    const dly = delayMinutes(f, flow);
-    const showDelay = dly >= 5;
+    const plannedIso = flow === 'ARR'
+      ? (f?.sibt || "")
+      : (f?.sobt || "");
+
+    const actualIso = flow === 'ARR'
+      ? actualArrIso(f)
+      : actualDepIso(f);
+
+    const dly = delayMinFrom(plannedIso, actualIso);
 
     let bg = 'var(--card)';
-    if(flow === 'ARR' && status === 'DÉCOLLÉ'){
-      bg = 'rgba(0,0,0,.04)';
-    }else if(flow === 'ARR' && statusRaw === 'IN_FLIGHT'){
-      bg = 'rgba(37,99,235,0.12)';
-    }else if(flow === 'DEP' && statusRaw === 'IN_FLIGHT'){
-      bg = 'rgba(0,0,0,.04)';
-    }else if(showDelay){
-      bg = (dly <= 15)
-        ? 'rgba(245,158,11,0.18)'
-        : 'rgba(239,68,68,0.16)';
+
+    // fond gris seulement si terminé
+    if(flow === 'ARR' && status === 'ARRIVÉ'){
+      bg = '#f1f3f5';
+    }
+
+    if(flow === 'DEP' && status === 'DÉCOLLÉ'){
+      bg = '#f1f3f5';
     }
 
     const mainIata = (flow === 'ARR')
       ? (f.adepIata || f.adepIcao || '')
       : (f.adesIata || f.adesIcao || '');
 
-    const delayBadge = showDelay
-      ? `<span class="tag" style="font-weight:900; margin-left:6px;
-           background:${dly<=15 ? 'rgba(245,158,11,0.20)' : 'rgba(239,68,68,0.18)'};">
-           RETARD +${dly}
-         </span>`
-      : '';
-
+    const delayBadge = getDelayBadgeHtml(dly);
     const json = safeJsonForOnclick(f);
 
     return `
@@ -4665,7 +4733,7 @@ function renderAKList(flights, flow){
     ? flights.map(row).join('')
     : `<p class="has-text-grey">Aucun vol.</p>`;
 }
-
+  
 // ===== Import : règles BVA =====
 function akBuildSI(f, allowDL = true, opts = {}){
   const includeDL = opts.includeDL !== undefined ? !!opts.includeDL : true;
@@ -5055,6 +5123,23 @@ function updateLidGuideVisibility(){
   btn.style.display = show ? '' : 'none';
 }
 
+function updateDelayCodesVisibility(){
+  const cie = (document.getElementById('Cie')?.value || '').toUpperCase().trim();
+  const btn = document.getElementById('delayCodesBtn');
+  const box = document.getElementById('delayCodesBox');
+  const show = (cie === 'FR' || cie === 'RK');
+
+  if(btn) btn.style.display = show ? '' : 'none';
+
+  if(box){
+    if(show){
+      box.style.display = 'none';
+    } else {
+      box.style.display = 'none';
+    }
+  }
+}
+  
 /* validateForm */
 function validateForm() {
   const val = id => (document.getElementById(id)?.value || "");
@@ -5254,6 +5339,12 @@ function toggleFinalImage(){
   box.style.display = (box.style.display === 'none') ? 'block' : 'none';
 }
 
+function toggleDelayCodes() {
+  const box = document.getElementById('delayCodesBox');
+  if (!box) return;
+  box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+}
+
 </script>
 
 <!-- ===== Airport Keeper Picker ===== -->
@@ -5339,5 +5430,430 @@ function toggleFinalImage(){
   🧳
 </button>
 
+<script>
+let socket = null;
+let isApplyingRemoteUpdate = false;
+let currentSocketKey = null;
+const debounceTimers = {};
+let realtimeSyncInitialized = false;
+let pendingPatch = {};
+let hasReceivedInitialState = false;
+
+function buildFlightKey() {
+  try {
+    if (typeof getTabData === "function") {
+      const data = getTabData();
+      const akId = data?.akMeta?.id ? String(data.akMeta.id).trim() : "";
+      if (akId) return `AK_${akId}`;
+    }
+  } catch (e) {}
+
+  const date = (document.getElementById("Date")?.value || "").replaceAll("-", "");
+  const immat = (document.getElementById("Immat")?.value || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+
+  const from = (document.getElementById("From")?.value || "").trim().toUpperCase();
+  const to = (document.getElementById("To")?.value || "").trim().toUpperCase();
+
+  const sibt = (document.getElementById("SIBT")?.value || "").replace(":", "");
+  const sobt = (document.getElementById("SOBT")?.value || "").replace(":", "");
+
+  const timeRef = sibt || sobt;
+  const stationRef = from || to;
+
+  if (!date || !immat || !timeRef || !stationRef) return null;
+
+  return `${date}_${immat}_${stationRef}_${timeRef}`;
+}
+
+function applyRemotePayload(payload) {
+  if (!payload || typeof payload !== "object") return;
+
+  const akProtectedFields = new Set([
+    "Date", "Parking", "Immat", "TypeAvion",
+    "From", "To", "SIBT", "SOBT"
+  ]);
+
+  isApplyingRemoteUpdate = true;
+  try {
+    Object.entries(payload).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      if (akProtectedFields.has(id)) return;
+      if (el.dataset && el.dataset.ak === "1") return;
+
+      const newValue = value ?? "";
+      if (el.value === newValue) return;
+
+      el.value = newValue;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  } finally {
+    isApplyingRemoteUpdate = false;
+  }
+}
+
+function collectFlightState() {
+  const ids = [
+    "Cie",
+    "NVol",
+    "To",
+    "SIBT",
+    "SOBT",
+    "TOBT",
+    "AIBT",
+    "AOBT",
+
+    "DLcode1", "DLcode2", "DLcode3",
+    "DLduree1", "DLduree2", "DLduree3",
+    "FaitsSaillants",
+
+    "ArriveeFuel",
+    "PremierDebarque",
+    "DernierDebarque",
+    "ArriveeLiftArr",
+    "DepartLiftArr",
+
+    "ArrPNT",
+    "ArrPNC",
+    "AvionPremierEmbarque",
+    "AvionDernierEmbarque",
+    "ArriveeLift",
+    "DepartLift",
+    "DepartFuel",
+    "ArriveeINAD",
+    "RemiseLID",
+    "FermeturePorteAvion",
+
+    "ArrPAX_MAIN",
+    "ArrPAX_INF",
+    "ArrBAGS",
+    "ArrPOIDS",
+    "ArrSI",
+
+    "PreviPAX_MAIN",
+    "PreviPAX_INF",
+    "PreviBAGS",
+    "PreviPOIDS",
+    "PreviTOB_FRRK",
+    "PreviMALE",
+    "PreviFEMALE",
+    "PreviCHILD",
+    "PreviINFANT",
+    "PreviTOB",
+    "PreviBAGS_OTHER",
+    "PreviPOIDS_OTHER",
+    "PreviSI",
+
+    "FinalMALE",
+    "FinalFEMALE",
+    "FinalADULT",
+    "FinalCHILD",
+    "FinalINFANT",
+    "FinalTOB",
+    "FinalOA",
+    "FinalOB",
+    "FinalOC",
+    "FinalOD",
+    "FinalBAGS",
+    "FinalPOIDS",
+    "FinalGB",
+    "FinalH1",
+    "FinalH2",
+    "FinalH3",
+    "FinalH4",
+    "FinalSI",
+
+    "BlockFuel",
+    "TaxiFuel",
+    "TripFuel",
+    "FuelUplift"
+  ];
+
+  const payload = {};
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    payload[id] = el.value || "";
+  });
+
+  return payload;
+}
+
+function flushPendingPatch() {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  if (!currentSocketKey) return;
+
+  const entries = Object.entries(pendingPatch);
+  if (!entries.length) return;
+
+  const payload = { ...pendingPatch };
+  pendingPatch = {};
+
+  console.log("FLUSH PATCH", payload);
+  socket.send(JSON.stringify(payload));
+}
+
+function sendFullFlightState() {
+  if (isApplyingRemoteUpdate) return;
+
+  const key = buildFlightKey();
+  if (!key) return;
+  if (!socket || socket.readyState !== WebSocket.OPEN || currentSocketKey !== key) return;
+
+  const payload = collectFlightState();
+  console.log("SEND FULL STATE", payload);
+
+  socket.send(JSON.stringify(payload));
+}
+
+function connectFlightSocket() {
+  const key = buildFlightKey();
+
+  if (!key) {
+    currentSocketKey = null;
+    hasReceivedInitialState = false;
+    pendingPatch = {};
+    if (socket) {
+      try { socket.close(); } catch (e) {}
+      socket = null;
+    }
+    return;
+  }
+
+  if (socket && currentSocketKey === key && socket.readyState <= WebSocket.OPEN) return;
+
+  if (socket) {
+    try { socket.close(); } catch (e) {}
+    socket = null;
+  }
+
+  currentSocketKey = key;
+  hasReceivedInitialState = false;
+  pendingPatch = {};
+
+  socket = new WebSocket(`wss://turnaround-sync.deruellehugo-49c.workers.dev/${encodeURIComponent(key)}`);
+
+  socket.onopen = () => {
+    console.log("WebSocket connecté :", key);
+    flushPendingPatch();
+  };
+
+  socket.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+
+      if (msg.__type === "init") {
+        hasReceivedInitialState = true;
+        applyRemotePayload(msg.payload || {});
+        flushPendingPatch();
+        return;
+      }
+
+      if (msg.__type === "patch") {
+        applyRemotePayload(msg.payload || {});
+        return;
+      }
+
+      applyRemotePayload(msg || {});
+    } catch (err) {
+      console.error("Erreur message WebSocket :", err);
+    }
+  };
+
+  socket.onerror = (err) => {
+    console.error("WebSocket erreur:", err);
+  };
+
+  socket.onclose = () => {
+    console.log("WebSocket fermé");
+    if (currentSocketKey === key) {
+      socket = null;
+      hasReceivedInitialState = false;
+    }
+  };
+}
+
+function ensureSocketConnection(retries = 15, delay = 300) {
+  let count = 0;
+
+  const tryConnect = () => {
+    count++;
+    connectFlightSocket();
+
+    if (socket && currentSocketKey === buildFlightKey()) return;
+    if (count >= retries) return;
+
+    setTimeout(tryConnect, delay);
+  };
+
+  tryConnect();
+}
+
+function sendFieldUpdate(id, value) {
+  if (isApplyingRemoteUpdate) return;
+
+  const key = buildFlightKey();
+  if (!key) return;
+
+  pendingPatch[id] = value;
+
+  if (!socket || currentSocketKey !== key || socket.readyState === WebSocket.CLOSED) {
+    connectFlightSocket();
+    return;
+  }
+
+  if (socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  flushPendingPatch();
+}
+
+function setupRealtimeSync() {
+  if (realtimeSyncInitialized) {
+    ensureSocketConnection();
+    return;
+  }
+
+  realtimeSyncInitialized = true;
+
+  const keyFields = [
+    "Date",
+    "Immat",
+    "From",
+    "To",
+    "SIBT",
+    "SOBT",
+    "TOBT",
+    "AIBT",
+    "AOBT",
+    "Cie",
+    "NVol"
+  ];
+
+  keyFields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const reconnect = () => {
+      ensureSocketConnection();
+    };
+
+    el.addEventListener("input", reconnect);
+    el.addEventListener("change", reconnect);
+  });
+
+  const syncFields = new Set([
+    "Cie",
+    "NVol",
+    "To",
+    "SOBT",
+    "TOBT",
+    "AOBT",
+    "AIBT",
+
+    "DLcode1", "DLcode2", "DLcode3",
+    "DLduree1", "DLduree2", "DLduree3",
+    "FaitsSaillants",
+
+    "ArriveeFuel",
+    "PremierDebarque",
+    "DernierDebarque",
+    "ArriveeLiftArr",
+    "DepartLiftArr",
+
+    "ArrPNT",
+    "ArrPNC",
+    "AvionPremierEmbarque",
+    "AvionDernierEmbarque",
+    "ArriveeLift",
+    "DepartLift",
+    "DepartFuel",
+    "ArriveeINAD",
+    "RemiseLID",
+    "FermeturePorteAvion",
+
+    "ArrPAX_MAIN",
+    "ArrPAX_INF",
+    "ArrBAGS",
+    "ArrPOIDS",
+    "ArrSI",
+
+    "PreviPAX_MAIN",
+    "PreviPAX_INF",
+    "PreviBAGS",
+    "PreviPOIDS",
+    "PreviTOB_FRRK",
+    "PreviMALE",
+    "PreviFEMALE",
+    "PreviCHILD",
+    "PreviINFANT",
+    "PreviTOB",
+    "PreviBAGS_OTHER",
+    "PreviPOIDS_OTHER",
+    "PreviSI",
+
+    "FinalMALE",
+    "FinalFEMALE",
+    "FinalADULT",
+    "FinalCHILD",
+    "FinalINFANT",
+    "FinalTOB",
+    "FinalOA",
+    "FinalOB",
+    "FinalOC",
+    "FinalOD",
+    "FinalBAGS",
+    "FinalPOIDS",
+    "FinalGB",
+    "FinalH1",
+    "FinalH2",
+    "FinalH3",
+    "FinalH4",
+    "FinalSI",
+
+    "BlockFuel",
+    "TaxiFuel",
+    "TripFuel",
+    "FuelUplift"
+  ]);
+
+  const pushIfSyncField = (event) => {
+    const el = event.target;
+    if (!el || !el.id) return;
+    if (!syncFields.has(el.id)) return;
+    if (el.readOnly) return;
+
+    const isImmediate =
+      event.type === "change" ||
+      el.tagName === "SELECT" ||
+      el.type === "date" ||
+      el.type === "time";
+
+    if (isImmediate) {
+      clearTimeout(debounceTimers[el.id]);
+      sendFieldUpdate(el.id, el.value);
+      return;
+    }
+
+    clearTimeout(debounceTimers[el.id]);
+    debounceTimers[el.id] = setTimeout(() => {
+      sendFieldUpdate(el.id, el.value);
+    }, 300);
+  };
+
+  document.addEventListener("input", pushIfSyncField);
+  document.addEventListener("change", pushIfSyncField);
+
+  ensureSocketConnection();
+}
+  
+</script>
+  
 </body>
 </html>
