@@ -174,8 +174,9 @@ body.has-tab .app-wrap{ display:block; }
 
 /* CTOT éditable */
 .ctot-pill{
-  width: auto;
+  width: 70px;
   min-width: 70px;
+  max-width: 70px;
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
@@ -193,6 +194,13 @@ body.has-tab .app-wrap{ display:block; }
 }
 .ctot-pill::-webkit-datetime-edit{ color:#fff; }
 .ctot-pill::-webkit-calendar-picker-indicator{ display:none; -webkit-appearance:none; }
+.ctot-pill::-webkit-datetime-edit-ampm-field{ display:none; }
+.ctot-pill::-webkit-datetime-edit-text{ padding:0 1px; }
+.ctot-pill::-webkit-datetime-edit-fields-wrapper{ padding: 0; }
+.ctot-pill::-webkit-datetime-edit{ padding: 0; }
+.ctot-pill:empty, .ctot-pill[value=""]{
+  min-width: 70px;
+}
 
 /* Bulma tweaks */
 .card{
@@ -292,15 +300,22 @@ textarea.si-uppercase{ text-transform: uppercase; }
 }
 .kv-card{
   border-radius: 14px;
-  background: color-mix(in srgb, var(--card) 90%, #3b82f6 10%);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+  background: rgba(255,255,255,.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
   padding: 10px 12px;
   display:flex;
   align-items:center;
   justify-content: space-between;
   gap: 10px;
 }
-body.dark .kv-card{ box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+body.dark .kv-card{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
 .kv-left{ display:flex; flex-direction:column; gap:2px; }
 .kv-title{ font-size:.78rem; font-weight:900; color: var(--muted); text-transform:uppercase; }
 .kv-value{ font-size:1.1rem; font-weight:900; color: var(--text); }
@@ -1065,16 +1080,97 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
 }
 .footer-refresh-btn:active{ transform: rotate(45deg) scale(.93); }
 .footer-refresh-btn.is-loading{ pointer-events:none; opacity:.6; }
-@media (max-width: 420px){
+@media (max-width: 480px){
   .footer-refresh-btn{
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 1rem !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: .9rem !important;
   }
   .footer-row{
-    grid-template-columns: 36px 1fr 36px;
+    grid-template-columns: 34px 1fr 34px;
+    gap: 4px;
+  }
+  .footer-timers{
+    gap: 4px !important;
+  }
+  .timer-chip{
+    min-width: 0 !important;
+    padding: 4px 6px !important;
+    gap: 4px !important;
+    flex: 0 0 auto;
+  }
+  .timer-chip .v{
+    min-width: 0 !important;
+    padding: 3px 5px !important;
+    font-size: .72rem !important;
+  }
+  .timer-chip .k{ font-size: .58rem !important; }
+  .ctot-pill{
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 3px 4px !important;
+    font-size: .72rem !important;
   }
 }
+
+.btn-action-main{
+  font-size: 1.1rem !important;
+  height: 44px !important;
+  padding: 0 22px !important;
+}
+
+/* Espacement entre champs TIMING */
+#timing-grid .grid-auto{
+  row-gap: calc(var(--gap) + 6px);
+}
+
+/* Séparateur de section dans INFO VOL */
+.iv-section-title{
+  font-size: .72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+  border-top: 1px solid var(--field-border);
+  padding-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* ===== TIME WRAP : zones gestuelles ===== */
+.time-wrap{
+  position: relative;
+  display: block;
+}
+.time-wrap .input{
+  width: 100%;
+  padding-left: 36px !important;
+  padding-right: 36px !important;
+  text-align: center;
+  cursor: pointer;
+}
+/* hints gauche / centre / droite */
+.tw-hint{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .65rem;
+  font-weight: 900;
+  color: var(--muted);
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  transition: opacity .15s;
+}
+.tw-left  { left: 8px; }
+.tw-center{ left: 50%; transform: translate(-50%, -50%); }
+.tw-right { right: 8px; }
+.time-wrap:hover .tw-hint{ opacity: 0.75; }
+
+/* flash feedback */
+.time-wrap.tw-flash-left   .tw-left  { opacity: 1; color: var(--text); }
+.time-wrap.tw-flash-right  .tw-right { opacity: 1; color: var(--text); }
+.time-wrap.tw-flash-center .tw-center{ opacity: 1; color: #2563eb; }
 </style>
 </head>
 
@@ -1498,7 +1594,7 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
 
 <div class="app-wrap">
 
-<!-- INFO VOL -->
+<!-- INFO VOL + HORAIRES -->
 <div class="card mb-5">
   <header class="card-header">
     <p class="card-header-title">INFO VOL</p>
@@ -1510,7 +1606,7 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
   <div class="card-content">
 
     <!-- Résumé (mode lecture) -->
-    <div id="ivSummary" class="kv-strip">
+    <div id="ivSummary" class="kv-strip mb-3">
       <div class="kv-card">
         <div class="kv-left">
           <div class="kv-title">Vol</div>
@@ -1533,7 +1629,48 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
       </div>
     </div>
 
-    <!-- Mode édition (masqué par défaut) -->
+    <!-- Horaires ARR / DEP -->
+    <div class="horaires-grid mb-3">
+
+      <!-- Bloc ARR -->
+      <div class="hor-block">
+        <div class="hor-col-head"><span class="hor-badge hor-badge-arr">ARR</span></div>
+        <div class="hor-cell">
+          <label class="label">SIBT</label>
+          <input class="input hor-input-sched" type="time" id="SIBT" onchange="updateAllCalculations()">
+        </div>
+        <div class="hor-cell">
+          <label class="label">AIBT</label>
+          <div class="time-wrap" data-id="AIBT">
+            <span class="tw-hint tw-left">−1</span>
+            <span class="tw-hint tw-center">Now</span>
+            <span class="tw-hint tw-right">+1</span>
+            <input class="input" type="time" id="AIBT" onchange="updateAllCalculations()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Bloc DEP -->
+      <div class="hor-block">
+        <div class="hor-col-head"><span class="hor-badge hor-badge-dep">DEP</span></div>
+        <div class="hor-cell">
+          <label class="label">SOBT</label>
+          <input class="input hor-input-sched" type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()">
+        </div>
+        <div class="hor-cell">
+          <label class="label">AOBT</label>
+          <div class="time-wrap" data-id="AOBT">
+            <span class="tw-hint tw-left">−1</span>
+            <span class="tw-hint tw-center">Now</span>
+            <span class="tw-hint tw-right">+1</span>
+            <input class="input" type="time" id="AOBT" onchange="updateAllCalculations()">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mode édition infos vol (masqué par défaut) -->
     <div id="ivEdit" class="grid-auto" style="display:none; margin-top:12px;">
 
       <div class="field span-3">
@@ -1598,57 +1735,6 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
       <div class="field span-3">
         <label class="label">To</label>
         <input class="input uppercase" type="text" id="To" maxlength="3">
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- HORAIRES -->
-<div class="card mb-5">
-  <header class="card-header section-collapse" onclick="toggleCardBody(this)">
-    <p class="card-header-title">HORAIRES</p>
-    <span class="card-header-icon"><span class="icon">⌄</span></span>
-  </header>
-
-  <div class="card-content">
-    <div class="horaires-grid">
-
-      <!-- Bloc ARR -->
-      <div class="hor-block">
-        <div class="hor-col-head"><span class="hor-badge hor-badge-arr">ARR</span></div>
-        <div class="hor-cell">
-          <label class="label">SIBT</label>
-          <input class="input hor-input-sched" type="time" id="SIBT" onchange="updateAllCalculations()">
-        </div>
-        <div class="hor-cell">
-          <label class="label">AIBT</label>
-          <input class="input" type="time" id="AIBT" onchange="updateAllCalculations()">
-          <div class="btn-actions">
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('AIBT',-1);updateAllCalculations()">-1</button>
-            <button class="button is-link" type="button" onclick="setNow('AIBT');updateAllCalculations()">Now</button>
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('AIBT',1);updateAllCalculations()">+1</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bloc DEP -->
-      <div class="hor-block">
-        <div class="hor-col-head"><span class="hor-badge hor-badge-dep">DEP</span></div>
-        <div class="hor-cell">
-          <label class="label">SOBT</label>
-          <input class="input hor-input-sched" type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()">
-        </div>
-        <div class="hor-cell">
-          <label class="label">AOBT</label>
-          <input class="input" type="time" id="AOBT" onchange="updateAllCalculations()">
-          <div class="btn-actions">
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('AOBT',-1);updateAllCalculations()">-1</button>
-            <button class="button is-link" type="button" onclick="setNow('AOBT');updateAllCalculations()">Now</button>
-            <button class="button is-dark is-light" type="button" onclick="adjustTime('AOBT',1);updateAllCalculations()">+1</button>
-          </div>
-        </div>
       </div>
 
     </div>
@@ -1760,8 +1846,8 @@ body.iv-editing .iv-edit-btn{ opacity: 1; }
   </div>
 
   <div class="buttons is-centered">
-    <button class="button is-success is-medium" id="validate" onclick="openRZAModal()">VALIDER</button>
-    <button class="button is-danger is-light is-medium" id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
+    <button class="button is-success btn-action-main" id="validate" onclick="openRZAModal()">VALIDER</button>
+    <button class="button is-danger is-light btn-action-main" id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
   </div>
 
 </div>
@@ -2029,7 +2115,7 @@ document.addEventListener('input', (e)=>{
 
 /* Timeline */
 let timelineZoom = 1;
-const TL_ZOOM_MIN = 0.5;
+const TL_ZOOM_MIN = 1;
 const TL_ZOOM_MAX = 8;
 const TL_ZOOM_STEP = 0.25;
 window._timelineCurrentRange = null;
@@ -3437,15 +3523,12 @@ function generateTimingFields(){
       <div class="field${optional ? ' field-optional' : ''}">
         <label class="label">${label}</label>
         <div class="control">
-          <input class="input" type="time" id="${id}" onchange="updateAllCalculations()">
-        </div>
-        <div class="btn-actions">
-          <button class="button is-dark is-light" type="button"
-            onclick="adjustTime('${id}',-1);updateAllCalculations()">-1</button>
-          <button class="button ${nowColor}" type="button"
-            onclick="setNow('${id}');updateAllCalculations()">Now</button>
-          <button class="button is-dark is-light" type="button"
-            onclick="adjustTime('${id}',1);updateAllCalculations()">+1</button>
+          <div class="time-wrap" data-id="${id}">
+            <span class="tw-hint tw-left">−1</span>
+            <span class="tw-hint tw-center">Now</span>
+            <span class="tw-hint tw-right">+1</span>
+            <input class="input" type="time" id="${id}" onchange="updateAllCalculations()">
+          </div>
         </div>
       </div>
     </div>`;
@@ -5615,7 +5698,7 @@ function applyRemotePayload(payload) {
 
   const akProtectedFields = new Set([
     "Date", "Parking", "Immat", "TypeAvion",
-    "From", "To", "SIBT", "SOBT"
+    "From", "To", "SIBT"
   ]);
 
   isApplyingRemoteUpdate = true;
@@ -5894,6 +5977,7 @@ function setupRealtimeSync() {
     "Cie",
     "NVol",
     "To",
+    "SIBT",
     "SOBT",
     "EOBT",
     "AOBT",
@@ -6021,6 +6105,59 @@ async function footerRefreshAK(){
     btn.classList.remove('is-loading');
   }
 }
+
+/* ===== TIME WRAP gestures ===== */
+(function(){
+  const dblDelay = 380; // ms max entre 2 clics pour double-clic
+  const pending = {}; // { id: {timer, zone} }
+
+  document.addEventListener('click', function(e){
+    const wrap = e.target.closest('.time-wrap');
+    if(!wrap) return;
+    // ne pas intercepter si clic sur l'input lui-même (laisse ouvrir le picker)
+    if(e.target.tagName === 'INPUT') return;
+
+    const id = wrap.dataset.id;
+    if(!id) return;
+
+    const rect = wrap.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    const zone = pct < 0.30 ? 'left' : pct > 0.70 ? 'right' : 'center';
+
+    if(zone === 'center'){
+      // Single click center → Now
+      setNow(id);
+      updateAllCalculations();
+      flashWrap(wrap, 'center');
+      return;
+    }
+
+    // Double-clic left/right
+    if(pending[id] && pending[id].zone === zone){
+      clearTimeout(pending[id].timer);
+      delete pending[id];
+      if(zone === 'left'){
+        adjustTime(id, -1);
+        flashWrap(wrap, 'left');
+      } else {
+        adjustTime(id, 1);
+        flashWrap(wrap, 'right');
+      }
+      updateAllCalculations();
+    } else {
+      if(pending[id]) clearTimeout(pending[id].timer);
+      pending[id] = {
+        zone,
+        timer: setTimeout(() => { delete pending[id]; }, dblDelay)
+      };
+    }
+  });
+
+  function flashWrap(wrap, zone){
+    wrap.classList.add('tw-flash-' + zone);
+    setTimeout(() => wrap.classList.remove('tw-flash-' + zone), 300);
+  }
+})();
 </script>
   
 </body>
