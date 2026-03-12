@@ -1647,7 +1647,10 @@ html.dark .tw-zone:hover{ background: rgba(255,255,255,.07); }
         <div class="hor-col-head"><span class="hor-badge hor-badge-arr">ARR</span></div>
         <div class="hor-cell">
           <label class="label">SIBT</label>
-          <input class="input hor-input-sched" type="time" id="SIBT" onchange="updateAllCalculations()">
+          <div class="time-wrap" data-id="SIBT">
+            <input type="time" id="SIBT" class="tw-hidden-input" onchange="updateAllCalculations(); twSync('SIBT')">
+            <div class="input tw-display hor-input-sched" id="tw-disp-SIBT">--:--</div>
+          </div>
         </div>
         <div class="hor-cell">
           <label class="label">AIBT</label>
@@ -1666,7 +1669,10 @@ html.dark .tw-zone:hover{ background: rgba(255,255,255,.07); }
         <div class="hor-col-head"><span class="hor-badge hor-badge-dep">DEP</span></div>
         <div class="hor-cell">
           <label class="label">SOBT</label>
-          <input class="input hor-input-sched" type="time" id="SOBT" onchange="manualSOBT=true;updateAllCalculations()">
+          <div class="time-wrap" data-id="SOBT">
+            <input type="time" id="SOBT" class="tw-hidden-input" onchange="manualSOBT=true;updateAllCalculations(); twSync('SOBT')">
+            <div class="input tw-display hor-input-sched" id="tw-disp-SOBT">--:--</div>
+          </div>
         </div>
         <div class="hor-cell">
           <label class="label">AOBT</label>
