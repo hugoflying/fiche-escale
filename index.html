@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUIVI PERFORMANCE</title>
-<!-- jsPDF pour l’export PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" referrerpolicy="no-referrer"></script>
 <style>
 /* RESET & BASE */
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -125,7 +123,6 @@ button.now   { background: #1976d2; color: white; }
 button.plus  { background: #555; color: white; }
 
 /* Boutons principaux */
-#validate, #save, #reset, #exportPdf, #sendMail {
 #validate, #save, #reset {
     width: 100%;
     padding: 12px;
@@ -138,8 +135,6 @@ button.plus  { background: #555; color: white; }
 #validate { background: #4caf50; color: white; }
 #save { background: #2196f3; color: white; margin: 15px 0; }
 #reset { background: #d32f2f; color: white; }
-#exportPdf { background: #6a1b9a; color: #fff; }
-#sendMail { background: #00897b; color: #fff; }
 
 /* Timers (2 groupes) */
 .timer-box {
@@ -262,9 +257,6 @@ body.dark .tl-range-label { background: rgba(0,0,0,.45); color:#fff; }
 /* --- Toolbar timeline --- */
 .timeline-toolbar{
   display:flex; align-items:center; gap:8px; margin: 4px 0 8px;
-  flex-wrap: wrap;
-  min-width: 0;
-  overflow-x: hidden;
   flex-wrap: wrap;            /* autorise le passage sur la ligne suivante */
   min-width: 0;               /* évite les débordements flex */
   overflow-x: hidden;         /* pas de scroll horizontal sur la toolbar */
@@ -279,12 +271,10 @@ body.dark .tl-btn{ background:#2a2a2a; color:#eee; }
 .tl-sep{ width:1px; height:22px; background:#cfd4da; }
 body.dark .tl-sep{ background:#3a3a3a; }
 
-/* Coche */
 /* Coche “Heure sur étiquettes” */
 .tl-toggle {
   display:flex; align-items:center; gap:6px; margin-left:8px; font-size:14px;
   max-width: 100%;
-  flex-wrap: wrap;
   flex-wrap: wrap;            /* laisse le texte passer à la ligne si besoin */
 }
 .tl-toggle input { flex: 0 0 auto; }
@@ -296,16 +286,13 @@ body.dark .tl-sep{ background:#3a3a3a; }
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
 }
 body.dark .timeline-scroll{ background:#181818; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
-.timeline-canvas{ position:relative; min-width:600px; width:100%; }
 .timeline-canvas{ position:relative; min-width:600px; width:100%; /* hauteur JS dynamique */ }
 
-/* === BLOC-NOTE (overlay) === */
 /* === BLOC-NOTE (overlay moderne) === */
 .note-overlay{ position: fixed; top: 6vh; left: 2vw; width: 96vw; height: 80vh; min-width: 320px; min-height: 260px; max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); background: rgba(255,255,255,0.9); color:#111; border-radius:16px; box-shadow: 0 20px 50px rgba(0,0,0,.35); z-index:2000; display:none; overflow:hidden; resize: both; backdrop-filter: saturate(180%) blur(12px); opacity: 0; transform: translateY(10px) scale(.98); transition: opacity .18s ease, transform .18s ease, box-shadow .2s ease; border: 1px solid rgba(0,0,0,.06); }
 .note-overlay.open{ opacity:1; transform: translateY(0) scale(1); }
 .note-overlay.dragging{ box-shadow: 0 30px 70px rgba(0,0,0,.45); }
 body.dark .note-overlay{ background: rgba(20,20,20,0.85); color:#eee; border-color: rgba(255,255,255,.08); }
-
 .note-overlay::after{ content:""; position:absolute; right:8px; bottom:8px; width:16px; height:16px; background:
     linear-gradient(135deg, rgba(0,0,0,.25) 0 2px, transparent 0) right bottom / 8px 8px no-repeat,
     linear-gradient(135deg, rgba(0,0,0,.15) 0 2px, transparent 0) right 8px bottom / 8px 8px no-repeat,
@@ -368,9 +355,6 @@ body.dark .timing-seg.active{ background:#90caf9; color:#111; border-color:#90ca
 .timing-panel{ display:none; }
 .timing-panel.active{ display:block; }
 
-/* Arrivée bouton actif en vert */
-#seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32; color:#fff; }
-body.dark #seg-arr.timing-seg.active { background:#2e7d32; border-color:#2e7d32; color:#fff; }
 /* Spécifique : Arrivée en vert quand actif */
 #seg-arr.timing-seg.active {
   background: #2e7d32;
@@ -384,11 +368,9 @@ body.dark #seg-arr.timing-seg.active {
   color: #fff;
 }
 
-/* Now verts dans ARRIVÉE */
 /* Now VERTS uniquement dans la colonne ARRIVÉE */
 #panel-arr .btn-actions .now { background: #2e7d32; }
 
-/* === CHIFFRES PORTE — esthétique === */
 /* Séparateur pour la zone recherche bagage / INAD / fermeture */
 .timing-divider{ border-top:1px dashed #aaa; margin:6px 0 2px; }
 body.dark .timing-divider{ border-top-color:#555; }
@@ -443,7 +425,6 @@ body.dark #chiffres-porte input, body.dark #chiffres-porte select{
 }
 body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 
-/* === CHIFFRES PORTE via <details> === */
 /* === CHIFFRES PORTE via <details> : rétractable */
 #chiffres-porte summary { list-style: none; cursor: pointer; }
 #chiffres-porte summary::-webkit-details-marker { display: none; }
@@ -456,7 +437,6 @@ body.dark #chiffres-porte #TOB{ background:#1b2636; border-color:#90caf9; }
 /* Bordure d'erreur DL */
 .dl-error { border: 2px solid #d32f2f !important; border-radius: 4px; }
 
-/* === TAGS Grid === */
 /* --- Détails repliables (INAD / Recherche bagage) --- */
 details.timing-collapse summary { list-style: none; }
 details.timing-collapse summary::-webkit-details-marker { display: none; }
@@ -499,9 +479,6 @@ body.dark details.timing-collapse[open] > summary.timing-seg {
   gap: 10px;
   align-items: start;
 }
-#TagsContainer .form-group{ margin-bottom: 0; }
-#TagsContainer .form-group:nth-last-child(1):nth-child(odd){ grid-column: 1 / -1; }
-@media (max-width: 700px){ #TagsContainer{ grid-template-columns: 1fr; } }
 #TagsContainer .form-group{
   margin-bottom: 0; /* géré par le gap */
 }
@@ -564,9 +541,6 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
 .timing-divider { display: none; }
 }
 
-/* Helpers */
-.form-group.full { flex: 1 1 100% !important; }
-.form-row-2 { display: contents; }
 </style>
 </head>
 <body onload="initForm()">
@@ -723,7 +697,6 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
   </div>
 </section>
 
-<!-- CHIFFRES PORTE -->
 <!-- CHIFFRES PORTE (rétractable – version <details>) -->
 <section id="chiffres-porte">
   <details id="cp-details" open>
@@ -777,7 +750,7 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
     <div class="form-group-3col"><label>Eau potable<select id="EauPotable"><option>N</option><option>Y</option></select></label></div>
     <div class="form-group-3col"><label>Vidange toilettes<select id="Vidange"><option>N</option><option>Y</option></select></label></div>
     <div class="form-group-3col"><label>Ménage Assist'Air<select id="MenageAssist"><option>N</option><option>Y</option></select></label></div>
-    <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>T</option><option>F</option></select></label></div>
+    <div class="form-group-3col"><label>Ménage Atalian<select id="MenageAtalian"><option>N</option><option>T</option><option>F</option></select></label></div>
     <div class="form-group-3col"><label>Collecte d'ordures<select id="Ordures"><option>Y</option><option>N</option></select></label></div>
     <div class="form-group-3col"><label>Toilet Kit<select id="ToiletKit"><option>N</option><option>Y</option></select></label></div>
     <div class="form-group-3col"><label>Dégivrage<select id="Degivrage"><option>N</option><option>Y</option></select></label></div>
@@ -828,8 +801,6 @@ details.accordion .accordion-body .form-grid { margin-top: 4px; }
 <!-- Boutons finaux -->
 <button id="validate" onclick="validateForm()">VALIDER</button>
 <button id="save" onclick="manualSave()">SAUVEGARDER</button>
-<button id="exportPdf" onclick="exportPDF()">EXPORTER EN PDF</button>
-<button id="sendMail" onclick="sendEmail()">ENVOYER PAR MAIL</button>
 <button id="reset" onclick="clearAutoSave()">RÉINITIALISER TOUT</button>
 
 <script>
@@ -894,7 +865,6 @@ function initForm(){
   attachAutoSave();
   window.addEventListener('beforeunload', saveCurrentTabData);
 
-  /* replis génériques sur H2, sauf CHIFFRES PORTE */
   /* replis génériques sur H2, sauf CHIFFRES PORTE (gérée par <details>) */
   document.querySelectorAll("section h2").forEach(h2=>{
     if (h2.closest('#chiffres-porte')) return;
@@ -1142,76 +1112,43 @@ function generateTimingFields(){
       </div>
     </div>`;
 
-  /* ===== ARRIVÉE ===== */
   /* ===== ARRIVÉE ===== (ordre demandé) */
   let arr = '';
   arr += `<div class="timing-col arr"><div class="form-grid">`;
 
-  // Arrivée AVITAIR
   // 1) Arrivée AVITAIR (seul sur la ligne)
   arr += fieldHTML('ArriveeFuel','Arrivée Avitair','full');
 
-  // Premier/Dernier débarqué
   // 2) Premier débarqué / Dernier débarqué (même ligne)
   arr += fieldHTML('PremierDebarque','Premier débarqué');
   arr += fieldHTML('DernierDebarque','Dernier débarqué');
 
-  // Arrivée/Départ Lift (Arrivée)
   // 3) Arrivée Lift / Départ Lift (même ligne)
   arr += fieldHTML('ArriveeLiftArr','Arrivée lift');
   arr += fieldHTML('DepartLiftArr','Départ lift');
 
-  /* supprimé : Arrivée agent PMR (arr) */
-  /* supprimé : Début/Fin déchargement bagages (arr) */
-  // 4) Arrivée agent PMR (seul sur la ligne)
-  arr += fieldHTML('ArriveeAgentsPMRArr','Arrivée agent PMR','full');
+     arr += `</div></div>`;
 
-  // 5) Début/Fin déchargement bagages (même ligne)
-  arr += fieldHTML('DebutDechargementBagages','Début déchargement bagages');
-  arr += fieldHTML('FinDechargementBagages','Fin déchargement bagages');
-
-  arr += `</div></div>`;
-
-  /* ===== DÉPART ===== */
   /* ===== DÉPART ===== (ordre demandé) */
   let dep = '';
   dep += `<div class="timing-col dep"><div class="form-grid">`;
 
-  // Arrivée PNT / Arrivée PNC
   // 1) Arrivée PNT / Arrivée PNC
   dep += fieldHTML('ArrPNT','Arrivée PNT');
   dep += fieldHTML('ArrPNC','Arrivée PNC');
 
-  // Premier / Dernier embarqué
   // 2) Premier / Dernier embarqué
   dep += fieldHTML('AvionPremierEmbarque','Premier embarqué');
   dep += fieldHTML('AvionDernierEmbarque','Dernier embarqué');
 
-  // Arrivée / Départ Lift (Départ)
   // 3) Arrivée Lift / Départ Lift
   dep += fieldHTML('ArriveeLift','Arrivée lift');
   dep += fieldHTML('DepartLift','Départ lift');
 
-  /* supprimé : Arrivée agent PMR (dep) */
-  // 4) Arrivée agent PMR (seul)
-  dep += fieldHTML('ArriveeAgentsPMRDep','Arrivée agent PMR','full');
-
-  // Début/Fin chargement bagages (on conserve)
-  // 5) Début/Fin chargement bagages
-  dep += fieldHTML('DebutChargementBagages','Début chargement bagages');
-  dep += fieldHTML('FinChargementBagages','Fin chargement bagages');
-
-  // Départ AVITAIR
-  // 6) Départ AVITAIR (seul)
+   // 4) Départ AVITAIR (seul)
   dep += fieldHTML('DepartFuel','Départ Avitair','full');
 
-  /* supprimé : Arrivée/ Départ NAYAK */
-  // 7) Arrivée NAYAK / Départ NAYAK (nouveaux champs)
-  dep += fieldHTML('ArriveeNayak','Arrivée NAYAK');
-  dep += fieldHTML('DepartNayak','Départ NAYAK');
-
-  // Remise LID/LDS / Fermeture porte avion
-  // 8) Remise LID/LDS / Fermeture porte avion (même ligne)
+   // 5) Remise LID/LDS / Fermeture porte avion (même ligne)
   dep += fieldHTML('RemiseLID','Remise LID/LDS');
   dep += fieldHTML('FermeturePorteAvion','Fermeture porte avion');
 
@@ -1524,7 +1461,6 @@ function updateCTOTDisplay(){
   document.getElementById('timer-ctot').textContent = ctot ? ctot : '--:--';
 }
 
-/* DL CODES (mapping) */
 /* DL CODES (mapping demandé) */
 function updateDLCode() {
   const cie = (document.getElementById('Cie').value||'').toUpperCase();
@@ -1560,7 +1496,6 @@ function totalDelayMinutes(){
   const a = parseHHMM(ao);
   if (s==null || a==null) return null;
   let total = a - s;
-  if (total < 0) total += 1440;
   if (total < 0) total += 1440; // overnight
   return total;
 }
@@ -1820,8 +1755,6 @@ function collectTimelineData(){
     {key:'liftArr', label:'Lift (Arr)',           pair:getPairWindow('ArriveeLiftArr','DepartLiftArr'),                     cls:'tl--std',  color:'#8e24aa'},
     {key:'liftDep', label:'Lift (Dep)',           pair:getPairWindow('ArriveeLift','DepartLift'),                           cls:'tl--std',  color:'#2e7d32'},
     {key:'bag',     label:'Recherche bagage',     pair:getPairWindow('DebutRechercheBagage','FinRechercheBagage'),         cls:'tl--std',  color:'#9c27b0'},
-    /* supprimé : Déchargement bagages (arr) */
-    /* supprimé : NAYAK */
     {key:'dech',    label:'Déchargement bagages', pair:getPairWindow('DebutDechargementBagages','FinDechargementBagages'), cls:'tl--std',  color:'#795548'},
     {key:'chg',     label:'Chargement bagages',   pair:getPairWindow('DebutChargementBagages','FinChargementBagages'),     cls:'tl--ops',  color:'#009688'},
     {key:'nayak',  label:'NAYAK',                 pair:getPairWindow('ArriveeNayak','DepartNayak'),                        cls:'tl--std',  color:'#000000'},
@@ -1905,23 +1838,6 @@ function renderTimeline(){
     return { ...d, start: Math.min(aExt,bExt), end: Math.max(aExt,bExt) };
   }).sort((x,y)=> x.start - y.start);
 
-  const durLanesEnd = [];
-  const LANE_PAD_MIN = 2;
-  function packLanes(items, pad = LANE_PAD_MIN){
-    const lanes = [];
-    return items.map(it => {
-      let laneIdx = lanes.findIndex(nextFree => it.start >= nextFree);
-      if (laneIdx === -1) {
-        laneIdx = lanes.length;
-        lanes.push(it.end + pad);
-      } else {
-        lanes[laneIdx] = it.end + pad;
-      }
-      return { ...it, lane: laneIdx };
-    });
-  }
-  const durWithLane = packLanes(durItems);
-  const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
 const durLanesEnd = [];
 // Empilage strict avec tampon
 const LANE_PAD_MIN = 2; // augmente à 3/4 si besoin
@@ -1943,11 +1859,6 @@ function packLanes(items, pad = LANE_PAD_MIN){
 const durWithLane = packLanes(durItems);
 const durLaneCount = Math.max(0, ...durWithLane.map(d => d.lane)) + 1;
 
-  const finalHeight = Math.max(
-    MIN_HEIGHT,
-    trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
-  );
-  canvas.style.height = `${finalHeight}px`;
 const finalHeight = Math.max(
   MIN_HEIGHT,
   trackY + AFTER_TRACK + durLaneCount*DUR_LANE_H + BOTTOM_PAD
@@ -1985,26 +1896,6 @@ canvas.style.height = `${finalHeight}px`;
     el.style.visibility = 'visible';
   });
 
-  const downStart = trackY + AFTER_TRACK;
-  durWithLane.forEach(d=>{
-    const leftStartPct = 6 + ((d.start-min)/total)*88;
-    const widthPct     = ((d.end-d.start)/total)*88;
-
-    const bar = document.createElement('div');
-    bar.className = `tl-range ${d.cls}`;
-    if(d.color){ bar.style.setProperty('--c', d.color); }
-    bar.style.left = `${leftStartPct}%`;
-    bar.style.width = `${widthPct}%`;
-    bar.style.top = `${downStart + d.lane*DUR_LANE_H}px`;
-    bar.style.transform = 'translateX(-50%)';
-    canvas.appendChild(bar);
-
-    const lab = document.createElement('div');
-    lab.className = 'tl-range-label';
-    const durMin = Math.max(0, d.b - d.a);
-    lab.textContent = showTimeLabels ? `${d.label} : ${durMin} min` : d.label;
-    bar.appendChild(lab);
-  });
 const downStart = trackY + AFTER_TRACK;
 durWithLane.forEach(d=>{
   const leftStartPct = 6 + ((d.start-min)/total)*88;
@@ -2080,7 +1971,6 @@ function updateTagInputs(){
   const wrap = document.getElementById('TagsContainer');
   if(!wrap) return;
 
-  const count = Math.max(0, Math.min(nb, 50));
   const count = Math.max(0, Math.min(nb, 50)); // sécurité : max 50
   let html = '';
   for(let i=1; i<=count; i++){
@@ -2104,195 +1994,157 @@ function updateTagInputs(){
   }catch(e){}
 }
 
-/* === EXPORT TEXTE BRUT (rapport) === */
-function formatDateFR(iso){
-  if(!iso) return '';
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-function val(id){ const el=document.getElementById(id); return el? (el.value||'') : ''; }
-function timerText(id){ const el=document.getElementById(id); const t=el?el.textContent:''; return (t && t!=='--:--')?t:''; }
-
-function buildReportText(){
-  const lines = [];
-
-  // En-tête
-  lines.push(`DATE : ${formatDateFR(val('Date'))}`);
-  lines.push(`Cie : ${val('Cie')}`);
-  lines.push(`N° vol : ${val('NVol')}`);
-  lines.push(`From : ${val('From')}`);
-  lines.push(`To : ${val('To')}`);
-  lines.push(`RZA : ${val('RZA')}`);
-  lines.push(`Immat : ${val('Immat')}`);
-  lines.push(`Parking : ${val('Parking')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Horaires
-  lines.push(`SIBT : ${val('SIBT')}`);
-  lines.push(`AIBT : ${val('AIBT')}`);
-  lines.push(`SOBT : ${val('SOBT')}`);
-  lines.push(`AOBT : ${val('AOBT')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Timings clefs
-  lines.push(`Arrivée PNT : ${val('ArrPNT')}`);
-  lines.push(`Arrivée PNC : ${val('ArrPNC')}`);
-  lines.push(`Premier débarqué : ${val('PremierDebarque')}`);
-  lines.push(`Dernier débarqué : ${val('DernierDebarque')}`);
-  lines.push(`Premier embarqué : ${val('AvionPremierEmbarque')}`);
-  lines.push(`Dernier embarqué : ${val('AvionDernierEmbarque')}`);
-  lines.push(`Fermeture porte avion : ${val('FermeturePorteAvion')}`);
-  lines.push(`Arrivée AVITAIR : ${val('ArriveeFuel')}`);
-  lines.push(`Départ AVITAIR : ${val('DepartFuel')}`);
-  lines.push(`Arrivée Lift : ${val('ArriveeLift') || val('ArriveeLiftArr')}`);
-  lines.push(`Départ Lift : ${val('DepartLift') || val('DepartLiftArr')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Retards
-  lines.push(`DL Code 1 : ${val('DLcode1')}`);
-  lines.push(`DL Durée 1 (min) : ${val('DLduree1')}`);
-  lines.push(``);
-  lines.push(`DL Code 2 : ${val('DLcode2')}`);
-  lines.push(`DL Durée 2 (min) : ${val('DLduree2')}`);
-  lines.push(``);
-  lines.push(`DL Code 3 : ${val('DLcode3')}`);
-  lines.push(`DL Durée 3 (min) : ${val('DLduree3')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Justif & Faits
-  lines.push(`DL justifications :`);
-  lines.push(`${val('DLJustif')}`);
-  lines.push(``);
-  lines.push(`Faits saillants :`);
-  lines.push(`${val('FaitsSaillants')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Assistances
-  lines.push(`WCHC : ${val('WCHC')}`);
-  lines.push(`WCHS : ${val('WCHS')}`);
-  lines.push(`WCHR : ${val('WCHR')}`);
-  lines.push(`Autre : ${val('AutreAssist')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Prestations
-  lines.push(`Prestations :`);
-  lines.push(``);
-  lines.push(`ASU : ${val('ASU')}`);
-  lines.push(`Flux RZA : ${val('FluxRZA')}`);
-  lines.push(`Eau potable : ${val('EauPotable')}`);
-  lines.push(`Vidange toilettes : ${val('Vidange')}`);
-  lines.push(`Ménage Assist'Air : ${val('MenageAssist')}`);
-  lines.push(`Ménage Atalian : ${val('MenageAtalian')}`);
-  lines.push(`Collecte d'ordures : ${val('Ordures')}`);
-  lines.push(`Toilet Kit : ${val('ToiletKit')}`);
-  lines.push(`Dégivrage : ${val('Degivrage')}`);
-  lines.push(`Push-Pull : ${val('PushPull')}`);
-  lines.push(`Echelle supplémentaire : ${val('Echelle')}`);
-  lines.push(``);
-  lines.push(`---`);
-  lines.push(``);
-
-  // Timers calculés (optionnel)
-  const HLE = timerText('timer-h40');
-  const H15 = timerText('timer-h15');
-  const TOBT = timerText('timer-tobt');
-  const CTOT = timerText('timer-ctot');
-  const LID  = timerText('timer-h8');
-  if (HLE || H15 || TOBT || CTOT || LID){
-    lines.push(`Calculs :`);
-    if(HLE) lines.push(`HLE : ${HLE}`);
-    if(H15) lines.push(`H-15 : ${H15}`);
-    if(TOBT) lines.push(`TOBT : ${TOBT}`);
-    if(CTOT) lines.push(`CTOT : ${CTOT}`);
-    if(LID) lines.push(`LID : ${LID}`);
-    lines.push(``);
-    lines.push(`---`);
-    lines.push(``);
-  }
-
-  // Recherche bagages (si présent)
-  const nbDecharges = val('NbBagagesDecharges');
-  if (nbDecharges){
-    lines.push(`Recherche bagage :`);
-    lines.push(`Début : ${val('DebutRechercheBagage')}`);
-    lines.push(`Fin : ${val('FinRechercheBagage')}`);
-    lines.push(`Quantité déchargée : ${nbDecharges}`);
-    for (let i=1;i<=Math.min(parseInt(nbDecharges)||0,50);i++){
-      const v = val('TagNumero'+i);
-      if(v) lines.push(`Tag ${i} : ${v}`);
-    }
-    lines.push(``);
-    lines.push(`---`);
-    lines.push(``);
-  }
-
-  return lines.join('\n');
-}
-
-/* === EXPORT PDF === */
-async function exportPDF(){
-  const { jsPDF } = window.jspdf || {};
-  if (!jsPDF){
-    showPopup("Librairie PDF indisponible", "#d32f2f", 3000);
-    return;
-  }
-  const doc = new jsPDF({ unit:'pt', format:'a4' });
-  const left = 40, topStart = 50, lineH = 16, maxWidth = 515; // 595-2*40 approx
-  let y = topStart;
-
-  doc.setFont('courier','normal');
-  doc.setFontSize(12);
-
-  const text = buildReportText().split('\n');
-  text.forEach(line=>{
-    const parts = doc.splitTextToSize(line, maxWidth);
-    parts.forEach(part=>{
-      if (y > 800){ doc.addPage(); y = topStart; }
-      doc.text(part, left, y);
-      y += lineH;
-    });
-  });
-
-  const cie = (val('Cie')||'XX').toUpperCase();
-  const nvol = (val('NVol')||'----').toUpperCase();
-  const date = formatDateFR(val('Date')).replace(/\//g,'-') || 'DATE';
-  doc.save(`rapport_${cie}${nvol}_${date}.pdf`);
-  showPopup("PDF exporté", "#6a1b9a", 2200);
-}
-
-/* === ENVOI PAR MAIL (mailto:) === */
-function sendEmail(){
-  const subject = `[SUIVI PERF] ${val('Cie')}${val('NVol')||''} ${val('From')}→${val('To')} ${formatDateFR(val('Date'))}`;
-  const body = buildReportText();
-  const link = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = link;
-}
-
-/* VALIDATION */
 function validateForm() {
-  const required = ['Date', 'Cie', 'Parking', 'NVol', 'From', 'To', 'Immat', 'RZA'];
-  let missing = required.some(id => !document.getElementById(id).value);
-  if (missing) showPopup("Vérifiez les informations manquantes !", "#d32f2f", 4000);
-  else showPopup("Validation locale effectuée (pas d'envoi).", "#4caf50", 2500);
+
+    const val = id => (document.getElementById(id)?.value || "");
+
+    // -------------------------
+    // 1. DONNÉES DE BASE
+    // -------------------------
+    const dateRaw = val("Date");
+    const [yyyy, mm, dd] = dateRaw.split("-");
+    const dateTitre = `${dd}-${mm}-${yyyy}`;
+
+    const cie = val("Cie");
+    const vol = val("NVol");
+    const from = val("From");
+    const to = val("To");
+    const immat = val("Immat");
+    const rza = val("RZA");
+
+    const titre = `[TIMING] ${dateTitre} / ${cie}${vol} ${from}-${to} / ${immat} / ${rza}`;
+
+
+    // -------------------------
+    // 2. LIFT
+    // -------------------------
+    const liftArrivee = `${val("ArriveeLiftArr")} - ${val("DepartLiftArr")}`;
+    const liftDepart = `${val("ArriveeLift")} - ${val("DepartLift")}`;
+
+
+    // -------------------------
+    // 3. ASSISTANCES (affichage conditionnel)
+    // -------------------------
+    const assistances = [];
+
+    if (val("WCHC")) assistances.push(`WCHC : ${val("WCHC")}`);
+    if (val("WCHS")) assistances.push(`WCHS : ${val("WCHS")}`);
+    if (val("WCHR")) assistances.push(`WCHR : ${val("WCHR")}`);
+
+    const assistanceBlock = assistances.length > 0
+        ? `\n== ASSISTANCES ==\n\n${assistances.join("\n")}\n`
+        : "";
+
+
+    // -------------------------
+    // 4. PRESTATIONS
+    // -------------------------
+    let prestationsList = [];
+
+    const addIfYes = (label, id) => {
+        const v = document.getElementById(id).value;
+        if (v !== "N") prestationsList.push(label);
+    };
+
+    addIfYes("ASU", "ASU");
+    addIfYes("Flux RZA", "FluxRZA");
+    addIfYes("Eau potable", "EauPotable");
+    addIfYes("Vidange toilettes", "Vidange");
+    addIfYes("Ménage Assist'Air", "MenageAssist");
+    addIfYes("Ménage Atalian", "MenageAtalian");
+    addIfYes("Collecte d'ordures", "Ordures");
+    addIfYes("Toilet Kit", "ToiletKit");
+    addIfYes("Dégivrage", "Degivrage");
+    addIfYes("Push-Pull", "PushPull");
+    addIfYes("Échelle supplémentaire", "Echelle");
+
+    const prestationsText =
+        prestationsList.length > 0 ? `\n== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
+
+         prestationsList.length > 0 ? `== PRESTATIONS ==\n\n${prestationsList.join("\n")}\n` : "";
+
+    // -------------------------
+    // 5. DL
+    // -------------------------
+    const dlLines = [];
+
+    if (val("DLcode1")) dlLines.push(`DL (${val("DLcode1")}) : ${val("DLduree1")} min`);
+    if (val("DLcode2")) dlLines.push(`DL (${val("DLcode2")}) : ${val("DLduree2")} min`);
+    if (val("DLcode3")) dlLines.push(`DL (${val("DLcode3")}) : ${val("DLduree3")} min`);
+
+    const dlBlock = dlLines.length > 0
+        ? `\n== DL ==\n\n${dlLines.join("\n")}\n`
+        : "";
+
+
+    // -------------------------
+    // 6. JUSTIFICATION
+    // -------------------------
+    const justifBlock = val("DLJustif").trim() !== ""
+        ? `\n== JUSTIFICATION ==\n\n${val("DLJustif")}\n`
+        : "";
+
+
+    // -------------------------
+    // 7. FAITS SAILLANTS
+    // -------------------------
+    const faitsBlock = val("FaitsSaillants").trim() !== ""
+        ? `\n== FAITS SAILLANTS ==\n\n${val("FaitsSaillants")}\n`
+        : "";
+
+
+    // -------------------------
+    // 8. MAIL COMPLET (CORRIGÉ)
+    // -------------------------
+    const body =
+`Vol : ${cie}${vol}
+Date : ${dateTitre}
+Rotation : ${from} - ${to}
+Immat : ${immat}
+RZA : ${rza}
+
+== TIMINGS ==
+
+Arrivée PNT : ${val("ArrPNT")}
+Arrivée PNC : ${val("ArrPNC")}
+
+Premier débarqué : ${val("PremierDebarque")}
+Dernier débarqué : ${val("DernierDebarque")}
+
+Premier embarqué : ${val("AvionPremierEmbarque")}
+Dernier embarqué : ${val("AvionDernierEmbarque")}
+
+Arrivée fuel : ${val("ArriveeFuel")}
+Départ fuel : ${val("DepartFuel")}
+
+Lift arrivée : ${liftArrivee}
+Lift départ  : ${liftDepart}
+
+Remise LID/LDS : ${val("RemiseLID")}
+Fermeture porte avion : ${val("FermeturePorteAvion")}
+
+== CHIFFRES PORTE ==
+
+TOB : ${val("TOB")}
+Bagages (hors GB) : ${val("BAGS")}
+
+${assistanceBlock}${prestationsText}${dlBlock}${justifBlock}${faitsBlock}`;
+
+
+    // -------------------------
+    // 9. OUVERTURE OUTLOOK
+    // -------------------------
+    window.location.href =
+        `mailto:trafic@aeroportbeauvais.com?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(body)}`;
 }
+
 
 /* SAUVEGARDE MANUELLE */
 function manualSave() {
   saveCurrentTabData();
   showPopup("Enregistrement réussi", "#2196f3", 2000);
 }
+
 
 /* RESET */
 function clearAutoSave() {
